@@ -1,0 +1,34 @@
+{%extends 'registration/base.html'%}
+
+{%block bar%}
+        <div class="jumbotron jumbotron-fluid">
+              <div class="container">
+                <h1 class="display-4">Upload File</h1>
+                <p class="lead">This is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
+              </div>
+        </div>
+{%endblock%}
+
+{% block content %}
+
+    <form method="post">
+    {% csrf_token %}
+
+        <div class="form-group">
+                <label for="{{ form.post.id_for_label }}">Name:</label>
+                {{ form.post }}
+                {% if form.name.errors %}
+                  <div class="error-message">{{ form.post.errors }}</div>
+                {% endif %}
+        </div>
+
+          <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <input type="submit" class="btn btn-primary mb-2" value="Post">
+            </div>
+          </div>
+
+
+    </form>
+
+{% endblock %}

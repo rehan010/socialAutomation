@@ -1,0 +1,33 @@
+footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+    .navbar-toggler {
+      border: none;
+      outline: none;
+    }
+    .navbar-toggler:focus {
+      outline: none;
+    }
+    form-group input[type="text"],
+    .form-group input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+    }
+    .map {
+            height: 300px;
+            height: 400px;
+     }
+
+
+
