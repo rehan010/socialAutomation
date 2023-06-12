@@ -41,6 +41,7 @@ class PointFileModelForm(forms.ModelForm):
         fields = ('name', 'point_file')
 
 class PostModelForm(forms.ModelForm):
+    access_token=forms.CharField()
     class Meta:
         model = PostModel
-        fields = ('post',)
+        fields = ('post','access_token')

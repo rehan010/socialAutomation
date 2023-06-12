@@ -21,6 +21,8 @@
                   <div class="error-message">{{ form.post.errors }}</div>
                 {% endif %}
         </div>
+          <input type="hidden" name="access_token" id="access_token" value="">
+
 
           <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
@@ -30,5 +32,10 @@
 
 
     </form>
+<script>
+    var accessToken = localStorage.getItem('accessToken');
+    document.getElementById("access_token").value = accessToken;
 
+    console.log(accessToken)
+</script>
 {% endblock %}

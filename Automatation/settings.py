@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.instagram',
     'allauth.socialaccount.providers.linkedin',
+    'sslserver',
     # 'allauth.socialaccount.providers.linkedin_oauth2',
 
     'app'
@@ -129,8 +130,8 @@ SOCIALACCOUNT_PROVIDERS = {
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
         'APP': {
-            'client_id': '927623131851617',
-            'secret': '6280c0e90885b7bbdc28b475d7d8a355',
+            'client_id': '283757437433759',
+            'secret': 'b14ce3e0baf2009e7f50fe251f10a556',
             'key': ''
         }
     },
@@ -188,3 +189,22 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_HOST = "localhost"
 EMAIL_PORT = 1025
+
+if DEBUG:
+    SSL_CERTIFICATE = '/Users/apple/PycharmProjects/WebAutomation/Automatation/certificate.crt'
+    SSL_KEY = '/Users/apple/PycharmProjects/WebAutomation/Automatation/private.key'
+
+    # Optional: Set the SSL/TLS port (default is 8443)
+    SSL_PORT = 443
+
+    # Optional: Set the SSL/TLS host (default is 'localhost')
+    SSL_HOST = 'localhost'
+
+    # Set the SSL/TLS certificate paths
+    # SSLCERT = '/Users/apple/PycharmProjects/WebAutomation/Automatation/certificate.crt'
+    # SSLKEY = '/Users/apple/PycharmProjects/WebAutomation/Automatation/private.key'
+    #
+    # # Configure the SSL/TLS server
+    # SSLSERVER_CERT = SSLCERT
+    # SSLSERVER_KEY = SSLKEY
+    SSL_SERVER_REDIRECT_HTTPS = True

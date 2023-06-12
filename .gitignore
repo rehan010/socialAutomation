@@ -7,3 +7,6 @@ local_settings.py
 media/*
 static/*
 db.sqlite3
+certificate.crt
+csr.csr
+private.key

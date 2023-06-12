@@ -133,11 +133,16 @@
                 {% endblock %}
 
     </div>
+  <fb:login-button
+  scope="public_profile,email"
+  onlogin="checkLoginState();">
+</fb:login-button>
+</div>
+<br>
+<br>
+<br>
+<br>
 
-<br>
-<br>
-<br>
-<br>
     <footer >
             &copy; 2023 Social Automation . All rights reserved.
 
@@ -175,36 +180,55 @@
           }
     };
 
-  window.fbAsyncInit = function() {
-    FB.init({
-      appId      : '927623131851617',
-      cookie     : true,
-      xfbml      : true,
-      version    : 'v14.0'
+
+window.fbAsyncInit = function() {
+  FB.init({
+    appId: '283757437433759',
+    cookie: true,
+    xfbml: true,
+    version: 'v17.0'
+  });
+
+  FB.AppEvents.logPageView();
+
+  FB.getLoginStatus(function(response) {
+    statusChangeCallback(response);
+  });
+
+  function statusChangeCallback(response) {
+    if (response.status === 'connected') {
+      // User is logged in and has authorized your app
+      var accessToken = response.authResponse.accessToken;
+      console.log('Access Token:', accessToken);
+      localStorage.setItem('accessToken', accessToken);
+    } else if (response.status === 'not_authorized') {
+      // User is logged in to Facebook, but has not authorized your app
+
+      console.log('User has not authorized the app.');
+    } else {
+      // User is not logged in to Facebook
+      FB.login(function(response2){
+        console.log(response2);
+         // handle the response
+        });
+      console.log('User is not logged in to Facebook.');
+    }
+  }
+
+  function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+      statusChangeCallback(response);
     });
+  }
+};
 
-    function loginWithFacebook() {
-          FB.login(function(response) {
-            if (response.authResponse) {
-              var accessToken = response.authResponse.accessToken;
-              // Use the accessToken for further operations
-              console.log('Access Token:', accessToken);
-            } else {
-              console.log('User cancelled login or did not fully authorize.');
-            }
-          }, { scope: 'email' }); // Specify the permissions you need
-   }
-   loginWithFacebook();
-
-  };
-
-  (function(d, s, id){
-     var js, fjs = d.getElementsByTagName(s)[0];
-     if (d.getElementById(id)) {return;}
-     js = d.createElement(s); js.id = id;
-     js.src = "https://connect.facebook.net/en_US/sdk.js";
-     fjs.parentNode.insertBefore(js, fjs);
-   }(document, 'script', 'facebook-jssdk'));
+(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) { return; }
+  js = d.createElement(s); js.id = id;
+  js.src = "https://connect.facebook.net/en_US/sdk.js";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
 
 
 

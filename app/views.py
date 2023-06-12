@@ -80,6 +80,17 @@ class PointFileDeleteView(DeleteView):
         queryset = super().get_queryset()
         return queryset
 
+def create_post_with_image(access_token, message, image_path):
+    url = "https://graph.facebook.com/v17.0/me/photos"
+    params = {
+        "access_token": access_token,
+        "message": message
+    }
+    files = {
+        "source": open(image_path, "rb")
+    }
+    response = requests.post(url, params=params, files=files)
+    return response.json()
 
 class PostCreateView(CreateView):
     model = PostModel
@@ -91,21 +102,22 @@ class PostCreateView(CreateView):
         post = form.save(commit=False)
         post.user = self.request.user  # Set the user to the logged-in user
         post.save()
-        social_account = self.request.user.socialaccount_set.get(provider='facebook')
-        social_token = social_account.socialtoken_set.get(account=social_account)
-        access_token = social_token.token
+        access_token = self.request.POST.get('access_token')
+        print(access_token)
+
+        access_token = access_token
         message = 'Hello, Facebook!'
 
         # Create the API endpoint URL
-        url = f'https://graph.facebook.com/me/feed?access_token={access_token}'
-
-        # Set the payload (message) to be posted
-        data = {
-            'message': message
+        url = f"https://graph.facebook.com/v17.0/me/feed"
+        headers = {
+            "Authorization": f"Bearer {access_token}"
         }
-
-        # Make the API POST request
-        response = requests.post(url, data=data)
+        data = {
+            "message": message
+        }
+        response = requests.get(url, headers=headers, data=data)
+        print(response.json())
 
         return redirect(reverse("my_posts",kwargs={'pk': self.request.user.id}))
 
