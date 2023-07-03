@@ -1,10 +1,18 @@
+from allauth.account.adapter import DefaultAccountAdapter
+from allauth.account.utils import user_username
+from allauth.exceptions import ImmediateHttpResponse
 from django.contrib.auth import views as auth_views
 from django.contrib.auth import login
+from django.http import response
 from django.shortcuts import redirect, render
 from django.urls import reverse,reverse_lazy
 from django.views.generic import TemplateView, FormView,CreateView,DeleteView
 from .forms import *
 import requests
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.contrib.auth.models import User
+from allauth.socialaccount.models import EmailAddress,SocialAccount,SocialToken
+
 
 class DashboardView(TemplateView):
     template_name = "registration/base.html"
@@ -132,5 +140,13 @@ class PostsGetView(TemplateView):
         context['posts']=PostModel.objects.filter(user_id=self.request.user.id)
         return context
 
+
+
+class InstagramRedirectUri(TemplateView):
+    template_name = 'registration/instagram.html'
+
+
+class FacebookRedirectUri(TemplateView):
+    template_name = "registration/facebook.html"
 
 

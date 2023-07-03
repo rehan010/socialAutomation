@@ -1,239 +1,310 @@
 <!DOCTYPE html>
 {%load static%}
 <html>
-<head>
+  <head>
     <title>{% block title %}{% endblock %}</title>
-    <link type="text/css" rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="{% static 'css/style.css' %}"
+    />
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
-     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-     crossorigin=""></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+      integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+  </head>
+  <body>
+    <header class="navbar navbar-expand-lg navbar-light bg-light">
+      <a href="{% url 'dashboard' %}"
+        ><h1 class="navbar-brand">SOCIAL AUTOMATION</h1></a
+      >
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          {% if user.is_authenticated %}
 
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarDropdownMenuLink"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </a>
+            <div
+              class="dropdown-menu dropdown-menu-right"
+              aria-labelledby="navbarDropdownMenuLink"
+            >
+              <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+              <a class="dropdown-item" href="{% url 'upload_file' %}"
+                >Upload File</a
+              >
+              <a class="dropdown-item" href="{% url 'password_change' %}"
+                >Change password</a
+              >
+              <a
+                class="dropdown-item"
+                href="{% url 'socialaccount_connections' %}"
+                >Connections</a
+              >
+              <a class="dropdown-item" href="{% url 'my_posts' user.pk%}"
+                >MyPosts</a
+              >
+            </div>
+          </li>
 
+          <!--                                <li class="nav-item">-->
+          <!--                                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>-->
+          <!--                                </li>-->
+          <!--                                <li class="nav-item">-->
+          <!--                                    <a class="nav-link" href="{% url 'upload_file' %}">Upload File</a>-->
+          <!--                                </li>-->
+          <!--                                <li class="nav-item">-->
+          <!--                                    <a class="nav-link" href="{% url 'password_change' %}">Change password</a>-->
+          <!--                                </li>-->
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}">SignUp</a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </header>
 
-</head>
-<body>
+    {%block bar%} {% if user.is_authenticated %} {{ point_files|json_script:"point_files" }}
 
-        <header class="navbar navbar-expand-lg navbar-light bg-light">
-                <a href="{% url 'dashboard' %}"><h1 class="navbar-brand">SOCIAL AUTOMATION</h1></a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ml-auto">
-
-                            {% if user.is_authenticated %}
-
-                                     <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <span class="navbar-toggler-icon"></span>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-                                          <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
-                                          <a class="dropdown-item" href="{% url 'upload_file' %}">Upload File</a>
-                                          <a class="dropdown-item" href="{% url 'password_change' %}">Change password</a>
-                                          <a class="dropdown-item" href="{% url 'socialaccount_connections' %}">Connections</a>
-                                          <a class="dropdown-item" href="{% url 'my_posts' user.pk%}">MyPosts</a>
-                                        </div>
-                                      </li>
-
-
-
-<!--                                <li class="nav-item">-->
-<!--                                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>-->
-<!--                                </li>-->
-<!--                                <li class="nav-item">-->
-<!--                                    <a class="nav-link" href="{% url 'upload_file' %}">Upload File</a>-->
-<!--                                </li>-->
-<!--                                <li class="nav-item">-->
-<!--                                    <a class="nav-link" href="{% url 'password_change' %}">Change password</a>-->
-<!--                                </li>-->
-                            {% else %}
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'login' %}">Login</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'register' %}">SignUp</a>
-                                </li>
-                            {% endif %}
-
-
-                    </ul>
-                </div>
-            </header>
-
-        {%block bar%}
-                            {% if user.is_authenticated %}
-                            {{ point_files|json_script:"point_files" }}
-
-                                <div class="jumbotron jumbotron-fluid">
-                                  <div class="container">
-                                    <h1 class="display-4">Welcome you are online</h1>
-                                    <p class="lead">This is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
-                                  </div>
-                                </div>
-                            {%if point_files%}
-                            <table class="table">
-                                  <thead>
-                                    <tr>
-                                      <th scope="col">Name</th>
-                                      <th scope="col">File</th>
-                                      <th scope="col">Delete</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {%for p in point_files%}
-                                    <tr>
-                                      <td>{{p.name}}</td>
-                                      <td>{{p.point_file}}</td>
-                                      <td><a href="{% url 'point_delete' p.id %}" class="btn btn-dark">Delete</a></td>
-                                    </tr>
-                                        <tr>
-                                          <td colspan="3">
-                                            <table>
-                                              <thead>
-                                                <tr>
-                                                  <th>Latitude</th>
-                                                  <th>Longitude</th>
-                                                </tr>
-                                              </thead>
-                                              <tbody>
-                                                {% for l in p.lat_long %}
-                                                <tr>
-                                                  <td>{{ l.latitude }}</td>
-                                                  <td>{{ l.longitude }}</td>
-                                                </tr>
-                                                {% endfor %}
-                                              </tbody>
-                                            </table>
-                                            <div class="map" id=map_{{p.id}}></div>
-                                          </td>
-                                        </tr>
-                                    {%endfor%}
-                                  </tbody>
-                                </table>
-
-                            {%endif%}
-
-                            {%endif%}
-
-        {%endblock%}
-    <div class="container">
-
-                {% block content %}
-
-                {% endblock %}
-
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h1 class="display-4">Welcome you are online</h1>
+        <p class="lead">
+          This is a modified jumbotron that occupies the entire horizontal space
+          of its parent.
+        </p>
+      </div>
     </div>
-  <fb:login-button
-  scope="public_profile,email"
-  onlogin="checkLoginState();">
-</fb:login-button>
-</div>
-<br>
-<br>
-<br>
-<br>
+    {%if point_files%}
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">File</th>
+          <th scope="col">Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%for p in point_files%}
+        <tr>
+          <td>{{p.name}}</td>
+          <td>{{p.point_file}}</td>
+          <td>
+            <a href="{% url 'point_delete' p.id %}" class="btn btn-dark"
+              >Delete</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <table>
+              <thead>
+                <tr>
+                  <th>Latitude</th>
+                  <th>Longitude</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for l in p.lat_long %}
+                <tr>
+                  <td>{{ l.latitude }}</td>
+                  <td>{{ l.longitude }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div class="map" id="map_{{p.id}}"></div>
+          </td>
+        </tr>
+        {%endfor%}
+      </tbody>
+    </table>
 
-    <footer >
-            &copy; 2023 Social Automation . All rights reserved.
+    {%endif%} {%endif%} {%endblock%}
+    <div class="container">{% block content %} {% endblock %}</div>
 
-    </footer>
+    {%block footer%}
+      <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+      </fb:login-button>
+    {%endblock%}
 
-</body>
+    <!-- <a id = "instagramLogin" href="#">Instagram</a> -->
+    <br />
+    <br />
+    <br />
+    <br />
 
-<script>
-      const data = JSON.parse(document.getElementById('point_files').textContent);
-      console.log(data);
-      for (var i = 0; i < data.length; i++) {
-      var pointFile = data[i];
-      console.log(pointFile);
-      console.log("Point File ID: " + pointFile.id);
-      var map = L.map("map_"+pointFile.id.toString()).setView([pointFile.lat_long[0].latitude, pointFile.lat_long[0].longitude], 5);
+    <footer>&copy; 2023 Social Automation . All rights reserved.</footer>
+  </body>
 
-        // Add the tile layer (you can use a different tile provider)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+  <script>
+<!--         const data = JSON.parse(document.getElementById('point_files').textContent);-->
+<!--         console.log(data);-->
+<!--        for (var i = 0; i < data.length; i++) {-->
+<!--             var pointFile = data[i];-->
+<!--              console.log(pointFile);-->
+<!--              console.log("Point File ID: " + pointFile.id);-->
+<!--              var map = L.map("map_"+pointFile.id.toString()).setView([pointFile.lat_long[0].latitude, pointFile.lat_long[0].longitude], 5);-->
 
-          var latLongList = pointFile.lat_long;
-          console.log(latLongList);
-          for (var j = 0; j < latLongList.length; j++) {
-            var latLong = latLongList[j];
-            var marker = L.marker([latLong.latitude,latLong.longitude]);
-            marker.bindPopup("Latitude: " + latLong.latitude + "<br>Longitude: " + latLong.longitude);
+<!--                // Add the tile layer (you can use a different tile provider)-->
+<!--                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {-->
+<!--                    attribution: '&copy; OpenStreetMap contributors'-->
+<!--                }).addTo(map);-->
 
-            // Add the marker to the map
-            marker.addTo(map);
+<!--                  var latLongList = pointFile.lat_long;-->
+<!--                  console.log(latLongList);-->
+<!--                  for (var j = 0; j < latLongList.length; j++) {-->
+<!--                    var latLong = latLongList[j];-->
+<!--                    var marker = L.marker([latLong.latitude,latLong.longitude]);-->
+<!--                    marker.bindPopup("Latitude: " + latLong.latitude + "<br>Longitude: " + latLong.longitude);-->
 
+<!--        // &lt;!&ndash;            // Add the marker to the map&ndash;&gt;-->
+<!--                    marker.addTo(map);-->
 
-            console.log("Latitude: " + latLong.latitude);
-            console.log("Longitude: " + latLong.longitude);
+<!--                    console.log("Latitude: " + latLong.latitude);-->
+<!--                    console.log("Longitude: " + latLong.longitude);-->
+<!--                  }-->
+<!--            };-->
+
+        window.fbAsyncInit = function () {
+          FB.init({
+            appId: "3154199121547431",
+            cookie: true,
+            xfbml: true,
+            version: "v17.0",
+          });
+
+          FB.AppEvents.logPageView();
+
+          FB.getLoginStatus(function (response) {
+            statusChangeCallback(response);
+          });
+
+          async function statusChangeCallback(response) {
+            if (response.status === "connected") {
+              // User is logged in and has authorized your app
+              var accessToken = response.authResponse.accessToken;
+              console.log("Access Token:", accessToken);
+              localStorage.setItem("accessToken", accessToken);
+
+                await getpageacesstoken();
+               
+            } else if (response.status === "not_authorized") {
+              // User is logged in to Facebook, but has not authorized your app
+
+              console.log("User has not authorized the app.");
+            } else {
+              // User is not logged in to Facebook
+              FB.login(function (response2) {
+                console.log(response2);
+                // handle the response
+              });
+              console.log("User is not logged in to Facebook.");
+            }
           }
-    };
 
+          function checkLoginState() {
+            console.log("Called");
+            FB.getLoginStatus(function (response) {
+              statusChangeCallback(response);
+            });
+          }
+        };
 
-window.fbAsyncInit = function() {
-  FB.init({
-    appId: '283757437433759',
-    cookie: true,
-    xfbml: true,
-    version: 'v17.0'
-  });
+        (function (d, s, id) {
+          var js,
+            fjs = d.getElementsByTagName(s)[0];
+          console.log(js);
+          console.log(fjs);
+          if (d.getElementById(id)) {
+            return;
+          }
+          js = d.createElement(s);
+          js.id = id;
+          js.src = "https://connect.facebook.net/en_US/sdk.js";
+          fjs.parentNode.insertBefore(js, fjs);
+        })(document, "script", "facebook-jssdk");
 
-  FB.AppEvents.logPageView();
+         
 
-  FB.getLoginStatus(function(response) {
-    statusChangeCallback(response);
-  });
+        async function getpageacesstoken(){
+          try{
 
-  function statusChangeCallback(response) {
-    if (response.status === 'connected') {
-      // User is logged in and has authorized your app
-      var accessToken = response.authResponse.accessToken;
-      console.log('Access Token:', accessToken);
-      localStorage.setItem('accessToken', accessToken);
-    } else if (response.status === 'not_authorized') {
-      // User is logged in to Facebook, but has not authorized your app
+            const response = new Promise((resolve,reject)=>{
+              $.ajax({
+                url:"https://graph.facebook.com/v17.0/me/accounts?fields=access_token,id",
+                method:'GET',
+                headers: {
+                  'Authorization': "Bearer " + localStorage.getItem("accessToken")
+                },
+                success:function(response){
+                  const page_access_token = response?.data?.[0]?.access_token ?? '';
+                  const page_id = response?.data?.[0]?.id ?? '';
+                  
+                  localStorage.setItem("p_accesstoken",page_access_token);
+                  localStorage.setItem("page_id",page_id)
+                  resolve(response)
+                },
+                error:function (jqXHR, textStatus, errorThrown) {
+                     reject(textStatus);
+                 }
+  
+              });
+  
+            })
+          }
+          catch(error){
+            console.log(error)
+          }
 
-      console.log('User has not authorized the app.');
-    } else {
-      // User is not logged in to Facebook
-      FB.login(function(response2){
-        console.log(response2);
-         // handle the response
-        });
-      console.log('User is not logged in to Facebook.');
-    }
-  }
+        }
 
-  function checkLoginState() {
-    FB.getLoginStatus(function(response) {
-      statusChangeCallback(response);
-    });
-  }
-};
+        {% block custom_js %}
+        {% endblock %}
 
-(function(d, s, id) {
-  var js, fjs = d.getElementsByTagName(s)[0];
-  if (d.getElementById(id)) { return; }
-  js = d.createElement(s); js.id = id;
-  js.src = "https://connect.facebook.net/en_US/sdk.js";
-  fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));
-
-
-
-
-
-</script>
-
+  </script>
 </html>

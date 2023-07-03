@@ -46,8 +46,12 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.instagram',
     'allauth.socialaccount.providers.google',
     'sslserver',
+
     'allauth.socialaccount.providers.linkedin_oauth2',
 
+    "django_extensions",
+    'rest_framework',
+    # 'allauth.socialaccount.providers.linkedin_oauth2',
     'app'
 ]
 
@@ -55,6 +59,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -140,8 +145,8 @@ SOCIALACCOUNT_PROVIDERS = {
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
         'APP': {
-            'client_id': '283757437433759',
-            'secret': 'b14ce3e0baf2009e7f50fe251f10a556',
+            'client_id': '3154199121547431',
+            'secret': 'c567975277f2b79c0e59adb09e2ee1b8',
             'key': ''
         }
     },
@@ -150,10 +155,13 @@ SOCIALACCOUNT_PROVIDERS = {
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
         'APP': {
-            'client_id': '1284529915822654',
-            'secret': '9899cd3f89be5d7e6f22197134abd603',
+            'client_id': '183679611336967',
+            'secret': 'bdebb21b9ffb7712de43b6612ffa5920',
+
             'key': ''
-        }
+        },
+        # 'redirect_uri': 'https://6c5b-2407-aa80-15-84dc-3576-ad96-daa1-e897.ngrok-free.app/redirect_uri/',
+        'SCOPE': ['user_profile', 'user_email'],
     },
     'google': {
         # For each OAuth based provider, either add a ``SocialApp``
@@ -194,6 +202,8 @@ SOCIALACCOUNT_PROVIDERS = {
 
     },
 }
+
+SOCIALACCOUNT_STORE_TOKENS = True
 
 SITE_ID = 1
 
@@ -245,3 +255,14 @@ if DEBUG:
     # SSLSERVER_CERT = SSLCERT
     # SSLSERVER_KEY = SSLKEY
     SSL_SERVER_REDIRECT_HTTPS = True
+
+
+
+# CORS_ORIGIN_WHITELIST = [
+#     'https://6c5b-2407-aa80-15-84dc-3576-ad96-daa1-e897.ngrok-free.app',
+#     # Other allowed origins if needed
+# ]
+
+
+CORS_ALLOW_ALL_ORIGINS = True
+SOCIALACCOUNT_ADAPTER  = 'app.adapter.CustomAccountAdapter'

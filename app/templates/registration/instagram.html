@@ -1,0 +1,199 @@
+{%extends 'registration/base.html'%}
+
+
+{% block bar %}
+
+<div id="accountinfo"></div>
+
+<br />
+<br />
+<br />
+
+
+
+{% endblock %}
+
+{% block content %}
+    <div id="card-container" style="display: flex;"></div>
+    <br />
+    <br />
+    <br />
+
+  <form id="myForm" enctype="multipart/form-data" method="post" action="../createpost/">
+   {% csrf_token %}
+      <h1>Create Posts</h1>
+    <div>
+      <img id="imagePreview" class="img-thumbnail" style="display: none;">
+      <label for="imageinput" class="form-label">Image:</label>
+      <input type="file" class="form-control" id="imageinput" accept="image/jpeg" name="images" onchange="displayImage(event)">
+    </div>
+    <input type="hidden" name="access_token" id="access_token" value="">
+    <input type="hidden" name="account_id" id="account_id" value="">
+    <div>
+      <label for="captioninput" class="form-label">Caption:</label>
+      <input type="text" class="form-control" id="captioninput" name="caption"/>
+    </div>
+      <button type="submit" class="btn btn-primary mb-3">Create</button>
+    </div>
+  </form>
+  <br />
+  <br />
+  <br />
+
+{% endblock %}
+ 
+
+
+{% block custom_js %}
+<!-- <script> -->
+
+  $(document).ready(function(){
+    console.log('Hello')
+    $.ajax({
+      url: 'https://localhost:8000/getinsta/',
+      method:'GET',
+      headers:{
+        'Authorization': localStorage.getItem("accessToken")
+      },
+      success: function(response){
+        console.log(response);
+        const parentdivInfo = document.getElementById("accountinfo");
+        const account_info = response['account_info'];
+        localStorage.setItem("account_id", account_info['id']);
+        console.log(account_info['profile_picture_url'])
+        <!-- Displaying Account Information-->
+        const cardInfo = `<div class="card" style="width: 18rem;">
+          <div class="card-body">
+            <div class="card-title" style="display: flex;align-items: center;">
+              <img src="${account_info['profile_picture_url']}" alt="Not Available" width="100px" style="border-radius: 50%;" height="100px">
+              <h4 style="padding: 10px;">${account_info['username']}</h4>
+            </div>
+            <div class="card-footer">
+              <div><span>Followers:</span><span>${account_info['followers_count']}</span></div>
+              <div><span>Follows:</span><span>${account_info['follows_count']}</span></div>
+            </div>
+          </div>
+        </div>`
+
+        parentdivInfo.innerHTML += cardInfo;
+
+
+        const parentdivCard = document.getElementById("card-container");
+        for(let data in response["media"]){
+            let datadict = response["media"][data]
+
+            const card = 
+            `<div class="card" style="width: 18rem;">
+              <img class="card-img-top" src="${datadict['image']}" alt="Card image cap">
+              <div class="card-body">
+                <p class="card-text">${datadict['caption']}</p>
+              </div>
+              
+              <div class="card-body">
+                <a href="#" class="card-link">Likes: ${datadict['likes']}</a>
+                <a href="#" class="card-link">comments count: ${datadict['comments_count']}</a>
+              </div>
+              <ul class="list-group list-group-flush">
+                ${datadict['comments'] ? `<li class="list-group-item">${datadict['comments']}</li>` : `<li class="list-group-item">Not Available!!</li>`}
+                ${datadict['impression'] ? `<li class="list-group-item">Impression: ${datadict['impression']}</li>` : `<li class="list-group-item">Impression: 0</li>`}
+                ${datadict['engagement'] ? `<li class="list-group-item">Engagement: ${datadict['engagement']}</li>` : `<li class="list-group-item">Engagement: 0</li>`}
+                ${datadict['reach'] ? `<li class="list-group-item">Reach: ${datadict['reach']}</li>` : `<li class="list-group-item">Reach: 0</li>`}
+                
+              </ul>
+          </div>`
+
+
+         parentdivCard.innerHTML += card;
+        }
+
+      },
+      error: function(jqXHR, textStatus, errorThrown){
+        console.log(jqXHR, textStatus, errorThrown)
+      }
+
+    });
+  });
+
+
+  function displayImage(event) {
+    var image = document.getElementById('imagePreview');
+    image.style.display = 'block';
+    image.src = URL.createObjectURL(event.target.files[0]);
+  }
+
+
+  const accessToken = localStorage.getItem('accessToken');
+  document.getElementById("access_token").value = accessToken;
+  
+  const account_id = localStorage.getItem("account_id");
+  document.getElementById("account_id").value = account_id;
+  
+
+<!--  $('#myForm').submit(function(event) {-->
+<!--    event.preventDefault(); // Prevent default form submission-->
+
+<!--    // Get the form data-->
+<!--    var formData = $(this).serialize();-->
+<!--    console.log(formData);-->
+<!--    // Send the POST request with headers-->
+<!--    $.ajax({-->
+<!--        url: 'https://example.com/submit-form',-->
+<!--        type: 'POST',-->
+<!--        data: formData,-->
+<!--        headers: {-->
+<!--            'Content-Type': 'application/x-www-form-urlencoded',-->
+<!--            'Authorization': 'Bearer your_token'-->
+<!--        },-->
+<!--        success: function(response) {-->
+<!--            console.log('Form submitted successfully!');-->
+<!--        },-->
+<!--        error: function(xhr, textStatus, errorThrown) {-->
+<!--            console.log('Form submission failed with status code: ' + xhr.status);-->
+<!--        }-->
+<!--    });-->
+<!--});-->
+
+<!--  const CreatePostForm = document.getElementById('myForm');-->
+<!--  CreatePostForm.addEventListener("submit",function(event){-->
+<!--    event.preventDefault();-->
+<!--    -->
+<!--    let image = document.getElementById('imageinput').value;-->
+<!--    let caption = document.getElementById('captioninput').value;-->
+<!--    console.log(image)-->
+
+<!--    let formdata = new FormData(CreatePostForm)-->
+
+<!--    console.log(formdata)-->
+<!--      -->
+<!--    const data = {-->
+<!--      'image_url':image,-->
+<!--      'caption':caption,-->
+<!--      'account_id':localStorage.getItem("account_id")-->
+
+<!--    }-->
+<!--    $.ajax({-->
+<!--      url: 'https://localhost:8000/createpost/',-->
+<!--      method:'POST',-->
+<!--      headers:{-->
+<!--        'Authorization': localStorage.getItem("accessToken")-->
+<!--        -->
+<!--      },-->
+<!--      data: data,-->
+<!--      success: function(response){-->
+<!--        console.log(response)-->
+
+<!--      },-->
+<!--      error: function(jqXHR, textStatus, errorThrown){-->
+<!--        console.log(jqXHR, textStatus, errorThrown)-->
+<!--      }-->
+
+<!--    -->
+
+<!--    });-->
+
+<!--    console.log(image);-->
+<!--    console.log(caption);-->
+<!--  })-->
+  
+<!-- </script> -->
+{% endblock %}

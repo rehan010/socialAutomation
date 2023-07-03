@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from .restapis import *
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -16,9 +17,23 @@ urlpatterns = [
     path('', DashboardView.as_view(), name="dashboard"),
 
 
+    path("facebook/",FacebookRedirectUri.as_view(),name="facebook_redirect"),
+    path('instagram/',InstagramRedirectUri.as_view(),name="instagram_redirect"),
+
+
     path('upload/file', PointFileCreateView.as_view(), name="upload_file"),
     path('upload/<int:pk>/delete/', PointFileDeleteView.as_view(), name='point_delete'),
     path('create/post/', PostCreateView.as_view(), name='create_post'),
     path('posts/<int:pk>', PostsGetView.as_view(), name='my_posts'),
+
+#     REST APIS
+
+    path('getinsta/',instagramapi,name="geinsta"),
+
+    path('createpost/',createpost,name = "createpost"),
+
+
+    path("facebookhome/",facebookapi,name="facebookhome"),
+    path("createfacebookpost/",createfacebookpost,name = "createfacebookpost")
 
 ]
