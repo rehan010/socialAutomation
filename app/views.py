@@ -11,6 +11,7 @@ class DashboardView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         # Add your context data here
         if self.request.user.is_authenticated:
             context['point_files'] = list(PointFileModel.objects.filter(user=self.request.user,is_deleted=False).values('id','name','point_file'))
@@ -20,6 +21,7 @@ class DashboardView(TemplateView):
                 # Convert Decimal values to float
                 _['lat_long'] = [{'latitude': float(lat['latitude']), 'longitude': float(lat['longitude'])} for lat
                                     in lat_long_list]
+
         return context
 
 
@@ -116,7 +118,7 @@ class PostCreateView(CreateView):
         data = {
             "message": message
         }
-        response = requests.get(url, headers=headers, data=data)
+        response = requests.post(url, headers=headers, data=data)
         print(response.json())
 
         return redirect(reverse("my_posts",kwargs={'pk': self.request.user.id}))

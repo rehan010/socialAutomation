@@ -1,0 +1,8 @@
+#region: us
+#version: '2'
+#authtoken: '1yil0KHiUzZGvigFuDVZmUIFdr9_Y1RAquHkpPPjk9e6Wfk9'
+#tunnels:
+#  django:
+#    proto: http
+#    addr: 8000
+#    inspect: true

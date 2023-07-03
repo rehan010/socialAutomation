@@ -25,6 +25,7 @@ SECRET_KEY = 'django-insecure-=ut$#i*am-b5@gw!qm204o)b*%rs3h10@qs_*5y2ev^fqp6m(y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# ALLOWED_HOSTS = ['localhost','127.0.0.1']
 ALLOWED_HOSTS = ['*']
 
 
@@ -32,6 +33,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'corsheaders',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -42,15 +44,16 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.instagram',
-    'allauth.socialaccount.providers.linkedin',
+    'allauth.socialaccount.providers.google',
     'sslserver',
-    # 'allauth.socialaccount.providers.linkedin_oauth2',
+    'allauth.socialaccount.providers.linkedin_oauth2',
 
     'app'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -58,6 +61,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+CORS_ALLOW_ALL_ORIGINS = True
+
+CSRF_TRUSTED_ORIGINS=['https://c681-72-255-15-110.ngrok-free.app']
+# CORS_URLS_REGEX = r'^/accounts/register/.*$'
+
 LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "dashboard"
 
@@ -122,6 +130,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+SOCIALACCOUNT_ADAPTER = 'app.linkedin_adapter.MyAdapter'
+SOCIALACCOUNT_STORE_TOKENS=True
 
 # Provider specific settings
 SOCIALACCOUNT_PROVIDERS = {
@@ -145,15 +155,43 @@ SOCIALACCOUNT_PROVIDERS = {
             'key': ''
         }
     },
-    'linkedin': {
+    'google': {
         # For each OAuth based provider, either add a ``SocialApp``
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
         'APP': {
-            'client_id': '77vq11fwjcec5h',
-            'secret': '8wcTHLij6qhYxykW',
+            'client_id': '33836610262-gvtpcrjpbdefm0td6e0g7e4c76gut9s8.apps.googleusercontent.com',
+            'secret': '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',
             'key': ''
         }
+    },
+
+    'linkedin_oauth2': {
+
+        # For each OAuth based provider, either add a ``SocialApp``
+        # (``socialaccount`` app) containing the required client
+        # credentials, or list them here:
+        'APP': {
+            # 'adapter':'app.linkedin_adapter.CustomLinkedInOAuth2Adapter',
+            'client_id': '77vq11fwjcec5h',
+            'secret': '8wcTHLij6qhYxykW',
+            'key': '',
+
+        },
+        'SCOPE': [
+            'r_emailaddress',
+            'r_liteprofile'
+        ],
+        # 'PROFILE_FIELDS': [
+        #     'id',
+        #     'first-name',
+        #     'last-name',
+        #     'email-address',
+        #     'picture-url',
+        #     'public-profile-url',
+        # ],
+
+
     },
 }
 
@@ -189,7 +227,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_HOST = "localhost"
 EMAIL_PORT = 1025
-
 if DEBUG:
     SSL_CERTIFICATE = '/Users/apple/PycharmProjects/WebAutomation/Automatation/certificate.crt'
     SSL_KEY = '/Users/apple/PycharmProjects/WebAutomation/Automatation/private.key'
