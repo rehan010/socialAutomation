@@ -16,17 +16,18 @@ class CustomAccountAdapter(DefaultSocialAccountAdapter):
         # 1 added line here
         from allauth.socialaccount import app_settings
 
-        config = app_settings.PROVIDERS.get(provider, {}).get('APP')
-        if config:
-            app = SocialApp(provider=provider)
-            for field in ['client_id', 'secret', 'key']:
-                setattr(app, field, config.get(field))
+        # config = app_settings.PROVIDERS.get(provider, {}).get('APP')
+        # print(config)
+        # if config:
+        #     app = SocialApp(provider=provider)
+        #     for field in ['client_id', 'secret', 'key']:
+        #         setattr(app, field, config.get(field))
+        #
+        #     # 3 added lines here
+        #     app.key = app.key or "unset"
+        #     app.name = app.name or provider
+        #     app.save()
 
-            # 3 added lines here
-            app.key = app.key or "unset"
-            app.name = app.name or provider
-            app.save()
-
-        else:
-            app = SocialApp.objects.get_current(provider, request)
+        # else:
+        app = SocialApp.objects.get_current(provider, request)
         return app

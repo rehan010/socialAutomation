@@ -1,3 +1,4 @@
+from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -42,8 +43,23 @@ class LatLongModel(BaseModel):
 
 
 class PostModel(BaseModel):
-    post= models.TextField()
+    post = models.TextField(blank=True)
+    file = models.FileField(upload_to='videos/', blank=True)
+    post_urn = models.CharField(max_length=255, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
+    status = models.CharField(max_length=100,null=True)
+    # post_likes = models.IntegerField(default=0)
+    # post_comments = models.IntegerField(default=0)
+    # comments = models.CharField(max_length=2500, blank=True)
+
+class SharePage(BaseModel):
+    user = models.ForeignKey(SocialAccount, on_delete=models.CASCADE)
+    name = models.CharField(max_length=300,null=True)
+    organizations_id = models.CharField(max_length=1000)
+    access_token = models.CharField(max_length=1000,null=True)
+    provider = models.CharField(max_length=100,null=True)
+    post = models.ManyToManyField(PostModel)
+
 
 
 

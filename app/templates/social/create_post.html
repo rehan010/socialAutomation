@@ -1,41 +1,272 @@
 {%extends 'registration/base.html'%}
 
-{%block bar%}
-        <div class="jumbotron jumbotron-fluid">
-              <div class="container">
-                <h1 class="display-4">Upload File</h1>
-                <p class="lead">This is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
-              </div>
-        </div>
-{%endblock%}
+{% block custom_css %}
+<style>
+   
+    .platform-button{
+        padding: 10px 20px; 
+        border: none; 
+        border-radius: 5px; 
+        font-size: 16px; 
+        font-weight: bold;
+        color: white; 
+        transition: background-color 0.3s ease;
+        text-decoration: none;
+
+    }
+
+    .facebook-button{
+        background-color: #3b5998; 
+        
+
+    }
+
+    .facebook-button:hover {
+        background-color: #4267B2;
+        text-decoration: none;
+        color: white;
+    }
+
+    .instagram-button{
+        background-color: #e4405f;
+        
+    }
+
+    .instagram-button:hover{
+        background-color: #f56040;
+        text-decoration: none;
+        color: white;
+
+    }
+
+    .linkedin-button{
+        background-color: #0077B5;
+        text-decoration: none;
+    }
+
+    .linkedin-button:hover{
+        background-color: #005f8e;
+        color: white;
+        text-decoration: none;
+    }
+
+    .google-button{
+        color: #000;
+        border: 1px solid;
+        border-color: black;
+    }
+
+    .media-controller{
+        
+    }
+
+    .media-controller .file-handling input{
+        width: 100%;
+        border-color: rgb(225,230,234);
+        border-radius: 5px;
+    }
+    .media-controller .file-handling input:focus{
+        outline-color: rgb(110, 190, 255);
+    }
+    .text-controller{
+        
+    }
+
+    .text-controller .text-handling{
+        display: flex;
+        flex-direction: column;
+    }
+    
+    #id_post{
+        border-color: rgb(225,230,234);
+        border-radius: 5px;
+    }
+
+    textarea:focus{
+        outline-color: rgb(110, 190, 255);
+        
+    }
+
+    .checkbox-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-button.checked {
+            background-color: #5c9be1;
+            color: white;
+        }
+
+        .checkbox-button .checkbox-icon {
+            margin-right: 8px;
+            visibility: hidden;
+        }
+
+        .checkbox-button.checked .checkbox-icon {
+            visibility: visible;
+        }
+
+        .checkbox-button .checkbox-label {
+            white-space: nowrap;
+        }
+
+        .Scheduling-contoller{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .Scheduling-contoller .Scheduling-handling{
+            padding: 0px 10px;
+        }
+
+        
+
+        
+
+</style>
+{% endblock %}
 
 {% block content %}
 
-    <form method="post">
-    {% csrf_token %}
 
-        <div class="form-group">
-                <label for="{{ form.post.id_for_label }}">Name:</label>
-                {{ form.post }}
-                {% if form.name.errors %}
-                  <div class="error-message">{{ form.post.errors }}</div>
-                {% endif %}
+
+<!--    </form>-->
+        <h1>Create Post</h1>
+        <div class="card p-1">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+<!--                Platforms-->
+                <div class="d-flex p-2">
+                    <div class="m-2 col-sm-3">
+                        <a class="facebook-button platform-button" >
+                            <i class="fa-brands fa-facebook"></i> <span>Facebook</span> 
+                        </a>
+                            <div class="d-flex flex-column pt-3">
+                                {% for obj in data.facebook_page%}
+                                <div>
+                                    <input type="checkbox" name = "facebook" value="{{obj.id}}">
+                                    <label for="{{obj.id}}">{{obj.name}}</label>
+                                </div>
+                                {% endfor %}
+
+                            </div>
+
+
+                        
+
+                    </div>
+
+                    <div class="m-2 col-sm-3">
+                        <a class="instagram-button platform-button">
+                            <i class="fa-brands fa-instagram"></i> <span>Instagram</span>                            
+                        </a>
+                        
+                        <div class="d-flex flex-column pt-3 p-2">
+                            <div>
+
+                                <input type="checkbox" name = "instagram" value="{{data.insta_data.id}}">
+                                <label for="{{data.insta_data.id}}">{{data.insta_data.name}}</label>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+
+                    <div class="m-2 col-sm-3">
+                        <a class="linkedin-button platform-button">
+                            <i class="fa-brands fa-linkedin-in"></i> <span>LinkedIn</span>                            
+                        </a>
+                    </div>
+                    <div class="m-2 col-sm-3">
+                        <a class="google-button platform-button">
+                            <i class="fa-brands fa-google"></i> <span>Google</span>                            
+                        </a>
+                    </div>
+
+
+
+                </div>
+
+                
+                <!-- Media  -->
+                <div class="media-controller mt-3">
+                    <h4>Media</h4>
+                    <p>Share photos or a video</p>
+
+                    <div class="file-handling bg-blue">
+                        <input type="text" placeholder="Enter Url. only Jpeg For Instagram " name="media"/>
+                    </div>
+                </div>
+
+                <!-- Text -->
+
+                <div class="text-controller mt-3">
+                    <h4>Post Details</h4>
+                    <div class="text-handling">
+
+                        <label for="{{ form.post.id_for_label }}">Text</label>
+                        {{ form.post }}
+                        {% if form.name.errors %}
+                         <div class="error-message">{{ form.post.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Scheduling options -->
+                <div class="Scheduling-contoller mt-3">
+                    <h5>Scheduling options</h5>
+
+                    
+                    <div class="Scheduling-handling">
+                        <label class="checkbox-button" for="publish-now">
+                            <input class="checkbox" type="checkbox" id="publish-now" style="display: none;">
+                            <span class="checkbox-icon">&#10003;</span>
+                            <span class="checkbox-label">Publish Now</span>
+                        </label>
+                    
+                        <label class="checkbox-button" for="sehedule">
+                            <input class="checkbox" type="checkbox" id="sehedule" style="display: none;">
+                            <span class="checkbox-icon">&#10003;</span>
+                            <span class="checkbox-label">Schedule</span>
+                        </label>
+                    </div>
+
+                </div>
+
+                <div class="sumbit-button">
+                    <div class="col-sm-offset-2 col-sm-12 d-flex justify-content-end">
+                       <input type="submit" class="btn btn-primary mb-2" value="Post">
+                    </div>
+                </div>
+
+            </form>
         </div>
-          <input type="hidden" name="access_token" id="access_token" value="">
 
 
-          <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-10">
-                <input type="submit" class="btn btn-primary mb-2" value="Post">
-            </div>
-          </div>
-
-
-    </form>
 <script>
-    var accessToken = localStorage.getItem('accessToken');
-    document.getElementById("access_token").value = accessToken;
+   
 
-    console.log(accessToken)
+
+        const checkboxButton = document.querySelector('.checkbox-button');
+        const checkboxInputs = document.querySelectorAll('.checkbox');
+
+        checkboxInputs.forEach(function (checkbox) {
+            console.log(checkbox)
+            checkbox.addEventListener('click', function () {
+               
+                checkbox.checked = !checkbox.checked;
+                checkbox.parentElement.classList.toggle('checked');
+            });
+        });
+
 </script>
 {% endblock %}

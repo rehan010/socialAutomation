@@ -40,8 +40,17 @@ class PointFileModelForm(forms.ModelForm):
         model = PointFileModel
         fields = ('name', 'point_file')
 
+class SharePageForm(forms.ModelForm):
+    class Meta:
+        model = SharePage
+        fields = ('user','organizations_id')
+
+
 class PostModelForm(forms.ModelForm):
-    access_token=forms.CharField()
+    facebook = forms.BooleanField(widget=forms.CheckboxInput(),required=False)
+    instagram = forms.BooleanField(widget=forms.CheckboxInput(),required=False)
+    linkdien = forms.BooleanField(widget=forms.CheckboxInput(),required=False)
+
     class Meta:
         model = PostModel
-        fields = ('post','access_token')
+        fields = ('post','facebook','instagram','linkdien','file')

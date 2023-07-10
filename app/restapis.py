@@ -1,11 +1,17 @@
+from io import BytesIO
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import requests
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 import os
+from .models import *
+from PIL import Image
+
+import string
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 @api_view(['GET'])
 def instagramapi(request):
@@ -235,3 +241,239 @@ def createfacebookpost(request):
     response = requests.post(url,headers=headers,json=data)
     # print(response.json())
     return redirect("facebook_redirect")
+
+
+
+def facebook_page_data(accesstoken):
+
+    url = "https://graph.facebook.com/v17.0/me/accounts?fields=access_token,id,name"
+
+    headers = {
+        "Authorization": f"Bearer {accesstoken}"
+    }
+
+    response = requests.get(url,headers=headers)
+    # print(response.json())
+    data = {}
+
+    return response.json().get("data")
+
+
+
+
+
+def instagram_id(accesstoken):
+
+    url = "https://graph.facebook.com/v17.0/me/accounts?fields=instagram_business_account"
+
+    headers = {
+        "Authorization": f"Bearer {accesstoken}"
+    }
+
+    response = requests.get(url,headers=headers)
+
+    data = {}
+
+    instaid = None
+
+
+
+    for _ in response.json().get('data'):
+        if _.get("instagram_business_account"):
+            instaid = _.get("instagram_business_account")["id"]
+
+    try:
+        url = f"https://graph.facebook.com/v17.0/{instaid}?fields=name,profile_picture_url"
+        response = requests.get(url,headers=headers)
+        return response.json()
+
+    except Exception as e:
+
+        print(e)
+
+
+
+
+
+
+
+
+
+
+def facebookpost(request,data):
+    post = {
+            "url": request.POST.get("media"),
+            "caption": request.POST['post']
+        }
+
+    url = f"https://graph.facebook.com/{data['page_id']}/photos"
+
+    headers = {
+        "Authorization": f"Bearer {data['page_access_token']}"
+    }
+
+    response = requests.post(url, headers=headers, json=post)
+
+    return response.json()
+
+
+
+def instagrampost(request,data,access_token):
+    post = {
+            "image_url": request.POST.get("media"),
+            "caption": request.POST['post']
+
+        }
+    url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media/"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.post(url, headers=headers, json=post)
+
+    mediaid = response.json()['id']
+
+    url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media_publish"
+
+    data = {
+        'creation_id': mediaid
+    }
+
+    response = requests.post(url, headers=headers, data=data)
+
+    return response.json()
+
+
+def linkdein(access_token_string):
+    url = "https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee"
+
+    payload = {}
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Authorization': 'Bearer ' + access_token_string,
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4543:u=51:x=1:i=1688454620:t=1688474844:v=2:sig=AQEPLNOkmN73V6fYvS7fD8W9CViGJ3hF"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lang=v=2&lang=en-us'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    response = response.json()
+    targets = [element['organizationalTarget'] for element in response['elements']]
+    data = targets
+    ids = [item.split(':')[-1] for item in data]
+
+    id = ','.join(ids)
+
+    url = f"https://api.linkedin.com/v2/organizations?ids=List({id})"
+
+    payload = {}
+    headers = {
+        'LinkedIn-Version': '202304',
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Authorization': 'Bearer ' + access_token_string,
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4543:u=51:x=1:i=1688456448:t=1688474844:v=2:sig=AQGzRecgKiUECgv05uH2KHFxISD6bd_d"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4543:u=51:x=1:i=1688398890:t=1688474844:v=2:sig=AQHKhaANXQC9mWny3X46qeX8AAsrtxOQ"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lang=v=2&lang=en-us'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    response = response.json()
+
+
+
+
+
+# ...
+
+def save_image_from_url(image_url):
+
+    response = requests.get(image_url)
+    image = Image.open(BytesIO(response.content))
+    image = image.convert('RGB')
+    image_buffer = BytesIO()
+    image.save(image_buffer, format='JPEG', optimize=True, quality=85)
+    image_buffer.seek(0)
+
+    content_file = ContentFile(image_buffer.getvalue())
+
+
+    return content_file
+
+
+def getmediaid(image,data):
+
+    url =f"https://graph.facebook.com/{data['page_id']}/photos?published=false&temporary=true"
+
+    headers = {
+        "Authorization": f"Bearer {data['page_access_token']}"
+    }
+
+    data = {
+        "url":image
+    }
+
+    response = requests.post(url,headers=headers,data=data)
+
+    return response.json()
+
+
+def facebookmultiimage(request,data,images):
+
+    url = f"https://graph.facebook.com/{data['page_id']}/feed"
+
+    data_post = {
+        "message":request.POST['post']
+    }
+    headers = {
+        "Authorization": f"Bearer {data['page_access_token']}"
+    }
+    # i = 0
+    for _ in range(len(images)):
+        data_post[f"attached_media[{_}]"] = f'{{"media_fbid": "{getmediaid(images[_], data)["id"]}"}}'
+
+
+
+    response = requests.post(url,headers=headers,data=data_post)
+
+    return response.json()
+
+
+def media_id_insta(image,data,access_token):
+    url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media?is_carousel_item=true"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    data_post = {
+        "image_url":image
+    }
+
+    response = requests.post(url,headers=headers,data=data_post)
+
+    return response.json()
+
+
+def instagrammultiimage(request,data,access_token,images):
+
+    childern_list = []
+    for _ in images:
+        childern_list.append(media_id_insta(_,data,access_token)["id"])
+
+
+    url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media?media_type=CAROUSEL"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    data_post = {
+        "caption": request.POST['post'],
+        "children": ",".join(childern_list)
+    }
+    response_1 = requests.post(url,headers=headers,data=data_post)
+    url_2 = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media_publish"
+
+    data_post_2 = {
+        "creation_id": response_1.json()['id']
+    }
+
+    response_2 = requests.post(url_2,headers=headers,data=data_post_2)
+
+    return response_2.json()

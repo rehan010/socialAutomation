@@ -16,6 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/c4dfba4734.js" crossorigin="anonymous"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
       integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
@@ -33,6 +34,8 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
+    {% block custom_css %}
+    {% endblock %}
   </head>
   <body>
     <header class="navbar navbar-expand-lg navbar-light bg-light">
@@ -81,9 +84,13 @@
                 href="{% url 'socialaccount_connections' %}"
                 >Connections</a
               >
+               <a class="dropdown-item" href="{% url 'connect_page'%}"
+                >Connection Page</a
+              >
               <a class="dropdown-item" href="{% url 'my_posts' user.pk%}"
                 >MyPosts</a
               >
+
             </div>
           </li>
 
@@ -168,8 +175,8 @@
     <div class="container">{% block content %} {% endblock %}</div>
 
     {%block footer%}
-      <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
-      </fb:login-button>
+<!--      <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">-->
+<!--      </fb:login-button>-->
     {%endblock%}
 
     <!-- <a id = "instagramLogin" href="#">Instagram</a> -->
@@ -210,101 +217,101 @@
 <!--                  }-->
 <!--            };-->
 
-        window.fbAsyncInit = function () {
-          FB.init({
-            appId: "3154199121547431",
-            cookie: true,
-            xfbml: true,
-            version: "v17.0",
-          });
+<!--        window.fbAsyncInit = function () {-->
+<!--          FB.init({-->
+<!--            appId: "3154199121547431",-->
+<!--            cookie: true,-->
+<!--            xfbml: true,-->
+<!--            version: "v17.0",-->
+<!--          });-->
 
-          FB.AppEvents.logPageView();
+<!--          FB.AppEvents.logPageView();-->
 
-          FB.getLoginStatus(function (response) {
-            statusChangeCallback(response);
-          });
+<!--          FB.getLoginStatus(function (response) {-->
+<!--            statusChangeCallback(response);-->
+<!--          });-->
 
-          async function statusChangeCallback(response) {
-            if (response.status === "connected") {
-              // User is logged in and has authorized your app
-              var accessToken = response.authResponse.accessToken;
-              console.log("Access Token:", accessToken);
-              localStorage.setItem("accessToken", accessToken);
+<!--          async function statusChangeCallback(response) {-->
+<!--            if (response.status === "connected") {-->
+<!--              // User is logged in and has authorized your app-->
+<!--              var accessToken = response.authResponse.accessToken;-->
+<!--              console.log("Access Token:", accessToken);-->
+<!--              localStorage.setItem("accessToken", accessToken);-->
 
-                await getpageacesstoken();
-               
-            } else if (response.status === "not_authorized") {
-              // User is logged in to Facebook, but has not authorized your app
+<!--                await getpageacesstoken();-->
+<!--               -->
+<!--            } else if (response.status === "not_authorized") {-->
+<!--              // User is logged in to Facebook, but has not authorized your app-->
 
-              console.log("User has not authorized the app.");
-            } else {
-              // User is not logged in to Facebook
-              FB.login(function (response2) {
-                console.log(response2);
-                // handle the response
-              });
-              console.log("User is not logged in to Facebook.");
-            }
-          }
+<!--              console.log("User has not authorized the app.");-->
+<!--            } else {-->
+<!--              // User is not logged in to Facebook-->
+<!--              FB.login(function (response2) {-->
+<!--                console.log(response2);-->
+<!--                // handle the response-->
+<!--              });-->
+<!--              console.log("User is not logged in to Facebook.");-->
+<!--            }-->
+<!--          }-->
 
-          function checkLoginState() {
-            console.log("Called");
-            FB.getLoginStatus(function (response) {
-              statusChangeCallback(response);
-            });
-          }
-        };
+<!--          function checkLoginState() {-->
+<!--            console.log("Called");-->
+<!--            FB.getLoginStatus(function (response) {-->
+<!--              statusChangeCallback(response);-->
+<!--            });-->
+<!--          }-->
+<!--        };-->
 
-        (function (d, s, id) {
-          var js,
-            fjs = d.getElementsByTagName(s)[0];
-          console.log(js);
-          console.log(fjs);
-          if (d.getElementById(id)) {
-            return;
-          }
-          js = d.createElement(s);
-          js.id = id;
-          js.src = "https://connect.facebook.net/en_US/sdk.js";
-          fjs.parentNode.insertBefore(js, fjs);
-        })(document, "script", "facebook-jssdk");
+<!--        (function (d, s, id) {-->
+<!--          var js,-->
+<!--            fjs = d.getElementsByTagName(s)[0];-->
+<!--          console.log(js);-->
+<!--          console.log(fjs);-->
+<!--          if (d.getElementById(id)) {-->
+<!--            return;-->
+<!--          }-->
+<!--          js = d.createElement(s);-->
+<!--          js.id = id;-->
+<!--          js.src = "https://connect.facebook.net/en_US/sdk.js";-->
+<!--          fjs.parentNode.insertBefore(js, fjs);-->
+<!--        })(document, "script", "facebook-jssdk");-->
 
-         
+<!--         -->
 
-        async function getpageacesstoken(){
-          try{
+<!--        async function getpageacesstoken(){-->
+<!--          try{-->
 
-            const response = new Promise((resolve,reject)=>{
-              $.ajax({
-                url:"https://graph.facebook.com/v17.0/me/accounts?fields=access_token,id",
-                method:'GET',
-                headers: {
-                  'Authorization': "Bearer " + localStorage.getItem("accessToken")
-                },
-                success:function(response){
-                  const page_access_token = response?.data?.[0]?.access_token ?? '';
-                  const page_id = response?.data?.[0]?.id ?? '';
-                  
-                  localStorage.setItem("p_accesstoken",page_access_token);
-                  localStorage.setItem("page_id",page_id)
-                  resolve(response)
-                },
-                error:function (jqXHR, textStatus, errorThrown) {
-                     reject(textStatus);
-                 }
-  
-              });
-  
-            })
-          }
-          catch(error){
-            console.log(error)
-          }
+<!--            const response = new Promise((resolve,reject)=>{-->
+<!--              $.ajax({-->
+<!--                url:"https://graph.facebook.com/v17.0/me/accounts?fields=access_token,id",-->
+<!--                method:'GET',-->
+<!--                headers: {-->
+<!--                  'Authorization': "Bearer " + localStorage.getItem("accessToken")-->
+<!--                },-->
+<!--                success:function(response){-->
+<!--                  const page_access_token = response?.data?.[0]?.access_token ?? '';-->
+<!--                  const page_id = response?.data?.[0]?.id ?? '';-->
+<!--                  -->
+<!--                  localStorage.setItem("p_accesstoken",page_access_token);-->
+<!--                  localStorage.setItem("page_id",page_id)-->
+<!--                  resolve(response)-->
+<!--                },-->
+<!--                error:function (jqXHR, textStatus, errorThrown) {-->
+<!--                     reject(textStatus);-->
+<!--                 }-->
+<!--  -->
+<!--              });-->
+<!--  -->
+<!--            })-->
+<!--          }-->
+<!--          catch(error){-->
+<!--            console.log(error)-->
+<!--          }-->
 
-        }
+<!--        }-->
 
-        {% block custom_js %}
-        {% endblock %}
+<!--        {% block custom_js %}-->
+<!--        {% endblock %}-->
 
   </script>
 </html>

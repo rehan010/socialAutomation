@@ -10,3 +10,6 @@ db.sqlite3
 certificate.crt
 csr.csr
 private.key
+key.pem
+cert.pem
+ngrok.yml

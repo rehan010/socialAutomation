@@ -1,0 +1,35 @@
+{%extends 'registration/base.html'%}
+
+<form method="POST">
+    {% csrf_token %}
+
+    <div class="card">
+        <div class="card-body">
+
+            <input type="hidden" id="names" value={{names}}>
+            <div class="checkbox-container">
+
+                {%for obj in data%}
+
+
+                <label>
+                    <input type="checkbox" name="selected_keys" value="{{ obj.key }}" {% if  obj.checked  %} checked {% endif %}>
+                    {{ obj.name }}
+                </label>
+                <br>
+
+                {%endfor%}
+            </div>
+            <button type="submit">Continue to Create Post</button>
+        </div>
+    </div>
+</form>
+
+
+<div class="container">
+
+    {% block content %}
+
+    {% endblock %}
+
+</div>

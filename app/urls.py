@@ -15,6 +15,7 @@ urlpatterns = [
          name='password_reset_confirm'),
     path('accounts/reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('', DashboardView.as_view(), name="dashboard"),
+    path('connect/page',ConnectPageView.as_view(),name='connect_page'),
 
 
     path("facebook/",FacebookRedirectUri.as_view(),name="facebook_redirect"),

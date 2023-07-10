@@ -4,3 +4,4 @@ from .models import *
 admin.site.register(PointFileModel)
 admin.site.register(LatLongModel)
 admin.site.register(PostModel)
+admin.site.register(SharePage)
