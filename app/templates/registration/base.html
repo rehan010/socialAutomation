@@ -1,317 +1,280 @@
 <!DOCTYPE html>
 {%load static%}
+
 <html>
   <head>
-    <title>{% block title %}{% endblock %}</title>
-    <link
-      type="text/css"
-      rel="stylesheet"
-      href="{% static 'css/style.css' %}"
-    />
 
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
-    />
+    {% block custom_css %}
+    {% endblock %}
+
+
+    <title>{% block title %}{% endblock %}</title>
+    <link type="text/css" rel="stylesheet" href="{% static 'css/style.css' %}"/>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/c4dfba4734.js" crossorigin="anonymous"></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
-      integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
-    {% block custom_css %}
-    {% endblock %}
-  </head>
-  <body>
-    <header class="navbar navbar-expand-lg navbar-light bg-light">
-      <a href="{% url 'dashboard' %}"
-        ><h1 class="navbar-brand">SOCIAL AUTOMATION</h1></a
-      >
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+
+</head>
+<body class="bg-gray-100">
+
+
+<header class="navbar navbar-expand-lg navbar-light bg-light">
+
+    {% if user.is_authenticated %}
+             <button class="text-white px-4 py-2  top-2 left-2" id="toggleButton"><span class="navbar-toggler-icon"></span></button>
+    {%endif%}
+
+    <a href="{% url 'dashboard' %}"><h1 class="navbar-brand ">SOCIAL AUTOMATION</h1></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
-          {% if user.is_authenticated %}
 
-          <li class="nav-item dropdown">
-            <a
-              class="nav-link dropdown-toggle"
-              href="#"
-              id="navbarDropdownMenuLink"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              <span class="navbar-toggler-icon"></span>
-            </a>
-            <div
-              class="dropdown-menu dropdown-menu-right"
-              aria-labelledby="navbarDropdownMenuLink"
-            >
-              <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
-              <a class="dropdown-item" href="{% url 'upload_file' %}"
-                >Upload File</a
-              >
-              <a class="dropdown-item" href="{% url 'password_change' %}"
-                >Change password</a
-              >
-              <a
-                class="dropdown-item"
-                href="{% url 'socialaccount_connections' %}"
-                >Connections</a
-              >
-               <a class="dropdown-item" href="{% url 'connect_page'%}"
-                >Connection Page</a
-              >
-              <a class="dropdown-item" href="{% url 'my_posts' user.pk%}"
-                >MyPosts</a
-              >
+            {% if user.is_authenticated %}
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'register' %}">SignUp</a>
+                </li>
+            {% endif %}
 
-            </div>
-          </li>
 
-          <!--                                <li class="nav-item">-->
-          <!--                                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>-->
-          <!--                                </li>-->
-          <!--                                <li class="nav-item">-->
-          <!--                                    <a class="nav-link" href="{% url 'upload_file' %}">Upload File</a>-->
-          <!--                                </li>-->
-          <!--                                <li class="nav-item">-->
-          <!--                                    <a class="nav-link" href="{% url 'password_change' %}">Change password</a>-->
-          <!--                                </li>-->
-          {% else %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'login' %}">Login</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'register' %}">SignUp</a>
-          </li>
-          {% endif %}
         </ul>
-      </div>
-    </header>
-
-    {%block bar%} {% if user.is_authenticated %} {{ point_files|json_script:"point_files" }}
-
-    <div class="jumbotron jumbotron-fluid">
-      <div class="container">
-        <h1 class="display-4">Welcome you are online</h1>
-        <p class="lead">
-          This is a modified jumbotron that occupies the entire horizontal space
-          of its parent.
-        </p>
-      </div>
     </div>
-    {%if point_files%}
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">File</th>
-          <th scope="col">Delete</th>
-        </tr>
-      </thead>
-      <tbody>
-        {%for p in point_files%}
-        <tr>
-          <td>{{p.name}}</td>
-          <td>{{p.point_file}}</td>
-          <td>
-            <a href="{% url 'point_delete' p.id %}" class="btn btn-dark"
-              >Delete</a
-            >
-          </td>
-        </tr>
-        <tr>
-          <td colspan="3">
-            <table>
-              <thead>
-                <tr>
-                  <th>Latitude</th>
-                  <th>Longitude</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for l in p.lat_long %}
-                <tr>
-                  <td>{{ l.latitude }}</td>
-                  <td>{{ l.longitude }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-            <div class="map" id="map_{{p.id}}"></div>
-          </td>
-        </tr>
-        {%endfor%}
-      </tbody>
-    </table>
+</header>
 
-    {%endif%} {%endif%} {%endblock%}
-    <div class="container">{% block content %} {% endblock %}</div>
+{%block bar%}
 
-    {%block footer%}
-<!--      <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">-->
-<!--      </fb:login-button>-->
-    {%endblock%}
+{%endblock%}
+<div class="flex flex-col md:flex-row">
+    <!-- Sidebar -->
+    {% if user.is_authenticated %}
 
-    <!-- <a id = "instagramLogin" href="#">Instagram</a> -->
-    <br />
-    <br />
-    <br />
-    <br />
+    <aside class="bg-gray-200 w-1/6 " id="sidebar">
+        <div class="flex h-screen">
 
-    <footer>&copy; 2023 Social Automation . All rights reserved.</footer>
-  </body>
+        <div class="px-2 pt-4 pb-8 border-r ">
+                                <ul class="space-y-2">
 
-  <script>
-<!--         const data = JSON.parse(document.getElementById('point_files').textContent);-->
-<!--         console.log(data);-->
-<!--        for (var i = 0; i < data.length; i++) {-->
-<!--             var pointFile = data[i];-->
-<!--              console.log(pointFile);-->
-<!--              console.log("Point File ID: " + pointFile.id);-->
-<!--              var map = L.map("map_"+pointFile.id.toString()).setView([pointFile.lat_long[0].latitude, pointFile.lat_long[0].longitude], 5);-->
+                                    <li>
+                                        <a href="{% url 'dashboard' %}" class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M575.8 255.5c0 18-15 32.1-32 32.1h-32l.7 160.2c0 2.7-.2 5.4-.5 8.1V472c0 22.1-17.9 40-40 40H456c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1H416 392c-22.1 0-40-17.9-40-40V448 384c0-17.7-14.3-32-32-32H256c-17.7 0-32 14.3-32 32v64 24c0 22.1-17.9 40-40 40H160 128.1c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2H104c-22.1 0-40-17.9-40-40V360c0-.9 0-1.9 .1-2.8V287.6H32c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/></svg>
+                                            <span>Home</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'socialaccount_connections' %}" class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M352 224H305.5c-45 0-81.5 36.5-81.5 81.5c0 22.3 10.3 34.3 19.2 40.5c6.8 4.7 12.8 12 12.8 20.3c0 9.8-8 17.8-17.8 17.8h-2.5c-2.4 0-4.8-.4-7.1-1.4C210.8 374.8 128 333.4 128 240c0-79.5 64.5-144 144-144h80V34.7C352 15.5 367.5 0 386.7 0c8.6 0 16.8 3.2 23.2 8.9L548.1 133.3c7.6 6.8 11.9 16.5 11.9 26.7s-4.3 19.9-11.9 26.7l-139 125.1c-5.9 5.3-13.5 8.2-21.4 8.2H384c-17.7 0-32-14.3-32-32V224zM80 96c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16H400c8.8 0 16-7.2 16-16V384c0-17.7 14.3-32 32-32s32 14.3 32 32v48c0 44.2-35.8 80-80 80H80c-44.2 0-80-35.8-80-80V112C0 67.8 35.8 32 80 32h48c17.7 0 32 14.3 32 32s-14.3 32-32 32H80z"/></svg>
+                                            <span>Connections</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'my_posts' user.pk %}" class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M224 32H64C46.3 32 32 46.3 32 64v64c0 17.7 14.3 32 32 32H441.4c4.2 0 8.3-1.7 11.3-4.7l48-48c6.2-6.2 6.2-16.4 0-22.6l-48-48c-3-3-7.1-4.7-11.3-4.7H288c0-17.7-14.3-32-32-32s-32 14.3-32 32zM480 256c0-17.7-14.3-32-32-32H288V192H224v32H70.6c-4.2 0-8.3 1.7-11.3 4.7l-48 48c-6.2 6.2-6.2 16.4 0 22.6l48 48c3 3 7.1 4.7 11.3 4.7H448c17.7 0 32-14.3 32-32V256zM288 480V384H224v96c0 17.7 14.3 32 32 32s32-14.3 32-32z"/></svg>
+                                            <span>My Posts</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'password_change' %}" class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17v80c0 13.3 10.7 24 24 24h80c13.3 0 24-10.7 24-24V448h40c13.3 0 24-10.7 24-24V384h40c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z"/></svg>
+                                            <span>Change password</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'upload_file' %}" class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+                                            <span>Upload File</span>
+                                        </a>
 
-<!--                // Add the tile layer (you can use a different tile provider)-->
-<!--                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {-->
-<!--                    attribution: '&copy; OpenStreetMap contributors'-->
-<!--                }).addTo(map);-->
+                                    </li>
+                                    <li>
+                                        <a href="{% url 'logout' %}" class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/></svg>
+                                            <span>Logout</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            </div>
 
-<!--                  var latLongList = pointFile.lat_long;-->
-<!--                  console.log(latLongList);-->
-<!--                  for (var j = 0; j < latLongList.length; j++) {-->
-<!--                    var latLong = latLongList[j];-->
-<!--                    var marker = L.marker([latLong.latitude,latLong.longitude]);-->
-<!--                    marker.bindPopup("Latitude: " + latLong.latitude + "<br>Longitude: " + latLong.longitude);-->
+    </aside>
+    {%endif%}
+    <!-- Main Content -->
+    <main class="flex-1">
+        {{ point_files|json_script:"point_files" }}
+{%if point_files%}
 
-<!--        // &lt;!&ndash;            // Add the marker to the map&ndash;&gt;-->
-<!--                    marker.addTo(map);-->
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">File</th>
+        <th scope="col">Delete</th>
+    </tr>
+    </thead>
+    <tbody>
+    {%for p in point_files%}
+    <tr>
+        <td>{{p.name}}</td>
+        <td>{{p.point_file}}</td>
+        <td><a href="{% url 'point_delete' p.id %}" class="btn btn-dark">Delete</a></td>
+    </tr>
+    <tr>
+<!--        <td colspan="3">-->
+<!--            <table>-->
+<!--                <thead>-->
+<!--                <tr>-->
+<!--                    <th>Latitude</th>-->
+<!--                    <th>Longitude</th>-->
+<!--                </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                {% for l in p.lat_long %}-->
+<!--                <tr>-->
+<!--                    <td>{{ l.latitude }}</td>-->
+<!--                    <td>{{ l.longitude }}</td>-->
+<!--                </tr>-->
+<!--                {% endfor %}-->
+<!--                </tbody>-->
+<!--            </table>-->
+            <div class="map" id=map_{{p.id}}></div>
+<!--        </td>-->
+    </tr>
+    {%endfor%}
+    </tbody>
+</table>
 
-<!--                    console.log("Latitude: " + latLong.latitude);-->
-<!--                    console.log("Longitude: " + latLong.longitude);-->
-<!--                  }-->
-<!--            };-->
+{%endif%}
 
-<!--        window.fbAsyncInit = function () {-->
-<!--          FB.init({-->
-<!--            appId: "3154199121547431",-->
-<!--            cookie: true,-->
-<!--            xfbml: true,-->
-<!--            version: "v17.0",-->
-<!--          });-->
 
-<!--          FB.AppEvents.logPageView();-->
+        {% block content %}
+        <!-- Main content goes here -->
+        {%endblock%}
+    </main>
+</div>
 
-<!--          FB.getLoginStatus(function (response) {-->
-<!--            statusChangeCallback(response);-->
-<!--          });-->
+<!--  <fb:login-button-->
+<!--  scope="public_profile,email"-->
+<!--  onlogin="checkLoginState();">-->
+<!--</fb:login-button>-->
+</div>
+<br>
+<br>
+<br>
+<br>
 
-<!--          async function statusChangeCallback(response) {-->
-<!--            if (response.status === "connected") {-->
-<!--              // User is logged in and has authorized your app-->
-<!--              var accessToken = response.authResponse.accessToken;-->
-<!--              console.log("Access Token:", accessToken);-->
-<!--              localStorage.setItem("accessToken", accessToken);-->
+<footer>
+    &copy; 2023 Social Automation . All rights reserved.
 
-<!--                await getpageacesstoken();-->
-<!--               -->
-<!--            } else if (response.status === "not_authorized") {-->
-<!--              // User is logged in to Facebook, but has not authorized your app-->
+</footer>
 
-<!--              console.log("User has not authorized the app.");-->
-<!--            } else {-->
-<!--              // User is not logged in to Facebook-->
-<!--              FB.login(function (response2) {-->
-<!--                console.log(response2);-->
-<!--                // handle the response-->
-<!--              });-->
-<!--              console.log("User is not logged in to Facebook.");-->
-<!--            }-->
-<!--          }-->
+</body>
 
-<!--          function checkLoginState() {-->
-<!--            console.log("Called");-->
-<!--            FB.getLoginStatus(function (response) {-->
-<!--              statusChangeCallback(response);-->
-<!--            });-->
-<!--          }-->
-<!--        };-->
+<script>
+      const data = JSON.parse(document.getElementById('point_files').textContent);
+      console.log(data);
+      for (var i = 0; i < data.length; i++) {
+      var pointFile = data[i];
+      console.log(pointFile);
+      console.log("Point File ID: " + pointFile.id);
+      var map = L.map("map_"+pointFile.id.toString()).setView([pointFile.lat_long[0].latitude, pointFile.lat_long[0].longitude], 5);
 
-<!--        (function (d, s, id) {-->
-<!--          var js,-->
-<!--            fjs = d.getElementsByTagName(s)[0];-->
-<!--          console.log(js);-->
-<!--          console.log(fjs);-->
-<!--          if (d.getElementById(id)) {-->
-<!--            return;-->
-<!--          }-->
-<!--          js = d.createElement(s);-->
-<!--          js.id = id;-->
-<!--          js.src = "https://connect.facebook.net/en_US/sdk.js";-->
-<!--          fjs.parentNode.insertBefore(js, fjs);-->
-<!--        })(document, "script", "facebook-jssdk");-->
+        // Add the tile layer (you can use a different tile provider)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
 
-<!--         -->
+          var latLongList = pointFile.lat_long;
+          console.log(latLongList);
+          for (var j = 0; j < latLongList.length; j++) {
+            var latLong = latLongList[j];
+            var marker = L.marker([latLong.latitude,latLong.longitude]);
+            marker.bindPopup("Latitude: " + latLong.latitude + "<br>Longitude: " + latLong.longitude);
 
-<!--        async function getpageacesstoken(){-->
-<!--          try{-->
+            // Add the marker to the map
+            marker.addTo(map);
 
-<!--            const response = new Promise((resolve,reject)=>{-->
-<!--              $.ajax({-->
-<!--                url:"https://graph.facebook.com/v17.0/me/accounts?fields=access_token,id",-->
-<!--                method:'GET',-->
-<!--                headers: {-->
-<!--                  'Authorization': "Bearer " + localStorage.getItem("accessToken")-->
-<!--                },-->
-<!--                success:function(response){-->
-<!--                  const page_access_token = response?.data?.[0]?.access_token ?? '';-->
-<!--                  const page_id = response?.data?.[0]?.id ?? '';-->
-<!--                  -->
-<!--                  localStorage.setItem("p_accesstoken",page_access_token);-->
-<!--                  localStorage.setItem("page_id",page_id)-->
-<!--                  resolve(response)-->
-<!--                },-->
-<!--                error:function (jqXHR, textStatus, errorThrown) {-->
-<!--                     reject(textStatus);-->
-<!--                 }-->
-<!--  -->
-<!--              });-->
-<!--  -->
-<!--            })-->
-<!--          }-->
-<!--          catch(error){-->
-<!--            console.log(error)-->
-<!--          }-->
 
-<!--        }-->
+            console.log("Latitude: " + latLong.latitude);
+            console.log("Longitude: " + latLong.longitude);
+          }
+    };
 
-<!--        {% block custom_js %}-->
-<!--        {% endblock %}-->
 
-  </script>
+<!--window.fbAsyncInit = function() {-->
+<!--  FB.init({-->
+<!--    appId: '283757437433759',-->
+<!--    cookie: true,-->
+<!--    xfbml: true,-->
+<!--    version: 'v17.0'-->
+<!--  });-->
+
+<!--  FB.AppEvents.logPageView();-->
+
+<!--  FB.getLoginStatus(function(response) {-->
+<!--    statusChangeCallback(response);-->
+<!--  });-->
+
+<!--  function statusChangeCallback(response) {-->
+<!--    if (response.status === 'connected') {-->
+<!--      // User is logged in and has authorized your app-->
+<!--      var accessToken = response.authResponse.accessToken;-->
+<!--      console.log('Access Token:', accessToken);-->
+<!--      localStorage.setItem('accessToken', accessToken);-->
+<!--    } else if (response.status === 'not_authorized') {-->
+<!--      // User is logged in to Facebook, but has not authorized your app-->
+
+<!--      console.log('User has not authorized the app.');-->
+<!--    } else {-->
+<!--      // User is not logged in to Facebook-->
+<!--      FB.login(function(response2){-->
+<!--        console.log(response2);-->
+<!--         // handle the response-->
+<!--        });-->
+<!--      console.log('User is not logged in to Facebook.');-->
+<!--    }-->
+<!--  }-->
+
+<!--  function checkLoginState() {-->
+<!--    FB.getLoginStatus(function(response) {-->
+<!--      statusChangeCallback(response);-->
+<!--    });-->
+<!--  }-->
+<!--};-->
+
+<!--(function(d, s, id) {-->
+<!--  var js, fjs = d.getElementsByTagName(s)[0];-->
+<!--  if (d.getElementById(id)) { return; }-->
+<!--  js = d.createElement(s); js.id = id;-->
+<!--  js.src = "https://connect.facebook.net/en_US/sdk.js";-->
+<!--  fjs.parentNode.insertBefore(js, fjs);-->
+<!--}(document, 'script', 'facebook-jssdk'));-->
+
+const toggleButton = document.getElementById('toggleButton');
+const sidebar = document.getElementById('sidebar');
+
+toggleButton.addEventListener('click', () => {
+  sidebar.classList.toggle('hidden');
+});
+
+
+
+
+</script>
+
 </html>

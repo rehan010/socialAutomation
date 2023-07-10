@@ -29,5 +29,50 @@ footer {
             height: 400px;
      }
 
+    .socialaccount-providers {
+      display: flex;
+    }
+
+    .socialaccount-provider {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      margin-right: 10px;
+      padding: 5px;
+      border-radius: 5px;
+      /*background-color: #f2f2f2;*/
+      color: #333;
+    }
+
+    /*.socialaccount-provider:hover {
+      background-color: #ddd;
+    }*/
+
+    .provider-icon {
+      /* Style the icon here, such as setting its size and color */
+      margin-right: 5px;
+    }
+
+    .provider-name {
+      font-weight: bold;
+    }
+    .hidden {
+      display: none;
+    }
+    .tab-link {
+      min-width: 220px; /* Adjust the width as needed */
+      border-radius: 0;
+    }
+
+    .tabs {
+      border-radius: 0.5rem;
+    }
+
+    .tab-content {
+      border-bottom-left-radius: 8.5rem;
+      border-bottom-right-radius: 8.5rem;
+    }
+
+
 
 

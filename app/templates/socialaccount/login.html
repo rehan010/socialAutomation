@@ -4,18 +4,23 @@
 {% block head_title %}{% trans "Sign In" %}{% endblock %}
 
 {% block content %}
+<div class="flex items-center justify-center " style="height: 80vh;">
+    <div class="max-w-2xl w-full bg-white p-10 rounded-lg shadow-md">
+
 {% if process == "connect" %}
-<h1>{% blocktrans with provider.name as provider %}Connect {{ provider }}{% endblocktrans %}</h1>
+<h1 class="text-2xl font-semibold mb-6">{% blocktrans with provider.name as provider %}Connect {{ provider }}{% endblocktrans %}</h1>
 
-<p>{% blocktrans with provider.name as provider %}You are about to connect a new third party account from {{ provider }}.{% endblocktrans %}</p>
+<p class="text-sm text-gray-600">{% blocktrans with provider.name as provider %}You are about to connect a new third party account from {{ provider }}.{% endblocktrans %}</p>
 {% else %}
-<h1>{% blocktrans with provider.name as provider %}Sign In Via {{ provider }}{% endblocktrans %}</h1>
+<h1 class="text-2xl font-semibold mb-6">{% blocktrans with provider.name as provider %}Sign In Via {{ provider }}{% endblocktrans %}</h1>
 
-<p>{% blocktrans with provider.name as provider %}You are about to sign in using a third party account from {{ provider }}.{% endblocktrans %}</p>
+<p class="text-sm text-gray-600">{% blocktrans with provider.name as provider %}You are about to sign in using a third party account from {{ provider }}.{% endblocktrans %}</p>
 {% endif %}
-
+<br>
 <form method="post">
   {% csrf_token %}
-  <button type="submit">{% trans "Continue" %}</button>
+  <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">{% trans "Continue" %}</button>
 </form>
+    </div>
+</div>
 {% endblock %}

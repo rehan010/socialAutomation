@@ -1,19 +1,157 @@
 {%extends 'registration/base.html'%}
 
 {%block bar%}
-        <div class="jumbotron jumbotron-fluid">
-              <div class="container">
-                <h1 class="display-4">Upload File</h1>
-                <p class="lead">This is a modified jumbotron that occupies the entire horizontal space of its parent.</p>
-              </div>
-        </div>
+<!--        <div class="jumbotron jumbotron-fluid">-->
+<!--              <div class="container">-->
+<!--                <h1 class="display-4">Upload File</h1>-->
+<!--                <p class="lead">This is a modified jumbotron that occupies the entire horizontal space of its parent.</p>-->
+<!--              </div>-->
+<!--        </div>-->
 {%endblock%}
 
 {% block content %}
-<a class="dropdown-item" href="{% url 'create_post' %}">Create Post</a>
+<div class="container mx-auto">
 
-{%for p in posts%}
-{{p.post}}
-{%endfor%}
+<!--<a class="dropdown-item" href="{% url 'create_post' %}">Create Post</a>-->
 
+<!--{%for p in posts%}-->
+<!--{{p.user}}-->
+<!--{%endfor%}-->
+
+<div class="tabs">
+        <div class="flex justify-between mb-4">
+      <a class="dropdown-item flex items-center bg-blue-500 text-white px-4 py-2 rounded font-semibold" href="{% url 'create_post' %}">
+
+        Create Post
+      </a>
+    </div>
+
+
+
+  <ul class="flex border-b">
+    <li class="-mb-px mr-1">
+      <a class="tab-link  inline-block border-l border-t border-r rounded-t py-2 px-6 bg-blue-500 text-white font-semibold text-center" data-tab="tab1" href="#">Facebook</a>
+    </li>
+    <li class="mr-1">
+      <a class="tab-link bg-white inline-block py-2 px-6 text-gray-500 hover:text-blue-500 font-semibold text-center" data-tab="tab2" href="#">Linkiden</a>
+    </li>
+    <li class="mr-1">
+      <a class="tab-link bg-white inline-block py-2 px-6 text-gray-500 hover:text-blue-500 font-semibold text-center" data-tab="tab3" href="#">Instagram</a>
+    </li>
+    <li class="mr-1">
+      <a class="tab-link bg-white inline-block py-2 px-6 text-gray-500 hover:text-blue-500 font-semibold text-center" data-tab="tab4" href="#">Google</a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div id="tab1" class="tab">
+      <table class="min-w-full">
+        <thead>
+          <tr>
+            <th class="py-2 px-4">Column 1</th>
+            <th class="py-2 px-4">Column 2</th>
+            <th class="py-2 px-4">Column 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="py-2 px-4">Data 1</td>
+            <td class="py-2 px-4">Data 2</td>
+            <td class="py-2 px-4">Data 3</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="tab2" class="tab hidden">
+        <table class="min-w-full">
+        <thead>
+          <tr>
+            <th class="py-2 px-4">Column 4</th>
+            <th class="py-2 px-4">Column 5</th>
+            <th class="py-2 px-4">Column 6</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="py-2 px-4">Data 1</td>
+            <td class="py-2 px-4">Data 2</td>
+            <td class="py-2 px-4">Data 3</td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- Content for Tab 2 goes here -->
+    </div>
+
+    <div id="tab3" class="tab hidden">
+        <table class="min-w-full">
+        <thead>
+          <tr>
+            <th class="py-2 px-4">Column 7</th>
+            <th class="py-2 px-4">Column 8</th>
+            <th class="py-2 px-4">Column 9</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="py-2 px-4">Data 1</td>
+            <td class="py-2 px-4">Data 2</td>
+            <td class="py-2 px-4">Data 3</td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- Content for Tab 3 goes here -->
+    </div>
+
+    <div id="tab4" class="tab hidden">
+        <table class="min-w-full">
+        <thead>
+          <tr>
+            <th class="py-2 px-4">Column 11</th>
+            <th class="py-2 px-4">Column 12</th>
+            <th class="py-2 px-4">Column 13</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="py-2 px-4">Data 1</td>
+            <td class="py-2 px-4">Data 2</td>
+            <td class="py-2 px-4">Data 3</td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- Content for Tab 3 goes here -->
+    </div>
+  </div>
+</div>
+</div>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+  const tabLinks = document.querySelectorAll(".tab-link");
+  const tabs = document.querySelectorAll(".tab");
+
+  tabLinks.forEach(function(tabLink) {
+    tabLink.addEventListener("click", function(e) {
+      e.preventDefault();
+
+      const targetTab = document.querySelector("#" + this.getAttribute("data-tab"));
+
+      tabs.forEach(function(tab) {
+        tab.classList.add("hidden");
+      });
+      tabLinks.forEach(function(link) {
+        link.classList.remove("bg-blue-500", "text-white");
+        link.classList.add("bg-white", "text-blue-500");
+      });
+
+      targetTab.classList.remove("hidden");
+      this.classList.remove("bg-white", "text-blue-500");
+      this.classList.add("bg-blue-500", "text-white");
+
+    });
+  });
+});
+
+</script>
 {% endblock %}

@@ -1,9 +1,10 @@
 {% extends 'registration/base.html' %}  <!-- Extend the base template or use your own base template -->
 
 {% block content %}
-    <div class="container text-center" >
-        <h1>Confirm Deletion</h1>
-        <p>Are you sure you want to delete this document?</p>
+<div class="flex items-center justify-center " style="height: 80vh;">
+    <div class="max-w-2xl w-full bg-white p-10 rounded-lg shadow-md">
+        <h2 text-2xl font-semibold mb-6>Confirm Deletion</h2>
+        <p class="text-sm text-gray-600">Are you sure you want to delete this document?</p>
 
         <form method="post">
           {% csrf_token %}
@@ -11,4 +12,5 @@
           <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
+</div>
 {% endblock %}

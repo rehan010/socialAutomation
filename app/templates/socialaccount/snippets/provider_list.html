@@ -1,0 +1,36 @@
+{% load socialaccount %}
+
+{% get_providers as socialaccount_providers %}
+
+<div class="socialaccount-providers ">
+  {% for provider in socialaccount_providers %}
+    {% if provider.id == "openid" %}
+      {% for brand in provider.get_brands %}
+        <a title="{{ brand.name }}"
+           class="socialaccount-provider {{ provider.id }} {{ brand.id }}"
+           href="{% provider_login_url provider.id openid=brand.openid_url process=process %}">
+          <span class="provider-icon">
+            <!-- Insert the icon markup here, such as an icon font or inline SVG -->
+          </span>
+          <span class="provider-name">{{ brand.name }}</span>
+        </a>
+      {% endfor %}
+    {% else %}
+      <a title="{{ provider.name }}" class=" socialaccount-provider {{ provider.id }}"
+         href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
+        <span class="provider-icon flex justify-center items-center mr-2 border border-black rounded p-2">
+        {%if provider.name == 'Facebook'%}
+          <i class="fa fa-facebook">          </i>
+        {%elif provider.name == 'Instagram'%}
+          <i class="fa fa-instagram">         </i>
+        {%elif provider.name == 'LinkedIn'%}
+          <i class="fa fa-linkedin">          </i>
+        {%elif provider.name == 'Google'%}
+          <i class="fa fa-google">       </i>
+        {%endif%}
+        </span>
+<!--        <span class="provider-name">{{ provider.name }}</span>-->
+      </a>
+    {% endif %}
+  {% endfor %}
+</div>

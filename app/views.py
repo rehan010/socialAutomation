@@ -14,6 +14,84 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.contrib.auth.models import User
 from allauth.socialaccount.models import EmailAddress,SocialAccount,SocialToken
 
+from google.oauth2 import id_token
+from google.auth.transport import requests as auth_requests
+
+from django.shortcuts import render
+from allauth.socialaccount.models import SocialToken
+def get_id_token(access_token):
+    # Specify the URL for the Google Tokeninfo API
+    tokeninfo_url = 'https://www.googleapis.com/oauth2/v3/tokeninfo'
+
+    # Parameters for the API request
+    params = {'access_token': access_token}
+
+    # Send a GET request to the Tokeninfo API
+    response = requests.get(tokeninfo_url, params=params)
+
+    if response.status_code == 200:
+        token_info = response.json()
+        id_token = token_info.get('sub')
+        return id_token
+    else:
+        # Token verification failed
+        print(f"Token verification failed: {response.text}")
+        return None
+
+
+def verify_google_oauth_token(token):
+    try:
+        # Specify the CLIENT_ID of your Google OAuth application
+        CLIENT_ID = '33836610262-gvtpcrjpbdefm0td6e0g7e4c76gut9s8.apps.googleusercontent.com'
+
+        # Create a request object for token verification
+        request = auth_requests.Request()
+
+        # Verify the token using the CLIENT_ID and the request object
+        id_info = id_token.verify_oauth2_token(token, request, CLIENT_ID)
+
+        # If verification is successful, the id_info dictionary will contain
+        # information about the token, such as user's email, name, etc.
+        return id_info
+
+    except ValueError as e:
+        # Token verification failed
+        print(f"Token verification failed: {str(e)}")
+        return None
+
+def my_business_view(request):
+    # Retrieve the user's access token
+    social_token = SocialToken.objects.get(account__user=request.user, account__provider='google')
+    access_token = social_token.token
+
+    # Set up the API endpoint and headers
+    api_url = 'https://mybusiness.googleapis.com/v4/accounts/{account_id}/locations'
+    headers = {'Authorization': f'Bearer {access_token}'}
+
+    # Verify the access token
+    request = auth_requests.Request()
+    try:
+        id_token_info = get_id_token(access_token)
+        verified_info = verify_google_oauth_token(id_token_info)
+        google_id = verified_info['sub']
+
+    except ValueError as e:
+        error_message = f"Error: Invalid access token - {str(e)}"
+        return render(request, 'error.html', {'error_message': error_message})
+
+    # Replace {account_id} in the API URL with the appropriate account ID
+    api_url = api_url.format(account_id=google_id)
+
+    # Make the API request
+    response = requests.get(api_url, headers=headers)
+    if response.status_code == 200:
+        locations_data = response.json()
+        # Process the retrieved data as needed
+        # ...
+        return render(request, 'my_business.html', {'locations': locations_data})
+    else:
+        error_message = f"Error: {response.status_code} - {response.text}"
+        return render(request, 'error.html', {'error_message': error_message})
 
 class DashboardView(TemplateView):
     template_name = "registration/base.html"
@@ -30,6 +108,7 @@ class DashboardView(TemplateView):
                 # Convert Decimal values to float
                 _['lat_long'] = [{'latitude': float(lat['latitude']), 'longitude': float(lat['longitude'])} for lat
                                     in lat_long_list]
+            # my_business_view(self.request)
 
         return context
 
