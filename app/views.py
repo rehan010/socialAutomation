@@ -286,7 +286,6 @@ class PostCreateView(CreateView):
 
         return redirect(reverse("my_posts",kwargs={'pk': self.request.user.id}))
     def form_valid(self, form):
-        # print(self.request.session.get('context'))
         requestdata = dict(self.request.POST)
 
         # Remove csrf token from dict

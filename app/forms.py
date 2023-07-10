@@ -54,3 +54,11 @@ class PostModelForm(forms.ModelForm):
     class Meta:
         model = PostModel
         fields = ('post','facebook','instagram','linkdien','file')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['post'].widget.attrs.update(
+            {
+                'class': 'description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none w-full',
+                'placeholder': 'Describe Everything about this post'
+             })
