@@ -16,6 +16,7 @@ from allauth.socialaccount.models import EmailAddress,SocialAccount,SocialToken
 
 from google.oauth2 import id_token
 from google.auth.transport import requests as auth_requests
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.shortcuts import render
 from allauth.socialaccount.models import SocialToken
@@ -93,8 +94,15 @@ def my_business_view(request):
         error_message = f"Error: {response.status_code} - {response.text}"
         return render(request, 'error.html', {'error_message': error_message})
 
-class DashboardView(TemplateView):
+class BaseView(TemplateView):
     template_name = "registration/base.html"
+
+class ProfileView(LoginRequiredMixin,TemplateView):
+    template_name = "registration/profile.html"
+
+
+class DashboardView(LoginRequiredMixin,TemplateView):
+    template_name = "registration/dashboard.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -122,7 +130,7 @@ class PasswordResetDoneView(auth_views.PasswordResetDoneView):
     success_url = reverse_lazy("password_change_done")
 
 
-class ConnectPageView(CreateView):
+class ConnectPageView(LoginRequiredMixin,CreateView):
     model = SharePage
     form_class = SharePageForm
     template_name = 'social/connection.html'
@@ -186,11 +194,11 @@ class ConnectPageView(CreateView):
 
 
 
-class PasswordChangeDoneView(auth_views.PasswordChangeDoneView):
+class PasswordChangeDoneView(LoginRequiredMixin,auth_views.PasswordChangeDoneView):
     template_name = "registration/my_password_change_done.html"
 
 
-class PasswordChangeView(auth_views.PasswordChangeView):
+class PasswordChangeView(LoginRequiredMixin,auth_views.PasswordChangeView):
     template_name = "registration/my_password_change_form.html"
 
 
@@ -204,7 +212,7 @@ class RegisterView(FormView):
         return redirect(reverse("dashboard"))
 
 
-class PointFileCreateView(CreateView):
+class PointFileCreateView(LoginRequiredMixin,CreateView):
     model = PointFileModel
     form_class = PointFileModelForm
     template_name = 'social/create_point_file.html'
@@ -225,7 +233,7 @@ class PointFileCreateView(CreateView):
         return redirect(reverse("dashboard"))
 
 
-class PointFileDeleteView(DeleteView):
+class PointFileDeleteView(LoginRequiredMixin,DeleteView):
     model = PointFileModel
     success_url = reverse_lazy('dashboard')
     template_name = 'social/file_confirm_delete.html'
@@ -399,7 +407,7 @@ class PostCreateView(CreateView):
         return redirect(reverse("my_posts",kwargs={'pk': self.request.user.id}))
         # return None
 
-class PostsGetView(TemplateView):
+class PostsGetView(LoginRequiredMixin,TemplateView):
     template_name = 'social/my_posts.html'
 
     def get_context_data(self, **kwargs):
@@ -407,6 +415,8 @@ class PostsGetView(TemplateView):
         context['posts']=PostModel.objects.filter(user_id=self.request.user.id)
         return context
 
+class PostsDetailView(LoginRequiredMixin,TemplateView):
+    template_name = 'social/post_detail.html'
 
 
 class InstagramRedirectUri(TemplateView):

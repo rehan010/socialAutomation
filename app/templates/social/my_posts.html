@@ -1,5 +1,5 @@
 {%extends 'registration/base.html'%}
-
+{%load static%}
 {%block bar%}
 <!--        <div class="jumbotron jumbotron-fluid">-->
 <!--              <div class="container">-->
@@ -19,107 +19,306 @@
 <!--{%endfor%}-->
 
 <div class="tabs">
-        <div class="flex justify-between mb-4">
-      <a class="dropdown-item flex items-center bg-blue-500 text-white px-4 py-2 rounded font-semibold" href="{% url 'create_post' %}">
-
-        Create Post
+    <br>
+    <div class="flex justify-end">
+      <a href="{% url 'create_post' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+        Create post
       </a>
     </div>
+    <br>
+    <hr>
+    <br>
+
+
+<!--    <ul class="grid grid-flow-col text-center text-gray-500 bg-gray-100 rounded-full p-1 w-auto">-->
+<!--        <li><a href="#" data-tab="tab1" class="flex justify-center bg-white rounded-full shadow text-indigo-900 py-4 px-6">Facebook</a></li>-->
+<!--        <li><a href="#" data-tab="tab2" class="flex justify-center py-4 px-6">Linkedin</a></li>-->
+<!--        <li><a href="#" data-tab="tab3" class="flex justify-center py-4 px-6">Instagram</a></li>-->
+<!--        <li><a href="#" data-tab="tab4" class="flex justify-center py-4 px-6">Google</a></li>-->
+<!--    </ul>-->
+
+<ul class="flex grid grid-flow-col justify-center space-x-4">
+  <li><a href="#" data-tab="tab1" class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2 bg-blue-100">Facebook</a></li>
+  <li><a href="#" data-tab="tab2" class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200  px-4 py-2">Linkedin</a></li>
+  <li><a href="#" data-tab="tab3" class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200  px-4 py-2">Instagram</a></li>
+  <li><a href="#" data-tab="tab4" class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200  px-4 py-2">Google</a></li>
+</ul>
 
 
 
-  <ul class="flex border-b">
-    <li class="-mb-px mr-1">
-      <a class="tab-link  inline-block border-l border-t border-r rounded-t py-2 px-6 bg-blue-500 text-white font-semibold text-center" data-tab="tab1" href="#">Facebook</a>
-    </li>
-    <li class="mr-1">
-      <a class="tab-link bg-white inline-block py-2 px-6 text-gray-500 hover:text-blue-500 font-semibold text-center" data-tab="tab2" href="#">Linkiden</a>
-    </li>
-    <li class="mr-1">
-      <a class="tab-link bg-white inline-block py-2 px-6 text-gray-500 hover:text-blue-500 font-semibold text-center" data-tab="tab3" href="#">Instagram</a>
-    </li>
-    <li class="mr-1">
-      <a class="tab-link bg-white inline-block py-2 px-6 text-gray-500 hover:text-blue-500 font-semibold text-center" data-tab="tab4" href="#">Google</a>
-    </li>
-  </ul>
+    <br>
+    <hr>
+    <br>
+
 
   <div class="tab-content">
     <div id="tab1" class="tab">
-      <table class="min-w-full">
-        <thead>
-          <tr>
-            <th class="py-2 px-4">Column 1</th>
-            <th class="py-2 px-4">Column 2</th>
-            <th class="py-2 px-4">Column 3</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="py-2 px-4">Data 1</td>
-            <td class="py-2 px-4">Data 2</td>
-            <td class="py-2 px-4">Data 3</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="flex-auto p-6 px-0 pb-2">
+                <div class="overflow-x-auto">
+                  <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                    <thead class="align-bottom">
+                      <tr>
+                        <th class="px-6 py-3 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Post</th>
+                        <th class="px-6 py-3 pl-2 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Images</th>
+                        <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Status</th>
+<!--                        <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Details</th>-->
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                          <div class="flex px-2 py-1">
+                            <div>
+                              <img src="{%static 'assets/img/small-logos/logo-xd.svg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="xd" />
+                            </div>
+                            <div class="flex flex-col justify-center">
+                              <a href="{%url 'my_detail_posts' user.pk%}">
+                              <h6 class="mb-0 text-sm leading-normal">My First Post on FB</h6>
+                                </a>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                          <div class="mt-2 avatar-group">
+
+                            <div data-target="tooltip" class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
+                              Alexander Smith
+                              <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
+                            </div>
+                            <a href="javascript:;" class="relative z-20 inline-flex items-center justify-center w-6 h-6 -ml-4 text-xs text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out hover:z-30" data-target="tooltip_trigger" data-placement="bottom">
+                              <img src="{% static 'assets/img/team-4.jpg'%}" class="w-full rounded-full" alt="team4" />
+                            </a>
+                            <div data-target="tooltip" class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
+                              Jessica Doe
+                              <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                          <span class="bg-gradient-to-tl from-green-600 to-lime-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Published</span>
+
+                        </td>
+<!--                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">-->
+<!--                          <div class="w-1/4 mx-auto">-->
+<!--                            <div>-->
+<!--                              <div>-->
+<!--                                    <a href="{%url 'my_detail_posts' user.pk%}" class="text-xs font-semibold leading-tight text-slate-400"> detail </a>-->
+<!--                              </div>-->
+<!--                            </div>-->
+<!--&lt;!&ndash;                            <div class="text-xs h-0.75 w-30 m-0 flex overflow-visible rounded-lg bg-gray-200">&ndash;&gt;-->
+<!--&lt;!&ndash;                              <div class="duration-600 ease-soft bg-gradient-to-tl from-blue-600 to-cyan-400 -mt-0.38 -ml-px flex h-1.5 w-3/5 flex-col justify-center overflow-hidden whitespace-nowrap rounded bg-fuchsia-500 text-center text-white transition-all" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </div>&ndash;&gt;-->
+<!--                          </div>-->
+<!--                        </td>-->
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
     </div>
 
     <div id="tab2" class="tab hidden">
-        <table class="min-w-full">
-        <thead>
-          <tr>
-            <th class="py-2 px-4">Column 4</th>
-            <th class="py-2 px-4">Column 5</th>
-            <th class="py-2 px-4">Column 6</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="py-2 px-4">Data 1</td>
-            <td class="py-2 px-4">Data 2</td>
-            <td class="py-2 px-4">Data 3</td>
-          </tr>
-        </tbody>
-      </table>
+
+      <div class="flex-auto p-6 px-0 pb-2">
+                <div class="overflow-x-auto">
+                  <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                    <thead class="align-bottom">
+                      <tr>
+                        <th class="px-6 py-3 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Post</th>
+                        <th class="px-6 py-3 pl-2 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Images</th>
+                        <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Status</th>
+<!--                        <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Details</th>-->
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                          <div class="flex px-2 py-1">
+                            <div>
+                              <img src="{%static 'assets/img/small-logos/logo-xd.svg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="xd" />
+                            </div>
+                            <div class="flex flex-col justify-center">
+                              <a href="{%url 'my_detail_posts' user.pk%}">
+                              <h6 class="mb-0 text-sm leading-normal">My First Post on linkedin</h6>
+                              </a>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                          <div class="mt-2 avatar-group">
+
+                            <div data-target="tooltip" class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
+                              Alexander Smith
+                              <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
+                            </div>
+                            <a href="javascript:;" class="relative z-20 inline-flex items-center justify-center w-6 h-6 -ml-4 text-xs text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out hover:z-30" data-target="tooltip_trigger" data-placement="bottom">
+                              <img src="{% static 'assets/img/team-4.jpg'%}" class="w-full rounded-full" alt="team4" />
+                            </a>
+                            <div data-target="tooltip" class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
+                              Jessica Doe
+                              <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                          <span class="bg-gradient-to-tl from-purple-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Scheduled</span>
+
+                        </td>
+<!--                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">-->
+<!--                          <div class="w-1/4 mx-auto">-->
+<!--                            <div>-->
+<!--                              <div>-->
+<!--                                    <a href="{%url 'my_detail_posts' user.pk%}" class="text-xs font-semibold leading-tight text-slate-400"> detail </a>-->
+<!--                              </div>-->
+<!--                            </div>-->
+<!--&lt;!&ndash;                            <div class="text-xs h-0.75 w-30 m-0 flex overflow-visible rounded-lg bg-gray-200">&ndash;&gt;-->
+<!--&lt;!&ndash;                              <div class="duration-600 ease-soft bg-gradient-to-tl from-blue-600 to-cyan-400 -mt-0.38 -ml-px flex h-1.5 w-3/5 flex-col justify-center overflow-hidden whitespace-nowrap rounded bg-fuchsia-500 text-center text-white transition-all" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </div>&ndash;&gt;-->
+<!--                          </div>-->
+<!--                        </td>-->
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
       <!-- Content for Tab 2 goes here -->
     </div>
 
     <div id="tab3" class="tab hidden">
-        <table class="min-w-full">
-        <thead>
-          <tr>
-            <th class="py-2 px-4">Column 7</th>
-            <th class="py-2 px-4">Column 8</th>
-            <th class="py-2 px-4">Column 9</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="py-2 px-4">Data 1</td>
-            <td class="py-2 px-4">Data 2</td>
-            <td class="py-2 px-4">Data 3</td>
-          </tr>
-        </tbody>
-      </table>
+
+      <div class="flex-auto p-6 px-0 pb-2">
+                <div class="overflow-x-auto">
+                  <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                    <thead class="align-bottom">
+                      <tr>
+                        <th class="px-6 py-3 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Post</th>
+                        <th class="px-6 py-3 pl-2 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Images</th>
+                        <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Status</th>
+<!--                        <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Details</th>-->
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                          <div class="flex px-2 py-1">
+                            <div>
+                              <img src="{%static 'assets/img/small-logos/logo-xd.svg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="xd" />
+                            </div>
+                            <div class="flex flex-col justify-center">
+                              <a href="{%url 'my_detail_posts' user.pk%}">
+                              <h6 class="mb-0 text-sm leading-normal">My First Post on instagram</h6>
+                              </a>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                          <div class="mt-2 avatar-group">
+
+                            <div data-target="tooltip" class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
+                              Alexander Smith
+                              <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
+                            </div>
+                            <a href="javascript:;" class="relative z-20 inline-flex items-center justify-center w-6 h-6 -ml-4 text-xs text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out hover:z-30" data-target="tooltip_trigger" data-placement="bottom">
+                              <img src="{% static 'assets/img/team-4.jpg'%}" class="w-full rounded-full" alt="team4" />
+                            </a>
+                            <div data-target="tooltip" class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
+                              Jessica Doe
+                              <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                          <span class="bg-gradient-to-tl from-green-600 to-lime-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Published</span>
+
+                        </td>
+<!--                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">-->
+<!--                          <div class="w-1/4 mx-auto">-->
+<!--                            <div>-->
+<!--                              <div>-->
+<!--                                    <a href="{%url 'my_detail_posts' user.pk%}" class="text-xs font-semibold leading-tight text-slate-400"> detail </a>-->
+<!--                              </div>-->
+<!--                            </div>-->
+<!--&lt;!&ndash;                            <div class="text-xs h-0.75 w-30 m-0 flex overflow-visible rounded-lg bg-gray-200">&ndash;&gt;-->
+<!--&lt;!&ndash;                              <div class="duration-600 ease-soft bg-gradient-to-tl from-blue-600 to-cyan-400 -mt-0.38 -ml-px flex h-1.5 w-3/5 flex-col justify-center overflow-hidden whitespace-nowrap rounded bg-fuchsia-500 text-center text-white transition-all" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </div>&ndash;&gt;-->
+<!--                          </div>-->
+<!--                        </td>-->
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
       <!-- Content for Tab 3 goes here -->
     </div>
 
     <div id="tab4" class="tab hidden">
-        <table class="min-w-full">
-        <thead>
-          <tr>
-            <th class="py-2 px-4">Column 11</th>
-            <th class="py-2 px-4">Column 12</th>
-            <th class="py-2 px-4">Column 13</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="py-2 px-4">Data 1</td>
-            <td class="py-2 px-4">Data 2</td>
-            <td class="py-2 px-4">Data 3</td>
-          </tr>
-        </tbody>
-      </table>
+
+      <div class="flex-auto p-6 px-0 pb-2">
+                <div class="overflow-x-auto">
+                  <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                    <thead class="align-bottom">
+                      <tr>
+                        <th class="px-6 py-3 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Post</th>
+                        <th class="px-6 py-3 pl-2 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Images</th>
+                        <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Status</th>
+<!--                        <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Details</th>-->
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                          <div class="flex px-2 py-1">
+                            <div>
+                              <img src="{%static 'assets/img/small-logos/logo-xd.svg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="xd" />
+                            </div>
+                            <div class="flex flex-col justify-center">
+                              <a href="{%url 'my_detail_posts' user.pk%}">
+                              <h6 class="mb-0 text-sm leading-normal">My First Post on google</h6>
+                              </a>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                          <div class="mt-2 avatar-group">
+
+                            <div data-target="tooltip" class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
+                              Alexander Smith
+                              <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
+                            </div>
+                            <a href="javascript:;" class="relative z-20 inline-flex items-center justify-center w-6 h-6 -ml-4 text-xs text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out hover:z-30" data-target="tooltip_trigger" data-placement="bottom">
+                              <img src="{% static 'assets/img/team-4.jpg'%}" class="w-full rounded-full" alt="team4" />
+                            </a>
+                            <div data-target="tooltip" class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
+                              Jessica Doe
+                              <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+<!--                          <span class="bg-gradient-to-tl from-green-600 to-lime-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Completed</span>-->
+                          <span class="bg-gradient-to-tl from-slate-600 to-slate-300 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Draft</span>
+
+
+                        </td>
+<!--                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">-->
+<!--                          <div class="w-1/4 mx-auto">-->
+<!--                            <div>-->
+<!--                              <div>-->
+<!--                                    <a href="{%url 'my_detail_posts' user.pk%}" class="text-xs font-semibold leading-tight text-slate-400"> detail </a>-->
+<!--                              </div>-->
+<!--                            </div>-->
+<!--&lt;!&ndash;                            <div class="text-xs h-0.75 w-30 m-0 flex overflow-visible rounded-lg bg-gray-200">&ndash;&gt;-->
+<!--&lt;!&ndash;                              <div class="duration-600 ease-soft bg-gradient-to-tl from-blue-600 to-cyan-400 -mt-0.38 -ml-px flex h-1.5 w-3/5 flex-col justify-center overflow-hidden whitespace-nowrap rounded bg-fuchsia-500 text-center text-white transition-all" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </div>&ndash;&gt;-->
+<!--                          </div>-->
+<!--                        </td>-->
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
       <!-- Content for Tab 3 goes here -->
     </div>
   </div>
@@ -127,8 +326,9 @@
 </div>
 <script>
 
-    document.addEventListener("DOMContentLoaded", function() {
-  const tabLinks = document.querySelectorAll(".tab-link");
+   document.addEventListener("DOMContentLoaded", function() {
+<!--  const tabLinks = document.querySelectorAll(".flex.justify-center.py-4");-->
+  const tabLinks = document.querySelectorAll(".text-gray-500.font-medium.py-2");
   const tabs = document.querySelectorAll(".tab");
 
   tabLinks.forEach(function(tabLink) {
@@ -141,14 +341,13 @@
         tab.classList.add("hidden");
       });
       tabLinks.forEach(function(link) {
-        link.classList.remove("bg-blue-500", "text-white");
-        link.classList.add("bg-white", "text-blue-500");
+<!--        link.classList.remove("bg-blue-500", "text-white");-->
+        link.classList.remove("bg-blue-100","rounded-full","shadow","text-indigo-900");
       });
 
       targetTab.classList.remove("hidden");
-      this.classList.remove("bg-white", "text-blue-500");
-      this.classList.add("bg-blue-500", "text-white");
-
+<!--      this.classList.remove("bg-white", "text-blue-500");-->
+      this.classList.add("bg-blue-100","rounded-full","shadow","text-indigo-900");
     });
   });
 });

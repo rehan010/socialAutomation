@@ -72,7 +72,7 @@ CSRF_TRUSTED_ORIGINS=['https://c681-72-255-15-110.ngrok-free.app']
 # CORS_URLS_REGEX = r'^/accounts/register/.*$'
 
 LOGIN_REDIRECT_URL = "dashboard"
-LOGOUT_REDIRECT_URL = "dashboard"
+LOGOUT_REDIRECT_URL = "base"
 
 
 ROOT_URLCONF = 'Automatation.urls'

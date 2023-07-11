@@ -14,8 +14,10 @@ urlpatterns = [
     path('accounts/reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(),
          name='password_reset_confirm'),
     path('accounts/reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    path('', DashboardView.as_view(), name="dashboard"),
+    path('', BaseView.as_view(), name="base"),
+    path('dashboard', DashboardView.as_view(), name="dashboard"),
     path('connect/page',ConnectPageView.as_view(),name='connect_page'),
+    path('profile/',ProfileView.as_view(),name='my_profile'),
 
 
     path("facebook/",FacebookRedirectUri.as_view(),name="facebook_redirect"),
@@ -26,6 +28,7 @@ urlpatterns = [
     path('upload/<int:pk>/delete/', PointFileDeleteView.as_view(), name='point_delete'),
     path('create/post/', PostCreateView.as_view(), name='create_post'),
     path('posts/<int:pk>', PostsGetView.as_view(), name='my_posts'),
+    path('posts/detail/<int:pk>', PostsDetailView.as_view(), name='my_detail_posts'),
 
 #     REST APIS
 
