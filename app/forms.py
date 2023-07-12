@@ -43,7 +43,7 @@ class PointFileModelForm(forms.ModelForm):
 class SharePageForm(forms.ModelForm):
     class Meta:
         model = SharePage
-        fields = ('user','organizations_id')
+        fields = ('user','org_id')
 
 
 class PostModelForm(forms.ModelForm):
@@ -53,7 +53,7 @@ class PostModelForm(forms.ModelForm):
 
     class Meta:
         model = PostModel
-        fields = ('post','facebook','instagram','linkdien','file')
+        fields = ('post','facebook','instagram','linkdien',)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

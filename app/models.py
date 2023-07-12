@@ -42,24 +42,45 @@ class LatLongModel(BaseModel):
         return f"Latitude: {self.latitude}, Longitude: {self.longitude}"
 
 
+class ImageModel(models.Model):
+    image = models.FileField(upload_to='videos/')
+    image_urn = models.CharField(max_length=255, blank=True)
+    image_posted = models.CharField(max_length=500,blank=True,null=True)
+    image_url = models.CharField(max_length=1000,blank=True,null=True)
+
+    def is_mp4_file(self):
+        file_extension = self.image.name.split('.')[-1].lower()
+        return file_extension == 'mp4'
+
 class PostModel(BaseModel):
     post = models.TextField(blank=True)
-    file = models.FileField(upload_to='videos/', blank=True)
-    post_urn = models.CharField(max_length=255, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
-    status = models.CharField(max_length=100,null=True)
-    # post_likes = models.IntegerField(default=0)
-    # post_comments = models.IntegerField(default=0)
-    # comments = models.CharField(max_length=2500, blank=True)
+    images = models.ManyToManyField('ImageModel')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True,blank=True)
+    post_urn = models.ManyToManyField('Post_urn')
+    file = models.FileField(upload_to='videos/')
 
-class SharePage(BaseModel):
+    def __str__(self):
+        post_urn_list = ", ".join(str(org) for org in self.post_urn.all())
+        return f"{self.post} - Post To: {post_urn_list}"
+
+
+
+class SharePage(models.Model):
+    org_id = models.CharField(max_length=1000, blank=True)
+    name = models.CharField(max_length=1000, blank=True)
+    provider = models.CharField(max_length=255, blank=True)
+    access_token = models.CharField(max_length=500, blank=True,null=True)
     user = models.ForeignKey(SocialAccount, on_delete=models.CASCADE)
-    name = models.CharField(max_length=300,null=True)
-    organizations_id = models.CharField(max_length=1000)
-    access_token = models.CharField(max_length=1000,null=True)
-    provider = models.CharField(max_length=100,null=True)
-    post = models.ManyToManyField(PostModel)
 
+    def __str__(self):
+        return self.name
 
+class Post_urn(models.Model):
+    org = models.ForeignKey(SharePage, on_delete=models.CASCADE)
+    urn = models.CharField(max_length=600, blank=True)
+    post_likes = models.IntegerField(default=0)
+    post_comments = models.IntegerField(default=0)
+    comments = models.CharField(max_length=2500, blank=True)
 
-
+    def __str__(self):
+        return self.org.name + "--" + self.urn

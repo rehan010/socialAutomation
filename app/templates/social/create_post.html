@@ -12,30 +12,34 @@
   body {background:white !important;}
 
 </style>
-<div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
-    <!--    <input class="title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none" spellcheck="false" placeholder="Title" type="text">-->
-    <!--    <textarea class="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none" spellcheck="false" placeholder="Describe everything about this post here"></textarea>-->
-    <!--    <div class="mb-8">-->
-    <!--          <input type="file" name="file" id="file" class="sr-only" />-->
-    <!--          <label-->
-    <!--            for="file"-->
-    <!--            class="relative flex min-h-[200px] items-center justify-center rounded-md border border-dashed border-[#e0e0e0] p-12 text-center"-->
-    <!--          >-->
-    <!--            <div>-->
-    <!--              <span class="mb-2 block text-xl font-semibold text-[#07074D]">-->
-    <!--                Drop files here-->
-    <!--              </span>-->
-    <!--              <span class="mb-2 block text-base font-medium text-[#6B7280]">-->
-    <!--                Or-->
-    <!--              </span>-->
-    <!--              <span-->
-    <!--                class="inline-flex rounded border border-[#e0e0e0] py-2 px-7 text-base font-medium text-[#07074D]"-->
-    <!--              >-->
-    <!--                Browse-->
-    <!--              </span>-->
-    <!--            </div>-->
-    <!--          </label>-->
-    <!--        </div>-->
+
+  <div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
+    <!-- <input class="title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none" spellcheck="false" placeholder="Title" type="text">
+    <textarea class="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none" spellcheck="false" placeholder="Describe everything about this post here"></textarea>
+    <div class="mb-8">
+          <input type="file" name="file" id="file" class="sr-only" />
+          <label
+            for="file"
+            class="relative flex min-h-[200px] items-center justify-center rounded-md border border-dashed border-[#e0e0e0] p-12 text-center"
+          >
+            <div>
+              <span class="mb-2 block text-xl font-semibold text-[#07074D]">
+                Drop files here
+              </span>
+              <span class="mb-2 block text-base font-medium text-[#6B7280]">
+                Or
+              </span>
+              <span
+                class="inline-flex rounded border border-[#e0e0e0] py-2 px-7 text-base font-medium text-[#07074D]"
+              >
+                Browse
+              </span>
+            </div>
+          </label>
+        </div>  -->
+
+
+
 
 
     <form method="post" enctype="multipart/form-data" class="w-100">
@@ -61,8 +65,8 @@
         <div class="error-message">{{ form.post.errors }}</div>
         {% endif %}
         <br>
-                <input type="text" name="media" class="w-full title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none"
-               spellcheck="false" placeholder="Media" type="text"/>
+                <!-- <input type="text" name="media" class="w-full title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none"
+               spellcheck="false" placeholder="Media" type="text"/> -->
 
 
 
@@ -104,7 +108,18 @@
             </div>
         </div>
 
-
+        <div class="flex items-center justify-center w-full">
+          <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-dashed border-2 border-gray-200 bg-white-100  rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-white-700 hover:bg-gray-100 hover:border-gray-400">
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                  <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                  </svg>
+                  <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+              </div>
+              <input id="dropzone-file" type="file" class="hidden" multiple="multiple"/>
+          </label>
+        </div> 
         <!--                Platforms-->
         <div class="d-flex p-2">
             <div class="col-sm-3">
@@ -156,15 +171,12 @@
                                    name="instagram" value="{{data.insta_data.id}}"/>
                             <span class="ml-2 text-sm text-gray-700">{{data.insta_data.name}}</span>
                         </label>
-                    </div>
-                </div>
-
-            </div>
-
-
-            <div class="col-sm-3">
+                      </div>
+                      </div>
+              </div>
+              <div class="col-sm-3">
                 <button type="button" data-te-ripple-init data-te-ripple-color="light"
-                        class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg"
+                        class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
                         style="background-color: #0077b5">
                     <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="currentColor"
                          viewBox="0 0 24 24">
@@ -172,20 +184,73 @@
                     </svg>
                     Linkdein
                 </button>
+                <div class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
+                     style="min-height: 2.5rem;">
+
+                    {% for obj in data.linkedin_page%}
+
+
+                    <label class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <input type="checkbox"
+                               class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
+                               name="linkedin" value="{{obj.key}}"/>
+                        <span class="ml-2 text-sm">{{obj.name}}</span>
+                    </label>
+
+
+                    {% endfor %}
+
+                </div>
 
             </div>
+
             <div class="col-sm-3">
-                <button type="button" data-te-ripple-init data-te-ripple-color="light"
-                        class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg"
-                        style="background-color: #4285F4">
-                    <svg class="-ml-1 mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab"
-                         data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                        <path fill="currentColor"
-                              d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
-                    </svg>
-                    Google
-                </button>
-            </div>
+              <button type="button" data-te-ripple-init data-te-ripple-color="light"
+                      class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg"
+                      style="background-color: #4285F4">
+                  <svg class="-ml-1 mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab"
+                       data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                      <path fill="currentColor"
+                            d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+                  </svg>
+                  Google
+              </button>
+          </div>
+         
+                <!-- Media  -->
+
+
+
+
+                <!-- <input type="text" name="media" class="w-full title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none" spellcheck="false" placeholder="Media" type="text"/> -->
+                
+              
+
+
+                <!-- Text -->
+
+                <!-- {{ form.post }}
+                {% if form.name.errors %}
+                 <div class="error-message">{{ form.post.errors }}</div>
+                {% endif %} -->
+
+
+                <!-- Scheduling options -->
+                <!-- <div class="w-full flex items-center mt-4">
+                    <label class="mr-4 font-bold">Scheduling Option</label>
+                    <div class="ml-auto flex">
+                      <div class="px-4 py-2 bg-gray-100 text-black rounded-l-lg border border-gray-300 hover:bg-gray-200 Scheduling-contoller text-sm">
+                        Publish Now
+                        <input type="checkbox" name="publish-now" style="display: none;" value="on">
+
+                    </div>
+                </div>
+
+            </div> -->
+
+
+            
+            
 
 
         </div>
@@ -204,13 +269,13 @@
                 </div>
             </div>
         </div>
-
-        <!-- buttons -->
-<!--        <div class="buttons flex">-->
-<!--            <button class="btn border border-indigo-500 p-1 px-4 font-semibold cursor-pointer text-gray-200 ml-2 bg-indigo-500 ml-auto"-->
-<!--                    type="submit">Post-->
-<!--            </button>-->
-<!--        </div>-->
+        <input type="file" name="images" id="" multiple="multiple">
+        <buttons>
+        <div class="buttons flex">
+            <button class="btn border border-indigo-500 p-1 px-4 font-semibold cursor-pointer text-gray-200 ml-2 bg-indigo-500 ml-auto"
+                    type="submit">Post
+            </button>
+        </div>
 
     </form>
     <!-- icons -->
@@ -229,13 +294,18 @@
     
     });
 
+    document.body.addEventListener('click',(event)=>{
+        if(!button.contains(event.target) && !nextElement.contains(event.target)&&event.target !== nextElement){
+            nextElement.classList.add('hidden')
+        }
+    })
+
 
 });
 
 const sehedule_controller = document.querySelectorAll(".Scheduling-contoller");
 sehedule_controller.forEach((button) => {
   button.addEventListener('click', () => {
-    console.log("je;;po")
     // Remove active class from all buttons
     sehedule_controller.forEach((btn) => {
       btn.classList.remove("bg-gray-400");
@@ -254,7 +324,7 @@ sehedule_controller.forEach((button) => {
 </script>
 <script>
   function showDiv() {
-  console.log(1);
+
     const myDiv = document.getElementById("date-div");
     myDiv.classList.remove("hidden");
   }

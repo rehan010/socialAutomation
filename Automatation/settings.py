@@ -179,26 +179,30 @@ SOCIALACCOUNT_PROVIDERS = {
         # For each OAuth based provider, either add a ``SocialApp``
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
+        'SCOPE': [
+                    'r_emailaddress',
+                    'r_liteprofile',
+                    'openid',
+                    'r_ads_reporting',
+                    'r_organization_social',
+                    'rw_organization_admin',
+                    'w_member_social',
+                    'r_ads',
+                    'r_emailaddress',
+                    'w_organization_social',
+                    'rw_ads',
+                    'r_basicprofile',
+                    'r_organization_admin',
+                    'email',
+                    'r_1st_connections_size',
+        ],
         'APP': {
-            # 'adapter':'app.linkedin_adapter.CustomLinkedInOAuth2Adapter',
-            'client_id': '77vq11fwjcec5h',
-            'secret': '8wcTHLij6qhYxykW',
+
+            'client_id': '78brbn2ezf10mr',
+            'secret': '71JKMVxT5SQAh9i6',
             'key': '',
 
         },
-        'SCOPE': [
-            'r_emailaddress',
-            'r_liteprofile'
-        ],
-        # 'PROFILE_FIELDS': [
-        #     'id',
-        #     'first-name',
-        #     'last-name',
-        #     'email-address',
-        #     'picture-url',
-        #     'public-profile-url',
-        # ],
-
 
     },
 }
