@@ -703,7 +703,7 @@ def ugcpost_socialactions(urn, access_token_string):
             print(response.text)
     else:
         name = ''
-        return name
+        # return name
 
     form.comments = texts
     form.save()
@@ -785,7 +785,7 @@ def linkedin_post_socialactions(urn, access_token_string):
             print(response.text)
     else:
         name = ''
-        return name
+        # return name
     form.comments = texts
     form.save()
 
