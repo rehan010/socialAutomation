@@ -266,26 +266,24 @@ class PostCreateView(CreateView):
         access_token = {}
         for _ in social:
             access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
-        provider = list(access_token.keys())[0]
 
         # Making Data
         data = {}
-        if provider == 'facebook':
-            # For Faceboook
 
-            page_data = facebook_page_data(access_token.get("facebook"))
+        # For Faceboook
 
-            data["facebook_page"] = page_data
-            # For Instagram
-        elif provider == 'instagram':
-            insta_data = instagram_id(access_token.get("facebook"))
+        page_data = facebook_page_data(access_token.get("facebook"))
 
-            data["insta_data"] = insta_data
-            # print()
-        elif provider == 'linkedin_oauth2':
-            linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
-            print(linkedin_page)
-            data['linkedin_page'] = linkedin_page
+        data["facebook_page"] = page_data
+        # For Instagram
+
+        insta_data = instagram_id(access_token.get("facebook"))
+
+        data["insta_data"] = insta_data
+        # print()
+        linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
+        print(linkedin_page)
+        data['linkedin_page'] = linkedin_page
 
 
         self.request.session['context'] = data
