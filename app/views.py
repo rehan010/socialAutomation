@@ -163,12 +163,6 @@ class ConnectPageView(LoginRequiredMixin,CreateView):
         print(access_token)
 
 
-
-        # access_token_string = ', '.join(str(obj) for obj in access_token)
-        # posts = PostModel.objects.filter(user=user.id)
-
-
-        # names_with_ids = {}
         my_list = []
         #
 
@@ -272,24 +266,26 @@ class PostCreateView(CreateView):
         access_token = {}
         for _ in social:
             access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
+        provider = list(access_token.keys())[0]
 
         # Making Data
         data = {}
+        if provider == 'facebook':
+            # For Faceboook
 
-        # For Faceboook
+            page_data = facebook_page_data(access_token.get("facebook"))
 
-        page_data = facebook_page_data(access_token.get("facebook"))
+            data["facebook_page"] = page_data
+            # For Instagram
+        elif provider == 'instagram':
+            insta_data = instagram_id(access_token.get("facebook"))
 
-        data["facebook_page"] = page_data
-        # For Instagram
-
-        insta_data = instagram_id(access_token.get("facebook"))
-
-        data["insta_data"] = insta_data
-        # print()
-        linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
-        print(linkedin_page)
-        data['linkedin_page'] = linkedin_page
+            data["insta_data"] = insta_data
+            # print()
+        elif provider == 'linkedin_oauth2':
+            linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
+            print(linkedin_page)
+            data['linkedin_page'] = linkedin_page
 
 
         self.request.session['context'] = data
@@ -305,6 +301,12 @@ class PostCreateView(CreateView):
         return redirect(reverse("my_posts",kwargs={'pk': self.request.user.id}))
     def form_valid(self, form):
         requestdata = dict(self.request.POST)
+        # user = self.request.user  # Set the user to the logged-in user
+        # social = SocialAccount.objects.filter(user=user.id)
+        # access_token = {}
+        # for _ in social:
+        #     access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
+        # provider = list(access_token.keys())[0]
 
         requestdata.pop("csrfmiddlewaretoken")
         caption = requestdata.pop("post")
@@ -451,11 +453,131 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['posts']=PostModel.objects.filter(user_id=self.request.user.id)
+        result = linkedin_retrieve_access_token(self)
+        posts = result[0]
+        access_token_string = result[1]
+        ids = result[2]
+
+        provider_name = "linkedin"
+        linkedin_post = PostModel.objects.filter(user=self.request.user)
+
+        provider_name1 = "Facebook"
+        facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
+
+        provider_name2 = "Instagram"
+        instagram_post = PostModel.objects.filter(post_urn__org__provider=provider_name2)
+
+        provider_name3 = "Google Books"
+        google_post = PostModel.objects.filter(post_urn__org__provider=provider_name3)
+
+        #     for post in pages:
+        #         org_id = post.org.id
+        #         post_urn = post.urn
+        #
+        #         urn = post_urn
+        #         if urn == '' or urn == None:
+        #             pass
+        #         else:
+        #             prefix, value = post_urn.rsplit(':', 1)
+        #             if prefix == 'urn:li:ugcPost':
+        #                 response = ugcpost_socialactions(urn, access_token_string)
+        #             else:
+        #                 response = linkedin_post_socialactions(urn, access_token_string)
+        #
+        #
+        # # scheduler = BackgroundScheduler()
+        # # scheduler.add_job(schedule_api.create_post, 'interval', minutes=1)  # Adjust the interval as needed
+        # # scheduler.start()
+        #
+        # data_list = []
+        # for id in ids:
+        #     linkedin_org_stats(access_token_string, id, data_list)
+        #
+
+        context = {
+            # 'ids': ids,
+            # 'data_list': data_list,
+            'posts': PostModel.objects.filter(user_id=self.request.user.id),
+            'google_post': google_post,
+            'instagram_post': instagram_post,
+            'facebook_post': facebook_post,
+            'linkedin_post': linkedin_post
+        }
+
         return context
 
-class PostsDetailView(LoginRequiredMixin,TemplateView):
+
+class PostsDetailView(LoginRequiredMixin, TemplateView):
     template_name = 'social/post_detail.html'
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        result = linkedin_retrieve_access_token(self)
+        posts = result[0]
+        access_token_string = result[1]
+        ids = result[2]
+        post_id = self.kwargs['pk']
+
+        provider_name = "linkedin"
+        linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id)
+        # if linkedin_post.count() >1:
+        #     for post in linkedin_post:
+
+        for post in linkedin_post.post_urn.all() :
+            org_id = post.org.id
+            post_urn = post.urn
+
+            urn = post_urn
+            if urn == '' or urn == None:
+                pass
+            else:
+                prefix, value = post_urn.rsplit(':', 1)
+                if prefix == 'urn:li:ugcPost':
+                    result = ugcpost_socialactions(urn, access_token_string)
+                    no_likes = result[0]
+                    no_comments = result[1]
+                    comments = result[2]
+                    name = result[3]
+                else:
+                    result = linkedin_post_socialactions(urn, access_token_string)
+                    no_likes = result[0]
+                    no_comments = result[1]
+                    comments = result[2]
+                    name = result[3]
+
+
+        # data_list = []
+        # for id in ids:
+        #     linkedin_org_stats(access_token_string, id, data_list)
+        #
+        # provider_name1 = "Facebook"
+        # facebook_post = PostModel.objects.get(post_urn__org__provider=provider_name1)
+        #
+        # provider_name2 = "Instagram"
+        # instagram_post = PostModel.objects.get(post_urn__org__provider=provider_name2)
+        #
+        # provider_name3 = "Google Books"
+        # google_post = PostModel.objects.get(post_urn__org__provider=provider_name3)
+
+
+
+        context = {
+            'ids': ids,
+            'no_likes': no_likes,
+            'no_comments': no_comments,
+            'comments': comments,
+            'name': name,
+            # 'data_list': data_list,
+            'posts': PostModel.objects.filter(user_id=self.request.user.id),
+            'linkedin_post': linkedin_post,
+            'post_id': post_id
+        }
+
+        return context
+
+
+
 
 
 class InstagramRedirectUri(TemplateView):
