@@ -75,6 +75,14 @@ footer {
     input[type="radio"]:checked + span {
       display: block;
     }
+    .flex.grid.grid-flow-col.justify-center.space-x-4 li a {
+        text-decoration: none; /* Remove underline by default */
+    }
+
+    .flex.grid.grid-flow-col.justify-center.space-x-4 li a:hover {
+        text-decoration: none; /* Remove underline on hover */
+    }
+
 
 
 
