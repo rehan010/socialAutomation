@@ -309,7 +309,7 @@ def instagram_id(accesstoken):
 
 
 
-def facebookpost(request,data,image,post,sharepage):
+def facebookpost(request,data,image,post_model,sharepage):
     post = {
             "url": image.image_url,
             "caption": request.POST['post']
@@ -327,7 +327,7 @@ def facebookpost(request,data,image,post,sharepage):
     post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
     post_urn.save()
 
-    post = PostModel.objects.get(id=post.id)
+    post = PostModel.objects.get(id=post_model.id)
 
     post.post_urn.add(post_urn)
     post.save()

@@ -99,6 +99,11 @@ class BaseView(TemplateView):
 
 class ProfileView(LoginRequiredMixin,TemplateView):
     template_name = "registration/profile.html"
+class UserView(LoginRequiredMixin,TemplateView):
+    template_name = "registration/users.html"
+
+class UserCreateView(LoginRequiredMixin,TemplateView):
+    template_name = "registration/user_create.html"
 
 
 class DashboardView(LoginRequiredMixin,TemplateView):

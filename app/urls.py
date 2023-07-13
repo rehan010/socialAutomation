@@ -18,6 +18,8 @@ urlpatterns = [
     path('dashboard', DashboardView.as_view(), name="dashboard"),
     path('connect/page',ConnectPageView.as_view(),name='connect_page'),
     path('profile/',ProfileView.as_view(),name='my_profile'),
+    path('users/',UserView.as_view(),name='my_user'),
+    path('users/create/',UserCreateView.as_view(),name='create_user'),
 
 
     path("facebook/",FacebookRedirectUri.as_view(),name="facebook_redirect"),

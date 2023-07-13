@@ -72,6 +72,9 @@ footer {
       border-bottom-left-radius: 8.5rem;
       border-bottom-right-radius: 8.5rem;
     }
+    input[type="radio"]:checked + span {
+      display: block;
+    }
 
 
 

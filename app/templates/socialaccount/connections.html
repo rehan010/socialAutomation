@@ -18,26 +18,68 @@
         <form method="post" action="{% url 'socialaccount_connections' %}">
             {% csrf_token %}
 
+
             <fieldset>
                 {% if form.non_field_errors %}
                 <div class="error-msg">{{ form.non_field_errors }}</div>
                 {% endif %}
+                <div class="grid sm:grid-cols-4 gap-6">
 
                 {% for base_account in form.accounts %}
                 {% with base_account.get_provider_account as account %}
-                <div class="account-item">
-                    <label for="id_account_{{ base_account.id }}" class="flex items-center">
-                        <input id="id_account_{{ base_account.id }}" type="radio" name="account"
-                               value="{{ base_account.id }}" class="mr-2"/>
-                        <span class="socialaccount_provider {{ base_account.provider }} {{ account.get_brand.id }}">{{ account.get_brand.name }}</span>
-                        <p class="text-sm text-gray-600 "> &nbsp;{{ account }}</p>
+                    <label for="id_account_{{ base_account.id }}"
+                           class="relative flex flex-col bg-white p-5 rounded-lg shadow-md cursor-pointer">
+                       <span class="provider-icon flex justify-center items-center mr-2 border border-black rounded p-2">
+                                {%if account.get_brand.name == 'Facebook'%}
+                                  <i class="fa fa-facebook" style="font-size:24px;color:#0165E1">          </i>
+                                {%elif account.get_brand.name == 'Instagram'%}
+                                  <i class="fa fa-instagram" style="font-size:24px;color:#F56040">         </i>
+                                {%elif account.get_brand.name == 'LinkedIn'%}
+                                  <i class="fa fa-linkedin" style="font-size:24px;color:#0A66C2">          </i>
+                                {%elif account.get_brand.name == 'Google'%}
+                                  <i class="fa fa-google" style="font-size:24px;color:#FBBC04">       </i>
+                                {%endif%}
+                                </span>
+<!--                        <span class="text-sm text-gray-600 align-center">{{ account }}</span>-->
+                        <input type="radio" name="account" id="id_account_{{ base_account.id }}"
+                               value="{{ base_account.id }}" class="absolute h-0 w-0 appearance-none"/>
+                        <span aria-hidden="true"
+                              class="hidden absolute inset-0 border-2 border-red-500 bg-red-200 bg-opacity-10 rounded-lg">
+                        <span class="absolute top-4 right-4 h-6 w-6 inline-flex items-center justify-center rounded-full bg-red-200">
+<!--                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"-->
+<!--                               class="h-5 w-5 text-green-600">-->
+<!--                            <path fill-rule="evenodd"-->
+<!--                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"-->
+<!--                                  clip-rule="evenodd"/>-->
+<!--                          </svg>-->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 text-red-600">
+                              <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.477 0 10s4.477 10 10 10 10-4.477 10-10S15.523 0 10 0zm4.293 12.293a1 1 0 01-1.414 1.414L10 11.414l-3.879 3.879a1 1 0 11-1.414-1.414L8.586 10 4.707 6.121a1 1 0 111.414-1.414L10 8.586l3.879-3.879a1 1 0 111.414 1.414L11.414 10l3.879 3.879z" clip-rule="evenodd"/>
+                            </svg>
+                        </span>
+                      </span>
                     </label>
-                </div>
-                {% endwith %}
-                {% endfor %}
+
+                    {% endwith %}
+                {%endfor%}
+      </div>
+
+
+
+<!--                {% for base_account in form.accounts %}-->
+<!--                {% with base_account.get_provider_account as account %}-->
+<!--                <div class="account-item">-->
+<!--                    <label for="id_account_{{ base_account.id }}" class="flex items-center">-->
+<!--                        <input id="id_account_{{ base_account.id }}" type="radio" name="account"-->
+<!--                               value="{{ base_account.id }}" class="mr-2"/>-->
+<!--                        <span class="socialaccount_provider {{ base_account.provider }} {{ account.get_brand.id }}">{{ account.get_brand.name }}</span>-->
+<!--                        <p class="text-sm text-gray-600 "> &nbsp;{{ account }}</p>-->
+<!--                    </label>-->
+<!--                </div>-->
+<!--                {% endwith %}-->
+<!--                {% endfor %}-->
 
                 <div>
-                    <button type="submit" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
+                    <button type="submit" class="w-full border-red-500 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-200">
                         {% trans 'Remove' %}
                     </button>
                 </div>
@@ -45,8 +87,7 @@
         </form>
 
         {% else %}
-        <p class="text-sm text-gray-600"> {% trans 'You currently have no social network accounts connected to this
-            account.' %}</p>
+        <p class="text-sm text-gray-600"> {% trans 'You currently have no social network accounts connected to this account.' %}</p>
         {% endif %}
         <br>
         <hr>
