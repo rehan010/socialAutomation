@@ -785,7 +785,10 @@ def linkedin_post_socialactions(urn, access_token_string):
             response = requests.request("GET", url, headers=headers, data=payload)
             response = response.json()
             name = response['localizedFirstName'] + " " + response['localizedLastName']
-            display_image = response['profilePicture']['displayImage']
+            if 'profilePicture' in response:
+                display_image = response['profilePicture']['displayImage']
+            else:
+                display_image = ''
 
 
     else:
