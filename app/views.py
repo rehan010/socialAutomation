@@ -521,32 +521,32 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         post_id = self.kwargs['post_id']
         page_id = self.kwargs['page_id']
 
-        provider_name = "linkedin"
-        linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
-        # if linkedin_post.count() >1:
-        #     for post in linkedin_post:
+        if self.request.GET.get('page_name') == 'linkedin':
 
-        post = linkedin_post.post_urn.all().filter(org__provider='linkedin').first()
-        org_id = post.org.id
-        post_urn = post.urn
+            provider_name = "linkedin"
+            linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
 
-        urn = post_urn
-        if urn == '' or urn == None:
-                pass
-        else:
-                prefix, value = post_urn.rsplit(':', 1)
-                if prefix == 'urn:li:ugcPost':
-                    result = ugcpost_socialactions(urn, access_token_string)
-                    no_likes = result[0]
-                    no_comments = result[1]
-                    comments = result[2]
-                    name = result[3]
-                else:
-                    result = linkedin_post_socialactions(urn, access_token_string)
-                    no_likes = result[0]
-                    no_comments = result[1]
-                    comments = result[2]
-                    name = result[3]
+            post = linkedin_post.post_urn.all().filter(org__provider='linkedin').first()
+            org_id = post.org.id
+            post_urn = post.urn
+
+            urn = post_urn
+            if urn == '' or urn == None:
+                    pass
+            else:
+                    prefix, value = post_urn.rsplit(':', 1)
+                    if prefix == 'urn:li:ugcPost':
+                        result = ugcpost_socialactions(urn, access_token_string)
+                        no_likes = result[0]
+                        no_comments = result[1]
+                        comments = result[2]
+                        name = result[3]
+                    else:
+                        result = linkedin_post_socialactions(urn, access_token_string)
+                        no_likes = result[0]
+                        no_comments = result[1]
+                        comments = result[2]
+                        name = result[3]
 
 
         # data_list = []
@@ -564,17 +564,17 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
 
 
-        context = {
-            'ids': ids,
-            'no_likes': no_likes,
-            'no_comments': no_comments,
-            'comments': comments,
-            'name': name,
-            # 'data_list': data_list,
-            'posts': PostModel.objects.filter(user_id=self.request.user.id),
-            'linkedin_post': linkedin_post,
-            'post_id': post_id
-        }
+            context = {
+                'ids': ids,
+                'no_likes': no_likes,
+                'no_comments': no_comments,
+                'comments': comments,
+                'name': name,
+                # 'data_list': data_list,
+                'posts': PostModel.objects.filter(user_id=self.request.user.id),
+                'linkedin_post': linkedin_post,
+                'post_id': post_id
+            }
 
         return context
 
