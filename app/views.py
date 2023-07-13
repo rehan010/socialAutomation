@@ -526,9 +526,8 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             provider_name = "linkedin"
             linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
 
-            post = linkedin_post.post_urn.all().filter(org__provider='linkedin').first()
-            org_id = post.org.id
-            post_urn = post.urn
+            org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
+            post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
 
             urn = post_urn
             if urn == '' or urn == None:
