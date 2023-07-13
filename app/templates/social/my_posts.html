@@ -1,5 +1,6 @@
 {%extends 'registration/base.html'%}
 {%load static%}
+{%load humanize %}
 {%block bar%}
 <!--        <div class="jumbotron jumbotron-fluid">-->
 <!--              <div class="container">-->
@@ -181,7 +182,7 @@
 
                                             <div class="flex flex-col justify-center">
                                                 <a href="#">
-                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at}}</h6>
+                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
                                                 </a>
                                             </div>
                                         </div>
@@ -303,7 +304,7 @@
 
                                             <div class="flex flex-col justify-center">
                                                 <a href="#">
-                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at}}</h6>
+                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
                                                 </a>
                                             </div>
                                         </div>
@@ -428,7 +429,7 @@
 
                                             <div class="flex flex-col justify-center">
                                                 <a href="#">
-                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at}}</h6>
+                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
                                                 </a>
                                             </div>
                                         </div>
@@ -554,7 +555,7 @@
 
                                             <div class="flex flex-col justify-center">
                                                 <a href="#">
-                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at}}</h6>
+                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
                                                 </a>
                                             </div>
                                         </div>
