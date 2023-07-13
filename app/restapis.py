@@ -699,16 +699,18 @@ def ugcpost_socialactions(urn, access_token_string):
             }
 
             response = requests.request("GET", url, headers=headers, data=payload)
+            response = response.json()
+            name = response['localizedFirstName'] + " " + response['localizedLastName']
+            display_image = response['profilePicture']['displayImage']
 
-            print(response.text)
     else:
         name = ''
-        # return name
+        display_image = ''
 
     form.comments = texts
     form.save()
 
-    return t_likes, t_comments, texts, name
+    return t_likes, t_comments, texts, name, display_image
 
 
 def linkedin_post_socialactions(urn, access_token_string):
@@ -781,15 +783,19 @@ def linkedin_post_socialactions(urn, access_token_string):
             }
 
             response = requests.request("GET", url, headers=headers, data=payload)
+            response = response.json()
+            name = response['localizedFirstName'] + " " + response['localizedLastName']
+            display_image = response['profilePicture']['displayImage']
 
-            print(response.text)
+
     else:
         name = ''
-        # return name
+        display_image = ''
+
     form.comments = texts
     form.save()
 
-    return t_likes, t_comments, texts, name
+    return t_likes, t_comments, texts, name,display_image
 
 
 def linkedin_org_stats(access_token_string, id, data_list):
