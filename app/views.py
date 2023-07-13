@@ -271,19 +271,21 @@ class PostCreateView(CreateView):
         data = {}
 
         # For Faceboook
+        if _.provider == 'facebook':
 
-        page_data = facebook_page_data(access_token.get("facebook"))
+            page_data = facebook_page_data(access_token.get("facebook"))
 
-        data["facebook_page"] = page_data
+            data["facebook_page"] = page_data
         # For Instagram
+        if _.provider == 'instagram':
 
-        insta_data = instagram_id(access_token.get("facebook"))
+            insta_data = instagram_id(access_token.get("facebook"))
 
-        data["insta_data"] = insta_data
+            data["insta_data"] = insta_data
         # print()
-        linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
-        print(linkedin_page)
-        data['linkedin_page'] = linkedin_page
+        if _.provider == 'linkedin_oauth2':
+            linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
+            data['linkedin_page'] = linkedin_page
 
 
         self.request.session['context'] = data
