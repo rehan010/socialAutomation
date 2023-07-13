@@ -518,21 +518,22 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         posts = result[0]
         access_token_string = result[1]
         ids = result[2]
-        post_id = self.kwargs['pk']
+        post_id = self.kwargs['post_id']
+        page_id = self.kwargs['page_id']
 
         provider_name = "linkedin"
-        linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id)
+        linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
         # if linkedin_post.count() >1:
         #     for post in linkedin_post:
 
-        for post in linkedin_post.post_urn.all() :
-            org_id = post.org.id
-            post_urn = post.urn
+        post = linkedin_post.post_urn.all().filter(org__provider='linkedin').first()
+        org_id = post.org.id
+        post_urn = post.urn
 
-            urn = post_urn
-            if urn == '' or urn == None:
+        urn = post_urn
+        if urn == '' or urn == None:
                 pass
-            else:
+        else:
                 prefix, value = post_urn.rsplit(':', 1)
                 if prefix == 'urn:li:ugcPost':
                     result = ugcpost_socialactions(urn, access_token_string)

@@ -30,7 +30,7 @@ urlpatterns = [
     path('upload/<int:pk>/delete/', PointFileDeleteView.as_view(), name='point_delete'),
     path('create/post/', PostCreateView.as_view(), name='create_post'),
     path('posts/<int:pk>', PostsGetView.as_view(), name='my_posts'),
-    path('posts/detail/<int:pk>', PostsDetailView.as_view(), name='my_detail_posts'),
+    path('posts/detail/<int:post_id>/<int:page_id>', PostsDetailView.as_view(), name='my_detail_posts'),
 
 #     REST APIS
 
