@@ -3,10 +3,31 @@
 
 
 {% block content %}
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+</head>
+<style>
+  figure {
 
+    text-align: left;
+  }
+  figcaption {
+    font-size: 14px;
+    color: gray;
+    margin-top: 5px;
+    padding-left: 20px;
+  }
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+
+
+</style>
 <!-- This is an example component -->
-<div class="editor mx-auto  flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-3xl">
 
+<div class="editor mx-auto  flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-3xl">
     <div class="bg-white overflow-hidden align-center shadow-none">
         <div class="  pl-4">
             <header class="border-b border-grey-400">
@@ -15,40 +36,60 @@
                     <img src="https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&h=750&w=1260"
                          class="h-9 w-9 rounded-full object-cover"
                          alt="user"/>
-                    <p class="block ml-2 font-bold">{{linkedin_post.user.username}}</p>
+                    <p class="block ml-2 font-bold">{{posted_on}}</p>
                 </a>
-<!--                <span class="block ml-4 text-xs text-gray-600">5 minutes ago</span>-->
+                <!--                <span class="block ml-4 text-xs text-gray-600">5 minutes ago</span>-->
 
             </header>
-
         </div>
         <div class="grid grid-cols-2 min-w-full">
-
-            <div class="col-span-2 w-full">
-                {% for image in linkedin_post.images.all %}
-                {% if image.is_mp4_file %}
-                <div>
-                    <video class="w-full max-w-full min-w-full"
-                           controls>
-                        <source src="{{ image.image.url }}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-                {% else %}
-                <div>
-                    <img src="{{ image.image.url }}" alt="File Image"
-                         class="w-full max-w-full min-w-full">
-                </div>
-                {% endif %}
-                {% endfor %}
+            <div>
+                <figure>
+                    <figcaption>{{linkedin_post.post}}</figcaption>
+                </figure>
             </div>
-        </div>
-        <div class="grid grid-cols-2 min-w-full">
+            <br>
+            <div class="col-span-2 w-full">
+                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                    <ol class="carousel-indicators">
+                        <!-- Add indicators dynamically based on the number of images -->
+                        {% for image in linkedin_post.images.all %}
+                        <li data-target="#carouselExampleIndicators" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" {% endif %}></li>
+                        {% endfor %}
+                    </ol>
+                    <div class="carousel-inner">
+                        <!-- Loop through the images and create carousel items -->
+                        {% for image in linkedin_post.images.all %}
+                        {% if image.is_mp4_file %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <video  controls>
+                                <source src="{{ image.image.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        {% else %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{{ image.image.url }}" class="image" alt="Image">
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
 
-            <div class="  pl-4">
-                <div class="pt-4">
-                    <div class="mb-2">
-                        <div class="flex items-center">
+                    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 min-w-full">
+                <div class="  pl-4">
+                    <div class="pt-4">
+                        <div class="mb-2">
+                            <div class="flex items-center">
                             <span class="mr-3 inline-flex items-center cursor-pointer">
                                 <svg class="fill-heart text-gray-700 inline-block h-7 w-7 heart"
                                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -57,61 +98,61 @@
                                           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                 </svg>
                             </span>
-                            <span class="mr-3 inline-flex items-center cursor-pointer">
+                                <span class="mr-3 inline-flex items-center cursor-pointer">
                                 <svg class="text-gray-700 inline-block h-7 w-7 " xmlns="http://www.w3.org/2000/svg"
                                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                 </svg>
                             </span>
-                        </div>
-                        <span class="text-gray-600 text-sm font-bold">{{no_likes}} Likes</span>
-                        <br>
-                        <span class="text-gray-600 text-sm font-bold">{{no_comments}} Comments</span>
-                    </div>
-                </div>
-                 {% for comment in comments %}
-                <div>
-                    <div class="pt-1">
-                        <div class="text-sm mb-2 flex flex-start items-center">
-                            <div>
-                                <a href="#"
-                                   class="cursor-pointer flex items-center text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition duration-150 ease-in-out">
-                                    <img class="h-8 w-8 rounded-full object-cover"
-                                         src="https://images.pexels.com/photos/1450082/pexels-photo-1450082.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260"
-                                         alt="user"/>
-                                </a>
                             </div>
-
-                            <p class="font-bold ml-2">
-                                <a class="cursor-pointer">{{name}}:</a>
-                                <span class="text-gray-700 font-medium ml-1">
-                               {{comment}}
-                            </span>
-                            </p>
-
+                            <span class="text-gray-600 text-sm font-bold">{{no_likes}} Likes</span>
+                            <br>
+                            <span class="text-gray-600 text-sm font-bold">{{no_comments}} Comments</span>
                         </div>
                     </div>
-                    {% endfor %}
-<!--                    <div class="text-sm mb-2 flex flex-start items-center">-->
-<!--                        <div>-->
-<!--                            <a href="#"-->
-<!--                               class="cursor-pointer flex items-center text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition duration-150 ease-in-out">-->
-<!--                                <img class="h-8 w-8 rounded-full object-cover"-->
-<!--                                     src="https://images.pexels.com/photos/3861456/pexels-photo-3861456.jpeg?auto=compress&cs=tinysrgb&h=750&w=1260"-->
-<!--                                     alt="user"/>-->
-<!--                            </a>-->
-<!--                        </div>-->
-<!--                        <p class="font-bold ml-2">-->
-<!--                            <a class="cursor-pointer">Kesha:</a>-->
-<!--                            <span class="text-gray-700 font-medium ml-1">-->
-<!--                            This is amazing-->
-<!--                        </span>-->
-<!--                        </p>-->
-<!--                    </div>-->
-<!--                </div>-->
+                    {% for d in data %}
+                    <div>
+                        <div class="pt-1">
+                            <div class="text-sm mb-2 flex flex-start items-center">
+                                <div>
+                                    <a href="#"
+                                       class="cursor-pointer flex items-center text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition duration-150 ease-in-out">
+                                        <img class="h-8 w-8 rounded-full object-cover"
+                                             src="https://images.pexels.com/photos/1450082/pexels-photo-1450082.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260"
+                                             alt="user"/>
+                                    </a>
+                                </div>
 
-                <!--            <div class=" bottom-0 left-0 right-0 pl-4">-->
+                                <p class="font-bold ml-2">
+                                    <a class="cursor-pointer">{{d.name}}:</a>
+                                    <span class="text-gray-700 font-medium ml-1">
+                               {{d.text}}
+                            </span>
+                                </p>
+
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <!--                    <div class="text-sm mb-2 flex flex-start items-center">-->
+                        <!--                        <div>-->
+                        <!--                            <a href="#"-->
+                        <!--                               class="cursor-pointer flex items-center text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition duration-150 ease-in-out">-->
+                        <!--                                <img class="h-8 w-8 rounded-full object-cover"-->
+                        <!--                                     src="https://images.pexels.com/photos/3861456/pexels-photo-3861456.jpeg?auto=compress&cs=tinysrgb&h=750&w=1260"-->
+                        <!--                                     alt="user"/>-->
+                        <!--                            </a>-->
+                        <!--                        </div>-->
+                        <!--                        <p class="font-bold ml-2">-->
+                        <!--                            <a class="cursor-pointer">Kesha:</a>-->
+                        <!--                            <span class="text-gray-700 font-medium ml-1">-->
+                        <!--                            This is amazing-->
+                        <!--                        </span>-->
+                        <!--                        </p>-->
+                        <!--                    </div>-->
+                        <!--                </div>-->
+
+                        <!--            <div class=" bottom-0 left-0 right-0 pl-4">-->
 
 
                 <div class="pt-4 pb-12 pr-3">
@@ -122,9 +163,14 @@
                         <button class="mb-2 focus:outline-none border-none bg-transparent text-blue-600">post</button>
                     </div>
                 </div>
-                <!--            </div>-->
+                    </div>
             </div>
         </div>
     </div>
+    </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
 {%endblock%}

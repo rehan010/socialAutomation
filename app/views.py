@@ -438,12 +438,7 @@ class PostCreateView(CreateView):
                                         org, get_img_urn, upload_img, post_single_image_linkedin,
                                         post, post_linkedin)
 
-                    # if len(images) > 1:
-                    #     data = facebookmultiimage(self.request, data, images)
-                    #
-                    # else:
-                    #     data = post_single_image_linkedin(access_token_string, org_id, post, image_list)
-                    #     data = facebookpost(self.request, data)
+
 
         return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
         # return None
@@ -520,6 +515,8 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         ids = result[2]
         post_id = self.kwargs['post_id']
         page_id = self.kwargs['page_id']
+        posted_on = Post_urn.objects.get(id=page_id).org.name
+
 
         if self.request.GET.get('page_name') == 'linkedin':
 
@@ -538,14 +535,12 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                         result = ugcpost_socialactions(urn, access_token_string)
                         no_likes = result[0]
                         no_comments = result[1]
-                        comments = result[2]
-                        name = result[3]
+                        data = result[2]
                     else:
                         result = linkedin_post_socialactions(urn, access_token_string)
                         no_likes = result[0]
                         no_comments = result[1]
-                        comments = result[2]
-                        name = result[3]
+                        data = result[2]
 
 
         # data_list = []
@@ -567,11 +562,10 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'ids': ids,
                 'no_likes': no_likes,
                 'no_comments': no_comments,
-                'comments': comments,
-                'name': name,
-                # 'data_list': data_list,
+                'data': data,
                 'posts': PostModel.objects.filter(user_id=self.request.user.id),
                 'linkedin_post': linkedin_post,
+                'posted_on': posted_on,
                 'post_id': post_id
             }
 
