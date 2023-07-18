@@ -391,12 +391,12 @@ class PostCreateView(CreateView):
                     # sharepage.post.add(post)
                     sharepage.name = info.get('name')
                     sharepage.access_token = info.get('access_token')
-                    sharepage.organizations_id = info.get('id')
+                    sharepage.org_id = info.get('id')
                     sharepage.provider = "instagram"
                     sharepage.save()
 
                 data = {
-                    "insta_id": sharepage.organizations_id
+                    "insta_id": sharepage.org_id
                 }
 
                 if (len(image_object) > 1):
@@ -509,10 +509,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        result = linkedin_retrieve_access_token(self)
-        posts = result[0]
-        access_token_string = result[1]
-        ids = result[2]
+
         post_id = self.kwargs['post_id']
         page_id = self.kwargs['page_id']
         posted_on = Post_urn.objects.get(id=page_id).org.name
@@ -525,7 +522,10 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
             org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
             post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
-
+            result = linkedin_retrieve_access_token(self)
+            posts = result[0]
+            access_token_string = result[1]
+            ids = result[2]
             urn = post_urn
             if urn == '' or urn == None:
                     pass
@@ -541,6 +541,75 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                         no_likes = result[0]
                         no_comments = result[1]
                         data = result[2]
+
+            context = {
+                'ids': ids,
+                'no_likes': no_likes,
+                'no_comments': no_comments,
+                'data': data,
+                'posts': PostModel.objects.filter(user_id=self.request.user.id),
+                'post': linkedin_post,
+                'posted_on': posted_on,
+                'post_id': post_id
+            }
+
+        elif self.request.GET.get('page_name') == 'facebook':
+            provider_name = "facebook"
+
+            facebook_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
+            org_id = facebook_post.post_urn.all().filter(pk=page_id).first().org.org_id
+            post_urn = facebook_post.post_urn.all().filter(pk = page_id).first().urn
+            access_token_string = facebook_post.post_urn.all().filter(pk=page_id).first().org.access_token
+            urn = post_urn
+            if urn == '' or urn == None:
+                pass
+            else:
+
+
+                result = fb_socialactions(urn,access_token_string)
+                no_likes = result[0]
+                no_comments = result[1]
+                data = result[2]
+
+            context = {
+                # 'ids': ids,
+                'no_likes': no_likes,
+                'no_comments': no_comments,
+                'data': data,
+                'posts': PostModel.objects.filter(user_id=self.request.user.id),
+                'post': facebook_post,
+                'posted_on': posted_on,
+                'post_id': post_id
+            }
+        elif self.request.GET.get('page_name') == 'instagram':
+            provider_name = "instagram"
+            instagram_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
+            org_id = instagram_post.post_urn.all().filter(pk=page_id).first().org.org_id
+            post_urn = instagram_post.post_urn.all().filter(pk=page_id).first().urn
+            facebook_account = SocialAccount.objects.get(user_id = self.request.user.id,provider = "facebook")
+            access_token_string = SocialToken.objects.get(account = facebook_account).token
+            urn = post_urn
+            if urn == '' or urn == None:
+                pass
+            else:
+
+                result = insta_socialactions(urn, access_token_string)
+                no_likes = result[0]
+                no_comments = result[1]
+                data = result[2]
+
+            context = {
+                # 'ids': ids,
+                'no_likes': no_likes,
+                'no_comments': no_comments,
+                'data': data,
+                'posts': PostModel.objects.filter(user_id=self.request.user.id),
+                'post': instagram_post,
+                'posted_on': posted_on,
+                'post_id': post_id
+            }
+
+
 
 
         # data_list = []
@@ -558,16 +627,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
 
 
-            context = {
-                'ids': ids,
-                'no_likes': no_likes,
-                'no_comments': no_comments,
-                'data': data,
-                'posts': PostModel.objects.filter(user_id=self.request.user.id),
-                'linkedin_post': linkedin_post,
-                'posted_on': posted_on,
-                'post_id': post_id
-            }
+
 
         return context
 

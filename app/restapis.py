@@ -91,6 +91,144 @@ def getmedia(accountid,access_token):
     return data
 
 
+def fb_socialactions(post_urn,access_token):
+
+
+
+    url = f"https://graph.facebook.com/{post_urn}?fields=likes.summary(true),comments.summary(true)"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url=url,headers=headers)
+
+    response_json = response.json()
+
+    t_likes = response_json["likes"]["summary"]["total_count"]
+
+    t_comments = response_json["comments"]["summary"]["total_count"]
+
+    form = Post_urn.objects.get(urn=post_urn)
+    form.post_likes = t_likes
+    form.post_comments = t_comments
+    form.save()
+
+    url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from"
+
+#     comments{message,created_time,from}  field to get replies
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = requests.get(url=url,headers=headers)
+    response_json2 = response.json()
+
+    elements = response_json2.get("data")
+
+    data = []
+    if elements:
+        for element in elements:
+            text = element['message']
+            if element and len(elements) > 0:
+                actor = element["from"]['id']
+                name = element['from']['name']
+                url = f"https://graph.facebook.com/{actor}?fields=picture{{url}}"
+
+                response_3 = requests.get(url=url,headers=headers)
+
+                if "picture" in response_3.json():
+
+                    display_image = response_3.json().get('picture')['data']['url']
+                else:
+                    display_image = ''
+
+                obj = {'name':name,"profile_image":display_image,"text":text}
+                data.append(obj)
+
+            else:
+                obj = {'name': "", "profile_image": "", "text": ""}
+                data.append(obj)
+
+    return t_likes, t_comments, data
+
+
+
+
+
+def insta_socialactions(post_urn,access_token):
+
+    url = f"https://graph.facebook.com/{post_urn}/insights?metric=likes,comments"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url=url, headers=headers)
+
+    response_json = response.json().get("data")
+
+
+
+    t_likes = response_json[0]['values'][0]['value']
+
+
+    t_comments = response_json[1]['values'][0]['value']
+
+    form = Post_urn.objects.get(urn=post_urn)
+    form.post_likes = t_likes
+    form.post_comments = t_comments
+    form.save()
+
+
+    url = f"https://graph.facebook.com/v17.0/{post_urn}/comments/?fields=from,text"
+
+    response = requests.get(url=url,headers=headers)
+
+    response_json_1 = response.json()
+
+    elements = response_json_1.get("data")
+    data = []
+    if elements:
+        for element in elements:
+            text = element["text"]
+            if element and len(elements)>0:
+                actor = element['from']['id']
+
+                url = f"https://graph.facebook.com/v17.0/{actor}?fields=profile_picture_url,name"
+
+                response_2 = requests.get(url=url,headers=headers)
+
+                response_json_2 = response_2.json()
+
+                if "profile_picture_url" in response_json_2:
+                    display_image = response_json_2.get("profile_picture_url")
+                else:
+                    display_image = ""
+
+                name = response_json_2.get("name")
+
+                obj = {'name': name, "profile_image": display_image, "text": text}
+                data.append(obj)
+            else:
+                obj = {'name': "", "profile_image": "", "text": ""}
+                data.append(obj)
+
+    return t_likes, t_comments, data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def getUserdata(accountid,access_token):
     url = f"https://graph.facebook.com/v17.0/{accountid}?fields=username,follows_count,followers_count,profile_picture_url"
     headers = {
@@ -436,10 +574,6 @@ def getmediaid(image,data,post):
     }
 
     response = requests.post(url,headers=headers,data=data)
-
-
-
-
 
     # image.save()
 
@@ -902,6 +1036,8 @@ def linkedin_org_stats(access_token_string, id, data_list):
     # return data_list
 
 
+
+
 def linkedin_retrieve_access_token(self):
     user = self.request.user  # Set the user to the logged-in user
     social = SocialAccount.objects.get(user=user.id,provider='linkedin_oauth2')
@@ -1327,3 +1463,5 @@ def text_post_linkedin(post, access_token_string, org_id):
 
         response = requests.request("POST", url, headers=headers, data=payload)
         return response
+
+

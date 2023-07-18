@@ -45,7 +45,7 @@
         <div class="grid grid-cols-2 min-w-full">
             <div>
                 <figure>
-                    <figcaption>{{linkedin_post.post}}</figcaption>
+                    <figcaption>{{post.post}}</figcaption>
                 </figure>
             </div>
             <br>
@@ -53,13 +53,13 @@
                 <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
                     <ol class="carousel-indicators">
                         <!-- Add indicators dynamically based on the number of images -->
-                        {% for image in linkedin_post.images.all %}
+                        {% for image in post.images.all %}
                         <li data-target="#carouselExampleIndicators" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" {% endif %}></li>
                         {% endfor %}
                     </ol>
                     <div class="carousel-inner">
                         <!-- Loop through the images and create carousel items -->
-                        {% for image in linkedin_post.images.all %}
+                        {% for image in post.images.all %}
                         {% if image.is_mp4_file %}
                         <div class="carousel-item {% if forloop.first %}active{% endif %}">
                             <video  controls>
