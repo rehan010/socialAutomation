@@ -69,7 +69,7 @@ MIDDLEWARE = [
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
-CSRF_TRUSTED_ORIGINS=['https://c681-72-255-15-110.ngrok-free.app']
+# CSRF_TRUSTED_ORIGINS=['https://c681-72-255-15-110.ngrok-free.app']
 # CORS_URLS_REGEX = r'^/accounts/register/.*$'
 
 LOGIN_REDIRECT_URL = "dashboard"
@@ -96,7 +96,7 @@ TEMPLATES = [
 AUTHENTICATION_BACKENDS = [
     # ...
     # Needed to login by username in Django admin, regardless of `allauth`
-    'django.contrib.auth.backends.ModelBackend',
+    # 'django.contrib.auth.backends.ModelBackend',
 
     # `allauth` specific authentication methods, such as login by e-mail
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -204,8 +204,19 @@ SOCIALACCOUNT_PROVIDERS = {
             'client_id': '33836610262-gvtpcrjpbdefm0td6e0g7e4c76gut9s8.apps.googleusercontent.com',
             'secret': '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',
             'key': ''
-        }
-    },
+        },
+
+        'SCOPE': [
+                'profile',
+                'email',
+                'https://www.googleapis.com/auth/business.manage'
+            ],
+        'AUTH_PARAMS': {
+                'access_type': 'online',
+            },
+        'OAUTH_PKCE_ENABLED': True,
+
+        },
 
     'linkedin_oauth2': {
 
@@ -238,6 +249,18 @@ SOCIALACCOUNT_PROVIDERS = {
         },
 
     },
+}
+DATABASES = {
+    'default': {
+
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'smart_pre',
+        'USER': 'smart_pre',
+        'PASSWORD': 'smart123!',
+        'HOST': 'localhost',
+        'PORT': '5432',
+
+    }
 }
 
 SOCIALACCOUNT_STORE_TOKENS = True
