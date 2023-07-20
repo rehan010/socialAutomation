@@ -7,7 +7,9 @@
 
 {% block content %}
 
-
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
 <div class="heading text-center font-bold text-2xl m-5 text-gray-800">New Post</div>
 <style>
   body {background:white !important;}
@@ -15,47 +17,10 @@
 </style>
 
   <div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
-    <!-- <input class="title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none" spellcheck="false" placeholder="Title" type="text">
-    <textarea class="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none" spellcheck="false" placeholder="Describe everything about this post here"></textarea>
-    <div class="mb-8">
-          <input type="file" name="file" id="file" class="sr-only" />
-          <label
-            for="file"
-            class="relative flex min-h-[200px] items-center justify-center rounded-md border border-dashed border-[#e0e0e0] p-12 text-center"
-          >
-            <div>
-              <span class="mb-2 block text-xl font-semibold text-[#07074D]">
-                Drop files here
-              </span>
-              <span class="mb-2 block text-base font-medium text-[#6B7280]">
-                Or
-              </span>
-              <span
-                class="inline-flex rounded border border-[#e0e0e0] py-2 px-7 text-base font-medium text-[#07074D]"
-              >
-                Browse
-              </span>
-            </div>
-          </label>
-        </div>  -->
-
-
-
-
-
     <form method="post" enctype="multipart/form-data" class="w-100">
         {% csrf_token %}
-
-
-        <!-- Media  -->
-
-
-
-        <!-- Text -->
-        <div class="emoji-picker-container">
-
-<!--        {{ form.post }}-->
-        <textarea name="post" cols="40" rows="10" data-emojiable="true" class="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none w-full" placeholder="Describe Everything about this post" id="id_post"></textarea>
+      <div class="emoji-picker-container">
+      <textarea name="post" cols="40" rows="10" data-emojiable="true" class="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none w-full" placeholder="Describe Everything about this post" id="id_post"></textarea>
         </div>
         <div class="icons flex text-gray-500 m-2" >
 <!--            <svg class="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7"-->
@@ -69,22 +34,7 @@
         <div class="error-message">{{ form.post.errors }}</div>
         {% endif %}
         <br>
-                <!-- <input type="text" name="media" class="w-full title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none"
-               spellcheck="false" placeholder="Media" type="text"/> -->
-
-<!--        <div class="flex items-center justify-center w-full">-->
-<!--          <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-dashed border-2 border-gray-200 bg-white-100  rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-white-700 hover:bg-gray-100 hover:border-gray-400">-->
-<!--              <div class="flex flex-col items-center justify-center pt-5 pb-6">-->
-<!--                  <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">-->
-<!--                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>-->
-<!--                  </svg>-->
-<!--                  <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>-->
-<!--                  <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>-->
-<!--              </div>-->
-<!--              <input id="dropzone-file" name="images" type="file" class="hidden" multiple="multiple"/>-->
-<!--          </label>-->
-<!--        </div>-->
-        <div class="flex items-center justify-center w-full" >
+         <div class="flex items-center justify-center w-full" >
             <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-dashed border-2 border-gray-200 bg-white-100 rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-white-700 hover:bg-gray-100 hover:border-gray-400">
                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
                     <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
@@ -97,11 +47,7 @@
             </label>
         </div>
         <div id="image-preview-container" class="flex flex-wrap"></div>
-
-
-
-
-        <!-- Scheduling options -->
+   <!-- Scheduling options -->
 
         <div class="-mx-3 flex flex-wrap " id="date-div">
             <div class="w-full px-3 sm:w-1/2">
@@ -212,7 +158,7 @@
                     <label class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         <input type="checkbox"
                                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
-                               name="linkedin" value="{{obj.key}}"/>
+                               name="linkedin" value="{{ obj.key }}">
                         <span class="ml-2 text-sm">{{obj.name}}</span>
                     </label>
 
@@ -235,48 +181,11 @@
                   Google
               </button>
           </div>
-         
-                <!-- Media  -->
-
-
-
-
-                <!-- <input type="text" name="media" class="w-full title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none" spellcheck="false" placeholder="Media" type="text"/> -->
-                
-              
-
-
-                <!-- Text -->
-
-                <!-- {{ form.post }}
-                {% if form.name.errors %}
-                 <div class="error-message">{{ form.post.errors }}</div>
-                {% endif %} -->
-
-
-                <!-- Scheduling options -->
-                <!-- <div class="w-full flex items-center mt-4">
-                    <label class="mr-4 font-bold">Scheduling Option</label>
-                    <div class="ml-auto flex">
-                      <div class="px-4 py-2 bg-gray-100 text-black rounded-l-lg border border-gray-300 hover:bg-gray-200 Scheduling-contoller text-sm">
-                        Publish Now
-                        <input type="checkbox" name="publish-now" style="display: none;" value="on">
-
-                    </div>
-                </div>
-
-            </div> -->
-
-
-            
-            
-
-
         </div>
         <li class="relative block px-0 py-2 bg-white border-0 rounded-t-lg text-inherit">
                     <div class="min-h-6 mb-0.5 block pl-0">
-                      <input id="follow" class="mt-0.54 rounded-10 duration-250 ease-soft-in-out after:rounded-circle after:shadow-soft-2xl after:duration-250 checked:after:translate-x-5.25 h-5 relative float-left ml-auto w-10 cursor-pointer appearance-none border border-solid border-gray-200 bg-slate-800/10 bg-none bg-contain bg-left bg-no-repeat align-top transition-all after:absolute after:top-px after:h-4 after:w-4 after:translate-x-px after:bg-white after:content-[''] checked:border-slate-800/95 checked:bg-slate-800/95 checked:bg-none checked:bg-right" type="checkbox" checked/>
-                      <label for="follow" class="w-4/5 mb-0 ml-4 overflow-hidden font-normal cursor-pointer select-none text-sm text-ellipsis whitespace-nowrap text-slate-500" for="flexSwitchCheckDefault">Allow Comments</label>
+                      <input id="follow" name="comment_check" class="mt-0.54 rounded-10 duration-250 ease-soft-in-out after:rounded-circle after:shadow-soft-2xl after:duration-250 checked:after:translate-x-5.25 h-5 relative float-left ml-auto w-10 cursor-pointer appearance-none border border-solid border-gray-200 bg-slate-800/10 bg-none bg-contain bg-left bg-no-repeat align-top transition-all after:absolute after:top-px after:h-4 after:w-4 after:translate-x-px after:bg-white after:content-[''] checked:border-slate-800/95 checked:bg-slate-800/95 checked:bg-none checked:bg-right" type="checkbox" {% if comment_check %}checked{% endif %}>
+                        <label for="follow" class="w-4/5 mb-0 ml-4 overflow-hidden font-normal cursor-pointer select-none text-sm text-ellipsis whitespace-nowrap text-slate-500" for="follow">Allow Comments</label>
                     </div>
         </li>
 
@@ -289,36 +198,29 @@
                     <button class="" id="publishButton"
                     type="submit">Publish Now Post
                     </button>
-<!--                    <input type="checkbox" name="publish-now" style="display: none;" value="on" onclick="showDiv()">-->
                 </div>
 
                 <div class="px-4 py-2 ml-2 bg-gray-100 text-black rounded-r-lg border border-gray-300 hover:bg-gray-200 text-sm Scheduling-contoller">
 
-<!--                    <input type="checkbox" name="seheduler" style="display: none;" value="on" onclick="hideDiv()">-->
-                    <button class=""
-                    type="submit">Schedule Post
-                     </button>
+                   <button id="scheduleBtn">Schedule Post</button>
                 </div>
+<!--                <form id="scheduleForm" method="post">-->
+<!--                    {% csrf_token %}-->
+<!--                    {{ form.as_p }}-->
+<!--                    <button type="submit">Schedule</button>-->
+<!--                </form>-->
+<!--                <div class="hidden" id="scheduleDateTimePicker"></div>-->
             </div>
         </div>
-<!--        <input type="file" name="images" id="" multiple="multiple">-->
-
-<!--        <div class="buttons flex">-->
-<!--            <button class="btn border border-indigo-500 p-1 px-4 font-semibold cursor-pointer text-gray-200 ml-2 bg-indigo-500 ml-auto"-->
-<!--                    type="submit">Post-->
-<!--            </button>-->
-<!--        </div>-->
-
     </form>
-    <!-- icons -->
 </div>
     <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
 
-    <!-- Begin emoji-picker JavaScript -->
     <script src="{% static 'lib/js/config.min.js'%}"></script>
     <script src="{% static 'lib/js/util.min.js'%}"></script>
     <script src="{% static 'lib/js/jquery.emojiarea.min.js'%}"></script>
     <script src="{% static 'lib/js/emoji-picker.min.js'%}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 
 <script>
@@ -433,6 +335,31 @@ sehedule_controller.forEach((button) => {
     publishInput.value = "publish";
     });
     });
+
+    document.addEventListener("DOMContentLoaded", function () {
+    // Get the schedule button element
+    const scheduleBtn = document.getElementById("scheduleBtn");
+
+    // Function to show the date-time picker when the button is clicked
+    scheduleBtn.addEventListener("click", function () {
+      const currentDate = new Date();
+      flatpickr("#scheduleDateTimePicker", {
+        enableTime: true,
+        minDate: currentDate,
+        defaultDate: currentDate,
+      });
+    });
+
+    // Function to submit the form with the selected scheduled date-time
+    const form = document.getElementById("scheduleForm");
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const selectedDateTime = document.getElementById("scheduleDateTimePicker").value;
+      // You can use AJAX or other methods to submit the selectedDateTime to the server for scheduling
+      // For demonstration purposes, we'll just display the selected date-time
+      alert(`Post Scheduled for: ${selectedDateTime}`);
+    });
+  });
 
 </script>
 

@@ -65,6 +65,12 @@ class PostModelForm(forms.ModelForm):
 
 
 class CommentForm(forms.Form):
-    comment = forms.CharField(widget=forms.Textarea(attrs={
-        'name':'comment'
-    }))
+    comment = forms.CharField(widget=forms.Textarea(attrs={'name': 'comment'}))
+
+
+# class SchedulePostForm(forms.ModelForm):
+#     scheduled_date = forms.DateTimeField()
+#
+#     class Meta:
+#         model = ScheduledPost
+#         fields = ['scheduled_date']

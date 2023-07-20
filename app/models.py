@@ -1,7 +1,7 @@
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
 from django.db import models
-
+from django.utils import timezone
 User = get_user_model()
 
 # Create your models here.
@@ -68,6 +68,16 @@ class PostModel(BaseModel):
         post_urn_list = ", ".join(str(org) for org in self.post_urn.all())
         return f"{self.post} - Post To: {post_urn_list}"
 
+    # def publish(self):
+    #     # Logic for immediate publishing
+    #     self.published_date = timezone.now()
+    #     self.save()
+    #
+    # def schedule(self, scheduled_date):
+    #     # Logic for scheduling the post
+    #     scheduled_post = ScheduledPost.objects.create(post=self, scheduled_date=scheduled_date)
+    #     return scheduled_post
+
 
 
 class SharePage(models.Model):
@@ -89,3 +99,8 @@ class Post_urn(models.Model):
 
     def __str__(self):
         return self.org.name + "--" + self.urn
+
+
+# class ScheduledPost(models.Model):
+#     post = models.ForeignKey(PostModel, on_delete=models.CASCADE)
+#     scheduled_date = models.DateTimeField()

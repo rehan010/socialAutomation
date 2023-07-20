@@ -287,10 +287,10 @@ class PostCreateView(CreateView):
                 linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
                 data['linkedin_page'] = linkedin_page
 
-
+        comment_check = True
         self.request.session['context'] = data
 
-        context = {"data": data, 'form': self.get_form()}
+        context = {'comment_check': comment_check,"data": data, 'form': self.get_form()}
         return context
 
     def form_invalid(self, form):
@@ -298,31 +298,40 @@ class PostCreateView(CreateView):
         print(self.request.POST.getlist("facebook[]"))
         print( self.request.FILES.get('file'))
 
-        return redirect(reverse("my_posts",kwargs={'pk': self.request.user.id}))
+        return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
+
     def form_valid(self, form):
         requestdata = dict(self.request.POST)
+        context = self.request.session.get('context')
         requestdata.pop("csrfmiddlewaretoken")
         caption = requestdata.pop("post")
         post = form.save(commit=False)
         post.user = self.request.user
+        social = SocialAccount.objects.get(user=self.request.user, provider='linkedin_oauth2')
         post.save()
-        comment_check = form.cleaned_data.get('comment_check', False)
+        comment_check = form.cleaned_data.get('comment_check')
         if comment_check:
             post.comment_check = True
         else:
             post.comment_check = False
         post.save()
 
-        for page in requestdata.get('linkedin'):
+        for page in requestdata.get("linkedin"):
+            i = 0
+            while context.get('linkedin_page')[i].get('key') != page:
+                i += 1
+            info = context.get('linkedin_page').pop(i)
             if SharePage.objects.filter(org_id=page).exists():
                 prepost = SharePage.objects.get(org_id=page)
                 post.prepost_page.add(prepost)
                 post.save()
             else:
-                prepost = SharePage(org_id=page)
+                prepost = SharePage.objects.create(org_id=page, provider='linkedin', user=social, name=info['name'])
                 prepost.save()
                 post.prepost_page.add(prepost)
                 post.save()
+
+
         # for page in requestdata.get('facebook'):
         #     prepost = SharePage.objects.filter(org_id=page)
         #     post.prepost_page.add(prepost)
@@ -423,34 +432,14 @@ class PostCreateView(CreateView):
                     instagrampost(self.request, data, access_token,image_object[0],post,sharepage)
 
             elif platform == "linkedin":
-                socialaccount = SocialAccount.objects.get(user=self.request.user , provider = "linkedin_oauth2")
-
-
+                socialaccount = SocialAccount.objects.get(user=self.request.user, provider="linkedin_oauth2")
                 access_token = SocialToken.objects.filter(account=socialaccount)[0]
                 access_token_string = str(access_token)
                 for page in requestdata.get("linkedin"):
-                    i = 0
-                    while context.get('linkedin_page')[i].get('key') != page:
-                        i += 1
 
-                    # print((context.get('facebook_page')[i].get('id')))
-                    info = context.get('linkedin_page').pop(i)
-
-                    ispageexist = SharePage.objects.filter(org_id=info.get('key')).exists()
-                    # Store Shared Page
-                    if ispageexist:
-                        post.save()
-                    else:
-                        sharepage = SharePage.objects.create(user=socialaccount)
-                        sharepage.org_id = info.get('key')
-                        sharepage.name = info.get('name')
-                        sharepage.access_token = info.get('access_token')
-                        sharepage.provider = "linkedin"
-                        sharepage.save()
-                        post.save()
-                    org_id = info.get('key')
+                    org_id = page
                     image_m = PostModel.objects.get(id=post.id)
-                    org = SharePage.objects.get(org_id=info.get('key'))
+                    org = SharePage.objects.get(org_id=page)
                     create_l_multimedia(images, org_id, access_token_string, clean_file,
                                         get_video_urn, image_m, upload_video, post_video_linkedin,
                                         org, get_img_urn, upload_img, post_single_image_linkedin,

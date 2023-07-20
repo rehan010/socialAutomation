@@ -21,6 +21,8 @@ urlpatterns = [
     path('users/',UserView.as_view(),name='my_user'),
     path('users/create/',UserCreateView.as_view(),name='create_user'),
 
+    # path('<int:post_id>/publish/', views.publish_post, name='publish_post'),
+    # path('<int:post_id>/schedule/', views.schedule_post, name='schedule_post'),
 
     path("facebook/",FacebookRedirectUri.as_view(),name="facebook_redirect"),
     path('instagram/',InstagramRedirectUri.as_view(),name="instagram_redirect"),
