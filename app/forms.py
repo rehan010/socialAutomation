@@ -62,3 +62,9 @@ class PostModelForm(forms.ModelForm):
                 'class': 'description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none w-full',
                 'placeholder': 'Describe Everything about this post'
              })
+
+
+class CommentForm(forms.Form):
+    comment = forms.CharField(widget=forms.Textarea(attrs={
+        'name':'comment'
+    }))

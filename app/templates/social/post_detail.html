@@ -187,7 +187,6 @@
                             </div>
                         </div>
                         {% endfor %}
-
                         <div class="mt-2">
                             <div class="flex items-start">
                                     <textarea class="w-full resize-none outline-none appearance-none"
@@ -203,8 +202,25 @@
                         <p>Comments are disabled for this post.</p>
                         {% endif %}
                     </div>
+
+
+<!--                <div class="pt-4 pb-12 pr-3">-->
+<!--                    <div class="flex items-start">-->
+<!--                        <form method="post" enctype="multipart/form-data" action="{% url 'comment_post'%}">-->
+<!--                            {% csrf_token %}-->
+<!--                            <textarea class="w-full resize-none outline-none appearance-none"-->
+<!--                                  aria-label="Agrega un comentario..." placeholder="write a comment" autocomplete="off"-->
+<!--                                  autocorrect="off" style="height: 36px;width: 300px;" name="comment"></textarea>-->
+<!--                            <input type="text" value="{{ids}}" name="id" style="display:none;">-->
+<!--                            <input type="text" value="{{page_id}}" name="page_id" style="display:none;">-->
+<!--                            <input type="text" value="{{post_id}}" name="post_id" style="display:none;">-->
+<!--                            <input type="text" value="{{provider_name}}" name="provider_name" style="display:none;">-->
+<!--                            <button class="mb-2 focus:outline-none border-none bg-transparent text-blue-600">post</button>-->
+<!--                        </form>-->
+<!--                        -->
+<!--                    </div>-->
+<!--                </div>-->
                 </div>
-                <!--                </div>-->
             </div>
         </div>
     </div>

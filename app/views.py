@@ -571,7 +571,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'post': linkedin_post,
                 'posted_on': posted_on,
                 'post_id': post_id,
-
+                'provider_name': provider_name
             }
 
         elif self.request.GET.get('page_name') == 'facebook':
@@ -593,14 +593,16 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 data = result[2]
 
             context = {
-                # 'ids': ids,
+                'ids': urn,
                 'no_likes': no_likes,
                 'no_comments': no_comments,
                 'data': data,
                 'posts': PostModel.objects.filter(user_id=self.request.user.id),
                 'post': facebook_post,
                 'posted_on': posted_on,
-                'post_id': post_id
+                'post_id': post_id,
+                'page_id':page_id,
+                'provider_name': provider_name
             }
         elif self.request.GET.get('page_name') == 'instagram':
             provider_name = "instagram"
@@ -620,14 +622,16 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 data = result[2]
 
             context = {
-                # 'ids': ids,
+                'ids': urn,
                 'no_likes': no_likes,
                 'no_comments': no_comments,
                 'data': data,
                 'posts': PostModel.objects.filter(user_id=self.request.user.id),
                 'post': instagram_post,
                 'posted_on': posted_on,
-                'post_id': post_id
+                'post_id': post_id,
+                'page_id': page_id,
+                'provider_name': provider_name
             }
 
 
@@ -715,6 +719,43 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
         return redirect(reverse("my_detail_posts", kwargs={'post_id': post_id, 'page_id': page_id}))
 
+
+class CommentPostView(FormView):
+    form_class = CommentForm
+
+    def form_invalid(self, form):
+        form
+        self.request.POST
+        post_id = self.request.POST.get('post_id')  # Assuming post_id is submitted via POST data
+        page_id = self.request.POST.get('page_id')  # Assuming page_id is submitted via POST data
+        return redirect(reverse('my_detail_posts', kwargs={'post_id': post_id, 'page_id': page_id}))
+
+
+
+    def form_valid(self, form):
+
+        urn = self.request.POST.get('id')
+        text = self.request.POST.get('comment')
+        provider = self.request.POST.get('provider_name')
+        post_id = self.request.POST.get('post_id')  # Assuming post_id is submitted via POST data
+        page_id = self.request.POST.get('page_id')  # Assuming page_id is submitted via POST data
+        # media = self.request.FILES.get("media")  # if media is a file
+        media = self.request.POST.get('media')
+        access_token = Post_urn.objects.get(urn = urn).org.access_token
+
+        if provider == "facebook":
+            commentresponse = fb_post_comments(urn,text,media,access_token)
+
+        elif provider == "instagram":
+            facebook_account = SocialAccount.objects.get(user_id=self.request.user.id, provider="facebook")
+            access_token_string = SocialToken.objects.get(account=facebook_account).token
+            commentresponse = fb_post_comments(urn,text,media,access_token_string)
+
+
+
+        redirect_url = reverse('my_detail_posts', kwargs={'post_id': post_id, 'page_id': page_id})
+        redirect_url += f'?page_name={provider}'
+        return redirect(redirect_url)
 
 
 

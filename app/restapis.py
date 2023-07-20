@@ -1642,3 +1642,44 @@ def text_post_linkedin(post, access_token_string, org_id):
         return response
 
 
+def fb_post_comments(urn,text,media,access_token):
+
+    url = f"https://graph.facebook.com/{urn}/comments"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    data = {}
+
+    if text:
+        data['message'] = text
+
+
+    if media or media != '':
+        data['attachment_url'] = media
+
+    response = requests.post(url=url,headers=headers,data=data)
+
+    return response.json()
+
+
+def insta_post_comments(urn,text,access_token):
+
+    url = f"https://graph.facebook.com/{urn}/comments"
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    data = {}
+
+    if text:
+        data['message'] = text
+
+    # if media or media != '':
+    #     data['attachment_url'] = media dose not support media in comments
+
+    response = requests.post(url=url, headers=headers, data=data)
+
+    return response.json()
+

@@ -31,6 +31,9 @@ urlpatterns = [
     path('create/post/', PostCreateView.as_view(), name='create_post'),
     path('posts/<int:pk>', PostsGetView.as_view(), name='my_posts'),
     path('posts/detail/<int:post_id>/<int:page_id>', PostsDetailView.as_view(), name='my_detail_posts'),
+    path("post/comment/",CommentPostView.as_view(),name = "comment_post"),
+
+
 
 #     REST APIS
 
