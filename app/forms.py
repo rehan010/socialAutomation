@@ -43,17 +43,17 @@ class PointFileModelForm(forms.ModelForm):
 class SharePageForm(forms.ModelForm):
     class Meta:
         model = SharePage
-        fields = ('user','org_id')
+        fields = ('user', 'org_id')
 
 
 class PostModelForm(forms.ModelForm):
     facebook = forms.BooleanField(widget=forms.CheckboxInput(),required=False)
     instagram = forms.BooleanField(widget=forms.CheckboxInput(),required=False)
-    linkdien = forms.BooleanField(widget=forms.CheckboxInput(),required=False)
+    linkedin = forms.BooleanField(widget=forms.CheckboxInput(),required=False)
 
     class Meta:
         model = PostModel
-        fields = ('post','facebook','instagram','linkdien',)
+        fields = ('post', 'facebook', 'instagram', 'linkedin', 'comment_check')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

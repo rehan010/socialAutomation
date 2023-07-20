@@ -53,11 +53,16 @@ class ImageModel(models.Model):
         return file_extension == 'mp4'
 
 class PostModel(BaseModel):
+    POST_TYPE = [('DRAFT', 'DRAFT'), ('PUBLISHED', 'PUBLISHED'),('SCHEDULED', 'SCHEDULED')]
     post = models.TextField(blank=True)
     images = models.ManyToManyField('ImageModel')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True,blank=True)
     post_urn = models.ManyToManyField('Post_urn')
-    file = models.FileField(upload_to='videos/')
+    prepost_page = models.ManyToManyField('SharePage')
+    comment_check = models.BooleanField(default=True)
+    publish_check = models.BooleanField(default=False)
+    status = models.CharField(default='DRAFT', max_length=100, choices=POST_TYPE)
+
 
     def __str__(self):
         post_urn_list = ", ".join(str(org) for org in self.post_urn.all())

@@ -275,18 +275,18 @@
         </div>
         <li class="relative block px-0 py-2 bg-white border-0 rounded-t-lg text-inherit">
                     <div class="min-h-6 mb-0.5 block pl-0">
-                      <input id="follow" class="mt-0.54 rounded-10 duration-250 ease-soft-in-out after:rounded-circle after:shadow-soft-2xl after:duration-250 checked:after:translate-x-5.25 h-5 relative float-left ml-auto w-10 cursor-pointer appearance-none border border-solid border-gray-200 bg-slate-800/10 bg-none bg-contain bg-left bg-no-repeat align-top transition-all after:absolute after:top-px after:h-4 after:w-4 after:translate-x-px after:bg-white after:content-[''] checked:border-slate-800/95 checked:bg-slate-800/95 checked:bg-none checked:bg-right" type="checkbox" " checked />
+                      <input id="follow" class="mt-0.54 rounded-10 duration-250 ease-soft-in-out after:rounded-circle after:shadow-soft-2xl after:duration-250 checked:after:translate-x-5.25 h-5 relative float-left ml-auto w-10 cursor-pointer appearance-none border border-solid border-gray-200 bg-slate-800/10 bg-none bg-contain bg-left bg-no-repeat align-top transition-all after:absolute after:top-px after:h-4 after:w-4 after:translate-x-px after:bg-white after:content-[''] checked:border-slate-800/95 checked:bg-slate-800/95 checked:bg-none checked:bg-right" type="checkbox" checked/>
                       <label for="follow" class="w-4/5 mb-0 ml-4 overflow-hidden font-normal cursor-pointer select-none text-sm text-ellipsis whitespace-nowrap text-slate-500" for="flexSwitchCheckDefault">Allow Comments</label>
                     </div>
-                  </li>
+        </li>
 
 
         <div class="w-full flex items-center mt-4">
 <!--            <label class="mr-4 font-bold">Schedule</label>-->
             <div class="ml-auto flex">
                 <div class="px-4 py-2 bg-gray-100 text-black rounded-l-lg border border-gray-300 hover:bg-gray-200 Scheduling-contoller text-sm">
-
-                    <button class=""
+                    <input type="hidden" id="publishInput" name="action" value="">
+                    <button class="" id="publishButton"
                     type="submit">Publish Now Post
                     </button>
 <!--                    <input type="checkbox" name="publish-now" style="display: none;" value="on" onclick="showDiv()">-->
@@ -423,8 +423,19 @@ sehedule_controller.forEach((button) => {
             reader.readAsDataURL(file);
         }
     }
+    document.addEventListener("DOMContentLoaded", function() {
+
+    var publishButton = document.getElementById("publishButton");
+    var publishInput = document.getElementById("publishInput");
+
+    publishButton.addEventListener("click", function() {
+
+    publishInput.value = "publish";
+    });
+    });
 
 </script>
+
 
 
 {% endblock %}
