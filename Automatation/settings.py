@@ -262,6 +262,7 @@ DATABASES = {
 
     }
 }
+AUTH_USER_MODEL = 'app.user'
 
 SOCIALACCOUNT_STORE_TOKENS = True
 
@@ -323,6 +324,10 @@ if DEBUG:
 #     # Other allowed origins if needed
 # ]
 
+GRAPH_MODELS = {
+  'all_applications': True,
+  'group_models': True,
+}
 
 CORS_ALLOW_ALL_ORIGINS = True
 SOCIALACCOUNT_ADAPTER  = 'app.adapter.CustomAccountAdapter'

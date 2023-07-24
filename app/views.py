@@ -187,7 +187,8 @@ class ConnectPageView(LoginRequiredMixin,CreateView):
             if share.count() > 0:
                 pass
             else:
-                SharePage.objects.create(user=social,organizations_id=id)
+                # SharePage.objects.create(user=social,organizations_id=id)
+                SharePage.objects.create(user=self.request.user,organizations_id=id)
 
         return redirect(reverse("ln_posts", kwargs={'pk': self.request.user.id}))
 
@@ -326,7 +327,8 @@ class PostCreateView(CreateView):
                 post.prepost_page.add(prepost)
                 post.save()
             else:
-                prepost = SharePage.objects.create(org_id=page, provider='linkedin', user=social, name=info['name'])
+                # prepost = SharePage.objects.create(org_id=page, provider='linkedin', user=social, name=info['name'])
+                prepost = SharePage.objects.create(org_id=page, provider='linkedin', user=self.request.user, name=info['name'])
                 prepost.save()
                 post.prepost_page.add(prepost)
                 post.save()
@@ -382,7 +384,8 @@ class PostCreateView(CreateView):
                         # sharepage.post.add(post)
 
                     else:
-                        sharepage = SharePage.objects.create(user=socialaccount)
+                        # sharepage = SharePage.objects.create(user=socialaccount)
+                        sharepage = SharePage.objects.create(user=self.request.user)
                         sharepage.name = info.get('name')
                         sharepage.access_token = info.get('access_token')
                         sharepage.org_id = info.get('id')
@@ -415,7 +418,8 @@ class PostCreateView(CreateView):
                     sharepage = SharePage.objects.get(org_id=info.get('id'))
 
                 else:
-                    sharepage = SharePage.objects.create(user=socialaccount)
+                    # sharepage = SharePage.objects.create(user=socialaccount)
+                    sharepage = SharePage.objects.create(user=self.request.user)
                     sharepage.name = info.get('name')
                     sharepage.access_token = info.get('access_token')
                     sharepage.organizations_id = info.get('id')

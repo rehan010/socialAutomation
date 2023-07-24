@@ -1,10 +1,61 @@
-from allauth.socialaccount.models import SocialAccount
-from django.contrib.auth import get_user_model
+# from allauth.socialaccount.models import SocialAccount
+# from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
-User = get_user_model()
+# User = get_user_model()
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.base_user import BaseUserManager
+
+class CustomUserManager(BaseUserManager):
+
+    use_in_migrations = True
+    """
+    Custom user model manager where email is the unique identifiers
+    for authentication instead of usernames.
+    """
+    def create_user(self, email, password, **extra_fields):
+        """
+        Create and save a User with the given email and password.
+        """
+        extra_fields.setdefault('is_active', False)
+
+        if not email:
+            raise ValueError(_('The Email must be set'))
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def create_superuser(self, email, password, **extra_fields):
+        """
+        Create and save a SuperUser with the given email and password.
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError(_('Superuser must have is_staff=True.'))
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError(_('Superuser must have is_superuser=True.'))
+        return self.create_user(email, password, **extra_fields)
+
 
 # Create your models here.
+class User(AbstractUser):
+    # Add your custom fields here
+    # Example:
+    age = models.IntegerField(blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    company = models.TextField(blank=True, null=True)
+
+    objects = CustomUserManager()
+    class Meta:
+        db_table = 'user'
+        verbose_name = 'Smart User'
+        verbose_name_plural = 'Smart Users'
+
 
 
 class BaseModel(models.Model):
@@ -85,7 +136,7 @@ class SharePage(models.Model):
     name = models.CharField(max_length=1000, blank=True)
     provider = models.CharField(max_length=255, blank=True)
     access_token = models.CharField(max_length=500, blank=True,null=True)
-    user = models.ForeignKey(SocialAccount, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name

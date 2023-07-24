@@ -207,90 +207,102 @@ toggleButton.addEventListener('click', () => {
 
 
 </script>
-<script>
-      const data = JSON.parse(document.getElementById('point_files').textContent);
-      console.log(data);
-      for (var i = 0; i < data.length; i++) {
-      var pointFile = data[i];
-      console.log(pointFile);
-      console.log("Point File ID: " + pointFile.id);
-      var map = L.map("map_"+pointFile.id.toString()).setView([pointFile.lat_long[0].latitude, pointFile.lat_long[0].longitude], 5);
 
-        // Add the tile layer (you can use a different tile provider)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+<script src="{% static 'assets/js/plugins/chartjs.min.js' %}" async></script>
+<!-- plugin for scrollbar  -->
+<script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}" async></script>
+<!-- github button -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+<!-- main script file  -->
+<!--  <script src="{% static 'assets/js/soft-ui-dashboard-tailwind.js?v=1.0.5' %}" async></script>-->
+<script src="{% static 'assets/js/chart-1.js' %}" async></script>
+<script src="{% static 'assets/js/chart-2.js' %}" async></script>
+<script src="{% static 'assets/js/dropdown.js' %}" async></script>
+<script src="{% static 'assets/js/perfect-scrollbar.js' %}" async></script>
+<!--<script>-->
+<!--      const data = JSON.parse(document.getElementById('point_files').textContent);-->
+<!--      console.log(data);-->
+<!--      for (var i = 0; i < data.length; i++) {-->
+<!--      var pointFile = data[i];-->
+<!--      console.log(pointFile);-->
+<!--      console.log("Point File ID: " + pointFile.id);-->
+<!--      var map = L.map("map_"+pointFile.id.toString()).setView([pointFile.lat_long[0].latitude, pointFile.lat_long[0].longitude], 5);-->
 
-          var latLongList = pointFile.lat_long;
-          console.log(latLongList);
-          for (var j = 0; j < latLongList.length; j++) {
-            var latLong = latLongList[j];
-            var marker = L.marker([latLong.latitude,latLong.longitude]);
-            marker.bindPopup("Latitude: " + latLong.latitude + "<br>Longitude: " + latLong.longitude);
+<!--        // Add the tile layer (you can use a different tile provider)-->
+<!--        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {-->
+<!--            attribution: '&copy; OpenStreetMap contributors'-->
+<!--        }).addTo(map);-->
 
-            // Add the marker to the map
-            marker.addTo(map);
+<!--          var latLongList = pointFile.lat_long;-->
+<!--          console.log(latLongList);-->
+<!--          for (var j = 0; j < latLongList.length; j++) {-->
+<!--            var latLong = latLongList[j];-->
+<!--            var marker = L.marker([latLong.latitude,latLong.longitude]);-->
+<!--            marker.bindPopup("Latitude: " + latLong.latitude + "<br>Longitude: " + latLong.longitude);-->
 
-
-            console.log("Latitude: " + latLong.latitude);
-            console.log("Longitude: " + latLong.longitude);
-          }
-    };
-
-
-<!--window.fbAsyncInit = function() {-->
-<!--  FB.init({-->
-<!--    appId: '283757437433759',-->
-<!--    cookie: true,-->
-<!--    xfbml: true,-->
-<!--    version: 'v17.0'-->
-<!--  });-->
-
-<!--  FB.AppEvents.logPageView();-->
-
-<!--  FB.getLoginStatus(function(response) {-->
-<!--    statusChangeCallback(response);-->
-<!--  });-->
-
-<!--  function statusChangeCallback(response) {-->
-<!--    if (response.status === 'connected') {-->
-<!--      // User is logged in and has authorized your app-->
-<!--      var accessToken = response.authResponse.accessToken;-->
-<!--      console.log('Access Token:', accessToken);-->
-<!--      localStorage.setItem('accessToken', accessToken);-->
-<!--    } else if (response.status === 'not_authorized') {-->
-<!--      // User is logged in to Facebook, but has not authorized your app-->
-
-<!--      console.log('User has not authorized the app.');-->
-<!--    } else {-->
-<!--      // User is not logged in to Facebook-->
-<!--      FB.login(function(response2){-->
-<!--        console.log(response2);-->
-<!--         // handle the response-->
-<!--        });-->
-<!--      console.log('User is not logged in to Facebook.');-->
-<!--    }-->
-<!--  }-->
-
-<!--  function checkLoginState() {-->
-<!--    FB.getLoginStatus(function(response) {-->
-<!--      statusChangeCallback(response);-->
-<!--    });-->
-<!--  }-->
-<!--};-->
-
-<!--(function(d, s, id) {-->
-<!--  var js, fjs = d.getElementsByTagName(s)[0];-->
-<!--  if (d.getElementById(id)) { return; }-->
-<!--  js = d.createElement(s); js.id = id;-->
-<!--  js.src = "https://connect.facebook.net/en_US/sdk.js";-->
-<!--  fjs.parentNode.insertBefore(js, fjs);-->
-<!--}(document, 'script', 'facebook-jssdk'));-->
+<!--            // Add the marker to the map-->
+<!--            marker.addTo(map);-->
 
 
+<!--            console.log("Latitude: " + latLong.latitude);-->
+<!--            console.log("Longitude: " + latLong.longitude);-->
+<!--          }-->
+<!--    };-->
+
+
+<!--&lt;!&ndash;window.fbAsyncInit = function() {&ndash;&gt;-->
+<!--&lt;!&ndash;  FB.init({&ndash;&gt;-->
+<!--&lt;!&ndash;    appId: '283757437433759',&ndash;&gt;-->
+<!--&lt;!&ndash;    cookie: true,&ndash;&gt;-->
+<!--&lt;!&ndash;    xfbml: true,&ndash;&gt;-->
+<!--&lt;!&ndash;    version: 'v17.0'&ndash;&gt;-->
+<!--&lt;!&ndash;  });&ndash;&gt;-->
+
+<!--&lt;!&ndash;  FB.AppEvents.logPageView();&ndash;&gt;-->
+
+<!--&lt;!&ndash;  FB.getLoginStatus(function(response) {&ndash;&gt;-->
+<!--&lt;!&ndash;    statusChangeCallback(response);&ndash;&gt;-->
+<!--&lt;!&ndash;  });&ndash;&gt;-->
+
+<!--&lt;!&ndash;  function statusChangeCallback(response) {&ndash;&gt;-->
+<!--&lt;!&ndash;    if (response.status === 'connected') {&ndash;&gt;-->
+<!--&lt;!&ndash;      // User is logged in and has authorized your app&ndash;&gt;-->
+<!--&lt;!&ndash;      var accessToken = response.authResponse.accessToken;&ndash;&gt;-->
+<!--&lt;!&ndash;      console.log('Access Token:', accessToken);&ndash;&gt;-->
+<!--&lt;!&ndash;      localStorage.setItem('accessToken', accessToken);&ndash;&gt;-->
+<!--&lt;!&ndash;    } else if (response.status === 'not_authorized') {&ndash;&gt;-->
+<!--&lt;!&ndash;      // User is logged in to Facebook, but has not authorized your app&ndash;&gt;-->
+
+<!--&lt;!&ndash;      console.log('User has not authorized the app.');&ndash;&gt;-->
+<!--&lt;!&ndash;    } else {&ndash;&gt;-->
+<!--&lt;!&ndash;      // User is not logged in to Facebook&ndash;&gt;-->
+<!--&lt;!&ndash;      FB.login(function(response2){&ndash;&gt;-->
+<!--&lt;!&ndash;        console.log(response2);&ndash;&gt;-->
+<!--&lt;!&ndash;         // handle the response&ndash;&gt;-->
+<!--&lt;!&ndash;        });&ndash;&gt;-->
+<!--&lt;!&ndash;      console.log('User is not logged in to Facebook.');&ndash;&gt;-->
+<!--&lt;!&ndash;    }&ndash;&gt;-->
+<!--&lt;!&ndash;  }&ndash;&gt;-->
+
+<!--&lt;!&ndash;  function checkLoginState() {&ndash;&gt;-->
+<!--&lt;!&ndash;    FB.getLoginStatus(function(response) {&ndash;&gt;-->
+<!--&lt;!&ndash;      statusChangeCallback(response);&ndash;&gt;-->
+<!--&lt;!&ndash;    });&ndash;&gt;-->
+<!--&lt;!&ndash;  }&ndash;&gt;-->
+<!--&lt;!&ndash;};&ndash;&gt;-->
+
+<!--&lt;!&ndash;(function(d, s, id) {&ndash;&gt;-->
+<!--&lt;!&ndash;  var js, fjs = d.getElementsByTagName(s)[0];&ndash;&gt;-->
+<!--&lt;!&ndash;  if (d.getElementById(id)) { return; }&ndash;&gt;-->
+<!--&lt;!&ndash;  js = d.createElement(s); js.id = id;&ndash;&gt;-->
+<!--&lt;!&ndash;  js.src = "https://connect.facebook.net/en_US/sdk.js";&ndash;&gt;-->
+<!--&lt;!&ndash;  fjs.parentNode.insertBefore(js, fjs);&ndash;&gt;-->
+<!--&lt;!&ndash;}(document, 'script', 'facebook-jssdk'));&ndash;&gt;-->
 
 
 
-</script>
+
+
+<!--</script>-->
 
 </html>

@@ -6,12 +6,15 @@ from django.core.exceptions import ValidationError
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
-        fields = UserCreationForm.Meta.fields + ("email",)
+        model = User
+        fields = UserCreationForm.Meta.fields + ("email","bio","company")
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
             'password2': forms.PasswordInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'bio': forms.TextInput(attrs={'class': 'form-control'}),
+            'company': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
 
