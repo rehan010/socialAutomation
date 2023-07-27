@@ -12,8 +12,12 @@ from .forms import *
 import requests
 from .restapis import *
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from django.contrib.auth.models import User
-from allauth.socialaccount.models import EmailAddress, SocialAccount, SocialToken
+
+# from django.contrib.auth.models import User
+from .models import User
+from allauth.socialaccount.models import EmailAddress,SocialAccount,SocialToken
+from django.shortcuts import get_object_or_404
+from rest_framework import filters
 
 from google.oauth2 import id_token
 from google.auth.transport import requests as auth_requests
@@ -106,6 +110,27 @@ class ProfileView(LoginRequiredMixin,TemplateView):
     template_name = "registration/profile.html"
 class UserView(LoginRequiredMixin,TemplateView):
     template_name = "registration/users.html"
+    model = User
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['users'] = User.objects.filter(manager=self.request.user)
+        return context
+from rest_framework.generics import ListAPIView
+from django.db.models import Q
+from .serializer import UserGetSerializer
+class UserSearchView(ListAPIView):
+        queryset = User.objects.all()
+        serializer_class = UserGetSerializer
+        filter_backends = [filters.SearchFilter]
+        search_fields = ['email', 'username']  # Add more fields to search by
+
+        def get_queryset(self):
+            queryset = super().get_queryset()
+            search_query = self.request.query_params.get('q')
+            if search_query:
+                queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query))
+            return queryset
+
 
 class UserCreateView(LoginRequiredMixin,TemplateView):
     template_name = "registration/user_create.html"

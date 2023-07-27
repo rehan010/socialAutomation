@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.linkedin_oauth2',
     "django_extensions",
     'rest_framework',
+    'django_htmx',
+
     # 'allauth.socialaccount.providers.linkedin_oauth2',
     'app'
 ]
@@ -65,6 +67,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
+
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 

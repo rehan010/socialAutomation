@@ -54,6 +54,8 @@ class User(AbstractUser):
     age = models.IntegerField(blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     company = models.TextField(blank=True, null=True)
+    manager = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+
 
     objects = CustomUserManager()
     class Meta:
@@ -81,6 +83,19 @@ class BaseModel(models.Model):
     def restore(self):
         self.is_deleted = False
         self.save()
+
+
+class InviteEmploye(BaseModel):
+    token = models.CharField(max_length=255, blank=True)
+    invited_by = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
+    email = models.EmailField(("email address"), blank=True)
+    class Meta:
+        db_table = 'invite'
+        verbose_name = 'Invite Employe'
+        verbose_name_plural = 'Invite Employes'
+
+
+
 
 
 class PointFileModel(BaseModel):

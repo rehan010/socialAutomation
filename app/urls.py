@@ -19,6 +19,7 @@ urlpatterns = [
     path('connect/page',ConnectPageView.as_view(),name='connect_page'),
     path('profile/',ProfileView.as_view(),name='my_profile'),
     path('users/',UserView.as_view(),name='my_user'),
+    path('get/users/',UserSearchView.as_view(),name='get_users'),
     path('users/create/',UserCreateView.as_view(),name='create_user'),
 
     # path('<int:post_id>/publish/', views.publish_post, name='publish_post'),
