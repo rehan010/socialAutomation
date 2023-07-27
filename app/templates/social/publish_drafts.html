@@ -217,9 +217,12 @@
     <script src="{% static 'lib/js/jquery.emojiarea.min.js'%}"></script>
     <script src="{% static 'lib/js/emoji-picker.min.js'%}"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
 
 <script>
+
     {% verbatim %}
 
       $(function() {
@@ -341,29 +344,71 @@ sehedule_controller.forEach((button) => {
 
     var imageData = [
     {% for image in post.images.all %}
-        "{{ image }}",
+        "{{ image.image.url }},{{image.id}}",
     {% endfor %}
     ];
 
+       function deleteObject(pk) {
+       const csrfToken = getCookie('csrftoken');
+
+    $.ajax({
+        type: 'DELETE',
+        url: `/delete-post/${pk}/`,  // Replace 'your_app' with the actual name of your app
+        beforeSend: function(xhr) {
+            // Set the CSRF token in the request header
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+        },
+        success: function(response) {
+<!--            alert(response.message);  // Display the success message returned from the server-->
+            // Do additional actions if needed after successful deletion
+        },
+        error: function(xhr, status, error) {
+<!--            alert('Error deleting object: ' + xhr.responseText);-->
+        }
+    });
+}
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Check if the cookie name matches the CSRF token name (default name: 'csrftoken')
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
     // Function to display the images in the container
     function displaySavedImages() {
         var container = document.getElementById("image-preview-container");
 
         // Loop through the image URLs and create image elements
+
         imageData.forEach(function (imageUrl) {
             var imageContainer = document.createElement("div");
             imageContainer.classList.add("relative", "inline-block", "mr-2", "mb-2");
 
             var image = document.createElement("img");
-            image.src = imageUrl.image.url;
+            console.log(imageUrl.split(',')[0]);
+            image.src = imageUrl.split(',')[0];
             image.classList.add("w-64", "h-auto");
 
             var removeIcon = document.createElement("span");
             removeIcon.innerHTML = "&times;";
-            removeIcon.classList.add("absolute", "top-0", "right-0", "text-red-500", "cursor-pointer");
+            removeIcon.classList.add("badge","absolute", "top-0", "right-0", "badge-danger", "badge-pill", "cursor-pointer");
+            var id=imageUrl.split(',')[1];
+            console.log(id);
+
+
+
 
             removeIcon.addEventListener("click", function () {
+                deleteObject(id);
                 imageContainer.remove();
             })
 
@@ -412,15 +457,17 @@ sehedule_controller.forEach((button) => {
       });
     });
 
+
+
     // Function to submit the form with the selected scheduled date-time
-    const form = document.getElementById("scheduleForm");
-    form.addEventListener("submit", function (event) {
-      event.preventDefault();
-      const selectedDateTime = document.getElementById("scheduleDateTimePicker").value;
-      // You can use AJAX or other methods to submit the selectedDateTime to the server for scheduling
-      // For demonstration purposes, we'll just display the selected date-time
-      alert(`Post Scheduled for: ${selectedDateTime}`);
-    });
+<!--    const form = document.getElementById("scheduleForm");-->
+<!--    form.addEventListener("submit", function (event) {-->
+<!--      event.preventDefault();-->
+<!--      const selectedDateTime = document.getElementById("scheduleDateTimePicker").value;-->
+<!--      // You can use AJAX or other methods to submit the selectedDateTime to the server for scheduling-->
+<!--      // For demonstration purposes, we'll just display the selected date-time-->
+<!--      alert(`Post Scheduled for: ${selectedDateTime}`);-->
+<!--    });-->
   });
 
 </script>

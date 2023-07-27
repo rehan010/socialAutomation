@@ -12,6 +12,9 @@ from .forms import *
 import requests
 from .restapis import *
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from rest_framework.generics import ListAPIView,DestroyAPIView
+from django.db.models import Q
+from .serializer import *
 
 # from django.contrib.auth.models import User
 from .models import User
@@ -115,9 +118,7 @@ class UserView(LoginRequiredMixin,TemplateView):
         context = super().get_context_data(**kwargs)
         context['users'] = User.objects.filter(manager=self.request.user)
         return context
-from rest_framework.generics import ListAPIView
-from django.db.models import Q
-from .serializer import UserGetSerializer
+
 class UserSearchView(ListAPIView):
         queryset = User.objects.all()
         serializer_class = UserGetSerializer
@@ -128,7 +129,7 @@ class UserSearchView(ListAPIView):
             queryset = super().get_queryset()
             search_query = self.request.query_params.get('q')
             if search_query:
-                queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query))
+                queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query), ~Q(manager=self.request.user))
             return queryset
 
 
@@ -696,6 +697,16 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
         }
 
         return context
+from django.http import JsonResponse
+
+class PostDeleteView(DestroyAPIView):
+    queryset = ImageModel.objects.all()
+    serializer_class = PostImageSerializer
+    def delete(self, request, *args, **kwargs):
+        self.destroy(request, *args, **kwargs)
+        return JsonResponse({'message': 'Object deleted successfully.'})
+
+
 
 
 class PostsDetailView(LoginRequiredMixin, TemplateView):
@@ -827,11 +838,19 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         # provider_name3 = "Google Books"
         # google_post = PostModel.objects.get(post_urn__org__provider=provider_name3)
 
-
-
-
-
         return context
+
+    from django.views.decorators.http import require_http_methods
+
+    @require_http_methods(['DELETE'])
+    def delete_post(request, pk):
+        # remove the film from the user's list
+        request.user.file.remove(pk)
+
+        # return the template fragment
+        file = request.user.file.all()
+        return render(request, 'publish_drafts.html', {'posts': file})
+
     def post(self, request, **kwargs):
         comment = self.request.POST.get('comment')
         comment_urn_list = request.POST.getlist('comment_urn')

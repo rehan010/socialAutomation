@@ -3,20 +3,37 @@
 
 
 {% block content %}
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
 <div class="w-full px-6 py-6 mx-auto">
 <br>
-    <div class="flex justify-end">
-      <a href="{% url 'create_user' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-        Create User
-      </a>
-    </div>
-    <input name="q"
-       placeholder="Search for a title"
-       hx-get="{% url 'get_users' %}"
-       hx-target="#results"
-       hx-trigger="input delay:0.2s"
-    >
-
+    <body>
+        <div class="flex items-center justify-between px-4 py-2 ">
+            <h1 class="text-3xl font-bold font-cool text-black">Manage access</h1>
+            <button id="addPeopleBtn" class="px-3 py-1 text-white bg-green-500 rounded-lg">Add People</button>
+        </div>
+        <div  id="searchBarDiv" class="mt-8 mx-4 p-4 border border-gray-300 shadow-md rounded-lg" style="display:none">
+            <div class="relative"><button id="closeSearchBtn" class="absolute top-2 right-4 text-red-500">&#10006;</button></div>
+            <div class="flex items-center justify-center mb-4">
+                <span class="text-4xl text-gray-700 mr-3">&#128101;</span>
+            </div>
+            <div class="flex items-center justify-center mb-6">
+                <h2 class="text-lg font-medium text-gray-700">Select a User</h2>
+            </div>
+<!--            hx-target="#results" hx-get="{% url 'get_users' %}" hx-trigger="input delay:0.2s"-->
+            <div class="relative">
+                <input type="text"  id="searchInput" name="q" class="w-full py-2 px-4 border border-gray-300 rounded-lg pl-10  focus:border-blue-500  glow-blue" placeholder="   Find a user">
+                <span class="absolute top-2 left-2 text-gray-500">
+                    <!-- Use a search icon here if available in your project -->
+                    &#128269;
+                </span>
+                <div id="searchResults" class="absolute top-16 left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg hidden">
+                </div>
+            </div>
+        </div>
+    </body>
   <br>
     <section id="results">
     <div class="results">
@@ -29,7 +46,6 @@
             <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
               <div class="p-6 pb-0 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
                 <h6>My users</h6>
-
               </div>
               <div class="flex-auto px-0 pt-0 pb-2">
                 <div class="p-0 overflow-x-auto">
@@ -45,6 +61,7 @@
                     </thead>
                     <tbody>
                     {%for user in users%}
+
                       <tr>
                         <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                           <div class="flex px-2 py-1">
@@ -92,5 +109,89 @@
           </div>
         </div>
         </div>
+
+<script>
+
+        document.getElementById("addPeopleBtn").addEventListener("click", function () {
+            var searchBarDiv = document.getElementById("searchBarDiv");
+            searchBarDiv.style.display = searchBarDiv.style.display === "none" ? "block" : "none";
+        });
+
+        document.getElementById("closeSearchBtn").addEventListener("click", function () {
+            var searchBarDiv = document.getElementById("searchBarDiv");
+            searchBarDiv.style.display = "none";
+        });
+
+        function fetchSearchResults(searchQuery) {
+            $.ajax({
+                url: `/get/users/?q=${encodeURIComponent(searchQuery)}`, // URL of the UserSearchView endpoint
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    // Clear previous search results
+                    $("#searchResults").empty();
+
+                    // Loop through the search results and display them
+                    data.forEach(user => {
+                        // Replace this with your desired user property to display
+                        var userDiv = $("<div>").addClass("search-result").text(user.username);
+                        $("#searchResults").append(userDiv);
+                    });
+                },
+                error: function (error) {
+                    console.error("Error fetching search results:", error);
+                }
+            });
+        }
+
+        searchInput.addEventListener("input", function () {
+        var searchQuery = this.value;
+        if (searchQuery.trim() !== "") {
+
+            fetch(`/get/users/?q=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+
+                    searchResults.innerHTML = "";
+
+
+                    data.forEach(user => {
+                        var userDiv = document.createElement("div");
+                        userDiv.classList.add("p-2", "cursor-pointer", "hover:bg-blue-100");
+                        userDiv.textContent = user.username; // Replace this with your desired user property to display
+
+
+                        userDiv.addEventListener("click", function () {
+
+                            console.log("Selected User:", user.username);
+                        });
+
+
+                        searchResults.appendChild(userDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching search results:", error);
+                });
+        } else {
+
+            searchResults.innerHTML = "";
+        }
+    });
+
+</script>
+
+<style>
+        /* Custom CSS for glowing effect */
+        .glow-blue:focus {
+            border-color: #3b82f6;
+
+        }
+
+        #searchBarDiv:focus-within #searchResults {
+            display: block;
+        }
+</style>
+
 
 {%endblock%}

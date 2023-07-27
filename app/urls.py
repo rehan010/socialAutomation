@@ -3,6 +3,8 @@ from .views import *
 from .restapis import *
 from django.contrib.auth import views as auth_views
 
+
+
 urlpatterns = [
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
     path('accounts/register/', RegisterView.as_view(), name='register'),
@@ -35,7 +37,9 @@ urlpatterns = [
     path('posts/<int:pk>', PostsGetView.as_view(), name='my_posts'),
     path('posts/detail/<int:post_id>/<int:page_id>', PostsDetailView.as_view(), name='my_detail_posts'),
     path('post_draft/<int:pk>', PostDraftView.as_view(), name='post_draft'),
-    path("post/comment/", CommentPostView.as_view(),name = "comment_post"),
+    path("post/comment/", CommentPostView.as_view(),name="comment_post"),
+
+
 
 
 
@@ -47,6 +51,11 @@ urlpatterns = [
 
 
     path("facebookhome/",facebookapi,name="facebookhome"),
-    path("createfacebookpost/",createfacebookpost,name = "createfacebookpost")
+    path("createfacebookpost/",createfacebookpost,name = "createfacebookpost"),
+    path('delete-post/<int:pk>/', PostDeleteView.as_view(), name='delete_post')
 
 ]
+
+# htmx_urlpatterns = [
+#     path('delete-post/<int:id>/', PostDeleteView.as_view(), name='delete_post'),
+#     ]
