@@ -1391,7 +1391,7 @@ def upload_img(upload_url, image_file, access_token_string):
 
 def upload_video(upload_url,video_file):
     url = upload_url
-    video_path = os.path.join(settings.BASE_DIR,"media/videos/" + str(video_file))
+    video_path = os.path.join(settings.BASE_DIR,"media/" + str(video_file))
     # video_path = "/Users/anasrehman/PycharmProjects/social_automation/social_auto/media/videos/" + str(video_file)
 
     headers = {
@@ -1514,7 +1514,7 @@ def post_single_image_linkedin(access_token_string,org_id,post,image_list):
     response = requests.request('POST', url, headers=headers, json=data)
     return response
 
-def save_files(image,post):
+def save_files(image):
     file = image
     if file:
         file_extension = file.name.split('.')[-1].lower()
@@ -1523,27 +1523,39 @@ def save_files(image,post):
             image_path = image_url.get('files')[0].get('path')
             image_model = ImageModel(image=image, image_url=image_path)
             image_model.save()
-            post = PostModel.objects.get(id=post.id)
-            post.images.add(image_model)
-            post.save()
         else:
             image_url = get_image_url(image)
             image_path = image_url.get('files')[0].get('path')
             image_model = ImageModel(image=image, image_url=image_path)
             image_model.save()
-            post = PostModel.objects.get(id=post.id)
-            post.images.add(image_model)
-            post.save()
 
     return image_model
+
+def save_file1(image):
+    file = image.image
+    if file:
+        file_extension = file.name.split('.')[-1].lower()
+        if file_extension == 'mp4':
+            image_url = get_video_url(file)
+            image_path = image_url.get('files')[0].get('path')
+
+        else:
+            image_url = get_image_url(file)
+            image_path = image_url.get('files')[0].get('path')
+
+        image_model = ImageModel.objects.get(id=image.id)
+        image_model.image_url = image_path
+        image_model.save()
+        return image_model
+
 
 def clean_file(images):
     video_file = None
     updated_images_list = []
 
     for item in images:
-        if item.content_type == 'video/mp4' or item.name.endswith('.mp4'):
-            video_file = item
+        if item.image.name.endswith('.mp4'):
+            video_file = item.image
         else:
             updated_images_list.append(item)
     return video_file, updated_images_list
@@ -1603,15 +1615,15 @@ def get_video_url(file):
     payload = {'base_path': '/social_prefrences/video/',
                'artifect_type': 'video',
                'filename': 'test.mp4'}
-
     files = [
-        ('dataFiles', file)
+        ('dataFiles', (file),)
     ]
 
     headers = {}
 
     response = requests.request("POST", url, headers=headers, data=payload, files=files)
     response = response.json()
+
     return response
 
 

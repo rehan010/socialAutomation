@@ -10,7 +10,7 @@
 <head>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
-<div class="heading text-center font-bold text-2xl m-5 text-gray-800">New Post</div>
+<div class="heading text-center font-bold text-2xl m-5 text-gray-800">DRAFT</div>
 <style>
   body {background:white !important;}
 
@@ -20,15 +20,10 @@
     <form method="post" enctype="multipart/form-data" class="w-100">
         {% csrf_token %}
       <div class="emoji-picker-container">
-      <textarea name="post" cols="40" rows="10" data-emojiable="true" class="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none w-full" placeholder="Describe Everything about this post" id="id_post"></textarea>
+      <textarea name="post" cols="40" rows="10" data-emojiable="true" class="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none w-full"  id="id_post">{{post.post}}</textarea>
         </div>
         <div class="icons flex text-gray-500 m-2" >
-<!--            <svg class="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7"-->
-<!--                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">-->
-<!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"-->
-<!--                      d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>-->
-<!--            </svg>-->
-            <div class="count ml-auto text-gray-400 text-xs font-semibold">0/300</div>
+        <div class="count ml-auto text-gray-400 text-xs font-semibold">0/300</div>
         </div>
         {% if form.name.errors %}
         <div class="error-message">{{ form.post.errors }}</div>
@@ -162,10 +157,14 @@
                                name="linkedin" value="{{ obj.key }}">
                         <span class="ml-2 text-sm">{{obj.name}}</span>
                     </label>
-
-
+                    {% for page in post.prepost_page.all %}
+                        {% if obj.key == page.org_id %}
+                            <script>
+                                document.querySelector('input[value="{{ obj.key }}"]').checked = true;
+                            </script>
+                        {% endif %}
                     {% endfor %}
-
+                    {% endfor %}
                 </div>
 
             </div>
@@ -339,6 +338,45 @@ sehedule_controller.forEach((button) => {
             reader.readAsDataURL(file);
         }
     }
+
+    var imageData = [
+    {% for image in post.images.all %}
+        "{{ image }}",
+    {% endfor %}
+    ];
+
+
+    // Function to display the images in the container
+    function displaySavedImages() {
+        var container = document.getElementById("image-preview-container");
+
+        // Loop through the image URLs and create image elements
+        imageData.forEach(function (imageUrl) {
+            var imageContainer = document.createElement("div");
+            imageContainer.classList.add("relative", "inline-block", "mr-2", "mb-2");
+
+            var image = document.createElement("img");
+            image.src = imageUrl.image.url;
+            image.classList.add("w-64", "h-auto");
+
+            var removeIcon = document.createElement("span");
+            removeIcon.innerHTML = "&times;";
+            removeIcon.classList.add("absolute", "top-0", "right-0", "text-red-500", "cursor-pointer");
+
+            removeIcon.addEventListener("click", function () {
+                imageContainer.remove();
+            })
+
+            imageContainer.appendChild(image);
+            imageContainer.appendChild(removeIcon);
+            container.appendChild(imageContainer);
+        });
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        displaySavedImages();
+    });
+
+
     document.addEventListener("DOMContentLoaded", function() {
 
     var publishButton = document.getElementById("publishButton");

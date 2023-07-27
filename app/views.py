@@ -4,15 +4,16 @@ from allauth.exceptions import ImmediateHttpResponse
 from django.contrib.auth import views as auth_views
 from django.contrib.auth import login
 from django.http import response
+from .signals import *
 from django.shortcuts import redirect, render
-from django.urls import reverse,reverse_lazy
-from django.views.generic import TemplateView, FormView,CreateView,DeleteView
+from django.urls import reverse, reverse_lazy
+from django.views.generic import TemplateView, FormView,CreateView,DeleteView,UpdateView
 from .forms import *
 import requests
 from .restapis import *
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.contrib.auth.models import User
-from allauth.socialaccount.models import EmailAddress,SocialAccount,SocialToken
+from allauth.socialaccount.models import EmailAddress, SocialAccount, SocialToken
 
 from google.oauth2 import id_token
 from google.auth.transport import requests as auth_requests
@@ -20,6 +21,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.shortcuts import render
 from allauth.socialaccount.models import SocialToken
+from django.utils.timezone import make_aware
+from datetime import datetime
+# from .signals import post_update_signal
+
 def get_id_token(access_token):
     # Specify the URL for the Google Tokeninfo API
     tokeninfo_url = 'https://www.googleapis.com/oauth2/v3/tokeninfo'
@@ -254,6 +259,7 @@ def create_post_with_image(access_token, message, image_path):
     response = requests.post(url, params=params, files=files)
     return response.json()
 
+
 class PostCreateView(CreateView):
     # model = PostModel
     form_class = PostModelForm
@@ -309,147 +315,300 @@ class PostCreateView(CreateView):
         post = form.save(commit=False)
         post.user = self.request.user
         social = SocialAccount.objects.get(user=self.request.user, provider='linkedin_oauth2')
-        post.save()
+        post.post = caption[0]
+
         comment_check = form.cleaned_data.get('comment_check')
         if comment_check:
             post.comment_check = True
         else:
             post.comment_check = False
-        post.save()
-
-        for page in requestdata.get("linkedin"):
-            i = 0
-            while context.get('linkedin_page')[i].get('key') != page:
-                i += 1
-            info = context.get('linkedin_page').pop(i)
-            if SharePage.objects.filter(org_id=page).exists():
-                prepost = SharePage.objects.get(org_id=page)
-                post.prepost_page.add(prepost)
-                post.save()
-            else:
-                # prepost = SharePage.objects.create(org_id=page, provider='linkedin', user=social, name=info['name'])
-                prepost = SharePage.objects.create(org_id=page, provider='linkedin', user=self.request.user, name=info['name'])
-                prepost.save()
-                post.prepost_page.add(prepost)
-                post.save()
-
-
-        # for page in requestdata.get('facebook'):
-        #     prepost = SharePage.objects.filter(org_id=page)
-        #     post.prepost_page.add(prepost)
-        #     post.save()
-        # for page in requestdata.get('instagram'):
-        #     prepost = SharePage.objects.filter(org_id=page)
-        #     post.prepost_page.add(prepost)
-        #     post.save()
-        # for page in requestdata.get('googlebooks'):
-        #     prepost = SharePage.objects.filter(org_id=page)
-        #     post.prepost_page.add(prepost)
-        #     post.save()
-        action = self.request.POST.get('action', '')  # Get the value of the 'action' input field
-
+        action = self.request.POST.get('action', '')
         if action == 'publish':
-            post.status = 'PUBLISHED'
+            post.status = 'PROCESSING'
             post.publish_check = True
-            post.save()
+        elif action == 'schedule':
+            post.status = 'SCHEDULED'
+            post.publish_check = False
+            schedule_date = self.request.POST.get('date')
+            schedule_time = self.request.POST.get('time')
+            schedule_datetime_str = f"{schedule_date} {schedule_time}"
 
+            if schedule_datetime_str:
+                schedule_datetime = datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M')
+                post.schedule_datetime = schedule_datetime
+
+        else:
+                post.status == 'DRAFT'
+                post.publish_check = False
+        share_pages = []
+        if requestdata.get("linkedin"):
+            for page in requestdata.get("linkedin"):
+                i = 0
+                while context.get('linkedin_page')[i].get('key') != page:
+                    i += 1
+                info = context.get('linkedin_page').pop(i)
+
+                share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin', user=self.request.user, name=info['name'])
+
+                share_pages.append(share_page)
+        else:
+            from django.http import Http404
+            raise Http404("Please Select a Page To Share")
         images = self.request.FILES.getlist('images')
-        print(images)
+        post.save()
         image_object = []
         if images:
             for image in images:
-                image_object.append(save_files(image, post))
+                image_model = ImageModel(image=image)
+                image_model.save()
+                image_object.append(image_model)
+        post.images.add(*image_object)
+
+        post.prepost_page.add(*share_pages)
+        # post_update_signal.send(sender=PostModel, share_pages=share_pages, images=images, instance=post)
+
+
+
+
+
+        # for page in requestdata.get("linkedin"):
+        #     i = 0
+        #     while context.get('linkedin_page')[i].get('key') != page:
+        #         i += 1
+        #     info = context.get('linkedin_page').pop(i)
+        #     if SharePage.objects.filter(org_id=page).exists():
+        #         prepost = SharePage.objects.get(org_id=page)
+        #         post.prepost_page.add(prepost)
+        #         post.save()
+        #     else:
+        #         # prepost = SharePage.objects.create(org_id=page, provider='linkedin', user=social, name=info['name'])
+        #         prepost = SharePage.objects.create(org_id=page, provider='linkedin', user=self.request.user, name=info['name'])
+        #         prepost.save()
+        #         post.prepost_page.add(prepost)
+        #         post.save()
+
+
+
+
+
+          # Get the value of the 'action' input field
+
+
+
+
+                # schedule_datetime = make_aware(datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M'))
+
+                # Schedule the task using Celery
+                # schedule_publish_task.apply_async(args=[post.id], eta=schedule_datetime)
+
+
+
+        # context = self.request.session.get('context')
+        # for platform in requestdata:
+        #
+        #     if platform == "facebook":
+        #         socialaccount = SocialAccount.objects.get(user=self.request.user, provider="facebook")
+        #         access_token = SocialToken.objects.filter(account=socialaccount)[0]
+        #
+        #         for page in requestdata.get("facebook"):
+        #             i = 0
+        #             while context.get('facebook_page')[i].get('id') != page:
+        #                 i += 1
+        #
+        #             # print((context.get('facebook_page')[i].get('id')))
+        #             info = context.get('facebook_page').pop(i)
+        #
+        #             ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
+        #             # Store Shared Page
+        #             if ispageexist:
+        #                 sharepage = SharePage.objects.get(org_id=info.get('id'))
+        #                 # sharepage.post.add(post)
+        #
+        #             else:
+        #                 # sharepage = SharePage.objects.create(user=socialaccount)
+        #                 sharepage = SharePage.objects.create(user=self.request.user)
+        #                 sharepage.name = info.get('name')
+        #                 sharepage.access_token = info.get('access_token')
+        #                 sharepage.org_id = info.get('id')
+        #                 sharepage.provider = "facebook"
+        #                 sharepage.save()
+        #
+        #             # If publishnow exist
+        #             # print(sharepage)
+        #             data = {
+        #                 'page_id': sharepage.org_id,
+        #                 'page_access_token': sharepage.access_token
+        #             }
+        #             if len(image_object) > 1:
+        #                 data = facebookmultiimage(self.request, data, image_object,post,sharepage)
+        #             else:
+        #
+        #                 data = facebookpost(self.request, data,image_object[0],post,sharepage)
+        #
+        #
+        #
+        #     elif (platform == "instagram"):
+        #         socialaccount = SocialAccount.objects.get(user=self.request.user, provider="facebook")
+        #         access_token = SocialToken.objects.filter(account=socialaccount)[0]
+        #
+        #         info = context.pop("insta_data")
+        #
+        #         ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
+        #         # Store Shared Page
+        #         if ispageexist:
+        #             sharepage = SharePage.objects.get(org_id=info.get('id'))
+        #
+        #         else:
+        #             # sharepage = SharePage.objects.create(user=socialaccount)
+        #             sharepage = SharePage.objects.create(user=self.request.user)
+        #             sharepage.name = info.get('name')
+        #             sharepage.access_token = info.get('access_token')
+        #             sharepage.organizations_id = info.get('id')
+        #             sharepage.provider = "instagram"
+        #             sharepage.save()
+        #
+        #         data = {
+        #             "insta_id": sharepage.organizations_id
+        #         }
+        #
+        #         if (len(image_object) > 1):
+        #             instagrammultiimage(self.request, data, access_token, image_object,post,sharepage)
+        #         else:
+        #             instagrampost(self.request, data, access_token,image_object[0],post,sharepage)
+        #
+        #     elif platform == "linkedin":
+        #         socialaccount = SocialAccount.objects.get(user=self.request.user, provider="linkedin_oauth2")
+        #         access_token = SocialToken.objects.filter(account=socialaccount)[0]
+        #         access_token_string = str(access_token)
+        #         for page in requestdata.get("linkedin"):
+        #
+        #             org_id = page
+        #             image_m = PostModel.objects.get(id=post.id)
+        #             org = SharePage.objects.get(org_id=page)
+        #             create_l_multimedia(images, org_id, access_token_string, clean_file,
+        #                                 get_video_urn, image_m, upload_video, post_video_linkedin,
+        #                                 org, get_img_urn, upload_img, post_single_image_linkedin,
+        #                                 post, post_linkedin)
+        #
+
+
+        return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
+
+
+
+
+class PostDraftView(UpdateView):
+    model = PostModel
+    form_class = PostModelForm
+    template_name = 'social/publish_drafts.html'
+    success_url = reverse_lazy('my_posts')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post_id = self.kwargs['pk']
+        post = PostModel.objects.get(pk=post_id)
+        user = self.request.user  # Set the user to the logged-in user
+        social = SocialAccount.objects.filter(user=user.id)
+        access_token = {}
+        data = {}
+        for _ in social:
+            access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
+
+        # Making Data
+
+            # For Faceboook
+            if _.provider == 'facebook':
+
+                page_data = facebook_page_data(access_token.get("facebook"))
+
+                data["facebook_page"] = page_data
+            # For Instagram
+            if _.provider == 'instagram':
+
+                insta_data = instagram_id(access_token.get("facebook"))
+
+                data["insta_data"] = insta_data
+            # print()
+            if _.provider == 'linkedin_oauth2':
+                linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
+                data['linkedin_page'] = linkedin_page
+
+
+        self.request.session['context'] = data
+        comment_check = post.comment_check
+        context = {"data": data, 'form': self.get_form(), 'post': post, 'comment_check': comment_check}
+        return context
+
+    def form_invalid(self, form):
+        print(self.request.POST)
+        print(self.request.POST.getlist("facebook[]"))
+        print( self.request.FILES.get('file'))
+
+        return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
+
+    def form_valid(self, form):
+        requestdata = dict(self.request.POST)
+        context = self.request.session.get('context')
+        post_id = self.kwargs.get('pk')
+        post = PostModel.objects.get(pk=post_id)
+        requestdata.pop("csrfmiddlewaretoken")
+        caption = requestdata.pop("post")
         post.post = caption[0]
+        comment_check = form.cleaned_data.get('comment_check')
+        if comment_check:
+            post.comment_check = True
+        else:
+            post.comment_check = False
+        action = self.request.POST.get('action', '')
+        if action == 'publish':
+            post.status = 'PROCESSING'
+            post.publish_check = True
+        elif action == 'schedule':
+            post.status = 'SCHEDULED'
+            post.publish_check = False
+            schedule_date = self.request.POST.get('date')
+            schedule_time = self.request.POST.get('time')
+            schedule_datetime_str = f"{schedule_date} {schedule_time}"
+
+            if schedule_datetime_str:
+                schedule_datetime = datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M')
+                post.schedule_datetime = schedule_datetime
+
+        else:
+                post.status == 'DRAFT'
+                post.publish_check = False
+        share_pages = []
+        if requestdata.get("linkedin"):
+            for page in requestdata.get("linkedin"):
+                i = 0
+                while context.get('linkedin_page')[i].get('key') != page:
+                    i += 1
+                info = context.get('linkedin_page').pop(i)
+
+                share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin', user=self.request.user, name=info['name'])
+
+                share_pages.append(share_page)
+        else:
+            from django.http import Http404
+            raise Http404("Please Select a Page To Share")
 
         post.save()
-        context = self.request.session.get('context')
-        for platform in requestdata:
+        images = self.request.FILES.getlist('images')
+        image_object = []
+        # for image in post.images.all():
+        #     if image:
+        #         img = image
+        #         post.images.remove(img)
+        #         # image_object.append(img)
+        if images:
+            for image in images:
+                image_model = ImageModel(image=image)
+                image_model.save()
+                image_object.append(image_model)
 
-            if platform == "facebook":
-                socialaccount = SocialAccount.objects.get(user=self.request.user, provider="facebook")
-                access_token = SocialToken.objects.filter(account=socialaccount)[0]
+        post.images.add(*image_object)
 
-                for page in requestdata.get("facebook"):
-                    i = 0
-                    while context.get('facebook_page')[i].get('id') != page:
-                        i += 1
-
-                    # print((context.get('facebook_page')[i].get('id')))
-                    info = context.get('facebook_page').pop(i)
-
-                    ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
-                    # Store Shared Page
-                    if ispageexist:
-                        sharepage = SharePage.objects.get(org_id=info.get('id'))
-                        # sharepage.post.add(post)
-
-                    else:
-                        # sharepage = SharePage.objects.create(user=socialaccount)
-                        sharepage = SharePage.objects.create(user=self.request.user)
-                        sharepage.name = info.get('name')
-                        sharepage.access_token = info.get('access_token')
-                        sharepage.org_id = info.get('id')
-                        sharepage.provider = "facebook"
-                        sharepage.save()
-
-                    # If publishnow exist
-                    # print(sharepage)
-                    data = {
-                        'page_id': sharepage.org_id,
-                        'page_access_token': sharepage.access_token
-                    }
-                    if len(image_object) > 1:
-                        data = facebookmultiimage(self.request, data, image_object,post,sharepage)
-                    else:
-
-                        data = facebookpost(self.request, data,image_object[0],post,sharepage)
-
-
-
-            elif (platform == "instagram"):
-                socialaccount = SocialAccount.objects.get(user=self.request.user, provider="facebook")
-                access_token = SocialToken.objects.filter(account=socialaccount)[0]
-
-                info = context.pop("insta_data")
-
-                ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
-                # Store Shared Page
-                if ispageexist:
-                    sharepage = SharePage.objects.get(org_id=info.get('id'))
-
-                else:
-                    # sharepage = SharePage.objects.create(user=socialaccount)
-                    sharepage = SharePage.objects.create(user=self.request.user)
-                    sharepage.name = info.get('name')
-                    sharepage.access_token = info.get('access_token')
-                    sharepage.organizations_id = info.get('id')
-                    sharepage.provider = "instagram"
-                    sharepage.save()
-
-                data = {
-                    "insta_id": sharepage.organizations_id
-                }
-
-                if (len(image_object) > 1):
-                    instagrammultiimage(self.request, data, access_token, image_object,post,sharepage)
-                else:
-                    instagrampost(self.request, data, access_token,image_object[0],post,sharepage)
-
-            elif platform == "linkedin":
-                socialaccount = SocialAccount.objects.get(user=self.request.user, provider="linkedin_oauth2")
-                access_token = SocialToken.objects.filter(account=socialaccount)[0]
-                access_token_string = str(access_token)
-                for page in requestdata.get("linkedin"):
-
-                    org_id = page
-                    image_m = PostModel.objects.get(id=post.id)
-                    org = SharePage.objects.get(org_id=page)
-                    create_l_multimedia(images, org_id, access_token_string, clean_file,
-                                        get_video_urn, image_m, upload_video, post_video_linkedin,
-                                        org, get_img_urn, upload_img, post_single_image_linkedin,
-                                        post, post_linkedin)
-
-
+        post.prepost_page.add(*share_pages)
 
         return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
 
@@ -465,7 +624,7 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
         ids = result[2]
 
         provider_name = "linkedin"
-        linkedin_post = PostModel.objects.filter(user=self.request.user.pk,post_urn__org__provider=provider_name).distinct()
+        linkedin_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name).distinct()
 
         provider_name1 = "facebook"
         # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)

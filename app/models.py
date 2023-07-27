@@ -1,8 +1,11 @@
 # from allauth.socialaccount.models import SocialAccount
 # from django.contrib.auth import get_user_model
 from django.db import models
+
+
 from django.utils import timezone
-# User = get_user_model()
+
+
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 
@@ -20,7 +23,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_active', False)
 
         if not email:
-            raise ValueError(_('The Email must be set'))
+            raise ValueError(('The Email must be set'))
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -36,10 +39,12 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_active', True)
 
         if extra_fields.get('is_staff') is not True:
-            raise ValueError(_('Superuser must have is_staff=True.'))
+            raise ValueError(('Superuser must have is_staff=True.'))
         if extra_fields.get('is_superuser') is not True:
-            raise ValueError(_('Superuser must have is_superuser=True.'))
+            raise ValueError(('Superuser must have is_superuser=True.'))
         return self.create_user(email, password, **extra_fields)
+
+
 
 
 # Create your models here.
@@ -104,12 +109,13 @@ class ImageModel(models.Model):
         return file_extension == 'mp4'
 
 class PostModel(BaseModel):
-    POST_TYPE = [('DRAFT', 'DRAFT'), ('PUBLISHED', 'PUBLISHED'),('SCHEDULED', 'SCHEDULED')]
+    POST_TYPE = [('DRAFT', 'DRAFT'), ('PUBLISHED', 'PUBLISHED'),('SCHEDULED', 'SCHEDULED'),('PROCESSING','PROCESSING')]
     post = models.TextField(blank=True)
     images = models.ManyToManyField('ImageModel')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True,blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     post_urn = models.ManyToManyField('Post_urn')
     prepost_page = models.ManyToManyField('SharePage')
+    schedule_datetime = models.DateTimeField(blank=True, default=timezone.now())
     comment_check = models.BooleanField(default=True)
     publish_check = models.BooleanField(default=False)
     status = models.CharField(default='DRAFT', max_length=100, choices=POST_TYPE)
@@ -119,15 +125,14 @@ class PostModel(BaseModel):
         post_urn_list = ", ".join(str(org) for org in self.post_urn.all())
         return f"{self.post} - Post To: {post_urn_list}"
 
-    # def publish(self):
-    #     # Logic for immediate publishing
-    #     self.published_date = timezone.now()
-    #     self.save()
+    # def save1(self, *args, **kwargs):
+    #     # Your custom save1() method logic here
+    #     # Save the object using the regular save() method
+    #     super(PostModel, self).save(*args, **kwargs)
     #
-    # def schedule(self, scheduled_date):
-    #     # Logic for scheduling the post
-    #     scheduled_post = ScheduledPost.objects.create(post=self, scheduled_date=scheduled_date)
-    #     return scheduled_post
+    #     # Emit the signal manually
+    #     post_save_signal.send(sender=self.__class__, instance=self, created=self._state.adding)
+
 
 
 
@@ -152,6 +157,7 @@ class Post_urn(models.Model):
         return self.org.name + "--" + self.urn
 
 
-# class ScheduledPost(models.Model):
-#     post = models.ForeignKey(PostModel, on_delete=models.CASCADE)
-#     scheduled_date = models.DateTimeField()
+
+
+
+

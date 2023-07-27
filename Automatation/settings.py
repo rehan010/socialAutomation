@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     'sslserver',
 
     'allauth.socialaccount.providers.linkedin_oauth2',
-
     "django_extensions",
     'rest_framework',
     # 'allauth.socialaccount.providers.linkedin_oauth2',
@@ -264,6 +263,17 @@ DATABASES = {
 }
 AUTH_USER_MODEL = 'app.user'
 
+
+#
+# # Celery Configuration
+# CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_TIMEZONE = 'Asia/Karachi'
+
+
 SOCIALACCOUNT_STORE_TOKENS = True
 
 SITE_ID = 1
@@ -273,7 +283,7 @@ SITE_ID = 1
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Karachi'
 
 USE_I18N = True
 
