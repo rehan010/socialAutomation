@@ -964,13 +964,13 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
 
             provider_name1 = "facebook"
             # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
-            facebook_post = PostModel.objects.filter(user=self.request.user.pk,post_urn__org__provider=provider_name1).distinct()
+            facebook_post = PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name1).distinct()
 
             provider_name2 = "instagram"
-            instagram_post = PostModel.objects.filter(user=self.request.user.pk,post_urn__org__provider=provider_name2).distinct()
+            instagram_post = PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name2).distinct()
 
             provider_name3 = "Google Books"
-            google_post = PostModel.objects.filter(user=self.request.user.pk,post_urn__org__provider=provider_name3).distinct()
+            google_post = PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name3).distinct()
 
         #     for post in pages:
         #         org_id = post.org.id

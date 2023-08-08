@@ -107,10 +107,18 @@
                             </thead>
                             <tbody>
                             {% for p in facebook_post %}
-
                                 <tr>
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
                                         <div class="flex px-2 py-1">
+                                            <div class="flex flex-col justify-center">
+                                                <a href="#">
+                                                    <h6 class="mb-0 text-sm leading-normal">{{p.post}}</h6>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                                        <div class="mt-2 avatar-group">
                                             {% if p.images %}
                                             {% for image in p.images.all %}
                                             {% if image.is_mp4_file %}
@@ -130,40 +138,30 @@
                                             {% endif %}
                                             {% endfor %}
                                             {% endif %}
-                                            <div class="flex flex-col justify-center">
-                                                <a href="#">
-                                                    <h6 class="mb-0 text-sm leading-normal">{{p.pk}}{{p.post}}</h6>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                        <div class="mt-2 avatar-group">
 
-                                            <div data-target="tooltip"
-                                                 class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
-                                                Alexander Smith
-                                                <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']"
-                                                     data-popper-arrow></div>
-                                            </div>
-                                            <a href="javascript:;"
-                                               class="relative z-20 inline-flex items-center justify-center w-6 h-6 -ml-4 text-xs text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out hover:z-30"
-                                               data-target="tooltip_trigger" data-placement="bottom">
-                                                <img src="{% static 'assets/img/team-4.jpg'%}" class="w-full rounded-full"
-                                                     alt="team4"/>
-                                            </a>
-                                            <div data-target="tooltip"
-                                                 class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
-                                                Jessica Doe
-                                                <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']"
-                                                     data-popper-arrow></div>
-                                            </div>
                                         </div>
                                     </td>
+                                    {% if p.status == 'PROCESSING' %}
                                     <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                        <span class="bg-gradient-to-tl from-purple-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Scheduled</span>
+                                        <span class="bg-gradient-to-tl from-blue-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
 
                                     </td>
+                                    {% elif p.status == 'DRAFT' %}
+                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                        <span class="bg-gradient-to-tl from-red-500 to-yellow-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                                    </td>
+                                    {% elif p.status == 'SCHEDULED' %}
+                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                        <span class="bg-gradient-to-tl from-purple-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                                    </td>
+                                    {% else %}
+                                     <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                        <span class="bg-gradient-to-tl from-green-600 to-green-300 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                                    </td>
+                                    {% endif %}
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
                                         <div class="flex px-4 py-1">
 
@@ -176,20 +174,35 @@
                                     </td>
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
                                         <div class="flex px-2 py-1">
-
+                                            {% if p.status == 'PUBLISHED' %}
                                             <div class="flex flex-col justify-center">
-                                                 {% for page_name in p.post_urn.all %}
-                                                    {%if page_name.org.provider == 'facebook'%}
-
+                                                    {% for page_name in p.post_urn.all %}
+                                                       {%if page_name.org.provider == 'facebook'%}
                                                         <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-
-                                                             <h6 class="mb-0 text-sm leading-normal">{{page_name.pk}}{{page_name.org}}</h6>
+                                                             <h6 class="mb-0 text-sm leading-normal">{{page_name.org}}</h6>
 
                                                         </a>
-                                                     {%endif%}
-                                                {%endfor%}
+                                                        {%endif%}
+                                                    {%endfor%}
 
                                             </div>
+                                            {% elif p.status == 'DRAFT' %}
+                                            <div class="flex flex-col justify-center">
+                                                        <a href="{%url 'post_draft' p.pk %}">
+                                                             <h6 class="mb-0 text-sm leading-normal">PUBLISH THIS DRAFT</h6>
+
+                                                        </a>
+                                            </div>
+                                            {% else %}
+                                            <div class="flex flex-col justify-center">
+                                                    {% for page_name in p.prepost_page.all %}
+                                                       {%if page_name.provider == 'facebook'%}
+                                                 <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
+                                                        {%endif%}
+                                                    {%endfor%}
+
+                                            </div>
+                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
@@ -387,6 +400,15 @@
                                 <tr>
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
                                         <div class="flex px-2 py-1">
+                                            <div class="flex flex-col justify-center">
+                                                <a href="#">
+                                                    <h6 class="mb-0 text-sm leading-normal">{{p.post}}</h6>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                                        <div class="mt-2 avatar-group">
                                             {% if p.images %}
                                             {% for image in p.images.all %}
                                             {% if image.is_mp4_file %}
@@ -406,40 +428,30 @@
                                             {% endif %}
                                             {% endfor %}
                                             {% endif %}
-                                            <div class="flex flex-col justify-center">
-                                                <a href="#">
-                                                    <h6 class="mb-0 text-sm leading-normal">{{p.post}}</h6>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                        <div class="mt-2 avatar-group">
 
-                                            <div data-target="tooltip"
-                                                 class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
-                                                Alexander Smith
-                                                <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']"
-                                                     data-popper-arrow></div>
-                                            </div>
-                                            <a href="javascript:;"
-                                               class="relative z-20 inline-flex items-center justify-center w-6 h-6 -ml-4 text-xs text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out hover:z-30"
-                                               data-target="tooltip_trigger" data-placement="bottom">
-                                                <img src="{% static 'assets/img/team-4.jpg'%}" class="w-full rounded-full"
-                                                     alt="team4"/>
-                                            </a>
-                                            <div data-target="tooltip"
-                                                 class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
-                                                Jessica Doe
-                                                <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']"
-                                                     data-popper-arrow></div>
-                                            </div>
                                         </div>
                                     </td>
+                                    {% if p.status == 'PROCESSING' %}
                                     <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                        <span class="bg-gradient-to-tl from-purple-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Scheduled</span>
+                                        <span class="bg-gradient-to-tl from-blue-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
 
                                     </td>
+                                    {% elif p.status == 'DRAFT' %}
+                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                        <span class="bg-gradient-to-tl from-red-500 to-yellow-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                                    </td>
+                                    {% elif p.status == 'SCHEDULED' %}
+                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                        <span class="bg-gradient-to-tl from-purple-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                                    </td>
+                                    {% else %}
+                                     <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                        <span class="bg-gradient-to-tl from-green-600 to-green-300 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                                    </td>
+                                    {% endif %}
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
                                         <div class="flex px-4 py-1">
 
