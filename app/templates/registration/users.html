@@ -8,107 +8,260 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <div class="w-full px-6 py-6 mx-auto">
-<br>
-    <body>
-        <div class="flex items-center justify-between px-4 py-2 ">
-            <h1 class="text-3xl font-bold font-cool text-black">Manage access</h1>
-            <button id="addPeopleBtn" class="px-3 py-1 text-white bg-green-500 rounded-lg">Add People</button>
+    <br>
+
+    <div class="flex items-center justify-between px-4 py-2 ">
+        <h1 class="text-3xl font-bold font-cool text-black">Manage access</h1>
+        <button id="addPeopleBtn" class="px-3 py-1 text-white bg-green-500 rounded-lg">Add People</button>
+    </div>
+    <div id="searchBarDiv" class="mt-8 mx-4 p-4 border border-gray-300 shadow-md rounded-lg" style="display:none">
+        <div class="relative">
+            <button id="closeSearchBtn" class="absolute top-2 right-4 text-red-500">&#10006;</button>
         </div>
-        <div  id="searchBarDiv" class="mt-8 mx-4 p-4 border border-gray-300 shadow-md rounded-lg" style="display:none">
-            <div class="relative"><button id="closeSearchBtn" class="absolute top-2 right-4 text-red-500">&#10006;</button></div>
-            <div class="flex items-center justify-center mb-4">
-                <span class="text-4xl text-gray-700 mr-3">&#128101;</span>
-            </div>
-            <div class="flex items-center justify-center mb-6">
-                <h2 class="text-lg font-medium text-gray-700">Select a User</h2>
-            </div>
-<!--            hx-target="#results" hx-get="{% url 'get_users' %}" hx-trigger="input delay:0.2s"-->
-            <div class="relative">
-                <input type="text"  id="searchInput" name="q" class="w-full py-2 px-4 border border-gray-300 rounded-lg pl-10  focus:border-blue-500  glow-blue" placeholder="   Find a user">
-                <span class="absolute top-2 left-2 text-gray-500">
-                    <!-- Use a search icon here if available in your project -->
+        <div class="flex items-center justify-center mb-4">
+            <span class="text-4xl text-gray-700 mr-3">&#128101;</span>
+        </div>
+        <div class="flex items-center justify-center mb-6">
+            <h2 class="text-lg font-medium text-gray-700">Select a User</h2>
+        </div>
+        <!--            hx-target="#results" hx-get="{% url 'get_users' %}" hx-trigger="input delay:0.2s"-->
+        <div class="relative">
+            <input type="text" id="searchInput" name="q"
+                   class="w-full py-2 px-4 border border-gray-300 rounded-lg pl-10  focus:border-blue-500  glow-blue"
+                   placeholder="   Find a user">
+            <span class="absolute top-2 left-2 text-gray-500">
                     &#128269;
                 </span>
-                <div id="searchResults" class="absolute top-16 left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg hidden">
-                </div>
+            <div id="searchResults"
+                 class="relative top-12 left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg overflow-y-auto" style="max-height: 300px;" >
+            </div>
+            <div id="selectedUserBox" class="p-2 bg-blue-100 rounded-lg hidden flex items-center justify-between">
+                <input type="hidden" id="user" name="user" value="">
+                <input type="hidden" id="role" name="role" value="">
+               <br>
+                <span id="selectedUserName" style="font-weight: bold;"></span>
+                <select id="roleSelect" class="px-3 py-1 bg-green-500 text-white rounded">
+                    <option value="READ">Read</option>
+                    <option value="WRITE">Write</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+                <button id="assignManagerButton" class="px-3 py-1 bg-green-500 text-white  rounded">SEND INVITE</button>
+               {% csrf_token %}
+            </div>
+            <div id="emailInputBox" class="hidden p-2 bg-blue-100 rounded-lg flex items-center justify-between">
+                <input type="text" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500">
+                <select id="roleSelectEmail" class="px-3 py-1 bg-green-500 text-white rounded">
+                    <option value="READ">Read</option>
+                    <option value="WRITE">Write</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+                <button id="addEmailButton" class="px-3 py-1 bg-green-500 text-white rounded">Add</button>
             </div>
         </div>
-    </body>
-  <br>
-    <section id="results">
-    <div class="results">
-
     </div>
-    </section>
-
-<div class="flex flex-wrap -mx-3">
-          <div class="flex-none w-full max-w-full px-3">
+    <br>
+    <br>
+    <div class="relative flex flex-wrap -mx-3">
+        <div class="flex-none w-full max-w-full px-3">
             <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
-              <div class="p-6 pb-0 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
-                <h6>My users</h6>
-              </div>
-              <div class="flex-auto px-0 pt-0 pb-2">
-                <div class="p-0 overflow-x-auto">
-                  <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
-                    <thead class="align-bottom">
-                      <tr>
-                        <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Author</th>
-                        <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Manged by</th>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Role</th>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Joined Date</th>
-                        <th class="px-6 py-3 font-semibold capitalize align-middle bg-transparent border-b border-gray-200 border-solid shadow-none tracking-none whitespace-nowrap text-slate-400 opacity-70"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                    {%for user in users%}
-
-                      <tr>
-                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <div class="flex px-2 py-1">
-                            <div>
-<!--                              <img src="../assets/img/team-2.jpg" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" />-->
-                            </div>
-                            <div class="flex flex-col justify-center">
-                              <h6 class="mb-0 text-sm leading-normal">{{user.first_name}} {{user.last_name}}</h6>
-                              <p class="mb-0 text-xs leading-tight text-slate-400">{{user.email}}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <p class="mb-0 text-xs font-semibold leading-tight">{{user.manager.first_name}} {{user.manager.last_name}}</p>
-                          <p class="mb-0 text-xs leading-tight text-slate-400">{{user.company}}</p>
-                        </td>
-                        <td class=" md:w-1/3 px-2 mb-3 md:mb-0">
-
-                          <div class="relative">
-                            <select class="block appearance-none w-full bg-white-200 border border-white-200 text-white-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
-                              <option>Write</option>
-                              <option>Admin</option>
-                              <option>Read</option>
-                            </select>
-
-                          </div>
-                      </td>
-
-<!--                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">-->
-<!--                          <span class="bg-gradient-to-tl from-green-600 to-lime-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Online</span>-->
-<!--                        </td>-->
-                        <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <span class="text-xs font-semibold leading-tight text-slate-400">{{user.date_joined}}</span>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <a href="javascript:;" class="text-xs font-semibold leading-tight text-slate-400"> Edit </a>
-                        </td>
-                      </tr>
-                    {%endfor%}
-                    </tbody>
-                  </table>
+                <div class="p-4 pb-0 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
+                    <div class="bg-gray-200 rounded-lg shadow-lg p-3">
+                        <h6 class="text-lg font-medium">My Users</h6>
+                    </div>
                 </div>
-              </div>
+                <div class="flex-auto px-0 pt-0 pb-2">
+                    <div class="p-0 overflow-x-auto">
+                        <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                            <thead class="align-bottom">
+                            <tr>
+                                <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                    Author
+                                </th>
+                                <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                    Managed by
+                                </th>
+                                <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                    Role
+                                </th>
+                                <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                    Joined Date
+                                </th>
+                                <th class="px-6 py-3 font-semibold capitalize align-middle bg-transparent border-b border-gray-200 border-solid shadow-none tracking-none whitespace-nowrap text-slate-400 opacity-70"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {%for user in invites %}
+                            {% if user.status == 'ACCEPTED' %}
+
+                            <tr>
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <div class="flex px-2 py-1">
+                                        <div>
+                                            <!--                              <img src="../assets/img/team-2.jpg" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" />-->
+                                        </div>
+                                        <div class="flex flex-col justify-center">
+                                            <h6 class="mb-0 text-sm leading-normal">{{user.first_name}}
+                                                {{user.last_name}}</h6>
+                                            <p class="mb-0 text-xs leading-tight text-slate-400">{{user.email}}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <p class="mb-0 text-xs font-semibold leading-tight">{{user.invited_by.first_name}}
+                                        {{user.invited_by.last_name}}</p>
+                                    <p class="mb-0 text-xs leading-tight text-slate-400">{{user.selected_user.company}}</p>
+                                </td>
+                                <td class=" md:w-1/3 px-2 mb-3 md:mb-0">
+
+                                    <div class="relative">
+                                        <select class="block appearance-none w-full bg-white-200 border border-white-200 text-white-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                                id="grid-state">
+                                            <option>{{user.role}}</option>
+
+                                        </select>
+
+                                    </div>
+                                </td>
+
+                                <!--                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">-->
+                                <!--                          <span class="bg-gradient-to-tl from-green-600 to-lime-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Online</span>-->
+                                <!--                        </td>-->
+                                <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <span class="text-xs font-semibold leading-tight text-slate-400">{{user.selected_user.date_joined}}</span>
+                                </td>
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <a href="javascript:;" class="text-xs font-semibold leading-tight text-slate-400">
+                                        Edit </a>
+                                </td>
+                                <dialog id="roleDialog">
+                                      <form id="roleForm">
+                                            <label for="roleSelect1">Select Role:</label>
+                                                <select id="roleSelect1">
+                                                  <option value="READ">Read</option>
+                                                  <option value="WRITE">Write</option>
+                                                  <option value="ADMIN">Admin</option>
+                                                </select>
+                                            <button type="submit">Save</button>
+                                            <button type="button" id="closeRoleDialog">Cancel</button>
+                                      </form>
+                                </dialog>
+                            </tr>
+                            {% endif %}
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
+    </div>
+    <br>
+    <div class="relative flex flex-wrap -mx-3">
+        <div class="flex-none w-full max-w-full px-3">
+            <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
+                <div class="p-4 pb-0 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
+                    <div class="bg-gray-200 rounded-lg shadow-lg p-3">
+                        <h6 class="text-lg font-medium">My Invites</h6>
+                    </div>
+                </div>
+                <div class="flex-auto px-0 pt-0 pb-2">
+                    <div class="p-0 overflow-x-auto">
+                        <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                            <thead class="align-bottom">
+                            <tr>
+                                <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                    User
+                                </th>
+                                <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                    Managed by
+                                </th>
+                                <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                    Status
+                                </th>
+                                <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                    Role
+                                </th>
+                                <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                    Joined Date
+                                </th>
+                                <th class="px-6 py-3 font-semibold capitalize align-middle bg-transparent border-b border-gray-200 border-solid shadow-none tracking-none whitespace-nowrap text-slate-400 opacity-70"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {%for user in invites %}
+                            {% if user.status != 'ACCEPTED' %}
+
+                            <tr>
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <div class="flex px-2 py-1">
+                                        <div>
+                                            <!--                              <img src="../assets/img/team-2.jpg" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" />-->
+                                        </div>
+                                        <div class="flex flex-col justify-center">
+                                            <h6 class="mb-0 text-sm leading-normal">{{user.selected_user.first_name}}
+                                                {{user.selected_user.last_name}}</h6>
+                                            <p class="mb-0 text-xs leading-tight text-slate-400">{{user.email}}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <p class="mb-0 text-xs font-semibold leading-tight">{{user.selected_user.manager.first_name}}
+                                        {{user.selected_user.manager.last_name}}</p>
+                                    <p class="mb-0 text-xs leading-tight text-slate-400">{{user.selected_user.company}}</p>
+                                </td>
+                                {% if user.status == 'PENDING' %}
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                        <p class="mb-0 text-xs leading-tight text-slate-400">{{user.status}}</p>
+                                </td>
+                                {% elif user.status == 'REJECTED' %}
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                        <p class="mb-0 text-xs leading-tight text-slate-400">{{user.status}}</p>
+                                </td>
+                                {% else %}
+                                <td class=" md:w-1/3 px-2 mb-3 md:mb-0">
+                                    <div class="relative">
+                                        <select class="block appearance-none w-full bg-white-200 border border-white-200 text-white-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                                id="grid-state">
+                                            <option>{{user.status}}</option>
+
+                                        </select>
+
+                                    </div>
+                                </td>
+
+                                {% endif %}
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                        <p class="mb-0 text-xs leading-tight text-slate-400">{{user.role}}</p>
+                                </td>
+
+                                <!--                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">-->
+                                <!--                          <span class="bg-gradient-to-tl from-green-600 to-lime-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Online</span>-->
+                                <!--                        </td>-->
+                                {% if user.status != 'ACCEPTED' %}
+                                <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <span class="text-xs font-semibold leading-tight text-slate-400">NOT JOINED YET</span>
+                                </td>
+                                {% else %}
+                                <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <span class="text-xs font-semibold leading-tight text-slate-400">{{user.selected_user.date_joined}}</span>
+                                </td>
+                                {% endif %}
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <a href="javascript:;" class="text-xs font-semibold leading-tight text-slate-400">
+                                        Edit </a>
+                                </td>
+
+                            </tr>
+                            {% endif %}
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+</div>
 
 <script>
 
@@ -122,67 +275,239 @@
             searchBarDiv.style.display = "none";
         });
 
-        function fetchSearchResults(searchQuery) {
-            $.ajax({
-                url: `/get/users/?q=${encodeURIComponent(searchQuery)}`, // URL of the UserSearchView endpoint
-                type: "GET",
-                dataType: "json",
-                success: function (data) {
-                    // Clear previous search results
-                    $("#searchResults").empty();
 
-                    // Loop through the search results and display them
-                    data.forEach(user => {
-                        // Replace this with your desired user property to display
-                        var userDiv = $("<div>").addClass("search-result").text(user.username);
-                        $("#searchResults").append(userDiv);
-                    });
-                },
-                error: function (error) {
-                    console.error("Error fetching search results:", error);
-                }
-            });
-        }
-
-        searchInput.addEventListener("input", function () {
-        var searchQuery = this.value;
-        if (searchQuery.trim() !== "") {
-
-            fetch(`/get/users/?q=${encodeURIComponent(searchQuery)}`)
-                .then(response => response.json())
-                .then(data => {
-
-                    searchResults.innerHTML = "";
-
-
-                    data.forEach(user => {
-                        var userDiv = document.createElement("div");
-                        userDiv.classList.add("p-2", "cursor-pointer", "hover:bg-blue-100");
-                        userDiv.textContent = user.username; // Replace this with your desired user property to display
-
-
-                        userDiv.addEventListener("click", function () {
-
-                            console.log("Selected User:", user.username);
-                        });
-
-
-                        searchResults.appendChild(userDiv);
-                    });
-                })
-                .catch(error => {
-                    console.error("Error fetching search results:", error);
-                });
-        } else {
+    document.addEventListener("click", function (event) {
+        const searchBarDiv = document.getElementById("searchBarDiv");
+        if (!event.target.closest("#searchBarDiv") && searchBarDiv.style.display !== "none") {
 
             searchResults.innerHTML = "";
         }
     });
 
+
+
+    searchInput.addEventListener("input", function () {
+        var searchQuery = this.value;
+        if (searchQuery.trim() !== "") {
+            fetch(`/get/users/?q=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+                    searchResults.innerHTML = "";
+                    document.getElementById("searchResults").classList.remove("hidden");
+
+                    if (data.length === 0) {
+                        // No user search results found, show the email input box
+                        const emailInputBox = document.getElementById("emailInputBox");
+                        emailInputBox.classList.remove("hidden");
+                        emailInputBox.querySelector("input[name=email]").value = searchQuery;
+                    } else {
+                        const emailInputBox = document.getElementById("emailInputBox");
+                        emailInputBox.classList.add("hidden");
+                        emailInputBox.querySelector("input[name=email]").value = "";
+
+                        data.forEach(user => {
+                            var userDiv = document.createElement("div");
+                            userDiv.classList.add("p-2", "cursor-pointer", "hover:bg-blue-100", "userDiv");
+                            userDiv.textContent = user.username;
+
+                            searchResults.appendChild(userDiv);
+
+                            userDiv.addEventListener("click", function (event) {
+                                var selectedUser = event.target.textContent;
+                                console.log("Selected User:", selectedUser);
+                                document.getElementById("searchResults").classList.add("hidden");
+                                document.getElementById("searchInput").value = "";
+                                document.getElementById("searchResults").innerHTML = "";
+
+                                handleUserClick(user);
+                            });
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching search results:", error);
+                });
+        }
+        else {
+            searchResults.innerHTML = "";
+            document.getElementById("searchInput").value = "";
+
+            const emailInputBox = document.getElementById("emailInputBox");
+            emailInputBox.classList.add("hidden");
+
+            emailInputBox.querySelector("input[name=email]").value = "";
+        }
+    });
+
+
+    let selectedUser = null;
+    function showSelectedUser() {
+        const selectedUserBox = document.getElementById("selectedUserBox");
+
+        selectedUserBox.classList.remove("hidden");
+
+        const selectedUserName = document.getElementById("selectedUserName");
+
+        selectedUserName.textContent = selectedUser.username;
+    }
+
+
+    function handleUserClick(user) {
+        selectedUser = user;
+        showSelectedUser();
+    }
+
+
+    function clearSelectedUser() {
+        selectedUser = null;
+        const selectedUserBox = document.getElementById("selectedUserBox");
+        const selectedUserName = document.getElementById("selectedUserName");
+
+        // Hide the selected user box
+        selectedUserBox.classList.add("hidden");
+
+        // Clear the selected user's name in the box
+        selectedUserName.textContent = "";
+    }
+
+    function getCSRFToken() {
+        const csrfTokenInput = document.querySelector('input[name=csrfmiddlewaretoken]');
+        if (csrfTokenInput) {
+            return csrfTokenInput.value;
+        } else {
+            return null;
+        }
+    }
+
+    const roleSelect = document.getElementById("roleSelect");
+    const assignManagerButton = document.getElementById("assignManagerButton");
+    assignManagerButton.addEventListener("click", function () {
+
+        if (selectedUser) {
+                var user = document.getElementById("user");
+                user.value = selectedUser.id;
+                const csrfToken = getCSRFToken();
+                const user_id = document.getElementById("user").value;
+                console.log(user_id);
+                const selectedRole = roleSelect.value;
+                const user_role = document.getElementById("role");
+                user_role.value = selectedRole;
+                const role = document.getElementById("role").value;
+
+                const url = '/assign_manager/';
+                const data = {
+                    user: user_id,
+                    role: role,
+                    csrfmiddlewaretoken: csrfToken,
+                };
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify(data),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message); // Handle the response from the server
+                })
+                .catch(error => {
+                    console.error("Error assigning manager:", error);
+                });
+
+<!--                location.reload();-->
+        }
+         clearSelectedUser();
+         location.reload();
+    });
+
+    const roleSelectEmail = document.getElementById("roleSelectEmail");
+    const addEmailButton = document.getElementById("addEmailButton");
+    addEmailButton.addEventListener("click", function () {
+        const emailInput = document.querySelector("#emailInputBox input[name=email]");
+        const email = emailInput.value.trim();
+
+        if (email) {
+            var email_value = document.getElementById("email")
+            const csrfToken = getCSRFToken();
+            email_value.value = email;
+            const email_id = document.getElementById("email").value;
+            console.log(email_id);
+            const emailInputBox = document.getElementById("emailInputBox");
+            emailInputBox.classList.add("hidden");
+            emailInput.value = "";
+            const selectedRoleEmail = roleSelectEmail.value;
+            const user_role = document.getElementById("role");
+            user_role.value = selectedRoleEmail;
+            const role = document.getElementById("role").value;
+
+            // Hide the search results box
+            document.getElementById("searchResults").classList.add("hidden");
+            // Clear the search input
+            document.getElementById("searchInput").value = "";
+
+            const url = '/assign_manager/';
+                const data = {
+                    email: email_id,
+                    role: role,
+                    csrfmiddlewaretoken: csrfToken,
+                };
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify(data),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                })
+                .catch(error => {
+                    console.error("Error sending invite to this email:", error);
+                });
+                location.reload();
+        }
+    });
+
+      const assignManagerButton = document.getElementById("assignManagerButton");
+      const roleDialog = document.getElementById("roleDialog");
+      const roleForm = document.getElementById("roleForm");
+      const roleSelect = document.getElementById("roleSelect1");
+
+
+      function openRoleDialog() {
+        roleDialog.showModal();
+      }
+
+       function closeRoleDialog() {
+        roleDialog.close();
+      }
+
+
+      function handleFormSubmit(event) {
+        event.preventDefault();
+        const selectedRole = roleSelect.value;
+        // Update the value of the hidden input 'user' with the selected role
+        const user_role = document.getElementById("role");
+        user_role.value = selectedRole;
+        closeRoleDialog();
+      }
+
+      assignManagerButton.addEventListener("click", openRoleDialog);
+      roleForm.addEventListener("submit", handleFormSubmit);
+      document.getElementById("closeRoleDialog").addEventListener("click", closeRoleDialog);
+
+
+
 </script>
 
 <style>
-        /* Custom CSS for glowing effect */
+
         .glow-blue:focus {
             border-color: #3b82f6;
 
@@ -191,6 +516,7 @@
         #searchBarDiv:focus-within #searchResults {
             display: block;
         }
+
 </style>
 
 

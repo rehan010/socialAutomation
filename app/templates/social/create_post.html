@@ -17,7 +17,7 @@
 </style>
 
   <div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
-    <form method="post" enctype="multipart/form-data" class="w-100">
+    <form method="post" enctype="multipart/form-data" class="w-100" id="yourForm">
         {% csrf_token %}
       <div class="emoji-picker-container">
       <textarea name="post" cols="40" rows="10" data-emojiable="true" class="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none w-full" placeholder="Describe Everything about this post" id="id_post"></textarea>
@@ -108,8 +108,6 @@
                                    name="facebook" value="{{obj.id}}"/>
                             <span class="ml-2 text-sm">{{obj.name}}</span>
                         </label>
-
-
                         {% endfor %}
 
                     </div>
@@ -137,51 +135,50 @@
                                    name="instagram" value="{{data.insta_data.id}}"/>
                             <span class="ml-2 text-sm text-gray-700">{{data.insta_data.name}}</span>
                         </label>
-                      </div>
-                      </div>
-              </div>
-              <div class="col-sm-3">
-                <button type="button" data-te-ripple-init data-te-ripple-color="light"
-                        class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
-                        style="background-color: #0077b5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="currentColor"
-                         viewBox="0 0 24 24">
-                        <path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/>
-                    </svg>
-                    Linkdein
-                </button>
-                <div class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
-                     style="min-height: 2.5rem;">
-
-                    {% for obj in data.linkedin_page%}
-
-
-                    <label class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <input type="checkbox"
-                               class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
-                               name="linkedin" value="{{ obj.key }}">
-                        <span class="ml-2 text-sm">{{obj.name}}</span>
-                    </label>
-
-
-                    {% endfor %}
-
+                    </div>
                 </div>
+            </div>
+            <div class="col-sm-3">
+
+                    <button type="button" data-te-ripple-init data-te-ripple-color="light"
+                            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
+                            style="background-color: #0077b5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="currentColor"
+                             viewBox="0 0 24 24">
+                            <path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/>
+                        </svg>
+                        Linkdein
+                    </button>
+                    <div class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
+                         style="min-height: 2.5rem;">
+
+                        {% for obj in data.linkedin_page%}
+
+
+                        <label class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <input type="checkbox"
+                                   class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
+                                   name="linkedin" value="{{ obj.key }}">
+                            <span class="ml-2 text-sm">{{obj.name}}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
 
             </div>
 
             <div class="col-sm-3">
-              <button type="button" data-te-ripple-init data-te-ripple-color="light"
-                      class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg"
-                      style="background-color: #4285F4">
-                  <svg class="-ml-1 mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab"
-                       data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                      <path fill="currentColor"
-                            d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
-                  </svg>
-                  Google
-              </button>
-          </div>
+                  <button type="button" data-te-ripple-init data-te-ripple-color="light"
+                          class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg"
+                          style="background-color: #4285F4">
+                      <svg class="-ml-1 mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab"
+                           data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                          <path fill="currentColor"
+                                d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+                      </svg>
+                      Google
+                  </button>
+            </div>
+            <input type="hidden" name="checkbox_selected" id="checkboxSelected">
         </div>
         <li class="relative block px-0 py-2 bg-white border-0 rounded-t-lg text-inherit">
                     <div class="min-h-6 mb-0.5 block pl-0">
@@ -190,7 +187,11 @@
                     </div>
         </li>
 
-
+        {% for message in messages %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
         <div class="w-full flex items-center mt-4">
 <!--            <label class="mr-4 font-bold">Schedule</label>-->
             <div class="ml-auto flex">
@@ -379,10 +380,31 @@ sehedule_controller.forEach((button) => {
     form.addEventListener("submit", function (event) {
       event.preventDefault();
       const selectedDateTime = document.getElementById("scheduleDateTimePicker").value;
-      // You can use AJAX or other methods to submit the selectedDateTime to the server for scheduling
-      // For demonstration purposes, we'll just display the selected date-time
+
       alert(`Post Scheduled for: ${selectedDateTime}`);
     });
+  });
+
+  const form = document.getElementById('yourForm');
+  const checkboxInputs = document.querySelectorAll('input[type="checkbox"]');
+  const checkboxSelectedInput = document.getElementById('checkboxSelected');
+  console.log(checkboxSelectedInput);
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    // Check if at least one checkbox is selected
+    const atLeastOneChecked = Array.from(checkboxInputs).some(input => input.checked);
+
+    if (atLeastOneChecked) {
+
+      checkboxSelectedInput.value = 1;
+
+      form.submit();
+    } else {
+      console.log('Hi');
+      alert('Please select at least one page to post.');
+    }
   });
 
 </script>

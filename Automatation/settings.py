@@ -309,9 +309,38 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
+# settings.py
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-EMAIL_HOST = "localhost"
-EMAIL_PORT = 1025
+
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_USE_TLS = True  # Use TLS encryption for secure communication with the email server
+# EMAIL_HOST_USER = 'social_presence@gmail.com'  # Email account to send emails from
+# EMAIL_HOST_PASSWORD = 'social_presence123'  # Password of the email account
+# EMAIL_HOST = "localhost"
+# EMAIL_PORT = 1025
+
+# settings.py
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Enable TLS encryption for secure communication with the email server
+EMAIL_USE_TLS = True
+
+# Set the email host to Gmail's SMTP server
+EMAIL_HOST = 'smtp.gmail.com'
+
+# Set the email port to the appropriate port for TLS with Gmail's SMTP server
+EMAIL_PORT = 587
+
+# Replace 'your_email@gmail.com' with your Gmail email address
+EMAIL_HOST_USER = 'anasurrehman5@gmail.com'
+
+# Replace 'your_email_password' with your Gmail email password or an app password if enabled
+EMAIL_HOST_PASSWORD = 'vcktoyffjtxvbqhn'
+
+
 if DEBUG:
     SSL_CERTIFICATE = '/Users/apple/PycharmProjects/WebAutomation/Automatation/certificate.crt'
     SSL_KEY = '/Users/apple/PycharmProjects/WebAutomation/Automatation/private.key'

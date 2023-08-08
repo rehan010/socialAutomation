@@ -1,0 +1,50 @@
+{%extends 'registration/base.html'%}
+{%load static%}
+{%load humanize %}
+{%block bar%}
+{%endblock%}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitation Complete</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+
+
+        .card {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            text-align: center;
+            max-width: 600px;
+            font-size: 30px;
+        }
+
+        .check-icon {
+            color: #52c41a; /* Green color */
+            font-size: 64px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="flex justify-between items-center min-h-screen bg-gray-100">
+        <div class="card mx-auto">
+            <h2>We are pleased that you have accepted our invitation</h2>
+            <i class="check-icon">&#10004;</i>
+        </div>
+    </div>
+</body>
+
+{% endblock %}

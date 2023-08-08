@@ -55,6 +55,8 @@ class User(AbstractUser):
     bio = models.TextField(blank=True, null=True)
     company = models.TextField(blank=True, null=True)
     manager = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    is_invited = models.BooleanField(default=False)
+
 
 
     objects = CustomUserManager()
@@ -86,15 +88,24 @@ class BaseModel(models.Model):
 
 
 class InviteEmploye(BaseModel):
+
+    STATUS_CHOICES = [('PENDING', 'PENDING'), ('ACCEPTED', 'ACCEPTED'), ('REJECTED', 'REJECTED')]
+    ROLE_CHOICES = [('ADMIN', 'ADMIN'), ('WRITE', 'WRITE'), ('READ', 'READ')]
     token = models.CharField(max_length=255, blank=True)
-    invited_by = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
+    invited_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     email = models.EmailField(("email address"), blank=True)
+    status = models.CharField(choices=STATUS_CHOICES,default='PENDING', blank=True)
+    selected_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="selected_user")
+    role = models.CharField(choices=ROLE_CHOICES, default='READ')
+
     class Meta:
         db_table = 'invite'
         verbose_name = 'Invite Employe'
         verbose_name_plural = 'Invite Employes'
 
 
+    def __str__(self):
+        return self.email + '--' + self.status
 
 
 

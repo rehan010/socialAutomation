@@ -12,9 +12,10 @@ from .forms import *
 import requests
 from .restapis import *
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from rest_framework.generics import ListAPIView,DestroyAPIView
+from rest_framework.generics import ListAPIView,DestroyAPIView, RetrieveUpdateAPIView
 from django.db.models import Q
 from .serializer import *
+from django.views.decorators.csrf import csrf_exempt
 
 # from django.contrib.auth.models import User
 from .models import User
@@ -31,6 +32,9 @@ from allauth.socialaccount.models import SocialToken
 from django.utils.timezone import make_aware
 from datetime import datetime
 # from .signals import post_update_signal
+from django.contrib import messages
+from django.contrib.auth import logout
+
 
 def get_id_token(access_token):
     # Specify the URL for the Google Tokeninfo API
@@ -116,7 +120,9 @@ class UserView(LoginRequiredMixin,TemplateView):
     model = User
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['users'] = User.objects.filter(manager=self.request.user)
+        # context['users'] = User.objects.filter(manager=self.request.user)
+        # context['invites'] = InviteEmploye.objects.all()
+        context['invites'] = InviteEmploye.objects.filter(invited_by=self.request.user)
         return context
 
 class UserSearchView(ListAPIView):
@@ -129,9 +135,116 @@ class UserSearchView(ListAPIView):
             queryset = super().get_queryset()
             search_query = self.request.query_params.get('q')
             if search_query:
-                queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query), ~Q(manager=self.request.user))
+                user_queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query), ~Q(manager=self.request.user), ~Q(id=self.request.user.id), Q(is_invited=False))
+                # if len(InviteEmploye.objects.filter(Q(status='REJECTED'))) > 0:
+                #     invite_queryset = InviteEmploye.objects.filter(
+                #         Q(status='REJECTED')
+                #     )
+                #     queryset = user_queryset.union(invite_queryset)
+                # else:
+                queryset = user_queryset
+
+                # Combine the querysets using the union operator |
+
+
             return queryset
 
+import secrets
+
+def generate_random_token(length=10):
+    return secrets.token_urlsafe(length)
+
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+
+
+
+class assign_manager(CreateView):
+    model = InviteEmploye
+
+    def post(self, request, *kwargs):
+        if self.request.method == 'POST':
+            data = json.loads(request.body)
+            user_id = data.get('user')
+            email = data.get('email')
+            role = data.get('role')
+            try:
+                token = generate_random_token()
+                print("Random Token:", token)
+                if email is None:
+                    selected_user = User.objects.get(pk=user_id)
+                    invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=selected_user.email, selected_user=selected_user, role=role)
+                    invite.save()
+                    selected_user.is_invited = True
+                    selected_user.save()
+                    reject_link = f"https://localhost:8000/reject_invitation?token={token}"
+                    invite_link = f"https://localhost:8000/accept_invitation?token={token}"
+                    email = selected_user.email
+                    # email = 'anasurrehman5@gmail.com'
+
+                    # Render the email template with the dynamic content
+                    context = {'recipient_name': selected_user.username, 'invite_link': invite_link,
+                               'reject_link': reject_link}
+                    email_subject = 'Invitation to Join Our App'
+                    email_body = render_to_string('registration/emails.html', context)
+
+                    # Send the email using Django's email functionality
+                    send_mail(email_subject, email_body, 'social_presence@gmail.com', [email])
+                else:
+                    invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=email, role=role)
+                    invite.save()
+
+                    reject_link = f"https://localhost:8000/reject_invitation?token={token}"
+                    invite_link = f"https://localhost:8000/accounts/register/invite?token={token}"
+                    # email = selected_user.email
+                    email = email
+
+                    # Render the email template with the dynamic content
+                    context = {'recipient_name': 'User', 'invite_link': invite_link, 'reject_link': reject_link}
+                    email_subject = 'Invitation to Join Our App'
+                    email_body = render_to_string('registration/emails.html', context)
+
+                    # Send the email using Django's email functionality
+                    send_mail(email_subject, email_body, 'social_presence@gmail.com', [email])
+
+                # selected_user.manager = self.request.user
+                # selected_user.save()
+
+                return JsonResponse({'message': email})
+
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'Selected user not found.'}, status=400)
+
+        else:
+            return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+
+def accept_invitation_view(request):
+    token = request.GET['token']
+    invite = InviteEmploye.objects.get(token=token)
+    user = User.objects.get(pk=invite.selected_user.id)
+    if invite:
+        user.manager = request.user
+        user.company = request.user.company
+        user.save()
+        invite.status = 'ACCEPTED'
+        invite.save()
+    login(request, user)
+
+    return render(request, 'registration/invitation_complete.html')
+
+
+def reject_invitation_view(request):
+    token = request.GET['token']
+    invite = InviteEmploye.objects.get(token=token)
+    user = User.objects.get(pk=invite.selected_user.id)
+    if invite:
+        invite.status = 'REJECTED'
+        invite.save()
+        user.is_invited = False
+        user.save()
+
+    return render(request, 'registration/register.html')
 
 class UserCreateView(LoginRequiredMixin,TemplateView):
     template_name = "registration/user_create.html"
@@ -145,7 +258,7 @@ class DashboardView(LoginRequiredMixin,TemplateView):
 
         # Add your context data here
         if self.request.user.is_authenticated:
-            context['point_files'] = list(PointFileModel.objects.filter(user=self.request.user.pk,is_deleted=False).values('id','name','point_file'))
+            context['point_files'] = list(PointFileModel.objects.filter(user=self.request.user.pk,is_deleted=False).values('id', 'name','point_file'))
             lat_long= {}
             for _ in context['point_files']:
                 lat_long_list = list(LatLongModel.objects.filter(file=_['id']).values('latitude', 'longitude'))
@@ -166,7 +279,7 @@ class PasswordResetDoneView(auth_views.PasswordResetDoneView):
     success_url = reverse_lazy("password_change_done")
 
 
-class ConnectPageView(LoginRequiredMixin,CreateView):
+class ConnectPageView(LoginRequiredMixin, CreateView):
     model = SharePage
     form_class = SharePageForm
     template_name = 'social/connection.html'
@@ -202,7 +315,7 @@ class ConnectPageView(LoginRequiredMixin,CreateView):
         # context
         # 'point_files': point_files
 
-        context = { 'data': data}
+        context = {'data': data}
         return context
 
     def post(self, request, args, *kwargs):
@@ -243,7 +356,66 @@ class RegisterView(FormView):
         return redirect(reverse("dashboard"))
 
 
-class PointFileCreateView(LoginRequiredMixin,CreateView):
+class RegisterViewInvite(FormView):
+    template_name = "registration/invitation.html"
+    form_class = CustomUserInvitationForm
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            logout(request)
+        return super().get(request, *args, **kwargs)
+
+
+    def form_valid(self, form):
+
+
+        token = self.request.GET['token']
+        email = self.request.POST.get('email')
+        email_invite = InviteEmploye.objects.filter(selected_user__email=email)
+        email_user = User.objects.filter(email=email)
+
+        if email_invite.exists():
+            messages.error(self.request, 'A user with this email already exists.')
+            return self.form_invalid(form)
+        if email_user.exists():
+            messages.error(self.request, 'A user with this email already exists.')
+            return self.form_invalid(form)
+
+        invite = InviteEmploye.objects.filter(token=token, email=email)
+
+        if invite:
+            invite = InviteEmploye.objects.get(token=token, email=email)
+            user = form.save()
+            user.manager = invite.invited_by
+            user.company = invite.invited_by.company
+            user.save()
+            invite.selected_user = user
+            invite.status = 'ACCEPTED'
+            invite.save()
+        else:
+            messages.error(self.request, 'Invitation was sent to different email address')
+            return self.form_invalid(form)
+
+
+        login(self.request, user)
+
+
+        return redirect(reverse("dashboard"))
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        token = self.request.GET['token']
+        invite = InviteEmploye.objects.get(token=token)
+        if invite:
+            # Retrieve the 'company' query parameter from the URL and pass it to the form
+            kwargs['initial'] = {'company': invite.invited_by.company}
+        else:
+            kwargs['initial'] = {'company': 'Type in your own company'}
+
+        return kwargs
+
+
+class PointFileCreateView(LoginRequiredMixin, CreateView):
     model = PointFileModel
     form_class = PointFileModelForm
     template_name = 'social/create_point_file.html'
@@ -323,14 +495,15 @@ class PostCreateView(CreateView):
         comment_check = True
         self.request.session['context'] = data
 
-        context = {'comment_check': comment_check,"data": data, 'form': self.get_form()}
+        context = {'comment_check': comment_check, "data": data, 'form': self.get_form()}
         return context
 
     def form_invalid(self, form):
         print(self.request.POST)
         print(self.request.POST.getlist("facebook[]"))
-        print( self.request.FILES.get('file'))
+        print(self.request.FILES.get('file'))
 
+        # return render(self.request, 'social/create_post.html')
         return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
 
     def form_valid(self, form):
@@ -340,7 +513,7 @@ class PostCreateView(CreateView):
         caption = requestdata.pop("post")
         post = form.save(commit=False)
         post.user = self.request.user
-        social = SocialAccount.objects.get(user=self.request.user, provider='linkedin_oauth2')
+        # social = SocialAccount.objects.get(user=self.request.user, provider='linkedin_oauth2')
         post.post = caption[0]
 
         comment_check = form.cleaned_data.get('comment_check')
@@ -377,9 +550,32 @@ class PostCreateView(CreateView):
                 share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin', user=self.request.user, name=info['name'])
 
                 share_pages.append(share_page)
-        else:
-            from django.http import Http404
-            raise Http404("Please Select a Page To Share")
+
+        elif requestdata.get("facebook"):
+            for page in requestdata.get("facebook"):
+                i = 0
+                while context.get('facebook_page')[i].get('key') != page:
+                    i += 1
+                info = context.get('facebook_page').pop(i)
+
+                share_page, created = SharePage.objects.get_or_create(org_id=page, provider='facebook', user=self.request.user, name=info['name'])
+
+                share_pages.append(share_page)
+
+        elif requestdata.get("instagram"):
+            for page in requestdata.get("instagram"):
+                i = 0
+                while context.get('insta_data')[i].get('key') != page:
+                    i += 1
+                info = context.get('insta_data').pop(i)
+
+                share_page, created = SharePage.objects.get_or_create(org_id=page, provider='instagram', user=self.request.user, name=info['name'])
+
+                share_pages.append(share_page)
+        # else:
+        #         messages.error(self.request, 'Please Select a page to post')
+        #         return self.form_invalid(form)
+
         images = self.request.FILES.getlist('images')
         post.save()
         image_object = []
@@ -568,7 +764,7 @@ class PostDraftView(UpdateView):
     def form_invalid(self, form):
         print(self.request.POST)
         print(self.request.POST.getlist("facebook[]"))
-        print( self.request.FILES.get('file'))
+        print(self.request.FILES.get('file'))
 
         return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
 
@@ -649,18 +845,25 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
         access_token_string = result[1]
         ids = result[2]
 
-        provider_name = "linkedin"
-        linkedin_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name).distinct()
+        if posts == '' or access_token_string == '' or ids == '':
+            linkedin_post = ''
+            facebook_post = ''
+            instagram_post = ''
+            google_post = ''
+        else:
 
-        provider_name1 = "facebook"
-        # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
-        facebook_post = PostModel.objects.filter(user=self.request.user.pk,post_urn__org__provider=provider_name1).distinct()
+            provider_name = "linkedin"
+            linkedin_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name).distinct()
 
-        provider_name2 = "instagram"
-        instagram_post = PostModel.objects.filter(user=self.request.user.pk,post_urn__org__provider=provider_name2).distinct()
+            provider_name1 = "facebook"
+            # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
+            facebook_post = PostModel.objects.filter(user=self.request.user.pk,post_urn__org__provider=provider_name1).distinct()
 
-        provider_name3 = "Google Books"
-        google_post = PostModel.objects.filter(user=self.request.user.pk,post_urn__org__provider=provider_name3).distinct()
+            provider_name2 = "instagram"
+            instagram_post = PostModel.objects.filter(user=self.request.user.pk,post_urn__org__provider=provider_name2).distinct()
+
+            provider_name3 = "Google Books"
+            google_post = PostModel.objects.filter(user=self.request.user.pk,post_urn__org__provider=provider_name3).distinct()
 
         #     for post in pages:
         #         org_id = post.org.id
@@ -677,9 +880,7 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
         #                 response = linkedin_post_socialactions(urn, access_token_string)
         #
         #
-        # # scheduler = BackgroundScheduler()
-        # # scheduler.add_job(schedule_api.create_post, 'interval', minutes=1)  # Adjust the interval as needed
-        # # scheduler.start()
+        #
         #
         # data_list = []
         # for id in ids:

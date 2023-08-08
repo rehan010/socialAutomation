@@ -353,7 +353,7 @@ sehedule_controller.forEach((button) => {
 
     $.ajax({
         type: 'DELETE',
-        url: `/delete-post/${pk}/`,  // Replace 'your_app' with the actual name of your app
+        url: `/delete-post/${pk}/`,
         beforeSend: function(xhr) {
             // Set the CSRF token in the request header
             xhr.setRequestHeader('X-CSRFToken', csrfToken);
