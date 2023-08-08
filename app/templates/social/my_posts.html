@@ -408,7 +408,7 @@
                                             {% endif %}
                                             <div class="flex flex-col justify-center">
                                                 <a href="#">
-                                                    <h6 class="mb-0 text-sm leading-normal">{{p.pk}}{{p.post}}</h6>
+                                                    <h6 class="mb-0 text-sm leading-normal">{{p.post}}</h6>
                                                 </a>
                                             </div>
                                         </div>
@@ -452,25 +452,38 @@
                                     </td>
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
                                         <div class="flex px-2 py-1">
-
+                                            {% if p.status == 'PUBLISHED' %}
                                             <div class="flex flex-col justify-center">
-                                                 {% for page_name in p.post_urn.all %}
-                                                     {%if page_name.org.provider == 'instagram'%}
-
-
+                                                    {% for page_name in p.post_urn.all %}
+                                                       {%if page_name.org.provider == 'instagram'%}
                                                         <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-
-                                                             <h6 class="mb-0 text-sm leading-normal">{{page_name.pk}}{{page_name.org}}</h6>
+                                                             <h6 class="mb-0 text-sm leading-normal">{{page_name.org}}</h6>
 
                                                         </a>
                                                         {%endif%}
                                                     {%endfor%}
 
                                             </div>
+                                            {% elif p.status == 'DRAFT' %}
+                                            <div class="flex flex-col justify-center">
+                                                        <a href="{%url 'post_draft' p.pk %}">
+                                                             <h6 class="mb-0 text-sm leading-normal">PUBLISH THIS DRAFT</h6>
+
+                                                        </a>
+                                            </div>
+                                            {% else %}
+                                            <div class="flex flex-col justify-center">
+                                                    {% for page_name in p.prepost_page.all %}
+                                                       {%if page_name.provider == 'instagram'%}
+                                                 <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
+                                                        {%endif%}
+                                                    {%endfor%}
+
+                                            </div>
+                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
                             {% endfor %}
 
                         </tbody>

@@ -445,12 +445,11 @@ def instagram_id(accesstoken):
 
 
 
+def facebookpost(data,images,post_model,sharepage):
 
-
-def facebookpost(request,data,image,post_model,sharepage):
     post = {
-            "url": image.image_url,
-            "caption": request.POST['post']
+            "url": images[0].image_url,
+            "caption": post_model.post
         }
 
     url = f"https://graph.facebook.com/{data['page_id']}/photos"
@@ -470,14 +469,35 @@ def facebookpost(request,data,image,post_model,sharepage):
     post.post_urn.add(post_urn)
     post.save()
 
+#
+# def facebookpost(request,data,image,post_model,sharepage):
+#     post = {
+#             "url": image.image_url,
+#             "caption": request.POST['post']
+#         }
+#
+#     url = f"https://graph.facebook.com/{data['page_id']}/photos"
+#
+#     headers = {
+#         "Authorization": f"Bearer {data['page_access_token']}"
+#     }
+#
+#     response = requests.post(url, headers=headers, json=post)
+#     response = response.json()
+#     post_id = response.get('id')
+#     post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
+#     post_urn.save()
+#
+#     post = PostModel.objects.get(id=post_model.id)
+#
+#     post.post_urn.add(post_urn)
+#     post.save()
+#
 
-
-
-
-def instagrampost(request,data,access_token,image,post_model,sharepage):
+def instagrampost(data,access_token,image,post_model,page):
     post = {
-            "image_url": image.image_url,
-            "caption": request.POST['post']
+            "image_url": image[0].image_url,
+            "caption": post_model.post
 
         }
     url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media/"
@@ -499,13 +519,47 @@ def instagrampost(request,data,access_token,image,post_model,sharepage):
     response = requests.post(url, headers=headers, data=data)
     response = response.json()
     post_id = response.get('id')
-    post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
+    post_urn = Post_urn.objects.create(org=page, urn=post_id)
     post_urn.save()
 
     post = PostModel.objects.get(id=post_model.id)
 
     post.post_urn.add(post_urn)
     post.save()
+
+
+# def instagrampost(request,data,access_token,image,post_model,sharepage):
+#     post = {
+#             "image_url": image.image_url,
+#             "caption": request.POST['post']
+#
+#         }
+#     url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media/"
+#
+#     headers = {
+#         "Authorization": f"Bearer {access_token}"
+#     }
+#
+#     response = requests.post(url, headers=headers, json=post)
+#
+#     mediaid = response.json()['id']
+#
+#     url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media_publish"
+#
+#     data = {
+#         'creation_id': mediaid
+#     }
+#
+#     response = requests.post(url, headers=headers, data=data)
+#     response = response.json()
+#     post_id = response.get('id')
+#     post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
+#     post_urn.save()
+#
+#     post = PostModel.objects.get(id=post_model.id)
+#
+#     post.post_urn.add(post_urn)
+#     post.save()
 
 
 def linkdein(access_token_string):
@@ -579,13 +633,12 @@ def getmediaid(image,data,post):
 
     return response.json()
 
-
-def facebookmultiimage(request,data,images,post,sharepage):
+def facebookmultiimage(data,images,post,sharepage):
 
     url = f"https://graph.facebook.com/{data['page_id']}/feed"
-
+    print(post)
     data_post = {
-        "message":request.POST['post']
+        "message": post.post
     }
     headers = {
         "Authorization": f"Bearer {data['page_access_token']}"
@@ -610,6 +663,36 @@ def facebookmultiimage(request,data,images,post,sharepage):
     post.save()
 
 
+# def facebookmultiimage(request,data,images,post,sharepage):
+#
+#     url = f"https://graph.facebook.com/{data['page_id']}/feed"
+#
+#     data_post = {
+#         "message":request.POST['post']
+#     }
+#     headers = {
+#         "Authorization": f"Bearer {data['page_access_token']}"
+#     }
+#     # i = 0
+#     for _ in range(len(images)):
+#         response_id = getmediaid(images[_], data,post)["id"]
+#         images[_].image_posted = response_id
+#         images[_].save()
+#         data_post[f"attached_media[{_}]"] = f'{{"media_fbid": "{response_id}"}}'
+#
+#     response = requests.post(url,headers=headers,data=data_post)
+#     response = response.json()
+#     post_id = response["id"]
+#
+#     post_urn = Post_urn.objects.create(org = sharepage,urn = post_id)
+#     post_urn.save()
+#
+#     post = PostModel.objects.get(id=post.id)
+#
+#     post.post_urn.add(post_urn)
+#     post.save()
+
+
 
 def media_id_insta(image,data,access_token):
     url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media?is_carousel_item=true"
@@ -626,7 +709,7 @@ def media_id_insta(image,data,access_token):
     return response.json()
 
 
-def instagrammultiimage(request,data,access_token,images,post,sharepage):
+def instagrammultiimage(data,access_token,images,post,page):
 
     childern_list = []
     for _ in images:
@@ -639,7 +722,7 @@ def instagrammultiimage(request,data,access_token,images,post,sharepage):
         "Authorization": f"Bearer {access_token}"
     }
     data_post = {
-        "caption": request.POST['post'],
+        "caption": post.post,
         "children": ",".join(childern_list)
     }
     response_1 = requests.post(url,headers=headers,data=data_post)
@@ -654,13 +737,49 @@ def instagrammultiimage(request,data,access_token,images,post,sharepage):
     response_2 = response_2.json()
 
     post_id = response_2.get('id')
-    post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
+    post_urn = Post_urn.objects.create(org=page, urn=post_id)
     post_urn.save()
 
     post = PostModel.objects.get(id=post.id)
 
     post.post_urn.add(post_urn)
     post.save()
+
+# def instagrammultiimage(request,data,access_token,images,post,sharepage):
+#
+#     childern_list = []
+#     for _ in images:
+#         childern_list.append(media_id_insta(_,data,access_token)["id"])
+#
+#
+#     url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media?media_type=CAROUSEL"
+#
+#     headers = {
+#         "Authorization": f"Bearer {access_token}"
+#     }
+#     data_post = {
+#         "caption": request.POST['post'],
+#         "children": ",".join(childern_list)
+#     }
+#     response_1 = requests.post(url,headers=headers,data=data_post)
+#
+#     url_2 = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media_publish"
+#
+#     data_post_2 = {
+#         "creation_id": response_1.json()['id']
+#     }
+#
+#     response_2 = requests.post(url_2,headers=headers,data=data_post_2)
+#     response_2 = response_2.json()
+#
+#     post_id = response_2.get('id')
+#     post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
+#     post_urn.save()
+#
+#     post = PostModel.objects.get(id=post.id)
+#
+#     post.post_urn.add(post_urn)
+#     post.save()
 
 
 

@@ -40,13 +40,13 @@ from django.db.models.signals import m2m_changed
 
 
 
-
-@receiver(m2m_changed, sender=PostModel.prepost_page.through)
-def handle_m2m_change(sender, instance, action, reverse, pk_set, **kwargs):
-    if action == 'post_add' and not reverse and instance == PostModel.objects.last():
-        announce = kwargs.get('instance')
-        print(instance)
-
+#
+# @receiver(m2m_changed, sender=PostModel.prepost_page.through)
+# def handle_m2m_change(sender, instance, action, reverse, pk_set, **kwargs):
+#     if action == 'post_add' and not reverse and instance == PostModel.objects.last():
+#         announce = kwargs.get('instance')
+#         print(instance)
+#
 
 
 
@@ -111,9 +111,6 @@ def handle_m2m_change(sender, instance, action, reverse, pk_set, **kwargs):
 #             related_obj = SharePage.objects.get(pk=pk)
 #             #
 
-
-
-
 def publish_post_on_social_media(instance):
     # Put your code to publish the post on the social media platform here
     # For example, if the post platform is "linkedin," use your existing code to publish on LinkedIn
@@ -137,11 +134,66 @@ def publish_post_on_social_media(instance):
                                 get_video_urn, image_m, upload_video, post_video_linkedin,
                                 org, get_img_urn, upload_img, post_single_image_linkedin,
                                     post, post_linkedin)
+        elif page.provider == "facebook":
+            post = instance
+            data = {
+                'page_id':page.org_id,
+                'page_access_token': page.access_token
+            }
+            if len(images) > 1:
+               data = facebookmultiimage(data,images,instance,page)
+            else:
+                post_model = instance
+                data = facebookpost(data,images, post_model, page)
+        elif page.provider == "instagram":
+            socialaccount = SocialAccount.objects.get(user=page.user.id,provider = 'facebook')
+            access_token = SocialToken.objects.filter(account = socialaccount)
+            post = instance
+            data = {
+                        "insta_id": page.org_id,
+
+                    }
+
+            if (len(images) > 1):
+                instagrammultiimage(data, access_token[0], images, post, page)
+            else:
+                post_model = instance
+                instagrampost(data, access_token[0], images, post_model, page)
 
         else:
             pass
 
     return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
+
+
+# def publish_post_on_social_media(instance):
+#     # Put your code to publish the post on the social media platform here
+#     # For example, if the post platform is "linkedin," use your existing code to publish on LinkedIn
+#     # Remember to handle any exceptions that may occur during the publishing process
+#     share_page = instance.prepost_page.all()
+#     images = instance.images.all()
+#     if instance.status == 'SCHEDULED' or instance.status == 'DRAFT' or instance.status == 'PROCESSING':
+#         instance.status = 'PUBLISHED'
+#         instance.publish_check = True
+#         instance.save()
+#     for page in share_page:
+#         if page.provider == "linkedin":
+#             socialaccount = SocialAccount.objects.get(user=page.user.id, provider="linkedin_oauth2")
+#             access_token = SocialToken.objects.filter(account=socialaccount)[0]
+#             access_token_string = str(access_token)
+#             org_id = page.org_id
+#             image_m = PostModel.objects.get(id=instance.id)
+#             org = SharePage.objects.get(id=page.id)
+#             post = instance
+#             create_l_multimedia(images, org_id, access_token_string, clean_file,
+#                                 get_video_urn, image_m, upload_video, post_video_linkedin,
+#                                 org, get_img_urn, upload_img, post_single_image_linkedin,
+#                                     post, post_linkedin)
+#
+#         else:
+#             pass
+#
+#     return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
 
 
 

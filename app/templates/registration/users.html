@@ -40,6 +40,7 @@
                 <input type="hidden" id="role" name="role" value="">
                <br>
                 <span id="selectedUserName" style="font-weight: bold;"></span>
+                <button id="closeUserBtn" class="absolute left-1  text-red-500">&#10006;</button>
                 <select id="roleSelect" class="px-3 py-1 bg-green-500 text-white rounded">
                     <option value="READ">Read</option>
                     <option value="WRITE">Write</option>
@@ -130,7 +131,7 @@
                                     <span class="text-xs font-semibold leading-tight text-slate-400">{{user.selected_user.date_joined}}</span>
                                 </td>
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                    <a href="javascript:;" class="text-xs font-semibold leading-tight text-slate-400">
+                                    <a href="javascript:;" id="edit" class="text-xs font-semibold leading-tight text-slate-400">
                                         Edit </a>
                                 </td>
                                 <dialog id="roleDialog">
@@ -273,6 +274,12 @@
         document.getElementById("closeSearchBtn").addEventListener("click", function () {
             var searchBarDiv = document.getElementById("searchBarDiv");
             searchBarDiv.style.display = "none";
+        });
+
+        document.getElementById("closeUserBtn").addEventListener("click", function () {
+            var userbox = document.getElementById("selectedUserBox");
+            userbox.style.display = "none";
+
         });
 
 
@@ -448,6 +455,7 @@
             // Clear the search input
             document.getElementById("searchInput").value = "";
 
+
             const url = '/assign_manager/';
                 const data = {
                     email: email_id,
@@ -474,10 +482,10 @@
         }
     });
 
-      const assignManagerButton = document.getElementById("assignManagerButton");
+      const edit = document.getElementById("edit");
       const roleDialog = document.getElementById("roleDialog");
       const roleForm = document.getElementById("roleForm");
-      const roleSelect = document.getElementById("roleSelect1");
+      const roleSelect1 = document.getElementById("roleSelect1");
 
 
       function openRoleDialog() {
@@ -491,14 +499,14 @@
 
       function handleFormSubmit(event) {
         event.preventDefault();
-        const selectedRole = roleSelect.value;
+        const selectedRole = roleSelect1.value;
         // Update the value of the hidden input 'user' with the selected role
         const user_role = document.getElementById("role");
         user_role.value = selectedRole;
         closeRoleDialog();
       }
 
-      assignManagerButton.addEventListener("click", openRoleDialog);
+      edit.addEventListener("click", openRoleDialog);
       roleForm.addEventListener("submit", handleFormSubmit);
       document.getElementById("closeRoleDialog").addEventListener("click", closeRoleDialog);
 
