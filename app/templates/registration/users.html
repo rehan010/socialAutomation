@@ -33,12 +33,13 @@
                     &#128269;
                 </span>
             <div id="searchResults"
-                 class="relative top-12 left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg overflow-y-auto" style="max-height: 300px;" >
+                 class="relative top-12 left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg overflow-y-auto"
+                 style="max-height: 300px;">
             </div>
             <div id="selectedUserBox" class="p-2 bg-blue-100 rounded-lg hidden flex items-center justify-between">
                 <input type="hidden" id="user" name="user" value="">
                 <input type="hidden" id="role" name="role" value="">
-               <br>
+                <br>
                 <span id="selectedUserName" style="font-weight: bold;"></span>
                 <button id="closeUserBtn" class="absolute left-1  text-red-500">&#10006;</button>
                 <select id="roleSelect" class="px-3 py-1 bg-green-500 text-white rounded">
@@ -47,16 +48,19 @@
                     <option value="ADMIN">Admin</option>
                 </select>
                 <button id="assignManagerButton" class="px-3 py-1 bg-green-500 text-white  rounded">SEND INVITE</button>
-               {% csrf_token %}
+                {% csrf_token %}
             </div>
             <div id="emailInputBox" class="hidden p-2 bg-blue-100 rounded-lg flex items-center justify-between">
-                <input type="text" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500">
+                <input type="text" id="email" name="email"
+                       class="w-4/5 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500">
+                <div class="flex gap-4">
                 <select id="roleSelectEmail" class="px-3 py-1 bg-green-500 text-white rounded">
                     <option value="READ">Read</option>
                     <option value="WRITE">Write</option>
                     <option value="ADMIN">Admin</option>
                 </select>
-                <button id="addEmailButton" class="px-3 py-1 bg-green-500 text-white rounded">Add</button>
+                <button id="addEmailButton" class="px-3 py-1 bg-green-500 text-white rounded">INVITE</button>
+                </div>
             </div>
         </div>
     </div>
@@ -110,7 +114,8 @@
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                                     <p class="mb-0 text-xs font-semibold leading-tight">{{user.invited_by.first_name}}
                                         {{user.invited_by.last_name}}</p>
-                                    <p class="mb-0 text-xs leading-tight text-slate-400">{{user.selected_user.company}}</p>
+                                    <p class="mb-0 text-xs leading-tight text-slate-400">
+                                        {{user.selected_user.company}}</p>
                                 </td>
                                 <td class=" md:w-1/3 px-2 mb-3 md:mb-0">
 
@@ -131,21 +136,27 @@
                                     <span class="text-xs font-semibold leading-tight text-slate-400">{{user.selected_user.date_joined}}</span>
                                 </td>
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                    <a href="javascript:;" id="edit" class="text-xs font-semibold leading-tight text-slate-400">
-                                        Edit </a>
+                                    <button class="openDialogButton text-xs font-semibold leading-tight text-slate-400" data-target="dialog{{ user.id }}">Edit</button>
+
+
+                                    <dialog id="dialog{{ user.id }}" class="bg-gray-400 rounded-lg " >
+                                        <div class="bg-white rounded-lg shadow-md p-4">
+                                            <h3 class="text-lg font-semibold mb-4">Edit Role</h3>
+                                            <input type="hidden" id="changerole" name="changerole" value="">
+                                            <select class="roleSelect1 w-full mb-4 border border-gray-400 rounded-lg p-2 focus:border-blue-500">
+                                                <option value="READ">Read</option>
+                                                <option value="WRITE">Write</option>
+                                                <option value="ADMIN">Admin</option>
+                                            </select>
+                                            <div class="flex justify-end">
+                                                <button type="submit" class="saveRoleDialog px-3 py-1 bg-green-500 text-white rounded mr-2" data-target="dialog{{ user.id }}">Save
+                                                </button>
+                                                <button type="button" class="closeDialogButton px-3 py-1 bg-red-500 text-white rounded" data-target="dialog{{ user.id }}">Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </dialog>
                                 </td>
-                                <dialog id="roleDialog">
-                                      <form id="roleForm">
-                                            <label for="roleSelect1">Select Role:</label>
-                                                <select id="roleSelect1">
-                                                  <option value="READ">Read</option>
-                                                  <option value="WRITE">Write</option>
-                                                  <option value="ADMIN">Admin</option>
-                                                </select>
-                                            <button type="submit">Save</button>
-                                            <button type="button" id="closeRoleDialog">Cancel</button>
-                                      </form>
-                                </dialog>
                             </tr>
                             {% endif %}
                             {%endfor%}
@@ -191,7 +202,6 @@
                             <tbody>
                             {%for user in invites %}
                             {% if user.status != 'ACCEPTED' %}
-
                             <tr>
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                                     <div class="flex px-2 py-1">
@@ -206,17 +216,19 @@
                                     </div>
                                 </td>
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                    <p class="mb-0 text-xs font-semibold leading-tight">{{user.selected_user.manager.first_name}}
+                                    <p class="mb-0 text-xs font-semibold leading-tight">
+                                        {{user.selected_user.manager.first_name}}
                                         {{user.selected_user.manager.last_name}}</p>
-                                    <p class="mb-0 text-xs leading-tight text-slate-400">{{user.selected_user.company}}</p>
+                                    <p class="mb-0 text-xs leading-tight text-slate-400">
+                                        {{user.selected_user.company}}</p>
                                 </td>
                                 {% if user.status == 'PENDING' %}
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                        <p class="mb-0 text-xs leading-tight text-slate-400">{{user.status}}</p>
+                                    <p class="mb-0 text-xs leading-tight text-slate-400">{{user.status}}</p>
                                 </td>
                                 {% elif user.status == 'REJECTED' %}
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                        <p class="mb-0 text-xs leading-tight text-slate-400">{{user.status}}</p>
+                                    <p class="mb-0 text-xs leading-tight text-slate-400">{{user.status}}</p>
                                 </td>
                                 {% else %}
                                 <td class=" md:w-1/3 px-2 mb-3 md:mb-0">
@@ -232,7 +244,7 @@
 
                                 {% endif %}
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                        <p class="mb-0 text-xs leading-tight text-slate-400">{{user.role}}</p>
+                                    <p class="mb-0 text-xs leading-tight text-slate-400">{{user.role}}</p>
                                 </td>
 
                                 <!--                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">-->
@@ -277,8 +289,9 @@
         });
 
         document.getElementById("closeUserBtn").addEventListener("click", function () {
-            var userbox = document.getElementById("selectedUserBox");
-            userbox.style.display = "none";
+            const userbox = document.getElementById("selectedUserBox");
+            userbox.classList.add("hidden");
+            clearSelectedUser()
 
         });
 
@@ -482,33 +495,75 @@
         }
     });
 
-      const edit = document.getElementById("edit");
-      const roleDialog = document.getElementById("roleDialog");
-      const roleForm = document.getElementById("roleForm");
-      const roleSelect1 = document.getElementById("roleSelect1");
+    const saveRoleDialog = document.querySelectorAll('.saveRoleDialog');
 
+    saveRoleDialog.forEach(button => {
+        button.addEventListener('click', () => {
 
-      function openRoleDialog() {
-        roleDialog.showModal();
-      }
+            const csrfToken = getCSRFToken();
+            const target = button.getAttribute('data-target');
+            const roleSelect = document.querySelector(`#${target} .roleSelect1`);
+            const changeroleInput = document.querySelector(`#${target} #changerole`)
+            changeroleInput.value = roleSelect.value;
+            const newrole = changeroleInput.value;
+            console.log(newrole);
+            const originalString = target;
+            const user = originalString.replace("dialog", "");
+            console.log(user);
+                const dialog = document.getElementById(target);
+                if (dialog) {
+                    dialog.close();
+                }
 
-       function closeRoleDialog() {
-        roleDialog.close();
-      }
+            const url = '/change_role/';
+            const data = {
+                user: user,
+                role: newrole,
+                csrfmiddlewaretoken: csrfToken,
+            };
 
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+            })
+            .catch(error => {
+                console.error("Error sending api request ", error);
+            });
 
-      function handleFormSubmit(event) {
-        event.preventDefault();
-        const selectedRole = roleSelect1.value;
-        // Update the value of the hidden input 'user' with the selected role
-        const user_role = document.getElementById("role");
-        user_role.value = selectedRole;
-        closeRoleDialog();
-      }
+        });
 
-      edit.addEventListener("click", openRoleDialog);
-      roleForm.addEventListener("submit", handleFormSubmit);
-      document.getElementById("closeRoleDialog").addEventListener("click", closeRoleDialog);
+    });
+
+    const openDialogButtons = document.querySelectorAll('.openDialogButton');
+    const closeDialogButtons = document.querySelectorAll('.closeDialogButton');
+
+    openDialogButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const target = button.getAttribute('data-target');
+            const dialog = document.getElementById(target);
+            if (dialog) {
+                dialog.showModal();
+            }
+        });
+    });
+
+    closeDialogButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const target = button.getAttribute('data-target');
+            const dialog = document.getElementById(target);
+            if (dialog) {
+                dialog.close();
+            }
+        });
+    });
 
 
 

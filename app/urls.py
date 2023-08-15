@@ -28,6 +28,7 @@ urlpatterns = [
     path('users/create/invite', UserCreateView.as_view(),name='create_user'),
 
     path('assign_manager/', assign_manager.as_view(), name='assign_manager'),
+    path('change_role/', change_role.as_view(), name='change_role'),
     path('accept_invitation/', views.accept_invitation_view, name='accept_invitation_view'),
     path('reject_invitation/', views.reject_invitation_view, name='reject_invitation_view'),
 

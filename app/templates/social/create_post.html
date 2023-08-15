@@ -17,7 +17,7 @@
 </style>
 
   <div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
-    <form method="post" enctype="multipart/form-data" class="w-100" id="yourForm">
+    <form method="post" id ="yourForm" enctype="multipart/form-data" class="w-100" id="yourForm">
         {% csrf_token %}
       <div class="emoji-picker-container">
       <textarea name="post" cols="40" rows="10" data-emojiable="true" class="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none w-full" placeholder="Describe Everything about this post" id="id_post"></textarea>
@@ -87,7 +87,7 @@
 
 
         <!--                Platforms-->
-        <div class="d-flex p-2">
+        <div class="d-flex p-2" id="pageSelection">
             <div class="col-sm-3">
                 <div class="relative inline-block">
                     <button type="button" data-te-ripple-init data-te-ripple-color="light"
@@ -188,12 +188,6 @@
                         <label for="follow" class="w-4/5 mb-0 ml-4 overflow-hidden font-normal cursor-pointer select-none text-sm text-ellipsis whitespace-nowrap text-slate-500" for="follow">Allow Comments</label>
                     </div>
         </li>
-
-        {% for message in messages %}
-                <div class="alert alert-danger" role="alert">
-                    {{ message }}
-                </div>
-            {% endfor %}
         <div class="w-full flex items-center mt-4">
 <!--            <label class="mr-4 font-bold">Schedule</label>-->
             <div class="ml-auto flex">
@@ -409,7 +403,45 @@ sehedule_controller.forEach((button) => {
     }
   });
 
+    document.getElementById("yourForm").addEventListener("submit", function(event) {
+        const pageCheckboxes = document.querySelectorAll("#pageSelection input[type=checkbox]");
+        let atLeastOneSelected = false;
+
+        // Check if at least one checkbox is selected
+        for (const checkbox of pageCheckboxes) {
+            if (checkbox.checked) {
+                atLeastOneSelected = true;
+                break;
+            }
+        }
+
+        if (!atLeastOneSelected) {
+            event.preventDefault(); // Prevent form submission
+
+            const alertBox = document.createElement("div");
+            alertBox.className = "alert-box";
+            alertBox.textContent = "Please select at least one page.";
+            document.body.appendChild(alertBox);
+
+            setTimeout(function() {
+                document.body.removeChild(alertBox);
+            }, 3000); // Remove the alert after 3 seconds
+        }
+    });
+
 </script>
+<style>
+    .alert-box {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: red;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+    }
+</style>
 
 
 

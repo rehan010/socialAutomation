@@ -143,6 +143,7 @@ def publish_post_on_social_media(instance):
             media = images
             share_page = page
             create_fb_post(page_id, access_token, media, post, share_page)
+
         elif page.provider == "instagram":
             socialaccount = SocialAccount.objects.get(user=page.user.id,provider = 'facebook')
             access_token = SocialToken.objects.filter(account = socialaccount)[0]

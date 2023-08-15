@@ -157,6 +157,22 @@ def generate_random_token(length=10):
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 
+class change_role(CreateView):
+    model = InviteEmploye
+
+    def post(self, request, *kwargs):
+        if self.request.method == 'POST':
+            data = json.loads(request.body)
+            invite_id = data.get('user')
+            role = data.get('role')
+
+            invite = InviteEmploye.objects.get(pk=invite_id)
+            selected_user = User.objects.get(pk=invite.selected_user.id)
+            invite.role = role
+            invite.save()
+            return JsonResponse({'message': 'New role of' + ' ' + selected_user.username + ' ' + 'is' + ' ' + role})
+        else:
+            return JsonResponse({'error': 'Selected user not found.'}, status=400)
 
 
 class assign_manager(CreateView):
@@ -1182,7 +1198,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
         post_id = self.kwargs['post_id']
         page_id = self.kwargs['page_id']
-        if comment != '':
+        if comment != '' or media != None:
             if self.request.GET.get('page_name') == 'linkedin':
                 provider_name = "linkedin"
                 linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
