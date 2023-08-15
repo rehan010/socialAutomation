@@ -117,6 +117,8 @@ def publish_post_on_social_media(instance):
     # Remember to handle any exceptions that may occur during the publishing process
     share_page = instance.prepost_page.all()
     images = instance.images.all()
+    print(images)
+    print(f"{len(images)} imageno")
     if instance.status == 'SCHEDULED' or instance.status == 'DRAFT' or instance.status == 'PROCESSING':
         instance.status = 'PUBLISHED'
         instance.publish_check = True
@@ -136,30 +138,19 @@ def publish_post_on_social_media(instance):
                                     post, post_linkedin)
         elif page.provider == "facebook":
             post = instance
-            data = {
-                'page_id':page.org_id,
-                'page_access_token': page.access_token
-            }
-            if len(images) > 1:
-               data = facebookmultiimage(data,images,instance,page)
-            else:
-                post_model = instance
-                data = facebookpost(data,images, post_model, page)
+            page_id = page.org_id
+            access_token = page.access_token
+            media = images
+            share_page = page
+            create_fb_post(page_id, access_token, media, post, share_page)
         elif page.provider == "instagram":
             socialaccount = SocialAccount.objects.get(user=page.user.id,provider = 'facebook')
-            access_token = SocialToken.objects.filter(account = socialaccount)
+            access_token = SocialToken.objects.filter(account = socialaccount)[0]
+            print(access_token)
             post = instance
-            data = {
-                        "insta_id": page.org_id,
-
-                    }
-
-            if (len(images) > 1):
-                instagrammultiimage(data, access_token[0], images, post, page)
-            else:
-                post_model = instance
-                instagrampost(data, access_token[0], images, post_model, page)
-
+            page_id = page.org_id
+            media = images
+            create_insta_post(page_id,access_token,media,post,page)
         else:
             pass
 

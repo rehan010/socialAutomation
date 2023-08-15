@@ -129,12 +129,14 @@
                     </button>
                     <div class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
                          style="min-height: 2.5rem;">
+                        {% for obj in data.insta_data %}
                         <label class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             <input type="checkbox"
                                    class="form-checkbox h-4 w-4 text-blue-500 transition duration-150 ease-in-out"
-                                   name="instagram" value="{{data.insta_data.id}}"/>
-                            <span class="ml-2 text-sm text-gray-700">{{data.insta_data.name}}</span>
+                                   name="instagram" value="{{obj.id}}"/>
+                            <span class="ml-2 text-sm text-gray-700">{{obj.name}}</span>
                         </label>
+                        {% endfor %}
                     </div>
                 </div>
             </div>

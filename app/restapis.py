@@ -1,3 +1,4 @@
+import time
 from io import BytesIO
 
 from rest_framework.decorators import api_view
@@ -90,6 +91,52 @@ def getmedia(accountid,access_token):
 
     return data
 
+def fb_social_action_data_organizer(elements,headers):
+    data = []
+    if elements:
+        for element in elements:
+            text = element['message']
+            comment_urn = element['id']
+            if element and len(elements) > 0:
+                actor = element["from"]['id']
+                name = element['from']['name']
+                url = f"https://graph.facebook.com/{actor}?fields=picture{{url}}"
+
+                response_3 = requests.get(url=url, headers=headers)
+
+                if "picture" in response_3.json():
+
+                    display_image = response_3.json().get('picture')['data']['url']
+                else:
+                    display_image = ''
+
+                obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn}
+                urls = []
+                if element.get('attachment'):
+                    attachment = element.get('attachment')
+                    if attachment.get('type') == "photo":
+                        # obj['urls'] = attachment.get('media').get('image').get('src')
+                        urls.append(attachment.get('media').get('image').get('src'))
+
+                    elif attachment.get('type') == "video_inline":
+                        # obj['urls'] = attachment.get('media').get('source')
+                        urls.append(attachment.get('media').get('source'))
+
+                obj['urls'] = urls
+
+                if element.get('comments'):
+
+                    comments = element.get('comments').get('data')
+                    obj['replies'] = fb_social_action_data_organizer(comments,headers)
+
+                data.append(obj)
+
+            else:
+                obj = {'name': "", "profile_image": "", "text": "", "comment_urn": "","urls":[]}
+                obj['replies'] = {}
+                data.append(obj)
+    return data
+
 
 def fb_socialactions(post_urn,access_token):
 
@@ -105,16 +152,16 @@ def fb_socialactions(post_urn,access_token):
 
     response_json = response.json()
 
-    t_likes = response_json["likes"]["summary"]["total_count"]
+    t_likes = response_json.get("likes",{}).get("summary",{}).get("total_count",{})
 
-    t_comments = response_json["comments"]["summary"]["total_count"]
+    t_comments = response_json.get("comments",{}).get("summary",{}).get("total_count",{})
 
     form = Post_urn.objects.get(urn=post_urn)
     form.post_likes = t_likes
     form.post_comments = t_comments
     form.save()
 
-    url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from"
+    url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from,reactions,attachment,comments{{message,created_time,from,reactions,attachment,comments{{message, created_time,from, reactions, attachment}}}}"
 
 #     comments{message,created_time,from}  field to get replies
     headers = {
@@ -125,78 +172,22 @@ def fb_socialactions(post_urn,access_token):
 
     elements = response_json2.get("data")
 
-    data = []
-    if elements:
-        for element in elements:
-            text = element['message']
-            if element and len(elements) > 0:
-                actor = element["from"]['id']
-                name = element['from']['name']
-                url = f"https://graph.facebook.com/{actor}?fields=picture{{url}}"
-
-                response_3 = requests.get(url=url,headers=headers)
-
-                if "picture" in response_3.json():
-
-                    display_image = response_3.json().get('picture')['data']['url']
-                else:
-                    display_image = ''
-
-                obj = {'name':name,"profile_image":display_image,"text":text}
-                data.append(obj)
-
-            else:
-                obj = {'name': "", "profile_image": "", "text": ""}
-                data.append(obj)
-
+    data = fb_social_action_data_organizer(elements,headers)
     return t_likes, t_comments, data
 
 
-
-
-
-def insta_socialactions(post_urn,access_token):
-
-    url = f"https://graph.facebook.com/{post_urn}/insights?metric=likes,comments"
-
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-
-    response = requests.get(url=url, headers=headers)
-
-    response_json = response.json().get("data")
-
-
-
-    t_likes = response_json[0]['values'][0]['value']
-
-
-    t_comments = response_json[1]['values'][0]['value']
-
-    form = Post_urn.objects.get(urn=post_urn)
-    form.post_likes = t_likes
-    form.post_comments = t_comments
-    form.save()
-
-
-    url = f"https://graph.facebook.com/v17.0/{post_urn}/comments/?fields=from,text"
-
-    response = requests.get(url=url,headers=headers)
-
-    response_json_1 = response.json()
-
-    elements = response_json_1.get("data")
+def insta_social_actions_data_organizer(elements,headers):
     data = []
     if elements:
         for element in elements:
             text = element["text"]
-            if element and len(elements)>0:
+            comment_urn = element['id']
+            if element and len(elements) > 0:
                 actor = element['from']['id']
 
                 url = f"https://graph.facebook.com/v17.0/{actor}?fields=profile_picture_url,name"
 
-                response_2 = requests.get(url=url,headers=headers)
+                response_2 = requests.get(url=url, headers=headers)
 
                 response_json_2 = response_2.json()
 
@@ -207,11 +198,51 @@ def insta_socialactions(post_urn,access_token):
 
                 name = response_json_2.get("name")
 
-                obj = {'name': name, "profile_image": display_image, "text": text}
+                obj = {'name': name, "profile_image": display_image, "text": text, 'comment_urn': comment_urn}
+
+                if element.get('replies'):
+                    replies = element.get('replies').get('data')
+                    obj['replies'] = insta_social_actions_data_organizer(replies,headers)
+
                 data.append(obj)
             else:
-                obj = {'name': "", "profile_image": "", "text": ""}
+                obj = {'name': "", "profile_image": "", "text": "", "comment_urn": "","replies" :""}
                 data.append(obj)
+    return data
+def insta_socialactions(post_urn,access_token):
+
+    url = f"https://graph.facebook.com/{post_urn}?fields=like_count,comments_count"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url=url, headers=headers)
+
+    response_json = response.json()
+
+
+
+    t_likes = response_json.get("like_count")
+
+
+    t_comments = response_json.get("comments_count")
+
+    form = Post_urn.objects.get(urn=post_urn)
+    form.post_likes = t_likes
+    form.post_comments = t_comments
+    form.save()
+
+
+    url = f"https://graph.facebook.com/v17.0/{post_urn}/comments/?fields=from,text,like_count,media,replies{{like_count,from,text}}"
+
+    response = requests.get(url=url,headers=headers)
+
+    response_json_1 = response.json()
+
+    elements = response_json_1.get("data")
+
+    data = insta_social_actions_data_organizer(elements,headers)
 
     return t_likes, t_comments, data
 
@@ -409,7 +440,7 @@ def facebook_page_data(accesstoken):
 
 
 
-def instagram_id(accesstoken):
+def get_instagram_user_data(accesstoken):
 
     url = "https://graph.facebook.com/v17.0/me/accounts?fields=instagram_business_account"
 
@@ -423,34 +454,37 @@ def instagram_id(accesstoken):
     print(response.json())
     instaid = None
 
-
+    accounts = []
 
     for _ in response.json().get('data'):
         if _.get("instagram_business_account"):
             instaid = _.get("instagram_business_account")["id"]
 
-    try:
-        url = f"https://graph.facebook.com/v17.0/{instaid}?fields=name,profile_picture_url"
-        response = requests.get(url,headers=headers)
-        return response.json()
+            try:
+                url = f"https://graph.facebook.com/v17.0/{instaid}?fields=name,profile_picture_url"
+                response = requests.get(url,headers=headers)
 
-    except Exception as e:
+                accounts.append(response.json())
 
-        print(e)
+            except Exception as e:
 
-
-
-
+                    print(e)
+    return accounts
 
 
 
 
-def facebookpost(data,images,post_model,sharepage):
+
+
+
+
+def facebook_post_sigle_image(data,images,post_model,page):
 
     post = {
-            "url": images[0].image_url,
             "caption": post_model.post
         }
+    if len(images) != 0:
+        post['url'] = images[0].image_url
 
     url = f"https://graph.facebook.com/{data['page_id']}/photos"
 
@@ -461,64 +495,7 @@ def facebookpost(data,images,post_model,sharepage):
     response = requests.post(url, headers=headers, json=post)
     response = response.json()
     post_id = response.get('id')
-    post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
-    post_urn.save()
-
-    post = PostModel.objects.get(id=post_model.id)
-
-    post.post_urn.add(post_urn)
-    post.save()
-
-#
-# def facebookpost(request,data,image,post_model,sharepage):
-#     post = {
-#             "url": image.image_url,
-#             "caption": request.POST['post']
-#         }
-#
-#     url = f"https://graph.facebook.com/{data['page_id']}/photos"
-#
-#     headers = {
-#         "Authorization": f"Bearer {data['page_access_token']}"
-#     }
-#
-#     response = requests.post(url, headers=headers, json=post)
-#     response = response.json()
-#     post_id = response.get('id')
-#     post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
-#     post_urn.save()
-#
-#     post = PostModel.objects.get(id=post_model.id)
-#
-#     post.post_urn.add(post_urn)
-#     post.save()
-#
-
-def instagrampost(data,access_token,image,post_model,page):
-    post = {
-            "image_url": image[0].image_url,
-            "caption": post_model.post
-
-        }
-    url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media/"
-
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-
-    response = requests.post(url, headers=headers, json=post)
-
-    mediaid = response.json()['id']
-
-    url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media_publish"
-
-    data = {
-        'creation_id': mediaid
-    }
-
-    response = requests.post(url, headers=headers, data=data)
-    response = response.json()
-    post_id = response.get('id')
+    print(page)
     post_urn = Post_urn.objects.create(org=page, urn=post_id)
     post_urn.save()
 
@@ -527,39 +504,71 @@ def instagrampost(data,access_token,image,post_model,page):
     post.post_urn.add(post_urn)
     post.save()
 
+    return response
 
-# def instagrampost(request,data,access_token,image,post_model,sharepage):
-#     post = {
-#             "image_url": image.image_url,
-#             "caption": request.POST['post']
-#
-#         }
-#     url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media/"
-#
-#     headers = {
-#         "Authorization": f"Bearer {access_token}"
-#     }
-#
-#     response = requests.post(url, headers=headers, json=post)
-#
-#     mediaid = response.json()['id']
-#
-#     url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media_publish"
-#
-#     data = {
-#         'creation_id': mediaid
-#     }
-#
-#     response = requests.post(url, headers=headers, data=data)
-#     response = response.json()
-#     post_id = response.get('id')
-#     post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
-#     post_urn.save()
-#
-#     post = PostModel.objects.get(id=post_model.id)
-#
-#     post.post_urn.add(post_urn)
-#     post.save()
+
+
+
+def instagram_post_single_media(page_id,access_token,media,post,page):
+
+    print("Excuting Single Instagram Post Function")
+    url = f"https://graph.facebook.com/v17.0/{page_id}/media/"
+    print(url)
+    data = {
+        "caption": post.post
+         }
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    if media[0].image.name.endswith('.mp4'):
+        data['video_url'] = media[0].image_url
+        data['media_type'] = 'VIDEO'
+    else:
+        data['image_url'] = media[0].image_url
+
+    print("data is",data)
+    response = requests.post(url, headers=headers, json=data)
+
+    mediaid = response.json().get('id')
+    print("media id is",mediaid,response.json())
+
+    if data.get('media_type') == 'VIDEO':
+        while True:
+            print("Waiting for 10s till the media is created")
+            time.sleep(10)
+            check_url = f"https://graph.facebook.com/v17.0/{mediaid}?fields=status_code,status,id"
+
+            response = requests.request("GET",url=check_url,headers=headers)
+            status = response.json().get("status_code")
+            print(status)
+            if status == "FINISHED":
+                break
+            elif status == "ERROR" or status == "FATAL":
+                print("Error Has Occured")
+                return
+            else:
+                pass
+
+
+    url = f"https://graph.facebook.com/v17.0/{page_id}/media_publish"
+
+    data = {
+        'creation_id': mediaid
+    }
+
+
+
+    response = requests.post(url, headers=headers, data=data)
+    response = response.json()
+    post_id = response.get('id')
+    print("Post id is ",post_id,response)
+    post_urn = Post_urn.objects.create(org=page, urn=post_id)
+    post_urn.save()
+    post.post_urn.add(post_urn)
+
+    print("Post Successfull Created")
 
 
 def linkdein(access_token_string):
@@ -613,7 +622,16 @@ def save_image_from_url(image_url):
 
 
     return content_file
+def get_file_extension(content_type):
+    mime_to_extension = {
+        'image/jpeg': 'jpg',  # JPEG image
+        'image/png': 'png',   # PNG image
+        'image/gif': 'gif',   # GIF image
+        'video/mp4': 'mp4',   # MP4 video
 
+    }
+
+    return mime_to_extension.get(content_type, 'unknown')
 
 def getmediaid(image,data,post):
 
@@ -633,7 +651,30 @@ def getmediaid(image,data,post):
 
     return response.json()
 
-def facebookmultiimage(data,images,post,sharepage):
+def create_fb_post(page_id,access_token,media,post,sharepage):
+    data = {
+        'page_id': page_id,
+        'page_access_token': access_token
+    }
+    if media:
+        result = clean_file(media)
+        update_images = result[1]
+        video = result[0]
+        if video != None:
+            video = media
+            facebook_post_video(data, video, post, sharepage)
+        else:
+            images = update_images
+            facebook_post_multiimage(data, images, post, sharepage)
+
+    else:
+        facebook_post_multiimage(data, [], post, sharepage)
+
+
+
+
+
+def facebook_post_multiimage(data,images,post,sharepage):
 
     url = f"https://graph.facebook.com/{data['page_id']}/feed"
     print(post)
@@ -644,106 +685,181 @@ def facebookmultiimage(data,images,post,sharepage):
         "Authorization": f"Bearer {data['page_access_token']}"
     }
     # i = 0
-    for _ in range(len(images)):
-        response_id = getmediaid(images[_], data,post)["id"]
-        images[_].image_posted = response_id
-        images[_].save()
-        data_post[f"attached_media[{_}]"] = f'{{"media_fbid": "{response_id}"}}'
+    if len(images) != 0:
+        for _ in range(len(images)):
+            response_id = getmediaid(images[_], data,post)["id"]
+            images[_].image_posted = response_id
+            images[_].save()
+            data_post[f"attached_media[{_}]"] = f'{{"media_fbid": "{response_id}"}}'
+
+    print("Data ",data_post)
 
     response = requests.post(url,headers=headers,data=data_post)
     response = response.json()
     post_id = response["id"]
-
+    print(post_id)
     post_urn = Post_urn.objects.create(org = sharepage,urn = post_id)
     post_urn.save()
-
-    post = PostModel.objects.get(id=post.id)
+    print("Post Successfull Created")
 
     post.post_urn.add(post_urn)
-    post.save()
+
+def create_insta_post(page_id,access_token,media,post,page):
+
+    if media:
+        if len(media)>1:
+            instagram_multi_media(page_id,access_token,media,post,page)
+        else:
+            instagram_post_single_media(page_id,access_token,media,post,page)
+    else:
+        pass
 
 
-# def facebookmultiimage(request,data,images,post,sharepage):
-#
-#     url = f"https://graph.facebook.com/{data['page_id']}/feed"
-#
-#     data_post = {
-#         "message":request.POST['post']
-#     }
-#     headers = {
-#         "Authorization": f"Bearer {data['page_access_token']}"
-#     }
-#     # i = 0
-#     for _ in range(len(images)):
-#         response_id = getmediaid(images[_], data,post)["id"]
-#         images[_].image_posted = response_id
-#         images[_].save()
-#         data_post[f"attached_media[{_}]"] = f'{{"media_fbid": "{response_id}"}}'
-#
-#     response = requests.post(url,headers=headers,data=data_post)
-#     response = response.json()
-#     post_id = response["id"]
-#
-#     post_urn = Post_urn.objects.create(org = sharepage,urn = post_id)
-#     post_urn.save()
-#
-#     post = PostModel.objects.get(id=post.id)
-#
-#     post.post_urn.add(post_urn)
-#     post.save()
+def facebook_post_video(data,video,post,sharepage):
+
+    page_id = data['page_id']
+
+    url = f"https://graph.facebook.com/{page_id}/videos"
+    headers = {
+        "Authorization": f"Bearer {data['page_access_token']}"
+    }
+    data_post = {
+        'description': post.post
+    }
+    if (len(video) != 0):
+        data_post['file_url'] = video[0].image_url
+    response = requests.post(url, headers=headers, data=data_post)
+    response = response.json()
+    post_id = response.get('id')
+
+    post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
+    post_urn.save()
+
+    post.post_urn.add(post_urn)
 
 
 
-def media_id_insta(image,data,access_token):
-    url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media?is_carousel_item=true"
+def get_instagram_image_id(image,page_id,access_token):
+    url = f"https://graph.facebook.com/v17.0/{page_id}/media?is_carousel_item=true"
 
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
+    # data_post = {
+    #     "image_url":image.image_url
+    # }
+    # print(data_post)
+
     data_post = {
-        "image_url":image.image_url
+        "image_url":"https://messangel.caansoft.com/uploads/social_prefrences/image/1691750723366-homepage-seen-computer-screen_CvuwFmi.jpg"
     }
 
     response = requests.post(url,headers=headers,data=data_post)
     print(response.json())
     return response.json()
 
-
-def instagrammultiimage(data,access_token,images,post,page):
-
-    childern_list = []
-    for _ in images:
-        childern_list.append(media_id_insta(_,data,access_token)["id"])
-
-
-    url = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media?media_type=CAROUSEL"
+def get_instagram_video_id(video,page_id,access_token):
+    url = f"https://graph.facebook.com/v17.0/{page_id}/media?is_carousel_item=true"
 
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
+
+    # data_post = {
+    #     'video_url':"video.image_url",
+    #     'media_type':'VIDEO',
+    # }
+    # print(data_post)
     data_post = {
+        'video_url':"https://messangel.caansoft.com/uploads/social_prefrences/video/1691750720923-send_WqThsJC.mp4",
+        'media_type':'VIDEO',
+    }
+
+    response = requests.post(url, headers=headers, data=data_post)
+    print(response.json())
+    return response.json()
+
+
+def get_instagram_media_id(data_post,headers,page_id):
+    print("Getting Media id")
+    url = f"https://graph.facebook.com/v17.0/{page_id}/media?media_type=CAROUSEL"
+
+    response = requests.request("POST", url, headers=headers, data=data_post)
+
+    if response.json().get('id'):
+        return response
+    else:
+        print(response.json())
+        print("Sleeping For 30s till data arrive")
+        time.sleep(30)
+        response = get_instagram_media_id(data_post,headers,page_id)
+
+    return response
+
+
+def instagram_multi_media(page_id,access_token,media,post,page):
+    is_video = False
+    childern_list = []
+    for image in media:
+        childern_id = None
+        if image.image.name.endswith('.mp4'):
+            childern_id = get_instagram_video_id(image,page_id,access_token).get('id')
+            is_video =True
+        else:
+            childern_id = get_instagram_image_id(image, page_id, access_token).get('id')
+        childern_list.append(childern_id)
+
+
+
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        'Content-Type': 'application/json',
+    }
+    data_post = json.dumps({
         "caption": post.post,
         "children": ",".join(childern_list)
-    }
-    response_1 = requests.post(url,headers=headers,data=data_post)
+    })
+    print(data_post)
 
-    url_2 = f"https://graph.facebook.com/v17.0/{data['insta_id']}/media_publish"
+    media_id = get_instagram_media_id(data_post,headers,page_id).json().get('id')
+    print(media_id)
+    if is_video:
+        while True:
+            print("Waiting for 10s till the media is created")
+            time.sleep(10)
+            check_url = f"https://graph.facebook.com/v17.0/{media_id}?fields=status_code,status,id"
+
+            response = requests.request("GET", url=check_url, headers=headers)
+            print(response.json())
+            status = response.json().get("status_code")
+            print(status)
+            if status == "FINISHED":
+                break
+            elif status == "ERROR" or status == "FATAL":
+                print("Error Has Occured")
+                return
+            else:
+                pass
+
+
+    url_2 = f"https://graph.facebook.com/v17.0/{page_id}/media_publish"
 
     data_post_2 = {
-        "creation_id": response_1.json()['id']
+        "creation_id": media_id
     }
 
     response_2 = requests.post(url_2,headers=headers,data=data_post_2)
     response_2 = response_2.json()
+    print(response_2)
 
     post_id = response_2.get('id')
     post_urn = Post_urn.objects.create(org=page, urn=post_id)
     post_urn.save()
 
-    post = PostModel.objects.get(id=post.id)
-
     post.post_urn.add(post_urn)
-    post.save()
+
+
 
 # def instagrammultiimage(request,data,access_token,images,post,sharepage):
 #
@@ -1781,12 +1897,14 @@ def text_post_linkedin(post, access_token_string, org_id):
         return response
 
 
-def fb_post_comments(urn,text,media,access_token):
 
-    url = f"https://graph.facebook.com/{urn}/comments"
+
+def meta_comments(urn,text,media,access_token):
+
+    url = f"https://graph.facebook.com/v17.0/{urn}/comments"
 
     headers = {
-        "Authorization": f"Bearer {access_token}"
+        "Authorization": f"Bearer {access_token}",
     }
 
     data = {}
@@ -1794,31 +1912,68 @@ def fb_post_comments(urn,text,media,access_token):
     if text:
         data['message'] = text
 
+    files = []
+    if media and media != '':
+        extension = get_file_extension(media.content_type)
+        if extension in ['jpg','png']:
+            data['attachment_url'] = get_image_url(media).get('files')[0].get('path')
+        elif extension in ['gif']:
+            pass
+        elif extension in ['mp4']:
+            video_path = os.path.join(settings.BASE_DIR,"media/" + "videos/send.mp4")
+            files = [
+                ('source', ('send.mp4',
+                            open(video_path,
+                                 'rb'), 'application/octet-stream'))
+            ]
 
-    if media or media != '':
-        data['attachment_url'] = media
 
-    response = requests.post(url=url,headers=headers,data=data)
 
+
+    response = requests.post(url=url, headers=headers, data=data, files=files)
     return response.json()
 
 
-def insta_post_comments(urn,text,access_token):
+def meta_nested_comment(urn,text,media,access_token,provider_name):
 
-    url = f"https://graph.facebook.com/{urn}/comments"
+
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
-
+    files = []
     data = {}
-
     if text:
         data['message'] = text
 
-    # if media or media != '':
-    #     data['attachment_url'] = media dose not support media in comments
+    if provider_name == "facebook":
+        url = f"https://graph.facebook.com/{urn}/comments"
+        if media and media!= '':
+            extension = get_file_extension(media.content_type)
+            if extension in ['jpg','png']:
+                data['attachment_url'] = get_image_url(media).get('files')[0].get('path')
+            elif extension in ['gif']:
+                pass
+            elif get_file_extension(media.content_type) in ['mp4']:
+                video_path = os.path.join(settings.BASE_DIR, "media/" + "videos/send.mp4")
+                files = [
+                    ('source', ('send.mp4',
+                                open(video_path,
+                                     'rb'), 'application/octet-stream'))
+                ]
 
-    response = requests.post(url=url, headers=headers, data=data)
+            else:
+                pass
 
-    return response.json()
+    elif provider_name == "instagram":
+        url = f"https://graph.facebook.com/{urn}/replies"
+
+
+    response = requests.post(url=url,headers=headers,data=data,files=files)
+
+    response_json = response.json()
+
+
+
+
+
 

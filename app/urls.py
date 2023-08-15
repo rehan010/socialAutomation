@@ -36,8 +36,6 @@ urlpatterns = [
     # path('<int:post_id>/publish/', views.publish_post, name='publish_post'),
     # path('<int:post_id>/schedule/', views.schedule_post, name='schedule_post'),
 
-    path("facebook/", FacebookRedirectUri.as_view(),name="facebook_redirect"),
-    path('instagram/', InstagramRedirectUri.as_view(),name="instagram_redirect"),
 
 
     path('upload/file', PointFileCreateView.as_view(), name="upload_file"),
@@ -46,21 +44,7 @@ urlpatterns = [
     path('posts/<int:pk>', PostsGetView.as_view(), name='my_posts'),
     path('posts/detail/<int:post_id>/<int:page_id>', PostsDetailView.as_view(), name='my_detail_posts'),
     path('post_draft/<int:pk>', PostDraftView.as_view(), name='post_draft'),
-    path("post/comment/", CommentPostView.as_view(), name="comment_post"),
 
-
-
-
-
-#     REST APIS
-
-    path('getinsta/',instagramapi,name="geinsta"),
-
-    path('createpost/',createpost,name = "createpost"),
-
-
-    path("facebookhome/",facebookapi,name="facebookhome"),
-    path("createfacebookpost/",createfacebookpost,name = "createfacebookpost"),
     path('delete-post/<int:pk>/', PostDeleteView.as_view(), name='delete_post')
 
 ]

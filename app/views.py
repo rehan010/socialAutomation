@@ -485,7 +485,7 @@ class PostCreateView(CreateView):
             # For Instagram
             if _.provider == 'instagram':
 
-                insta_data = instagram_id(access_token.get("facebook"))
+                insta_data = get_instagram_user_data(access_token.get("facebook"))
 
                 data["insta_data"] = insta_data
             # print()
@@ -575,8 +575,13 @@ class PostCreateView(CreateView):
                     sharepage.save()
 
                     share_pages.append(sharepage)
-            if (requestdata.get('instagram')):
-                info = context.pop("insta_data")
+            for page in requestdata.get("instagram") or []:
+                i = 0
+                while context.get('insta_data')[i].get('id') != page:
+                    i += 1
+
+
+                info = context.get('insta_data').pop(i)
                 ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
                 # Store Shared Page
                 if ispageexist:
@@ -1098,7 +1103,8 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'posted_on': posted_on,
                 'post_id': post_id,
                 'page_id':page_id,
-                'provider_name': provider_name
+                'provider_name': provider_name,
+                'reply_media_counter':0
             }
         elif self.request.GET.get('page_name') == 'instagram':
             provider_name = "instagram"
@@ -1127,7 +1133,8 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'posted_on': posted_on,
                 'post_id': post_id,
                 'page_id': page_id,
-                'provider_name': provider_name
+                'provider_name': provider_name,
+                'reply_media_counter': 0
             }
 
 
@@ -1162,17 +1169,21 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
     def post(self, request, **kwargs):
         comment = self.request.POST.get('comment')
         comment_urn_list = request.POST.getlist('comment_urn')
+        media = request.FILES.get('comment_media')
+
         reply_list = request.POST.getlist('reply')
         reply_data = {}
+        reply_media_counter = 1
         for comment_urn, reply in zip(comment_urn_list, reply_list):
-            reply_data[comment_urn] = reply
+            reply_data[comment_urn] = [reply]
+            reply_media = request.FILES.get(f"reply_media_{reply_media_counter}")
+            reply_data[comment_urn].append(reply_media)
+            reply_media_counter = reply_media_counter+1
 
         post_id = self.kwargs['post_id']
         page_id = self.kwargs['page_id']
         if comment != '':
             if self.request.GET.get('page_name') == 'linkedin':
-
-
                 provider_name = "linkedin"
                 linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
 
@@ -1195,12 +1206,41 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                         access_token = result[1]
                         social = result[3]
                         for comment_urn, reply in reply_data.items():
-                            if reply != '':
-                                result = post_nested_comment_linkedin(social, access_token, post_urn, reply, comment_urn)
+                            if reply[0] != '':
+                                result = post_nested_comment_linkedin(social, access_token, post_urn, reply[0], comment_urn)
                             else:
                                 pass
 
-                return redirect(reverse("my_detail_posts", kwargs={'post_id': post_id, 'page_id': page_id}) + '?page_name=linkedin')
+            elif self.request.GET.get('page_name') == 'facebook':
+                provider_name = "facebook"
+                facebook_post = PostModel.objects.get(post_urn__org__provider = provider_name,id = post_id,post_urn__pk = page_id)
+                post_urn = facebook_post.post_urn.all().filter(pk = page_id).first()
+
+                access_token = post_urn.org.access_token
+
+                urn = post_urn.urn
+
+                result = meta_comments(urn, comment, media, access_token)
+
+
+
+            elif self.request.GET.get('page_name') == 'instagram':
+                provider_name = "instagram"
+                instagram_post = PostModel.objects.get(post_urn__org__provider = provider_name,id = post_id, post_urn__pk = page_id)
+                post_urn = instagram_post.post_urn.all().filter(pk = page_id).first()
+
+                facebook_account = SocialAccount.objects.get(user_id=self.request.user.id, provider="facebook")
+                access_token = SocialToken.objects.get(account=facebook_account).token
+                text = instagram_post.post
+                urn = post_urn.urn
+
+
+                result = meta_comments(urn ,comment ,media,access_token) # but it dose not support images and videos
+
+
+
+
+            return redirect(reverse("my_detail_posts", kwargs={'post_id': post_id, 'page_id': page_id}) + f'?page_name={self.request.GET.get("page_name")}')
 
         elif len(reply_list) > 0:
             if self.request.GET.get('page_name') == 'linkedin':
@@ -1213,62 +1253,37 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 access_token = result[1]
                 social = result[3]
                 for comment_urn, reply in reply_data.items():
-                    if reply != '':
-                        result = post_nested_comment_linkedin(social, access_token, post_urn, reply, comment_urn)
+                    if reply[0] != '':
+                        result = post_nested_comment_linkedin(social, access_token, post_urn, reply[0], comment_urn)
                     else:
                         pass
-            return redirect(reverse("my_detail_posts", kwargs={'post_id': post_id, 'page_id': page_id}) + '?page_name=linkedin')
+            elif self.request.GET.get('page_name') == 'facebook':
+                provider_name = "facebook"
+                facebook_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,
+                                                      post_urn__pk=page_id)
+
+                post_urn = facebook_post.post_urn.all().filter(pk=page_id).first()
+
+                access_token = post_urn.org.access_token
+                for comment_urn, reply in reply_data.items():
+                    if reply[0] != '' or reply[1]!=None:
+                        result =    meta_nested_comment(comment_urn, reply[0], reply[1], access_token, provider_name)
+                    else:
+                        pass
+            else:
+                provider_name = "instagram"
+                facebook_account = SocialAccount.objects.get(user_id=self.request.user.id, provider="facebook")
+                access_token = SocialToken.objects.get(account=facebook_account).token
+                for comment_urn, reply in reply_data.items():
+                    if reply[0] != '':
+                        result = meta_nested_comment(comment_urn, reply[0], reply[1], access_token, provider_name)
+                    else:
+                        pass
+
+            return redirect(reverse("my_detail_posts", kwargs={'post_id': post_id, 'page_id': page_id}) + f'?page_name={self.request.GET.get("page_name")}')
         else:
             pass
 
         return redirect(reverse("my_detail_posts", kwargs={'post_id': post_id, 'page_id': page_id}))
-
-
-class CommentPostView(FormView):
-    form_class = CommentForm
-
-    def form_invalid(self, form):
-        form
-        self.request.POST
-        post_id = self.request.POST.get('post_id')  # Assuming post_id is submitted via POST data
-        page_id = self.request.POST.get('page_id')  # Assuming page_id is submitted via POST data
-        return redirect(reverse('my_detail_posts', kwargs={'post_id': post_id, 'page_id': page_id}))
-
-
-
-    def form_valid(self, form):
-
-        urn = self.request.POST.get('id')
-        text = self.request.POST.get('comment')
-        provider = self.request.POST.get('provider_name')
-        post_id = self.request.POST.get('post_id')  # Assuming post_id is submitted via POST data
-        page_id = self.request.POST.get('page_id')  # Assuming page_id is submitted via POST data
-        # media = self.request.FILES.get("media")  # if media is a file
-        media = self.request.POST.get('media')
-        access_token = Post_urn.objects.get(urn = urn).org.access_token
-
-        if provider == "facebook":
-            commentresponse = fb_post_comments(urn,text,media,access_token)
-
-        elif provider == "instagram":
-            facebook_account = SocialAccount.objects.get(user_id=self.request.user.id, provider="facebook")
-            access_token_string = SocialToken.objects.get(account=facebook_account).token
-            commentresponse = fb_post_comments(urn,text,media,access_token_string)
-
-
-
-        redirect_url = reverse('my_detail_posts', kwargs={'post_id': post_id, 'page_id': page_id})
-        redirect_url += f'?page_name={provider}'
-        return redirect(redirect_url)
-
-
-
-
-class InstagramRedirectUri(TemplateView):
-    template_name = 'registration/instagram.html'
-
-
-class FacebookRedirectUri(TemplateView):
-    template_name = "registration/facebook.html"
 
 
