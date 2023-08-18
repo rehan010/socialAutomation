@@ -34,6 +34,7 @@ from datetime import datetime
 # from .signals import post_update_signal
 from django.contrib import messages
 from django.contrib.auth import logout
+from allauth.socialaccount.views import ConnectionsView
 
 
 def get_id_token(access_token):
@@ -757,6 +758,7 @@ class PostCreateView(CreateView):
     #     # for platform in requestdata:
     #     #
     #     #     if platform == "facebook":
+
     #     #         socialaccount = SocialAccount.objects.get(user=self.request.user, provider="facebook")
     #     #         access_token = SocialToken.objects.filter(account=socialaccount)[0]
     #     #
@@ -968,52 +970,46 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        result = linkedin_retrieve_access_token(self)
-        posts = result[0]
-        access_token_string = result[1]
-        ids = result[2]
+        # result = linkedin_retrieve_access_token(self)
+        user = self.request.user
+        # posts = result[0]
+        # access_token_string = result[1]
+        # ids = result[2]
+        #
+        # if posts == '' or access_token_string == '' or ids == '':
+        #     linkedin_post = ''
+        #     facebook_post = ''
+        #     instagram_post = ''
+        #     google_post = ''
+        # else:
 
-        if posts == '' or access_token_string == '' or ids == '':
-            linkedin_post = ''
-            facebook_post = ''
-            instagram_post = ''
-            google_post = ''
-        else:
-
-            provider_name = "linkedin"
+        provider_name = "linkedin"
+        if len(SocialAccount.objects.filter(user=user.id,provider='linkedin_oauth2')) > 0:
             linkedin_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name).distinct()
+        else:
+            linkedin_post = ''
 
-            provider_name1 = "facebook"
-            # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
+        provider_name1 = "facebook"
+        provider_name2 = "instagram"
+        if len(SocialAccount.objects.filter(user=user.id,provider='facebook')) > 0:
+
+
+        # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
             facebook_post = PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name1).distinct()
-
-            provider_name2 = "instagram"
             instagram_post = PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name2).distinct()
 
-            provider_name3 = "Google Books"
-            google_post = PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name3).distinct()
+        else:
+            facebook_post = ''
+            instagram_post = ''
 
-        #     for post in pages:
-        #         org_id = post.org.id
-        #         post_urn = post.urn
-        #
-        #         urn = post_urn
-        #         if urn == '' or urn == None:
-        #             pass
-        #         else:
-        #             prefix, value = post_urn.rsplit(':', 1)
-        #             if prefix == 'urn:li:ugcPost':
-        #                 response = ugcpost_socialactions(urn, access_token_string)
-        #             else:
-        #                 response = linkedin_post_socialactions(urn, access_token_string)
-        #
-        #
-        #
-        #
-        # data_list = []
-        # for id in ids:
-        #     linkedin_org_stats(access_token_string, id, data_list)
-        #
+
+        provider_name3 = "Google Books"
+
+        if len(SocialAccount.objects.filter(user=user.id,provider='facebook'))> 0:
+            google_post = PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name3).distinct()
+        else:
+            google_post = ''
+
 
         context = {
             # 'ids': ids,
@@ -1302,4 +1298,28 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
         return redirect(reverse("my_detail_posts", kwargs={'post_id': post_id, 'page_id': page_id}))
 
+
+class ConnectionView(ConnectionsView):
+
+    def get_context_data(self, **kwargs):
+        context = super(ConnectionView, self).get_context_data()
+
+        from allauth.socialaccount.models import SocialApp
+        print(context)
+        social_apps = SocialApp.objects.all()
+
+        for apps in social_apps:
+            print(apps.provider)
+            context[f'{apps.provider}_app'] = apps
+            try:
+                context[f'{apps.provider}'] = SocialAccount.objects.filter(user = self.request.user.id,provider = apps.provider)[0]
+                print(apps.name)
+
+            except Exception as e:
+                 print(e)
+
+        return context
+
+class SocialPorfileView(TemplateView):
+    template_name = 'social/social_profile.html'
 

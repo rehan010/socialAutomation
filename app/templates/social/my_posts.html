@@ -4,16 +4,25 @@
 {%block bar%}
 {%endblock%}
 
+{% block custom_css %}
+<style>
+    .container{
+    font-family:Open sans;!important
+}
+
+</style>
+
+
+
+    {% endblock %}
+
+
 {% block content %}
+
+
+
 <div class="container mx-auto">
     <div class="tabs">
-        <br>
-        <div class="flex justify-end">
-            <a href="{% url 'create_post' %}"
-               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
-                Create post
-            </a>
-        </div>
         <br>
         <hr>
         <br>
@@ -58,10 +67,10 @@
         <!--</div>-->
         <!--<br>-->
         <!--<br>-->
-
-        <ul class="flex grid grid-flow-col justify-center space-x-4">
+        <di class="flex items-center justify-center relative">
+            <ul class="col-span-3 flex grid grid-flow-col justify-center space-x-4">
             <li><a href="#" data-tab="tab1"
-                   class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2 bg-blue-100 shadow text-indigo-900">Facebook</a>
+                   class="text-gray-500 hover:text-gray-700 font-medium bg-#1877f2 hover:bg-gray-200 rounded-full px-4 py-2 bg-blue-100 shadow text-indigo-900" style="bac">Facebook</a>
             </li>
             <li><a href="#" data-tab="tab2"
                    class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200  px-4 py-2">Linkedin</a>
@@ -72,7 +81,15 @@
             <li><a href="#" data-tab="tab4"
                    class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200  px-4 py-2">Google</a>
             </li>
-        </ul>
+            </ul>
+            <div class="absolute right-0 flex justify-end pl-auto">
+                <a class="inline-block px-6 py-3 font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-lg cursor-pointer leading-pro text-xs ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline" href="{% url 'create_post' %}">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    &nbsp;&nbsp;Create Post
+                </a>
+            </div>
+
+        </di>
 
 
         <br>
@@ -87,6 +104,9 @@
                         <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
                             <thead class="align-bottom">
                             <tr>
+                                <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+                                    Created by
+                                </th>
                                 <th class="px-6 py-3 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                     Post
                                 </th>
@@ -96,8 +116,12 @@
                                 <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                     Status
                                 </th>
+
                                 <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                     Created at
+                                </th>
+                                <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+                                    Published At
                                 </th>
                                 <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                     pages
@@ -108,67 +132,87 @@
                             <tbody>
                             {% for p in facebook_post %}
                                 <tr>
+                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                      <div class="flex px-2 py-1">
+                                        <div>
+                                          <img src="{% static 'assets/img/team-3.jpg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                        </div>
+                                        <div class="flex flex-col justify-center">
+                                        <h6 class="mb-0 text-sm leading-normal font-semibold">{{p.user|title}}</h6>
+                                        <p class="mb-0 text-xs leading-tight text-slate-400 pt-1">{{p.user.email}}</p>
+                                        </div>
+                                      </div>
+                                    </td>
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
                                         <div class="flex px-2 py-1">
                                             <div class="flex flex-col justify-center">
-                                                <a href="#">
+
                                                     <h6 class="mb-0 text-sm leading-normal">{{p.post}}</h6>
-                                                </a>
+                                                                                            </div>
+                                        </div>
+                                    </td>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                          <div class="mt-2 avatar-group media-div">
+                              {% if p.images %}
+                              {% for image in p.images.all %}
+                                    {% if image.is_mp4_file %}
+                                Video
+                              {% else %}
+                            <a href="javascript:;" class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30" data-target="tooltip_trigger" data-placement="bottom">
+                              <img src="{{image.image.url}}" class="w-full rounded-full" alt="team1"/>
+                            </a>
+                            <div data-target="tooltip" class="hidden px-2 py-1 text-white bg-black rounded-lg text-sm" role="tooltip">
+                                    {{image.image}}
+                              <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
+                            </div>
+
+                            {% endif %}
+                          {% endfor %}
+                            {% endif %}
+
+                          </div>
+                        </td>
+
+                            {% if p.status == 'PROCESSING' %}
+                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                <span class="bg-gradient-to-tl from-blue-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                            </td>
+                            {% elif p.status == 'DRAFT' %}
+                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                <span class="bg-gradient-to-tl from-red-500 to-yellow-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                            </td>
+                            {% elif p.status == 'SCHEDULED' %}
+                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                <span class="bg-gradient-to-tl from-purple-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                            </td>
+                            {% else %}
+                             <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                <span class="bg-gradient-to-tl from-green-600 to-green-300 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                            </td>
+                            {% endif %}
+
+
+
+                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                        <div class="flex px-4 py-1">
+
+                                            <div class="flex flex-col justify-center items-center w-full">
+
+                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
+
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                        <div class="mt-2 avatar-group">
-                                            {% if p.images %}
-                                            {% for image in p.images.all %}
-                                            {% if image.is_mp4_file %}
-                                            <div>
-                                                <video class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                                       controls>
-                                                    <source src="{{ image.image.url }}" type="video/mp4">
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                            </div>
-                                            {% else %}
-                                            <div>
-                                                <img src="{{ image.image.url }}"
-                                                     class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                                     alt="xd"/>
-                                            </div>
-                                            {% endif %}
-                                            {% endfor %}
-                                            {% endif %}
 
-                                        </div>
-                                    </td>
-                                    {% if p.status == 'PROCESSING' %}
-                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                        <span class="bg-gradient-to-tl from-blue-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                                    </td>
-                                    {% elif p.status == 'DRAFT' %}
-                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                        <span class="bg-gradient-to-tl from-red-500 to-yellow-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                                    </td>
-                                    {% elif p.status == 'SCHEDULED' %}
-                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                        <span class="bg-gradient-to-tl from-purple-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                                    </td>
-                                    {% else %}
-                                     <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                        <span class="bg-gradient-to-tl from-green-600 to-green-300 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                                    </td>
-                                    {% endif %}
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
                                         <div class="flex px-4 py-1">
 
-                                            <div class="flex flex-col justify-center">
-                                                <a href="#">
+                                            <div class="flex flex-col justify-center items-center w-full">
                                                     <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
-                                                </a>
                                             </div>
                                         </div>
                                     </td>
@@ -223,6 +267,9 @@
                     <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
                         <thead class="align-bottom">
                         <tr>
+                            <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+                                    Created by
+                            </th>
                             <th class="px-6 py-3 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                 Post
                             </th>
@@ -236,6 +283,9 @@
                                 created at
                             </th>
                             <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+                                    Published At
+                            </th>
+                            <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                 pages
                             </th>
 <!--                            <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Details</th>-->
@@ -244,38 +294,46 @@
                         <tbody>
                         {% for p in linkedin_post %}
                                 <tr>
+                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                      <div class="flex px-2 py-1">
+                                        <div>
+                                          <img src="{% static 'assets/img/team-3.jpg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                        </div>
+                                        <div class="flex flex-col justify-center">
+                                        <h6 class="mb-0 text-sm leading-normal font-semibold">{{p.user|title}}</h6>
+                                        <p class="mb-0 text-xs leading-tight text-slate-400 pt-1">{{p.user.email}}</p>
+                                        </div>
+                                      </div>
+                                    </td>
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
                                         <div class="flex px-2 py-1">
                                             <div class="flex flex-col justify-center">
-                                                <a href="#">
+
                                                     <h6 class="mb-0 text-sm leading-normal">{{p.post}}</h6>
-                                                </a>
+
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                        <div class="mt-2 avatar-group">
-                                            {% if p.images %}
-                                            {% for image in p.images.all %}
-                                            {% if image.is_mp4_file %}
-                                            <div>
-                                                <video class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                                       controls>
-                                                    <source src="{{ image.image.url }}" type="video/mp4">
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                            </div>
-                                            {% else %}
-                                            <div>
-                                                <img src="{{ image.image.url }}"
-                                                     class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                                     alt="xd"/>
-                                            </div>
-                                            {% endif %}
-                                            {% endfor %}
-                                            {% endif %}
-
+                                   <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
+                                      <div class="mt-2 avatar-group media-div">
+                                          {% if p.images %}
+                                          {% for image in p.images.all %}
+                                                {% if image.is_mp4_file %}
+                                            Video
+                                          {% else %}
+                                        <a href="javascript:;" class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30" data-target="tooltip_trigger" data-placement="bottom">
+                                          <img src="{{image.image.url}}" class="w-full rounded-full" alt="team1"/>
+                                        </a>
+                                        <div data-target="tooltip" class="hidden px-2 py-1 text-white bg-black rounded-lg text-sm" role="tooltip">
+                                                {{image.image}}
+                                          <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
                                         </div>
+
+                                        {% endif %}
+                                      {% endfor %}
+                                        {% endif %}
+
+                                      </div>
                                     </td>
                                     {% if p.status == 'PROCESSING' %}
                                     <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
@@ -301,10 +359,16 @@
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
                                         <div class="flex px-4 py-1">
 
-                                            <div class="flex flex-col justify-center">
-                                                <a href="#">
+                                            <div class="flex flex-col justify-center items-center w-full">
                                                     <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
-                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
+                                        <div class="flex px-4 py-1">
+
+                                            <div class="flex flex-col justify-center items-center w-full">
+                                                 <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
                                             </div>
                                         </div>
                                     </td>
@@ -376,6 +440,9 @@
                         <thead class="align-bottom">
 
                         <tr>
+                            <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+                                    Created by
+                            </th>
                             <th class="px-6 py-3 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                 Post
                             </th>
@@ -388,6 +455,9 @@
                             <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                 Created at
                             </th>
+                             <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+                                Published At
+                            </th>
                             <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                 pages
                             </th>
@@ -398,6 +468,18 @@
                         {% for p in instagram_post %}
 
                                 <tr>
+                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                      <div class="flex px-2 py-1">
+                                        <div>
+                                          <img src="{% static 'assets/img/team-3.jpg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                        </div>
+                                        <div class="flex flex-col justify-center">
+                                        <h6 class="mb-0 text-sm leading-normal font-semibold">{{p.user|title}}</h6>
+                                        <p class="mb-0 text-xs leading-tight text-slate-400 pt-1">{{p.user.email}}</p>
+                                        </div>
+                                      </div>
+                                    </td>
+
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
                                         <div class="flex px-2 py-1">
                                             <div class="flex flex-col justify-center">
@@ -408,29 +490,26 @@
                                         </div>
                                     </td>
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                        <div class="mt-2 avatar-group">
-                                            {% if p.images %}
-                                            {% for image in p.images.all %}
-                                            {% if image.is_mp4_file %}
-                                            <div>
-                                                <video class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                                       controls>
-                                                    <source src="{{ image.image.url }}" type="video/mp4">
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                            </div>
-                                            {% else %}
-                                            <div>
-                                                <img src="{{ image.image.url }}"
-                                                     class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                                     alt="xd"/>
-                                            </div>
-                                            {% endif %}
-                                            {% endfor %}
-                                            {% endif %}
+                          <div class="mt-2 avatar-group media-div">
+                              {% if p.images %}
+                              {% for image in p.images.all %}
+                                    {% if image.is_mp4_file %}
+                                Video
+                              {% else %}
+                            <a href="javascript:;" class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30" data-target="tooltip_trigger" data-placement="bottom">
+                              <img src="{{image.image.url}}" class="w-full rounded-full" alt="team1"/>
+                            </a>
+                            <div data-target="tooltip" class="hidden px-2 py-1 text-white bg-black rounded-lg text-sm" role="tooltip">
+                                    {{image.image}}
+                              <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
+                            </div>
 
-                                        </div>
-                                    </td>
+                            {% endif %}
+                          {% endfor %}
+                            {% endif %}
+
+                          </div>
+                        </td>
                                     {% if p.status == 'PROCESSING' %}
                                     <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
                                         <span class="bg-gradient-to-tl from-blue-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
@@ -455,10 +534,16 @@
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
                                         <div class="flex px-4 py-1">
 
-                                            <div class="flex flex-col justify-center">
-                                                <a href="#">
+                                            <div class="flex flex-col justify-center items-center w-full">
                                                     <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
-                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
+                                        <div class="flex px-4 py-1">
+
+                                            <div class="flex flex-col justify-center items-center w-full">
+                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
                                             </div>
                                         </div>
                                     </td>
@@ -514,6 +599,9 @@
 
                         <tr>
                             <th class="px-6 py-3 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+                                Created By
+                            </th>
+                            <th class="px-6 py-3 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                 Post
                             </th>
                             <th class="px-6 py-3 pl-2 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
@@ -526,6 +614,9 @@
                                 created at
                             </th>
                             <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+                                    Published At
+                            </th>
+                            <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                 pages
                             </th>
                         </tr>
@@ -535,89 +626,125 @@
                             {% for p in google_post %}
 
                                 <tr>
+                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                      <div class="flex px-2 py-1">
+                                        <div>
+                                          <img src="{% static 'assets/img/team-3.jpg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                        </div>
+                                        <div class="flex flex-col justify-center">
+                                        <h6 class="mb-0 text-sm leading-normal font-semibold">{{p.user|title}}</h6>
+                                        <p class="mb-0 text-xs leading-tight text-slate-400 pt-1">{{p.user.email}}</p>
+                                        </div>
+                                      </div>
+                                    </td>
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
                                         <div class="flex px-2 py-1">
-                                            {% if p.images %}
-                                            {% for image in p.images.all %}
-                                            {% if image.is_mp4_file %}
-                                            <div>
-                                                <video class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                                       controls>
-                                                    <source src="{{ image.image.url }}" type="video/mp4">
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                            </div>
-                                            {% else %}
-                                            <div>
-                                                <img src="{{ image.image.url }}"
-                                                     class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                                     alt="xd"/>
-                                            </div>
-                                            {% endif %}
-                                            {% endfor %}
-                                            {% endif %}
                                             <div class="flex flex-col justify-center">
-                                                <a href="#">
-                                                    <h6 class="mb-0 text-sm leading-normal">{{p.pk}}{{p.post}}</h6>
-                                                </a>
+                                                    <h6 class="mb-0 text-sm leading-normal">{{p.post}}</h6>
                                             </div>
                                         </div>
                                     </td>
+
+
+
                                     <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                        <div class="mt-2 avatar-group">
-
-                                            <div data-target="tooltip"
-                                                 class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
-                                                Alexander Smith
-                                                <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']"
-                                                     data-popper-arrow></div>
-                                            </div>
-                                            <a href="javascript:;"
-                                               class="relative z-20 inline-flex items-center justify-center w-6 h-6 -ml-4 text-xs text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out hover:z-30"
-                                               data-target="tooltip_trigger" data-placement="bottom">
-                                                <img src="{% static 'assets/img/team-4.jpg'%}" class="w-full rounded-full"
-                                                     alt="team4"/>
-                                            </a>
-                                            <div data-target="tooltip"
-                                                 class="hidden px-2 py-1 text-sm text-white bg-black rounded-lg" role="tooltip">
-                                                Jessica Doe
-                                                <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']"
-                                                     data-popper-arrow></div>
-                                            </div>
+                                      <div class="mt-2 avatar-group media-div">
+                                          {% if p.images %}
+                                          {% for image in p.images.all %}
+                                                {% if image.is_mp4_file %}
+                                            Video
+                                          {% else %}
+                                        <a href="javascript:;" class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30" data-target="tooltip_trigger" data-placement="bottom">
+                                          <img src="{{image.image.url}}" class="w-full rounded-full" alt="team1"/>
+                                        </a>
+                                        <div data-target="tooltip" class="hidden px-2 py-1 text-white bg-black rounded-lg text-sm" role="tooltip">
+                                                {{image.image}}
+                                          <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']" data-popper-arrow></div>
                                         </div>
-                                    </td>
-                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                        <span class="bg-gradient-to-tl from-purple-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Scheduled</span>
 
-                                    </td>
-                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                        <div class="flex px-4 py-1">
+                                        {% endif %}
+                                      {% endfor %}
+                                        {% endif %}
 
-                                            <div class="flex flex-col justify-center">
-                                                <a href="#">
-                                                    <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
+                                      </div>
+                                    </td>
+                                    </td>
+
+                            {% if p.status == 'PROCESSING' %}
+                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                <span class="bg-gradient-to-tl from-blue-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                            </td>
+                            {% elif p.status == 'DRAFT' %}
+                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                <span class="bg-gradient-to-tl from-red-500 to-yellow-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                            </td>
+                            {% elif p.status == 'SCHEDULED' %}
+                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                <span class="bg-gradient-to-tl from-purple-500 to-indigo-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                            </td>
+                            {% else %}
+                             <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                <span class="bg-gradient-to-tl from-green-600 to-green-300 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
+
+                            </td>
+                            {% endif %}
+
+                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                <div class="flex px-4 py-1">
+
+                                    <div class="flex flex-col justify-center items-center w-full">
+
+                                            <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
+
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
+                                <div class="flex px-4 py-1">
+
+                                    <div class="flex flex-col justify-center items-center w-full">
+                                            <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
+                                <div class="flex px-2 py-1">
+                                    {% if p.status == 'PUBLISHED' %}
+                                    <div class="flex flex-col justify-center">
+                                            {% for page_name in p.post_urn.all %}
+                                               {%if page_name.org.provider == 'facebook' %}
+                                                <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
+                                                     <h6 class="mb-0 text-sm leading-normal">{{page_name.org}}</h6>
+
                                                 </a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                        <div class="flex px-2 py-1">
+                                                {%endif%}
+                                            {%endfor%}
 
-                                            <div class="flex flex-col justify-center">
-                                                 {% for page_name in p.post_urn.all %}
+                                    </div>
+                                    {% elif p.status == 'DRAFT' %}
+                                    <div class="flex flex-col justify-center">
+                                                <a href="{%url 'post_draft' p.pk %}">
+                                                     <h6 class="mb-0 text-sm leading-normal">PUBLISH THIS DRAFT</h6>
 
-                                                        <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
+                                                </a>
+                                    </div>
+                                    {% else %}
+                                    <div class="flex flex-col justify-center">
+                                            {% for page_name in p.prepost_page.all %}
+                                               {%if page_name.provider == 'facebook' %}
+                                         <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
+                                                {%endif%}
+                                            {%endfor%}
 
-                                                             <h6 class="mb-0 text-sm leading-normal">{{page_name.pk}}{{page_name.org}}</h6>
-
-                                                        </a>
-                                                    {%endfor%}
-
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
                             {% endfor %}
 
                         </tbody>
@@ -631,7 +758,7 @@
 </div>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.css" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.js"></script>
-
+<script src="{% static 'customjs/images.js' %}"></script>
 <script>
 
    document.addEventListener("DOMContentLoaded", function() {

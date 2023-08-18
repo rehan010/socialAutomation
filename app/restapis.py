@@ -759,7 +759,7 @@ def get_instagram_video_id(video,page_id,access_token):
     }
 
     data_post = {
-        'video_url':"video.image_url",
+        'video_url':{video.image_url},
         'media_type':'VIDEO',
     }
     print(data_post)
@@ -1408,7 +1408,7 @@ def linkedin_org_stats(access_token_string, id, data_list):
 
 def linkedin_retrieve_access_token(self):
     user = self.request.user
-    if len(SocialAccount.objects.filter(user=user.id)) > 0:
+    if len(SocialAccount.objects.filter(user=user.id,provider='linkedin_oauth2')) > 0:
         social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
         if social:
             ids = SharePage.objects.filter(user=social.pk)

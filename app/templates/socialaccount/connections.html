@@ -1,107 +1,403 @@
 {% extends "registration/base.html" %}
-
+{% load static %}
 {% load i18n %}
 
 {% block head_title %}{% trans "Account Connections" %}{% endblock %}
+{% block custom_css %}
+
+{% endblock %}
 
 {% block content %}
 
-<div class="flex items-center justify-center min-h-screen">
-    <div class="max-w-2xl w-full bg-white p-8 rounded-lg shadow-md">
-        <h2 class="text-2xl font-semibold mb-6">{% trans "Account Connections" %}</h2>
+<div class="flex items-center justify-center min-h-screen bg-white">
+    <div class="flex items-center justify-center">
 
-
-        {% if form.accounts %}
-        <p class="text-sm text-gray-600">{% blocktrans %}You can sign in to your account using any of the following
-            third-party accounts:{% endblocktrans %}</p>
-        <br>
         <form method="post" action="{% url 'socialaccount_connections' %}">
             {% csrf_token %}
-
-
             <fieldset>
                 {% if form.non_field_errors %}
                 <div class="error-msg">{{ form.non_field_errors }}</div>
                 {% endif %}
-                <div class="grid sm:grid-cols-4 gap-6">
+                <div class="grid md:grid-cols-4 grid-col-6 gap-6 m-4">
+                        <div class="relative flex flex-col items-center justify-center bg-gray-100 cursor-pointer m-3 social-container">
+                        {% if facebook %}
+                            <a href="{% url 'social_profile' facebook %}" class="no-underline hover:no-underline">
+                        {% else %}
+                            <a href="#" class="no-underline hover:no-underline">   
+                        {% endif %}
+                                <span class="provider-icon flex justify-center items-center border-none mr-2 rounded p-5 ">
+                                     <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" style="width:90px;">
+                                 </span>
+                            </a>
 
-                {% for base_account in form.accounts %}
-                {% with base_account.get_provider_account as account %}
-                    <label for="id_account_{{ base_account.id }}"
-                           class="relative flex flex-col bg-white p-5 rounded-lg shadow-md cursor-pointer">
-                       <span class="provider-icon flex justify-center items-center mr-2 border border-black rounded p-2">
-                                {%if account.get_brand.name == 'Facebook'%}
-                                  <i class="fa fa-facebook" style="font-size:24px;color:#0165E1">          </i>
-                                {%elif account.get_brand.name == 'Instagram'%}
-                                  <i class="fa fa-instagram" style="font-size:24px;color:#F56040">         </i>
-                                {%elif account.get_brand.name == 'LinkedIn'%}
-                                  <i class="fa fa-linkedin" style="font-size:24px;color:#0A66C2">          </i>
-                                {%elif account.get_brand.name == 'Google'%}
-                                  <i class="fa fa-google" style="font-size:24px;color:#FBBC04">       </i>
-                                {%endif%}
-                                </span>
-<!--                        <span class="text-sm text-gray-600 align-center">{{ account }}</span>-->
-                        <input type="radio" name="account" id="id_account_{{ base_account.id }}"
-                               value="{{ base_account.id }}" class="absolute h-0 w-0 appearance-none"/>
-                        <span aria-hidden="true"
-                              class="hidden absolute inset-0 border-2 border-red-500 bg-red-200 bg-opacity-10 rounded-lg">
-                        <span class="absolute top-4 right-4 h-6 w-6 inline-flex items-center justify-center rounded-full bg-red-200">
-<!--                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"-->
-<!--                               class="h-5 w-5 text-green-600">-->
-<!--                            <path fill-rule="evenodd"-->
-<!--                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"-->
-<!--                                  clip-rule="evenodd"/>-->
-<!--                          </svg>-->
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 text-red-600">
-                              <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.477 0 10s4.477 10 10 10 10-4.477 10-10S15.523 0 10 0zm4.293 12.293a1 1 0 01-1.414 1.414L10 11.414l-3.879 3.879a1 1 0 11-1.414-1.414L8.586 10 4.707 6.121a1 1 0 111.414-1.414L10 8.586l3.879-3.879a1 1 0 111.414 1.414L11.414 10l3.879 3.879z" clip-rule="evenodd"/>
-                            </svg>
-                        </span>
-                      </span>
-                    </label>
+                                <div class="bg-white w-full p-2 flex item-center justify-center mt-auto border-2 border-black sm:text-base text-sm">
+                                {% if facebook %}
+                                <div class="w-5/6 text-center break-all">
+                                        <a href="{% url 'social_profile' facebook %}" class="no-underline hover:no-underline">
+                                            <span>{{facebook.extra_data.name}}</span>
+                                        </a>
+                                    </div>
+                                    <div class="w-1/6 flex items-center justify-center mb-0 cursor-pointer modal-button">
 
-                    {% endwith %}
-                {%endfor%}
-      </div>
+                                        <i class="fa-solid fa-trash-can sm:text-base text-sm"></i>
+
+                                    </div>
+
+                                
+
+                                {%else %}
+                                        {% include "socialaccount/snippets/provider_list.html" with process="connect" provider=facebook_app.name|lower %}
+                                {% endif %}
+                            </div>
+
+                            <div class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster"
+                                    style="background: rgba(0,0,0,.7);display: none;">
+                                    <div
+                                        class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                                        <div class="modal-content py-4 text-left px-6">
+                                            <!--Title-->
+                                            <div class="flex justify-between items-center pb-3">
+                                                <p class="text-2xl font-bold">Remove Account</p>
+                                                <div class="modal-close cursor-pointer z-50">
+                                                    <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                        viewBox="0 0 18 18">
+                                                        <path
+                                                            d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
+                                                        </path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <!--Body-->
+                                            <div class="my-5">
+                                                <p>Are you sure you want to remove account?</p>
+                                            </div>
+                                            <!--Footer-->
+                                            <div class="flex justify-end pt-2">
+                                                <div 
+                                                    class="focus:outline-none modal-close px-4 bg-gray-400 p-3 mb-2 rounded-lg text-white hover:bg-gray-300">
+                                                    <span>Cancel</span>
+                                                    
+                                                </div>
+
+
+                                                <label for="id_account_{{ facebook.id }}" class="focus:outline-none px-4 bg-red-600 p-3 ml-3 rounded-lg text-white hover:bg-teal-400">
+                                                    <input type="submit" name="account" id="id_account_{{ facebook.id }}"
+                                                        value="{{ facebook.id }}" class="absolute h-0 w-0 appearance-none"/>
+
+                                                        <span>Confirm</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div>
+
+
+                        </div>
+
+
+                        <div class="relative flex flex-col items-center justify-center bg-gray-100 cursor-pointer m-3 social-container">
+                            {% if instagram %}
+                                <a href="{% url 'social_profile' instagram %}" class="no-underline hover:no-underline">
+                            {% else %}
+                                <a href="#" class="no-underline hover:no-underline">
+                            {% endif %}
+                                    <span class="provider-icon flex justify-center items-center border-none mr-2 rounded p-5">
+                                        <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" style="width:90px;">
+                                    </span>
+                                 </a>
+                           
+
+                            <div class="bg-white w-full p-2 flex item-center justify-center mt-auto border-2 border-black sm:text-base text-sm">
+                                {% if instagram %}
+                                
+                                    <div class="w-5/6 text-center break-all">
+                                        <a href="{% url 'social_profile' instagram %}" class="no-underline hover:no-underline">
+
+                                            <span>{{instagram.extra_data.username}}</span>
+                                        </a>
+                                    </div>
+
+                                    <div class="w-1/6 flex items-center justify-center mb-0 cursor-pointer modal-button">
+
+                                        <i class="fa-solid fa-trash-can sm:text-base text-sm"></i>
+
+                                    </div>
 
 
 
-<!--                {% for base_account in form.accounts %}-->
-<!--                {% with base_account.get_provider_account as account %}-->
-<!--                <div class="account-item">-->
-<!--                    <label for="id_account_{{ base_account.id }}" class="flex items-center">-->
-<!--                        <input id="id_account_{{ base_account.id }}" type="radio" name="account"-->
-<!--                               value="{{ base_account.id }}" class="mr-2"/>-->
-<!--                        <span class="socialaccount_provider {{ base_account.provider }} {{ account.get_brand.id }}">{{ account.get_brand.name }}</span>-->
-<!--                        <p class="text-sm text-gray-600 "> &nbsp;{{ account }}</p>-->
-<!--                    </label>-->
-<!--                </div>-->
-<!--                {% endwith %}-->
-<!--                {% endfor %}-->
+                                {%else %}
+                                        {% include "socialaccount/snippets/provider_list.html" with process="connect" provider=instagram_app.name|lower %}
+                                {% endif %}
+                            </div>
 
-                <div>
-                    <button type="submit" class="w-full border-red-500 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-200">
-                        {% trans 'Remove' %}
-                    </button>
+
+                            <div class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster"
+                                    style="background: rgba(0,0,0,.7);display: none;">
+                                <div
+                                    class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                                    <div class="modal-content py-4 text-left px-6">
+                                        <!--Title-->
+                                        <div class="flex justify-between items-center pb-3">
+                                            <p class="text-2xl font-bold">Remove Account</p>
+                                            <div class="modal-close cursor-pointer z-50">
+                                                <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                    viewBox="0 0 18 18">
+                                                    <path
+                                                        d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
+                                                    </path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <!--Body-->
+                                        <div class="my-5">
+                                            <p>Are you sure you want to remove account?</p>
+                                        </div>
+                                        <!--Footer-->
+                                        <div class="flex justify-end pt-2">
+                                            <div 
+                                                class="focus:outline-none modal-close px-4 bg-gray-400 p-3 mb-2 rounded-lg text-white hover:bg-gray-300">
+                                                <span>Cancel</span>
+                                                
+                                            </div>
+
+
+                                            <label for="id_account_{{ instagram.id }}" class="focus:outline-none px-4 bg-red-600 p-3 ml-3 rounded-lg text-white hover:bg-teal-400">
+                                                <input type="submit" name="account" id="id_account_{{ instagram.id }}"
+                                                    value="{{ instagram.id }}" class="absolute h-0 w-0 appearance-none"/>
+
+                                                    <span>Confirm</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <div class="relative flex flex-col items-center justify-center bg-gray-100 cursor-pointer m-3 social-container">
+                            {% if linkedin_oauth2 %}
+                            <a href="{% url 'social_profile' linkedin_oauth2 %}" class="no-underline hover:no-underline">
+                            {% else %}
+                            <a href="#"  class="no-underline hover:no-underline">
+                            {% endif %}
+
+                                <span class="provider-icon flex justify-center items-center border-none mr-2 rounded p-5">
+                                     <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" style="width:90px;"/>
+                                 </span>
+                            </a>
+
+                                <div class="bg-white w-full p-2 flex item-center justify-center mt-auto border-2 border-black sm:text-base text-sm">
+                                    {% if linkedin_oauth2 %}
+                                        <div class="w-5/6 text-center break-all">
+                                            <a href="{% url 'social_profile' linkedin_oauth2 %}" class="no-underline hover:no-underline">                                                
+                                                <span>{{linkedin_oauth2.extra_data.firstName.localized.en_US}} {{linkedin_oauth2.extra_data.lastName.localized.en_US}}</span>
+                                            </a>
+                                        </div>
+
+                                        <div class="w-1/6 flex items-center justify-center mb-0 cursor-pointer modal-button">
+
+                                            <i class="fa-solid fa-trash-can sm:text-base text-sm"></i>
+
+                                        </div>
+                                    {%else %}
+                                            {% include "socialaccount/snippets/provider_list.html" with process="connect" provider=linkedin_oauth2_app.name|lower %}
+                                    {% endif %}
+                                </div>
+
+
+
+                                <div class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster"
+                                    style="background: rgba(0,0,0,.7);display: none;">
+                                    <div
+                                        class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                                        <div class="modal-content py-4 text-left px-6">
+                                            <!--Title-->
+                                            <div class="flex justify-between items-center pb-3">
+                                                <p class="text-2xl font-bold">Remove Account</p>
+                                                <div class="modal-close cursor-pointer z-50">
+                                                    <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                        viewBox="0 0 18 18">
+                                                        <path
+                                                            d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
+                                                        </path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <!--Body-->
+                                            <div class="my-5">
+                                                <p>Are you sure you want to remove account?</p>
+                                            </div>
+                                            <!--Footer-->
+                                            <div class="flex justify-end pt-2">
+                                                <div 
+                                                    class="focus:outline-none modal-close px-4 bg-gray-400 p-3 mb-2 rounded-lg text-white hover:bg-gray-300">
+                                                    <span>Cancel</span>
+                                                    
+                                                </div>
+
+
+                                                <label for="id_account_{{ linkedin_oauth2.id }}" class="focus:outline-none px-4 bg-red-600 p-3 ml-3 rounded-lg text-white hover:bg-teal-400">
+                                                    <input type="submit" name="account" id="id_account_{{ linkedin_oauth2.id }}"
+                                                        value="{{ linkedin_oauth2.id }}" class="absolute h-0 w-0 appearance-none"/>
+
+                                                        <span>Confirm</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                        </div>
+
+
+                        <div class="relative flex flex-col items-center justify-center bg-gray-100 cursor-pointer m-3 social-container">
+                                {% if google %}    
+                                <a href="{% url 'social_profile' google %}" class="no-underline hover:no-underline">
+                                {% else %}
+                                <a href="#" class="no-underline hover:no-underline">
+                                {% endif %}
+                                    <span class="provider-icon w-full flex justify-center items-center border-none mr-2 rounded p-5">
+                                        <img src="{% static '\assets\img\Social-Logos\google_logo.png'%}" style="width:90px;">
+                                    </span>
+                                </a>
+
+                                <div class="bg-white w-full p-2 flex item-center justify-center mt-auto border-2 border-black sm:text-base text-sm">
+                                    {% if google %}
+
+                                        <div class="w-5/6 text-center break-all">
+                                            <a href="{% url 'social_profile' google %}" class="no-underline hover:no-underline">
+
+                                                <span>{{google.extra_data.name}}</span>
+                                            </a>
+                                        </div>
+
+
+                                        <div class="w-1/6 flex items-center justify-center mb-0 cursor-pointer modal-button">
+
+                                            <i class="fa-solid fa-trash-can sm:text-base text-sm"></i>
+
+                                        </div>
+
+
+
+                                    {%else %}
+                                            {% include "socialaccount/snippets/provider_list.html" with process="connect" provider=google_app.name|lower %}
+                                    {% endif %}
+                                </div>
+
+
+
+                            <div class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster"
+                                style="background: rgba(0,0,0,.7);display: none;">
+                                <div
+                                    class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                                    <div class="modal-content py-4 text-left px-6">
+                                        <!--Title-->
+                                        <div class="flex justify-between items-center pb-3">
+                                            <p class="text-2xl font-bold">Remove Account</p>
+                                            <div class="modal-close cursor-pointer z-50">
+                                                <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                    viewBox="0 0 18 18">
+                                                    <path
+                                                        d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
+                                                    </path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <!--Body-->
+                                        <div class="my-5">
+                                            <p>Are you sure you want to remove account?</p>
+                                        </div>
+                                        <!--Footer-->
+                                        <div class="flex justify-end pt-2">
+                                            <div 
+                                                class="focus:outline-none modal-close px-4 bg-gray-400 p-3 mb-2 rounded-lg text-white hover:bg-gray-300">
+                                                <span>Cancel</span>
+                                                
+                                            </div>
+
+
+                                            <label for="id_account_{{ google.id }}" class="focus:outline-none px-4 bg-red-600 p-3 ml-3 rounded-lg text-white hover:bg-teal-400">
+                                                <input type="submit" name="account" id="id_account_{{ google.id }}"
+                                                    value="{{ google.id }}" class="absolute h-0 w-0 appearance-none"/>
+
+                                                    <span>Confirm</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                 </div>
             </fieldset>
         </form>
-
-        {% else %}
-        <p class="text-sm text-gray-600"> {% trans 'You currently have no social network accounts connected to this account.' %}</p>
-        {% endif %}
-        <br>
-        <hr>
-        <br>
-        <h2 class="text-2xl font-semibold mb-6">{% trans "Add a 3rd Party Account" %}</h2>
-
-        <div class="flex justify-center items-center  mb-4  border-gray-300 ">
-
-            <ul class="socialaccount_providers">
-                {% include "socialaccount/snippets/provider_list.html" with process="connect" %}
-            </ul>
-        </div>
-
-        {% include "socialaccount/snippets/login_extra.html" %}
     </div>
+
+
+
 </div>
+
+
+
+</div>
+
+
+
+
+<script>
+
+const modalClose = (modal) => {
+    modal.classList.remove('fadeIn');
+    modal.classList.add('fadeOut');
+    
+    modal.style.display = 'none';
+    
+}
+
+const openModal = (modal) => {
+    modal.classList.remove('fadeOut');
+    modal.classList.add('fadeIn');
+    modal.style.display = 'flex';
+}
+
+
+const socialcontainers = document.querySelectorAll('.social-container');
+
+if (socialcontainers.length > 0){
+
+        socialcontainers.forEach((div)=> {
+
+    const modalbutton = div.querySelector('.modal-button');
+    const modal = div.querySelector('.main-modal');
+        const closeButton = div.querySelectorAll('.modal-close');
+
+        modalbutton.onclick = (e) => openModal(modal);
+        
+
+        for (let i = 0; i < closeButton.length; i++) {
+
+            const elements = closeButton[i];
+
+            elements.onclick = (e) => modalClose(modal);
+
+            modal.style.display = 'none';
+
+            window.onclick = function (event) {
+                if (event.target == modal) modalClose(modal);
+            }
+        }
+
+    console.log(div)
+    });
+
+
+}
+
+
+
+
+
+</script>
 {% endblock %}

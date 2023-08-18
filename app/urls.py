@@ -46,6 +46,9 @@ urlpatterns = [
     path('posts/detail/<int:post_id>/<int:page_id>', PostsDetailView.as_view(), name='my_detail_posts'),
     path('post_draft/<int:pk>', PostDraftView.as_view(), name='post_draft'),
 
-    path('delete-post/<int:pk>/', PostDeleteView.as_view(), name='delete_post')
+    path('delete-post/<int:pk>/', PostDeleteView.as_view(), name='delete_post'),
+
+    path('social/social/connections/',ConnectionView.as_view(),name = "socialaccount_connections"),
+    path('social/social/profile/<provider>',SocialPorfileView.as_view(),name = "social_profile")
 
 ]
