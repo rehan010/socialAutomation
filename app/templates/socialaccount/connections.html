@@ -4,7 +4,12 @@
 
 {% block head_title %}{% trans "Account Connections" %}{% endblock %}
 {% block custom_css %}
+<style>
+    .borders{
+        border: 1px solid black !important;
+    }
 
+</style>
 {% endblock %}
 
 {% block content %}
@@ -68,19 +73,21 @@
                                                 </div>
                                             </div>
                                             <!--Body-->
-                                            <div class="my-5">
+                                            <hr class="mt-5 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
+                                            <div class="py-4">
                                                 <p>Are you sure you want to remove account?</p>
                                             </div>
+                                            <hr class="mb-5  bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
                                             <!--Footer-->
                                             <div class="flex justify-end pt-2">
                                                 <div 
-                                                    class="focus:outline-none modal-close px-4 bg-gray-400 p-3 mb-2 rounded-lg text-white hover:bg-gray-300">
+                                                    class="focus:outline-none modal-close px-4 p-3 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">
                                                     <span>Cancel</span>
                                                     
                                                 </div>
 
 
-                                                <label for="id_account_{{ facebook.id }}" class="focus:outline-none px-4 bg-red-600 p-3 ml-3 rounded-lg text-white hover:bg-teal-400">
+                                                <label for="id_account_{{ facebook.id }}" class="focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-3 ml-3 rounded-lg text-white">
                                                     <input type="submit" name="account" id="id_account_{{ facebook.id }}"
                                                         value="{{ facebook.id }}" class="absolute h-0 w-0 appearance-none"/>
 
@@ -149,19 +156,21 @@
                                             </div>
                                         </div>
                                         <!--Body-->
-                                        <div class="my-5">
-                                            <p>Are you sure you want to remove account?</p>
-                                        </div>
+                                        <hr class="mt-5 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
+                                            <div class="py-4">
+                                                <p>Are you sure you want to remove account?</p>
+                                            </div>
+                                        <hr class="mb-5  bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
                                         <!--Footer-->
                                         <div class="flex justify-end pt-2">
                                             <div 
-                                                class="focus:outline-none modal-close px-4 bg-gray-400 p-3 mb-2 rounded-lg text-white hover:bg-gray-300">
-                                                <span>Cancel</span>
-                                                
-                                            </div>
+                                                    class="focus:outline-none modal-close px-4 p-3 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">
+                                                    <span>Cancel</span>
+
+                                                </div>
 
 
-                                            <label for="id_account_{{ instagram.id }}" class="focus:outline-none px-4 bg-red-600 p-3 ml-3 rounded-lg text-white hover:bg-teal-400">
+                                            <label for="id_account_{{ instagram.id }}" class="focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-3 ml-3 rounded-lg text-white">
                                                 <input type="submit" name="account" id="id_account_{{ instagram.id }}"
                                                     value="{{ instagram.id }}" class="absolute h-0 w-0 appearance-none"/>
 
@@ -225,19 +234,21 @@
                                                 </div>
                                             </div>
                                             <!--Body-->
-                                            <div class="my-5">
+                                            <hr class="mt-5 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
+                                            <div class="py-4">
                                                 <p>Are you sure you want to remove account?</p>
                                             </div>
+                                            <hr class="mb-5  bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
                                             <!--Footer-->
                                             <div class="flex justify-end pt-2">
                                                 <div 
-                                                    class="focus:outline-none modal-close px-4 bg-gray-400 p-3 mb-2 rounded-lg text-white hover:bg-gray-300">
+                                                    class="focus:outline-none modal-close px-4 p-3 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">
                                                     <span>Cancel</span>
                                                     
                                                 </div>
 
 
-                                                <label for="id_account_{{ linkedin_oauth2.id }}" class="focus:outline-none px-4 bg-red-600 p-3 ml-3 rounded-lg text-white hover:bg-teal-400">
+                                                <label for="id_account_{{ linkedin_oauth2.id }}" class="focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-3 ml-3 rounded-lg text-white">
                                                     <input type="submit" name="account" id="id_account_{{ linkedin_oauth2.id }}"
                                                         value="{{ linkedin_oauth2.id }}" class="absolute h-0 w-0 appearance-none"/>
 
@@ -307,19 +318,21 @@
                                             </div>
                                         </div>
                                         <!--Body-->
-                                        <div class="my-5">
-                                            <p>Are you sure you want to remove account?</p>
-                                        </div>
+                                        <hr class="mt-5 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
+                                            <div class="py-4">
+                                                <p>Are you sure you want to remove account?</p>
+                                            </div>
+                                        <hr class="mb-5  bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
                                         <!--Footer-->
                                         <div class="flex justify-end pt-2">
                                             <div 
-                                                class="focus:outline-none modal-close px-4 bg-gray-400 p-3 mb-2 rounded-lg text-white hover:bg-gray-300">
-                                                <span>Cancel</span>
-                                                
-                                            </div>
+                                                    class="focus:outline-none modal-close px-4 p-3 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">
+                                                    <span>Cancel</span>
+
+                                                </div>
 
 
-                                            <label for="id_account_{{ google.id }}" class="focus:outline-none px-4 bg-red-600 p-3 ml-3 rounded-lg text-white hover:bg-teal-400">
+                                            <label for="id_account_{{ google.id }}" class="focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-3 ml-3 rounded-lg text-white">
                                                 <input type="submit" name="account" id="id_account_{{ google.id }}"
                                                     value="{{ google.id }}" class="absolute h-0 w-0 appearance-none"/>
 

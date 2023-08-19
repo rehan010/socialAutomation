@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Presence</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="w-full sm:h-screen min-h-screen flex overflow-hidden font-sans">
+
+        <div class="sm:block hidden image-container relative w-1/2">
+            <img src="{% static 'image/social_image_login.png'%}" alt="social-image" class="w-full h-full">
+            <div class="bg-[#0089E0BF]  absolute top-0 left-0 w-full h-full"></div>
+        </div>
+
+      {% block content %}
+      {% endblock %}
+
+  </div>
+
+</body>
+<script>
+        const alertbox = document.querySelectorAll(".alert");
+
+        if (alertbox.length > 0){
+            alertbox.forEach( div => {
+                const crossbutton = div.querySelector(".cross");
+
+                crossbutton.addEventListener('click',function(){
+                    div.style.display = "none";
+                })
+            });
+        }
+
+
+
+    </script>
+
+</html>
+</html>

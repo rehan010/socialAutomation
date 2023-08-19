@@ -264,7 +264,7 @@ def reject_invitation_view(request):
     return render(request, 'registration/register.html')
 
 class UserCreateView(LoginRequiredMixin,TemplateView):
-    template_name = "registration/user_create.html"
+    template_name = "registration/register.html"
 
 
 class DashboardView(LoginRequiredMixin,TemplateView):
