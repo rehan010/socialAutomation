@@ -868,23 +868,21 @@ class PostDraftView(UpdateView):
 
         # Making Data
 
+        for _ in social:
             # For Faceboook
             if _.provider == 'facebook':
-
                 page_data = facebook_page_data(access_token.get("facebook"))
 
                 data["facebook_page"] = page_data
             # For Instagram
             if _.provider == 'instagram':
-
-                insta_data = instagram_id(access_token.get("facebook"))
+                insta_data = get_instagram_user_data(access_token.get("facebook"))
 
                 data["insta_data"] = insta_data
             # print()
             if _.provider == 'linkedin_oauth2':
                 linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
                 data['linkedin_page'] = linkedin_page
-
 
         self.request.session['context'] = data
         comment_check = post.comment_check
@@ -930,34 +928,72 @@ class PostDraftView(UpdateView):
                 post.status == 'DRAFT'
                 post.publish_check = False
         share_pages = []
-        if requestdata.get("linkedin"):
-            for page in requestdata.get("linkedin"):
+        if requestdata.get("linkedin") or requestdata.get('facebook') or requestdata.get('instagram'):
+            for page in requestdata.get("linkedin") or []:
                 i = 0
                 while context.get('linkedin_page')[i].get('key') != page:
                     i += 1
                 info = context.get('linkedin_page').pop(i)
 
-                share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin', user=self.request.user, name=info['name'])
+                share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin',
+                                                                      user=self.request.user, name=info['name'])
 
                 share_pages.append(share_page)
+
+            for page in requestdata.get("facebook") or []:
+                i = 0
+                while context.get('facebook_page')[i].get('id') != page:
+                    i += 1
+
+                info = context.get('facebook_page').pop(i)
+
+                ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
+
+                if ispageexist:
+                    sharepage = SharePage.objects.get(org_id=info.get('id'))
+                    share_pages.append(sharepage)
+
+                else:
+                    sharepage = SharePage.objects.create(user=self.request.user)
+                    sharepage.name = info.get('name')
+                    sharepage.access_token = info.get('access_token')
+                    sharepage.org_id = info.get('id')
+                    sharepage.provider = "facebook"
+                    sharepage.save()
+
+                    share_pages.append(sharepage)
+            for page in requestdata.get("instagram") or []:
+                i = 0
+                while context.get('insta_data')[i].get('id') != page:
+                    i += 1
+
+                info = context.get('insta_data').pop(i)
+                ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
+                # Store Shared Page
+                if ispageexist:
+                    sharepage = SharePage.objects.get(org_id=info.get('id'))
+                    share_pages.append(sharepage)
+
+                else:
+                    sharepage = SharePage.objects.create(user=self.request.user)
+                    sharepage.name = info.get('name')
+                    sharepage.access_token = info.get('access_token')
+                    sharepage.org_id = info.get('id')
+                    sharepage.provider = "instagram"
+                    sharepage.save()
+                    share_pages.append(sharepage)
+
         else:
             from django.http import Http404
             raise Http404("Please Select a Page To Share")
-
-        post.save()
         images = self.request.FILES.getlist('images')
+        post.save()
         image_object = []
-        # for image in post.images.all():
-        #     if image:
-        #         img = image
-        #         post.images.remove(img)
-        #         # image_object.append(img)
         if images:
             for image in images:
                 image_model = ImageModel(image=image)
                 image_model.save()
                 image_object.append(image_model)
-
         post.images.add(*image_object)
 
         post.prepost_page.add(*share_pages)
@@ -1205,23 +1241,13 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
                 access_token = result[1]
                 social = result[3]
-                create_comment(access_token, post_urn, comment, social)
+                # if comment != '' and media == None:
+                if comment != '':
+                    create_comment(access_token, post_urn, comment, social)
+                # elif media != '':
+                #     # create_comment_media_linkedin(org_id, access_token, post_urn, comment, social, media)
+                #     image_comment(org_id, access_token, post_urn, comment, social, media)
 
-                if len(reply_list) > 0:
-                    if self.request.GET.get('page_name') == 'linkedin':
-                        provider_name = "linkedin"
-                        linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
-
-                        post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
-                        result = linkedin_retrieve_access_token(self)
-
-                        access_token = result[1]
-                        social = result[3]
-                        for comment_urn, reply in reply_data.items():
-                            if reply[0] != '':
-                                result = post_nested_comment_linkedin(social, access_token, post_urn, reply[0], comment_urn)
-                            else:
-                                pass
 
             elif self.request.GET.get('page_name') == 'facebook':
                 provider_name = "facebook"
@@ -1258,6 +1284,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             if self.request.GET.get('page_name') == 'linkedin':
                 provider_name = "linkedin"
                 linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
+                org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
 
                 post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
                 result = linkedin_retrieve_access_token(self)
@@ -1265,10 +1292,16 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 access_token = result[1]
                 social = result[3]
                 for comment_urn, reply in reply_data.items():
+                    # if reply[0] != '' and reply[1] is None:
                     if reply[0] != '':
                         result = post_nested_comment_linkedin(social, access_token, post_urn, reply[0], comment_urn)
                     else:
                         pass
+                    # elif reply[0] == '' and media is None:
+                    #     pass
+                    # else:
+                    #     media = reply[1]
+                    #     result = post_nested_comment_media_linkedin(social,access_token,post_urn,reply[0],comment_urn, media,org_id)
             elif self.request.GET.get('page_name') == 'facebook':
                 provider_name = "facebook"
                 facebook_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,
@@ -1279,7 +1312,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 access_token = post_urn.org.access_token
                 for comment_urn, reply in reply_data.items():
                     if reply[0] != '' or reply[1]!=None:
-                        result =    meta_nested_comment(comment_urn, reply[0], reply[1], access_token, provider_name)
+                        result = meta_nested_comment(comment_urn, reply[0], reply[1], access_token, provider_name)
                     else:
                         pass
             else:
@@ -1312,7 +1345,7 @@ class ConnectionView(ConnectionsView):
             print(apps.provider)
             context[f'{apps.provider}_app'] = apps
             try:
-                context[f'{apps.provider}'] = SocialAccount.objects.filter(user = self.request.user.id,provider = apps.provider)[0]
+                context[f'{apps.provider}'] = SocialAccount.objects.filter(user=self.request.user.id, provider=apps.provider)[0]
                 print(apps.name)
 
             except Exception as e:

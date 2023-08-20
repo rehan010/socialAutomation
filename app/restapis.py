@@ -996,6 +996,65 @@ def post_nested_comment_linkedin(social,access_token,post_urn,reply,comment_urn)
 
     return response
 
+def post_nested_comment_media_linkedin(social,access_token,post_urn,reply,comment_urn,media,org_id):
+
+    access_token_string = access_token
+    response = get_img_urn(org_id, access_token_string)
+    if response.status_code == 200:
+        response_json = response.json()
+        upload_url = response_json['value']['uploadUrl']
+        image_urn = response_json['value']['image']
+        image_url = get_image_url(media)
+        image_path = image_url.get('files')[0].get('path')
+        image_model = ImageModel(image=media, image_url=image_path, image_urn=image_urn)
+        image_model.save()
+        image_file = image_model.image
+        response = upload_img(upload_url, image_file, access_token_string)
+        if response.status_code == 201:
+            print("Media succesfully uploaded")
+
+        else:
+            print("Media Upload Failed")
+
+        user = social.uid
+        encoded_urn = quote(comment_urn, safe='')
+
+        url = "https://api.linkedin.com/rest/socialActions/" + encoded_urn + "/comments"
+        payload = json.dumps({
+            "actor": "urn:li:person:" + user,
+            "message": {
+                "text": reply
+            },
+            "object": post_urn,
+            "parentComment": comment_urn,
+            "content": [
+                {
+                    "entity": {
+                        "image": image_urn
+                    },
+                    "type": "IMAGE",
+                    "url": image_path
+                }
+            ]
+        })
+        headers = {
+            'Linkedin-Version': '202304',
+            'X-Restli-Protocol-Version': '2.0.0',
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {access_token}',
+            'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4552:u=55:x=1:i=1689679535:t=1689752271:v=2:sig=AQHrXpQbD6C1r_eMUoL9o6xmwpPa1AEs"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=55:x=1:i=1689314606:t=1689334414:v=2:sig=AQHSFW1fjeXULNO8CiDc8_rZkoMXJMK3"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+        if response.status_code == 201:
+            response = response.json()
+            print("Replied to Comment successfully.")
+        else:
+            print("Failed to reply.")
+
+        return response
+
+
 def get_nested_comments(access_token,comment_urn):
     encoded_urn = quote(comment_urn, safe='')
     url = "https://api.linkedin.com/rest/socialActions/" + encoded_urn + "/comments"
@@ -1073,8 +1132,176 @@ def get_nested_comments(access_token,comment_urn):
 
     return replies
 
+def create_comment_media_linkedin(org_id,access_token, post_urn, comment, social, media):
+    user = social.uid
+    encoded_urn = quote(post_urn, safe='')
+    access_token_string = access_token
+    response = get_img_urn(org_id, access_token_string)
+    if response.status_code == 200:
+        response_json = response.json()
+        upload_url = response_json['value']['uploadUrl']
+        image_urn = response_json['value']['image']
+        print(upload_url)
+        image_url = get_image_url(media)
+        image_path = image_url.get('files')[0].get('path')
+        image_model = ImageModel(image=media, image_url=image_path, image_urn=image_urn)
+        image_model.save()
+        image_file = image_model.image
+        response = upload_img(upload_url, image_file, access_token_string)
+        if response.status_code == 201:
+            print("Media succesfully uploaded")
 
-def create_comment(access_token, post_urn, comment,social):
+        else:
+            print("Media Upload Failed")
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json',
+        'X-Restli-Protocol-Version': '2.0.0',
+        'LinkedIn-Version': '202304',
+    }
+    url = f'https://api.linkedin.com/rest/socialActions/' + encoded_urn + '/comments'
+
+    data = {
+        "actor": "urn:li:person:" + user,
+        "object": post_urn,
+        "message": {
+            "text": comment
+        },
+        "content": [
+            {
+                "entity": {
+                    "image": image_urn
+                },
+                "type": "IMAGE",
+                "url": image_path
+            }
+        ]
+
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code == 201:
+        response = response.json()
+        print("Comment created successfully.")
+        print(response)
+    else:
+        print("Failed to create comment.")
+        print(response.json())
+    return response
+
+def image_comment(org_id,access_token, post_urn, comment, social, media):
+    access_token_string = access_token
+    user = social.uid
+    encoded_urn = quote(post_urn, safe='')
+
+
+    url = "https://api.linkedin.com/rest/assets?action=registerUpload"
+
+    payload = json.dumps({
+        "registerUploadRequest": {
+            "owner": "urn:li:organization:" + org_id,
+            "recipes": [
+              "urn:li:digitalmediaRecipe:feedshare-image"
+            ],
+            "serviceRelationships": [
+              {
+                "identifier": "urn:li:userGeneratedContent",
+                "relationshipType": "OWNER"
+              }
+            ],
+            "supportedUploadMechanism": [
+              "SYNCHRONOUS_UPLOAD"
+            ]
+        }
+    })
+    headers = {
+            'X-Restli-Protocol-Version': '2.0.0',
+            'Linkedin-Version': '202304',
+            'Authorization': 'Bearer ' + access_token,
+            'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4570:u=70:x=1:i=1692093475:t=1692172409:v=2:sig=AQHvqY4B7PQyhaJ3i0Jha9CnZNHz3aPN"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
+        }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+    data = response.json()
+    print(data)
+    asset = data["value"]["asset"]
+    upload_url = data["value"]["uploadMechanism"]["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"]["uploadUrl"]
+
+    url = upload_url
+    # Set the path to the imaganasrehman/Pyce file on your local machine
+    image_url = get_image_url(media)
+    image_path = image_url.get('files')[0].get('path')
+    image_model = ImageModel(image=media, image_url=image_path, image_urn=asset)
+    image_model.save()
+    image_file = image_model.image
+
+
+    image_path = os.path.join(settings.BASE_DIR, "media/" + str(image_file))
+
+
+    input_path = image_path
+    output_path = input_path
+    max_pixels = 36152320  # Maximum pixel count (e.g., 1920x1080)
+
+    reduce_pixel_count(input_path, output_path, max_pixels)
+
+    headers = {
+        "Authorization": f"Bearer {access_token_string}",
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+    }
+
+    # Open the image file in binary mode and send it as the request body
+    with open(output_path, "rb") as file:
+        response = requests.request("PUT", url, headers=headers, data=file)
+        if response.status_code == 201:
+                print(response)
+                print("Media succesfully uploaded")
+
+        else:
+                print("Media Upload Failed")
+
+    parts = asset.split(':')
+    asset_id = parts[-1]
+    post_url = url = f'https://api.linkedin.com/rest/socialActions/' + encoded_urn + '/comments'
+    post_data = json.dumps({
+        "actor": f"urn:li:person:" + user,
+        "object": post_urn,
+        "message": {
+            "text": comment
+        },
+        "content": [
+          {
+             "entity": {
+                "image": 'urn:li:image:' + asset_id
+             },
+             "type": "IMAGE",
+             "url": image_path
+          }
+        ]
+    })
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json',
+        'X-Restli-Protocol-Version': '2.0.0',
+        'LinkedIn-Version': '202304',
+    }
+
+    response = requests.post(post_url, headers=headers, data=post_data)
+    if response.status_code == 201:
+        response = response.json()
+        print("Comment created successfully.")
+        print(response['$URN'])
+        print(response)
+    else:
+        print("Failed to create comment.")
+        print(response.json())
+    return response
+
+
+
+def create_comment(access_token, post_urn, comment, social):
 
     user = social.uid
     encoded_urn = quote(post_urn, safe='')
@@ -1326,7 +1553,8 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                 replies = {}
                 obj['replies'] = replies
                 data.append(obj)
-            return t_likes, t_comments, data
+
+        return t_likes, t_comments, data
     else:
         data = []
         obj = {}
@@ -1568,7 +1796,7 @@ def upload_img(upload_url, image_file, access_token_string):
     url = upload_url
     # Set the path to the imaganasrehman/Pyce file on your local machine
 
-    image_path = os.path.join(settings.BASE_DIR,"media/" + str(image_file))
+    image_path = os.path.join(settings.BASE_DIR, "media/" + str(image_file))
     print(image_path)
     # image_path = "/Users/harmProjects/social_automation/social_auto/media/" + str(image_file)
     input_path = image_path
@@ -1590,7 +1818,7 @@ def upload_img(upload_url, image_file, access_token_string):
 
 def upload_video(upload_url,video_file):
     url = upload_url
-    video_path = os.path.join(settings.BASE_DIR,"media/" + str(video_file))
+    video_path = os.path.join(settings.BASE_DIR, "media/" + str(video_file))
     # video_path = "/Users/anasrehman/PycharmProjects/social_automation/social_auto/media/videos/" + str(video_file)
 
     headers = {
@@ -1694,6 +1922,7 @@ def post_single_image_linkedin(access_token_string,org_id,post,image_list):
     }
 
     # Set the post data including the image URN and other relevant details
+
     data = {
 
         "author": "urn:li:organization:" + org_id,
@@ -1905,7 +2134,7 @@ def meta_nested_comment(urn,text,media,access_token,provider_name):
         url = f"https://graph.facebook.com/{urn}/comments"
         if media and media!= '':
             extension = get_file_extension(media.content_type)
-            if extension in ['jpg','png']:
+            if extension in ['jpg', 'png']:
                 data['attachment_url'] = get_image_url(media).get('files')[0].get('path')
             elif extension in ['gif']:
                 pass

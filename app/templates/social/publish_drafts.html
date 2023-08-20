@@ -13,6 +13,13 @@
 <div class="heading text-center font-bold text-2xl m-5 text-gray-800">DRAFT</div>
 <style>
   body {background:white !important;}
+  .pt-5{
+    padding-top:1.25rem !important;
+  }
+  .py-3{
+        padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
 
 </style>
 
@@ -28,9 +35,8 @@
         {% if form.name.errors %}
         <div class="error-message">{{ form.post.errors }}</div>
         {% endif %}
-        <br>
          <div class="flex items-center justify-center w-full" >
-            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-dashed border-2 border-gray-200 bg-white-100 rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-white-700 hover:bg-gray-100 hover:border-gray-400">
+            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-36 border-dashed border-2 border-gray-200 bg-white-100 rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-white-700 hover:bg-gray-100 hover:border-gray-400">
                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
                     <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
@@ -43,46 +49,10 @@
             </label>
         </div>
         <div id="image-preview-container" class="flex flex-wrap"></div>
-   <!-- Scheduling options -->
-
-        <div class="-mx-3 flex flex-wrap " id="date-div">
-            <div class="w-full px-3 sm:w-1/2">
-                <div class="mb-5">
-                    <label
-                            for="date"
-                            class="mb-3 block text-base font-medium text-[#07074D]"
-                    >
-                        Schedule Date
-                    </label>
-                    <input
-                            type="date"
-                            name="date"
-                            id="date"
-                            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                    />
-                </div>
-            </div>
-            <div class="w-full px-3 sm:w-1/2">
-                <div class="mb-5">
-                    <label
-                            for="time"
-                            class="mb-3 block text-base font-medium text-[#07074D]"
-                    >
-                        Schedule Time
-                    </label>
-                    <input
-                            type="time"
-                            name="time"
-                            id="time"
-                            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-                    />
-                </div>
-            </div>
-        </div>
 
 
         <!--                Platforms-->
-        <div class="d-flex p-2">
+        <div class="d-flex p-2" id="pageSelection">
             <div class="col-sm-3">
                 <div class="relative inline-block">
                     <button type="button" data-te-ripple-init data-te-ripple-color="light"
@@ -103,6 +73,13 @@
                                    name="facebook" value="{{obj.id}}"/>
                             <span class="ml-2 text-sm">{{obj.name}}</span>
                         </label>
+                        {% for page in post.prepost_page.all %}
+                        {% if obj.id == page.org_id %}
+                            <script>
+                                document.querySelector('input[value="{{ obj.id }}"]').checked = true;
+                            </script>
+                        {% endif %}
+                        {% endfor %}
 
 
                         {% endfor %}
@@ -111,8 +88,6 @@
 
                 </div>
             </div>
-
-
             <div class="col-sm-3">
                 <div class="relative inline-block">
                     <button type="button" data-te-ripple-init data-te-ripple-color="light"
@@ -124,18 +99,29 @@
                         </svg>
                         Instagram
                     </button>
+
                     <div class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
                          style="min-height: 2.5rem;">
+                        {% for obj in data.insta_data %}
                         <label class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             <input type="checkbox"
                                    class="form-checkbox h-4 w-4 text-blue-500 transition duration-150 ease-in-out"
-                                   name="instagram" value="{{data.insta_data.id}}"/>
-                            <span class="ml-2 text-sm text-gray-700">{{data.insta_data.name}}</span>
+                                   name="instagram" value="{{obj.id}}"/>
+                            <span class="ml-2 text-sm text-gray-700">{{obj.name}}</span>
                         </label>
-                      </div>
-                      </div>
+                        {% for page in post.prepost_page.all %}
+                        {% if obj.id == page.org_id %}
+                            <script>
+                                document.querySelector('input[value="{{ obj.id }}"]').checked = true;
+                            </script>
+                        {% endif %}
+                        {% endfor %}
+                        {% endfor %}
+                    </div>
+
+                    </div>
               </div>
-              <div class="col-sm-3">
+            <div class="col-sm-3">
                 <button type="button" data-te-ripple-init data-te-ripple-color="light"
                         class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
                         style="background-color: #0077b5">
@@ -168,7 +154,6 @@
                 </div>
 
             </div>
-
             <div class="col-sm-3">
               <button type="button" data-te-ripple-init data-te-ripple-color="light"
                       class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg"
@@ -181,31 +166,66 @@
                   Google
               </button>
           </div>
+            <input type="hidden" name="checkbox_selected" id="checkboxSelected">
         </div>
-        <li class="relative block px-0 py-2 bg-white border-0 rounded-t-lg text-inherit">
-                    <div class="min-h-6 mb-0.5 block pl-0">
-                      <input id="follow" name="comment_check" class="mt-0.54 rounded-10 duration-250 ease-soft-in-out after:rounded-circle after:shadow-soft-2xl after:duration-250 checked:after:translate-x-5.25 h-5 relative float-left ml-auto w-10 cursor-pointer appearance-none border border-solid border-gray-200 bg-slate-800/10 bg-none bg-contain bg-left bg-no-repeat align-top transition-all after:absolute after:top-px after:h-4 after:w-4 after:translate-x-px after:bg-white after:content-[''] checked:border-slate-800/95 checked:bg-slate-800/95 checked:bg-none checked:bg-right" type="checkbox" {% if comment_check %}checked{% endif %}>
-                        <label for="follow" class="w-4/5 mb-0 ml-4 overflow-hidden font-normal cursor-pointer select-none text-sm text-ellipsis whitespace-nowrap text-slate-500" for="follow">Allow Comments</label>
-                    </div>
+        <br/>
+        <br/>
+        <div class="-mx-3 flex flex-col items-end flex-wrap " id="date-div">
+            <div class="w-56 px-3">
+                <div class="mb-3">
+                    <label
+                        for="date"
+                        class="mb-2 pl-1 block text-base text-[#07074D]">
+                        Schedule Date :
+                    </label>
+                    <input
+                        type="date"
+                        name="date"
+                        id="date"
+                        class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"/>
+                </div>
+            </div>
+            <div class="w-56 px-3">
+                <div class="mb-3">
+                    <label
+                        for="time"
+                        class="mb-2 pl-1 block text-base text-[#07074D]">
+                        Schedule Time :
+                    </label>
+                    <input
+                        type="time"
+                        name="time"
+                        id="time"
+                        class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"/>
+                </div>
+            </div>
+        </div>
+        <li class="relative block px-0 py-1 bg-white border-0 rounded-t-lg text-inherit">
+                <div class="min-h-6 mb-0.5 block pl-0">
+                  <input id="follow" name="comment_check" class="mt-0.54 rounded-10 duration-250 ease-soft-in-out after:rounded-circle after:shadow-soft-2xl after:duration-250 checked:after:translate-x-5.25 h-5 relative float-left ml-auto w-10 cursor-pointer appearance-none border border-solid border-gray-200 bg-slate-800/10 bg-none bg-contain bg-left bg-no-repeat align-top transition-all after:absolute after:top-px after:h-4 after:w-4 after:translate-x-px after:bg-white after:content-[''] checked:border-slate-800/95 checked:bg-slate-800/95 checked:bg-none checked:bg-right" type="checkbox" {% if comment_check %}checked{% endif %}>
+                    <label for="follow" class="w-4/5 mb-0 ml-4 overflow-hidden font-normal cursor-pointer select-none text-sm text-ellipsis whitespace-nowrap text-slate-500" for="follow">Allow Comments</label>
+                </div>
         </li>
 
 
-        <div class="w-full flex items-center mt-4">
+        <div class="w-full flex items-center mt-1">
 <!--            <label class="mr-4 font-bold">Schedule</label>-->
+
             <div class="ml-auto flex">
-                <div class="px-4 py-2 bg-gray-100 text-black rounded-l-lg border border-gray-300 hover:bg-gray-200 Scheduling-contoller text-sm">
+<!--                <div class="inline-block px-6 py-3 font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-l-xl cursor-pointer leading-pro text-sm ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25  ">-->
+<!--                   <button id="draftBtn">Save as Draft</button>-->
+<!--                </div>-->
+                <div class="inline-block px-6 py-3 font-bold text-center text-white uppercase align-middle transition-all rounded-l-xl bg-transparent  cursor-pointer leading-pro text-sm ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25">
                     <input type="hidden" id="publishInput" name="action" value="">
                     <button class="" id="publishButton"
-                    type="submit">Publish Now Post
+                    type="submit">Publish Now
                     </button>
                 </div>
 
-                <div class="px-4 py-2 ml-2 bg-gray-100 text-black rounded-r-lg border border-gray-300 hover:bg-gray-200 text-sm Scheduling-contoller">
-                   <button id="scheduleBtn">Schedule Post</button>
+                <div class="flex items-center justify-center px-12 py-3 mr-3 font-bold text-center text-center text-white uppercase align-middle transition-all bg-transparent rounded-r-xl cursor-pointer leading-pro text-sm ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25">
+                   <button id="scheduleBtn" class="w-full h-full">Schedule</button>
                 </div>
-                <div class="px-2 py-1 ml-2 bg-gray-100 text-black rounded-r-lg border border-gray-300 hover:bg-gray-200 text-sm ">
-                   <button id="draftBtn">Save Post</button>
-                </div>
+
             </div>
         </div>
     </form>
@@ -458,17 +478,58 @@ function getCookie(name) {
     });
 
 
+//  Function to submit the form with the selected scheduled date-time
+    const form = document.getElementById("scheduleForm");
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const selectedDateTime = document.getElementById("scheduleDateTimePicker").value;
 
-    // Function to submit the form with the selected scheduled date-time
-<!--    const form = document.getElementById("scheduleForm");-->
-<!--    form.addEventListener("submit", function (event) {-->
-<!--      event.preventDefault();-->
-<!--      const selectedDateTime = document.getElementById("scheduleDateTimePicker").value;-->
-<!--      // You can use AJAX or other methods to submit the selectedDateTime to the server for scheduling-->
-<!--      // For demonstration purposes, we'll just display the selected date-time-->
-<!--      alert(`Post Scheduled for: ${selectedDateTime}`);-->
-<!--    });-->
+      alert(`Post Scheduled for: ${selectedDateTime}`);
+    });
   });
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    // Check if at least one checkbox is selected
+    const atLeastOneChecked = Array.from(checkboxInputs).some(input => input.checked);
+
+    if (atLeastOneChecked) {
+
+      checkboxSelectedInput.value = 1;
+
+      form.submit();
+    } else {
+      console.log('Hi');
+      alert('Please select at least one page to post.');
+    }
+  });
+
+    document.getElementById("yourForm").addEventListener("submit", function(event) {
+        const pageCheckboxes = document.querySelectorAll("#pageSelection input[type=checkbox]");
+        let atLeastOneSelected = false;
+
+        // Check if at least one checkbox is selected
+        for (const checkbox of pageCheckboxes) {
+            if (checkbox.checked) {
+                atLeastOneSelected = true;
+                break;
+            }
+        }
+
+        if (!atLeastOneSelected) {
+            event.preventDefault(); // Prevent form submission
+
+            const alertBox = document.createElement("div");
+            alertBox.className = "alert-box";
+            alertBox.textContent = "Please select at least one page.";
+            document.body.appendChild(alertBox);
+
+            setTimeout(function() {
+                document.body.removeChild(alertBox);
+            }, 3000); // Remove the alert after 3 seconds
+        }
+    });
 
 </script>
 
