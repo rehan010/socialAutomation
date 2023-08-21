@@ -62,7 +62,23 @@
     <!-- Nepcha Analytics (nepcha.com) -->
     <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
     <script defer="" data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
-  <link href="../assets/css/perfect-scrollbar.css" type="text/css" rel="stylesheet"><script src="../assets/js/perfect-scrollbar.js" type="text/javascript" async="true"></script><script src="../assets/js/dropdown.js" type="text/javascript" async="true"></script><script src="../assets/js/fixed-plugin.js" type="text/javascript" async="true"></script><script src="../assets/js/sidenav-burger.js" type="text/javascript" async="true"></script><script src="../assets/js/navbar-sticky.js" type="text/javascript" async="true"></script></head>
+  <link href="../assets/css/perfect-scrollbar.css" type="text/css" rel="stylesheet"><script src="../assets/js/perfect-scrollbar.js" type="text/javascript" async="true"></script><script src="../assets/js/dropdown.js" type="text/javascript" async="true"></script><script src="../assets/js/fixed-plugin.js" type="text/javascript" async="true"></script><script src="../assets/js/sidenav-burger.js" type="text/javascript" async="true"></script><script src="../assets/js/navbar-sticky.js" type="text/javascript" async="true"></script>
+
+    <style>
+    .close{
+        width: 7rem !important;
+    }
+
+    .close li{
+        justify-content: center;
+    }
+
+    .close .nav__item{
+        display: none;
+    }
+    </style>
+
+</head>
 
 
 <body class="m-0 font-sans text-base antialiased font-normal leading-default bg-gray-50 text-slate-500">
@@ -89,7 +105,13 @@
 
             {% if user.is_authenticated %}
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'login' %}">Help</a>
+               <div class="flex">
+                    <img src="{% static 'assets/img/team-3.jpg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                    <div class="mr-0">
+                        <p>{{user.username}}</p>
+                    </div>
+
+               </div>
             </li>
             {% else %}
             <li class="nav-item">
@@ -112,94 +134,133 @@
     <!-- Sidebar -->
     {% if user.is_authenticated %}
 
-    <aside class="bg-gray-200 w-1/6 " id="sidebar">
-        <div class="flex h-screen">
+    <aside class="w-52 bg-[#f2f6f8] h-screen" id="sidebar">
+<!--        <div class="flex h-screen">-->
+          <div class="w-full flex items-center justify-center">
 
-            <div class="px-2 pt-4 pb-8 border-r ">
-                <ul class="space-y-2">
 
-                    <li>
-                        <a href="{% url 'my_profile' %}"
-                           class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512">
-                                <!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-                                <path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/>
-                            </svg>
-                            <span>My Profile</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'dashboard' %}"
-                           class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512">
-                                <!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-                                <path d="M575.8 255.5c0 18-15 32.1-32 32.1h-32l.7 160.2c0 2.7-.2 5.4-.5 8.1V472c0 22.1-17.9 40-40 40H456c-1.1 0-2.2 0-3.3-.1c-1.4 .1-2.8 .1-4.2 .1H416 392c-22.1 0-40-17.9-40-40V448 384c0-17.7-14.3-32-32-32H256c-17.7 0-32 14.3-32 32v64 24c0 22.1-17.9 40-40 40H160 128.1c-1.5 0-3-.1-4.5-.2c-1.2 .1-2.4 .2-3.6 .2H104c-22.1 0-40-17.9-40-40V360c0-.9 0-1.9 .1-2.8V287.6H32c-18 0-32-14-32-32.1c0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/>
-                            </svg>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
+            <ul class="space-y-2 m-2 w-full">
 
-                    <li>
-                        <a href="{% url 'my_posts' user.pk %}"
-                           class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
-                                <!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-                                <path d="M224 32H64C46.3 32 32 46.3 32 64v64c0 17.7 14.3 32 32 32H441.4c4.2 0 8.3-1.7 11.3-4.7l48-48c6.2-6.2 6.2-16.4 0-22.6l-48-48c-3-3-7.1-4.7-11.3-4.7H288c0-17.7-14.3-32-32-32s-32 14.3-32 32zM480 256c0-17.7-14.3-32-32-32H288V192H224v32H70.6c-4.2 0-8.3 1.7-11.3 4.7l-48 48c-6.2 6.2-6.2 16.4 0 22.6l48 48c3 3 7.1 4.7 11.3 4.7H448c17.7 0 32-14.3 32-32V256zM288 480V384H224v96c0 17.7 14.3 32 32 32s32-14.3 32-32z"/>
-                            </svg>
-                            <span>Posts</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'socialaccount_connections' %}"
-                           class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512">
-                                <!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-                                <path d="M352 224H305.5c-45 0-81.5 36.5-81.5 81.5c0 22.3 10.3 34.3 19.2 40.5c6.8 4.7 12.8 12 12.8 20.3c0 9.8-8 17.8-17.8 17.8h-2.5c-2.4 0-4.8-.4-7.1-1.4C210.8 374.8 128 333.4 128 240c0-79.5 64.5-144 144-144h80V34.7C352 15.5 367.5 0 386.7 0c8.6 0 16.8 3.2 23.2 8.9L548.1 133.3c7.6 6.8 11.9 16.5 11.9 26.7s-4.3 19.9-11.9 26.7l-139 125.1c-5.9 5.3-13.5 8.2-21.4 8.2H384c-17.7 0-32-14.3-32-32V224zM80 96c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16H400c8.8 0 16-7.2 16-16V384c0-17.7 14.3-32 32-32s32 14.3 32 32v48c0 44.2-35.8 80-80 80H80c-44.2 0-80-35.8-80-80V112C0 67.8 35.8 32 80 32h48c17.7 0 32 14.3 32 32s-14.3 32-32 32H80z"/>
-                            </svg>
-                            <span>Business Profile</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'my_user' %}"
-                           class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 640 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192h42.7c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0H21.3C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7h42.7C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3H405.3zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352H378.7C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7H154.7c-14.7 0-26.7-11.9-26.7-26.7z"/></svg>
-                            <span>Users</span>
-                        </a>
-                    </li>
-<!--                    <li>-->
-<!--                        <a href="{% url 'password_change' %}"-->
-<!--                           class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">-->
-<!--                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">-->
-<!--                                &lt;!&ndash;! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. &ndash;&gt;-->
-<!--                                <path d="M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17v80c0 13.3 10.7 24 24 24h80c13.3 0 24-10.7 24-24V448h40c13.3 0 24-10.7 24-24V384h40c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z"/>-->
-<!--                            </svg>-->
-<!--                            <span>Change password</span>-->
-<!--                        </a>-->
-<!--                    </li>-->
-<!--                    <li>-->
-<!--                        <a href="{% url 'upload_file' %}"-->
-<!--                           class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">-->
-<!--                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512">-->
-<!--                                &lt;!&ndash;! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. &ndash;&gt;-->
-<!--                                <path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24V305.9l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31V408z"/>-->
-<!--                            </svg>-->
-<!--                            <span>Upload Branch</span>-->
-<!--                        </a>-->
+                <li class="border-b-2 border-[#BCC0C2] sm:p-2 p-1 flex justify-start hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 cursor-pointer rounded my-3">
+                    <a href="{% url 'my_profile' %}"
+                    class="  flex items-center py-1.5 px-4 rounded space-x-2 hover:no-underline">
+                    <div class="sm:w-6 w-5">
 
-<!--                    </li>-->
-                    <li>
-                        <a href="{% url 'logout' %}"
-                           class="hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600 flex items-center text-gray-700 py-1.5 px-4 rounded space-x-2 cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">
-                                <!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
-                                <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"/>
+                        <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 28.4253V28.8H26.8143V28.4253C26.8143 21.3442 22.2434 17.4477 13.9259 17.4477C5.60835 17.4477 1 21.3442 1 28.4253ZM13.8884 18.197C19.3585 18.197 25.8401 19.9205 26.0275 28.0506H1.74933C1.93666 19.9205 8.41832 18.197 13.8884 18.197Z" fill="#00111C" stroke="black" stroke-width="0.5"/>
+                                <path d="M20.2571 7.51913C20.2571 3.80997 17.522 1 13.8878 1C10.2536 1 7.51855 3.80997 7.51855 7.51913C7.51855 11.3782 10.366 14.4879 13.8878 14.4879C17.4096 14.4879 20.2571 11.3782 20.2571 7.51913ZM8.26788 7.51913C8.26788 4.18463 10.6283 1.74933 13.8878 1.74933C17.1474 1.74933 19.5078 4.18463 19.5078 7.51913C19.5078 10.966 16.9975 13.7385 13.8878 13.7385C10.7781 13.7385 8.26788 10.966 8.26788 7.51913Z" fill="#00111C" stroke="black" stroke-width="0.5"/>
                             </svg>
-                            <span>Logout</span>
-                        </a>
-                    </li>
+                    </div>
+
+                        <span class="nav__item">My Profile</span>
+                    </a>
+                </li>
+
+                <li class="border-b-2 border-[#BCC0C2] sm:p-2 p-1 flex justify-start  hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600  text-gray-700 cursor-pointer rounded my-3">
+                    <a href="{% url 'dashboard' %}"
+                    class="flex items-center py-1.5 px-4 space-x-2 hover:no-underline">
+                    <div class="sm:w-6 w-5">
+                        <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M0.552278 25C0.479771 25 0.407969 24.9854 0.340973 24.957C0.273977 24.9286 0.213098 24.8869 0.161813 24.8344C0.110529 24.7819 0.0698429 24.7196 0.0420788 24.6509C0.0143147 24.5823 1.63047e-05 24.5087 0 24.4345L0 0.565577C1.44925e-05 0.491285 0.0143116 0.417717 0.0420749 0.349089C0.0698382 0.28046 0.110524 0.218121 0.161809 0.165604C0.213093 0.113087 0.273973 0.0714245 0.34097 0.0430164C0.407967 0.0146065 0.47977 -2.47955e-05 0.552278 1.90735e-06L23.8484 1.90735e-06C23.9948 3.62396e-05 24.1352 0.0596523 24.2387 0.165707C24.3422 0.271763 24.4003 0.415594 24.4004 0.565577L24.4004 24.4345C24.4003 24.5844 24.3422 24.7283 24.2387 24.8343C24.1352 24.9404 23.9948 25 23.8484 25L0.552278 25ZM1.10424 23.8689H11.6537L11.6537 16.5307H1.10424L1.10424 23.8689ZM12.7577 23.8689L23.2961 23.8689L23.2961 8.30871L12.7577 8.30871L12.7577 23.8689ZM1.10424 15.3996L11.6537 15.3996L11.6537 1.13112H1.10424L1.10424 15.3996ZM12.7577 7.17732L23.2961 7.17732V1.13112L12.7577 1.13112L12.7577 7.17732Z" fill="black"/>
+                        </svg>
+                    </div>
+
+
+                        <span class="nav__item">Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="border-b-2 border-[#BCC0C2] sm:p-2 p-1 flex justify-start  hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600  text-gray-700 cursor-pointer rounded my-3">
+                    <a href="{% url 'my_posts' user.pk %}"
+                    class="flex items-center py-1.5 px-4 space-x-2 text-black hover:no-underline">
+
+                        <!-- <div class="w-2">
+
+                            <img src="post_image.png" alt="" >
+                        </div> -->
+                        <div class="sm:w-6 w-5">
+                            <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 40.000000 33.000000"
+                            preserveAspectRatio="xMidYMid meet">
+
+                            <g transform="translate(0.000000,33.000000) scale(0.100000,-0.100000)"
+                            fill="#000000" stroke="none">
+                            <path d="M16 314 c-23 -23 -23 -275 0 -298 13 -13 44 -16 183 -16 116 0 171 4
+                            179 12 17 17 17 289 0 306 -8 8 -63 12 -179 12 -139 0 -170 -3 -183 -16z m345
+                            -4 c17 -10 19 -22 19 -128 l0 -117 -36 38 c-42 44 -71 47 -104 12 l-24 -25
+                            -36 35 c-20 19 -45 35 -57 35 -12 0 -41 -20 -67 -47 l-46 -48 0 112 c0 88 3
+                            115 16 127 13 13 42 16 165 16 85 0 159 -5 170 -10z m-171 -217 c36 -40 49
+                            -51 45 -35 -5 17 -1 30 16 48 12 13 28 24 34 24 6 0 31 -21 55 -46 43 -44 44
+                            -46 26 -60 -15 -11 -55 -14 -167 -14 -158 0 -179 3 -179 28 0 19 88 112 106
+                            112 7 0 36 -26 64 -57z"/>
+                            <path d="M239 259 c-17 -33 3 -69 39 -69 33 0 52 16 52 45 0 29 -19 45 -52 45
+                            -18 0 -31 -7 -39 -21z m70 -8 c7 -13 6 -23 -3 -36 -17 -24 -50 -15 -54 14 -6
+                            39 39 56 57 22z"/>
+                            </g>
+                            </svg>
+
+                        </div>
+                        <span class="nav__item">Posts</span>
+                    </a>
+                </li>
+                <li class="border-b-2 border-[#BCC0C2] sm:p-2 p-1 flex justify-start  hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600  text-gray-700 cursor-pointer rounded my-3">
+                    <a href="{% url 'socialaccount_connections' %}"
+                    class="flex items-center text-black py-1.5 px-4 space-x-2 hover:no-underline">
+                        <!-- <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"> -->
+                            <!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                            <!-- <path d="M352 224H305.5c-45 0-81.5 36.5-81.5 81.5c0 22.3 10.3 34.3 19.2 40.5c6.8 4.7 12.8 12 12.8 20.3c0 9.8-8 17.8-17.8 17.8h-2.5c-2.4 0-4.8-.4-7.1-1.4C210.8 374.8 128 333.4 128 240c0-79.5 64.5-144 144-144h80V34.7C352 15.5 367.5 0 386.7 0c8.6 0 16.8 3.2 23.2 8.9L548.1 133.3c7.6 6.8 11.9 16.5 11.9 26.7s-4.3 19.9-11.9 26.7l-139 125.1c-5.9 5.3-13.5 8.2-21.4 8.2H384c-17.7 0-32-14.3-32-32V224zM80 96c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16H400c8.8 0 16-7.2 16-16V384c0-17.7 14.3-32 32-32s32 14.3 32 32v48c0 44.2-35.8 80-80 80H80c-44.2 0-80-35.8-80-80V112C0 67.8 35.8 32 80 32h48c17.7 0 32 14.3 32 32s-14.3 32-32 32H80z"/> -->
+                        <!-- </svg> -->
+
+                        <div class="sm:w-6 w-5">
+
+                            <svg viewBox="0 0 25 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M24.5589 3.01276H18.9643V0.43801C18.9643 0.196429 18.7663 0 18.5263 0H6.4676C6.22551 0 6.02959 0.196684 6.02959 0.43801V3.0125H0.43801C0.194898 3.0125 0 3.20918 0 3.45051V9.48265V21.5452C0 21.7862 0.198214 21.9811 0.43801 21.9811H24.562C24.8018 21.9811 25 21.7849 25 21.5452V9.48265V3.44974C24.9967 3.20918 24.7977 3.01276 24.5589 3.01276ZM6.9023 0.87551H18.087V3.0125H6.9023V0.87551ZM0.872959 3.88878H24.1209V9.04362H14.3941C14.3793 8.97857 14.3398 8.92628 14.3202 8.86327C14.2908 8.77449 14.2543 8.69286 14.2148 8.6102C14.148 8.47781 14.0645 8.3625 13.9707 8.25051C13.9143 8.18214 13.8589 8.11479 13.7974 8.05485C13.6806 7.94796 13.5452 7.86811 13.4094 7.79311C13.3416 7.75459 13.2801 7.70867 13.2082 7.67985C12.987 7.59235 12.7503 7.53699 12.499 7.53699C12.2464 7.53699 12.0087 7.59235 11.7898 7.67985C11.7168 7.70867 11.6584 7.75485 11.5906 7.79107C11.4508 7.86556 11.3173 7.94796 11.1995 8.0551C11.1337 8.11505 11.0847 8.18138 11.0286 8.25076C10.9347 8.36173 10.8513 8.47806 10.7834 8.61046C10.7416 8.69286 10.7074 8.77372 10.677 8.86352C10.6541 8.92755 10.6166 8.98036 10.602 9.04439H0.87602V3.88878H0.872959ZM11.4237 9.48265C11.4237 8.89235 11.9046 8.41148 12.4959 8.41148C13.0862 8.41148 13.5702 8.89235 13.5702 9.48265V12.4985C13.5702 13.0867 13.0865 13.5686 12.4959 13.5686C11.9056 13.5686 11.4237 13.0865 11.4237 12.4985V9.48265ZM24.1209 21.1071H0.872959V9.91964H10.5497V12.4982C10.5497 13.5704 11.4217 14.4423 12.4959 14.4423C13.5702 14.4423 14.4434 13.5704 14.4434 12.4982V9.91964H24.1212L24.1209 21.1071Z" fill="black"/>
+                            </svg>
+                        </div>
+
+
+                        <span class="nav__item">Business Profile</span>
+                    </a>
+                </li>
+                <li class="border-b-2 border-[#BCC0C2] sm:p-2 p-1 flex justify-start  hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600  text-gray-700 cursor-pointer rounded my-3">
+                    <a href="{% url 'my_user' %}"
+                    class="flex items-center py-1.5 px-4 space-x-2 hover:no-underline">
+                        <!-- <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 640 512">! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc.<path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192h42.7c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0H21.3C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7h42.7C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3H405.3zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352H378.7C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7H154.7c-14.7 0-26.7-11.9-26.7-26.7z"/></svg> -->
+
+                        <div class="sm:w-6 w-5">
+                            <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="25" height="24" fill="#F5F5F5"/>
+                                <rect width="2108" height="1067" transform="translate(-59 -418)" fill="white"/>
+                                <path d="M-59 -390H249V621H-59V-390Z" fill="#F2F6F8"/>
+                                <mask id="path-2-inside-1_0_1" fill="white">
+                                <path d="M1.66104 5.93229C1.76993 5.74907 2.00929 5.6876 2.19498 5.79503C2.38068 5.90246 2.44298 6.13864 2.3341 6.32185C1.8344 7.16336 1.44173 8.07762 1.17677 9.04452C0.920438 9.97916 0.783482 10.9643 0.783482 11.9821C0.783482 15.0772 2.05525 17.88 4.11081 19.9081C6.16638 21.9363 9.00696 23.1911 12.144 23.1911C15.281 23.1911 18.1216 21.9363 20.1771 19.9081C22.2327 17.88 23.5045 15.0772 23.5045 11.9821C23.5045 8.88687 22.2327 6.08416 20.1771 4.056C18.1216 2.02785 15.281 0.773036 12.144 0.773036C10.9755 0.773036 9.85029 0.946208 8.79413 1.26699C7.70003 1.59933 6.67441 2.09207 5.7478 2.71597C5.56951 2.83589 5.32614 2.79054 5.20461 2.61463C5.08307 2.43872 5.12903 2.19859 5.30732 2.07868C6.29624 1.41277 7.3925 0.886252 8.56463 0.530473C9.69883 0.185955 10.9018 0 12.144 0C15.4972 0 18.5337 1.34125 20.7311 3.5094C22.9286 5.67755 24.288 8.67352 24.288 11.9821C24.288 15.2906 22.9286 18.2866 20.7311 20.4547C18.5337 22.6229 15.4972 23.9641 12.144 23.9641C8.79073 23.9641 5.75428 22.6229 3.55682 20.4547C1.35937 18.2866 0 15.2906 0 11.9821C0 10.8983 0.146517 9.84586 0.421045 8.84548C0.703592 7.81405 1.12433 6.83589 1.66104 5.93229ZM15.1153 12.8863H9.07544C8.18739 12.8863 7.37923 13.2454 6.79347 13.8233C6.20771 14.4013 5.84404 15.1987 5.84404 16.0749C5.84404 16.9511 6.20771 17.7485 6.79347 18.3264C7.37923 18.9044 8.18739 19.2635 9.07544 19.2635H15.1153C16.0034 19.2635 16.8116 18.9044 17.3973 18.3264C17.9831 17.7485 18.3468 16.9511 18.3468 16.0749C18.3468 15.1987 17.9831 14.4013 17.3973 13.8233C16.8116 13.2454 16.0034 12.8863 15.1153 12.8863ZM9.07544 12.1132H15.1153C16.2193 12.1132 17.224 12.5591 17.9513 13.2767C18.6787 13.9944 19.1302 14.9856 19.1302 16.0749C19.1302 17.1641 18.6787 18.1554 17.9513 18.873C17.224 19.5907 16.2193 20.0365 15.1153 20.0365H9.07544C7.97147 20.0365 6.96682 19.5907 6.23948 18.873C5.51214 18.1554 5.06056 17.1641 5.06056 16.0749C5.06056 14.9856 5.51214 13.9944 6.23948 13.2767C6.96682 12.5591 7.97147 12.1132 9.07544 12.1132ZM12.1437 3.92696C13.1388 3.92696 14.0404 4.32535 14.6925 4.96873C15.3445 5.61212 15.7483 6.50172 15.7483 7.48354C15.7483 8.46535 15.3445 9.35495 14.6925 9.99834L14.6693 10.0193C14.0185 10.6505 13.1264 11.0401 12.1437 11.0401C11.1486 11.0401 10.247 10.6417 9.59488 9.99834L9.5736 9.97551C8.93417 9.33365 8.53934 8.45348 8.53934 7.48354C8.53934 6.50172 8.94311 5.61212 9.59519 4.96873L9.61833 4.94773C10.2692 4.31652 11.1612 3.92696 12.1437 3.92696ZM14.1385 5.51534C13.6283 5.01195 12.9225 4.7 12.1437 4.7C11.3731 4.7 10.6751 5.00404 10.1677 5.49586L10.1492 5.51534C9.63899 6.01872 9.32282 6.71506 9.32282 7.48354C9.32282 8.24318 9.63066 8.93191 10.1294 9.43378L10.1489 9.45173C10.6591 9.95512 11.3648 10.2671 12.1437 10.2671C12.9145 10.2671 13.6125 9.96303 14.12 9.47121L14.1385 9.45173C14.6487 8.94835 14.9648 8.25201 14.9648 7.48354C14.9648 6.71506 14.6487 6.01872 14.1385 5.51534ZM3.32394 3.74801C3.46737 3.58975 3.71445 3.57605 3.87484 3.71757C4.03524 3.85909 4.04912 4.10287 3.90569 4.26113L3.86467 4.30648C3.72123 4.46474 3.47416 4.47843 3.31376 4.33691C3.15336 4.19539 3.13948 3.95161 3.28291 3.79335L3.32394 3.74801Z"/>
+                                </mask>
+                                <path d="M1.66104 5.93229C1.76993 5.74907 2.00929 5.6876 2.19498 5.79503C2.38068 5.90246 2.44298 6.13864 2.3341 6.32185C1.8344 7.16336 1.44173 8.07762 1.17677 9.04452C0.920438 9.97916 0.783482 10.9643 0.783482 11.9821C0.783482 15.0772 2.05525 17.88 4.11081 19.9081C6.16638 21.9363 9.00696 23.1911 12.144 23.1911C15.281 23.1911 18.1216 21.9363 20.1771 19.9081C22.2327 17.88 23.5045 15.0772 23.5045 11.9821C23.5045 8.88687 22.2327 6.08416 20.1771 4.056C18.1216 2.02785 15.281 0.773036 12.144 0.773036C10.9755 0.773036 9.85029 0.946208 8.79413 1.26699C7.70003 1.59933 6.67441 2.09207 5.7478 2.71597C5.56951 2.83589 5.32614 2.79054 5.20461 2.61463C5.08307 2.43872 5.12903 2.19859 5.30732 2.07868C6.29624 1.41277 7.3925 0.886252 8.56463 0.530473C9.69883 0.185955 10.9018 0 12.144 0C15.4972 0 18.5337 1.34125 20.7311 3.5094C22.9286 5.67755 24.288 8.67352 24.288 11.9821C24.288 15.2906 22.9286 18.2866 20.7311 20.4547C18.5337 22.6229 15.4972 23.9641 12.144 23.9641C8.79073 23.9641 5.75428 22.6229 3.55682 20.4547C1.35937 18.2866 0 15.2906 0 11.9821C0 10.8983 0.146517 9.84586 0.421045 8.84548C0.703592 7.81405 1.12433 6.83589 1.66104 5.93229ZM15.1153 12.8863H9.07544C8.18739 12.8863 7.37923 13.2454 6.79347 13.8233C6.20771 14.4013 5.84404 15.1987 5.84404 16.0749C5.84404 16.9511 6.20771 17.7485 6.79347 18.3264C7.37923 18.9044 8.18739 19.2635 9.07544 19.2635H15.1153C16.0034 19.2635 16.8116 18.9044 17.3973 18.3264C17.9831 17.7485 18.3468 16.9511 18.3468 16.0749C18.3468 15.1987 17.9831 14.4013 17.3973 13.8233C16.8116 13.2454 16.0034 12.8863 15.1153 12.8863ZM9.07544 12.1132H15.1153C16.2193 12.1132 17.224 12.5591 17.9513 13.2767C18.6787 13.9944 19.1302 14.9856 19.1302 16.0749C19.1302 17.1641 18.6787 18.1554 17.9513 18.873C17.224 19.5907 16.2193 20.0365 15.1153 20.0365H9.07544C7.97147 20.0365 6.96682 19.5907 6.23948 18.873C5.51214 18.1554 5.06056 17.1641 5.06056 16.0749C5.06056 14.9856 5.51214 13.9944 6.23948 13.2767C6.96682 12.5591 7.97147 12.1132 9.07544 12.1132ZM12.1437 3.92696C13.1388 3.92696 14.0404 4.32535 14.6925 4.96873C15.3445 5.61212 15.7483 6.50172 15.7483 7.48354C15.7483 8.46535 15.3445 9.35495 14.6925 9.99834L14.6693 10.0193C14.0185 10.6505 13.1264 11.0401 12.1437 11.0401C11.1486 11.0401 10.247 10.6417 9.59488 9.99834L9.5736 9.97551C8.93417 9.33365 8.53934 8.45348 8.53934 7.48354C8.53934 6.50172 8.94311 5.61212 9.59519 4.96873L9.61833 4.94773C10.2692 4.31652 11.1612 3.92696 12.1437 3.92696ZM14.1385 5.51534C13.6283 5.01195 12.9225 4.7 12.1437 4.7C11.3731 4.7 10.6751 5.00404 10.1677 5.49586L10.1492 5.51534C9.63899 6.01872 9.32282 6.71506 9.32282 7.48354C9.32282 8.24318 9.63066 8.93191 10.1294 9.43378L10.1489 9.45173C10.6591 9.95512 11.3648 10.2671 12.1437 10.2671C12.9145 10.2671 13.6125 9.96303 14.12 9.47121L14.1385 9.45173C14.6487 8.94835 14.9648 8.25201 14.9648 7.48354C14.9648 6.71506 14.6487 6.01872 14.1385 5.51534ZM3.32394 3.74801C3.46737 3.58975 3.71445 3.57605 3.87484 3.71757C4.03524 3.85909 4.04912 4.10287 3.90569 4.26113L3.86467 4.30648C3.72123 4.46474 3.47416 4.47843 3.31376 4.33691C3.15336 4.19539 3.13948 3.95161 3.28291 3.79335L3.32394 3.74801Z" fill="black" stroke="black" stroke-width="2" mask="url(#path-2-inside-1_0_1)"/>
+                            </svg>
+
+                        </div>
+
+
+                        <span class="nav__item">Users</span>
+                    </a>
+                </li>
+
+                <li class="border-b-2 border-[#BCC0C2] sm:p-2 p-1 flex justify-start  hover:bg-gray-500 hover:bg-opacity-10 hover:text-blue-600  text-gray-700 cursor-pointer rounded my-3">
+                    <a href="{% url 'logout' %}"
+                    class="flex items-center py-1.5 px-4 space-x-2 hover:no-underline">
+
+                        <div class="sm:w-6 w-5">
+
+                            <svg viewBox="0 0 27 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.5391 21.6478C16.5391 22.3461 15.951 22.9341 15.2527 22.9341H2.38897C1.69066 22.9341 1.1026 22.3461 1.1026 21.6478V2.38897C1.1026 1.69066 1.69066 1.1026 2.38897 1.1026H15.2527C15.951 1.1026 16.5391 1.69066 16.5391 2.38897V8.08576H17.6417V2.38897C17.6417 1.06585 16.5758 0 15.2527 0H2.38897C1.06585 0 0 1.06585 0 2.38897V21.611C0 22.9341 1.06585 24 2.38897 24H15.2527C16.5758 24 17.6417 22.9341 17.6417 21.611V15.951H16.5391V21.6478ZM21.1332 6.35835L20.3614 7.13017L24.6983 11.4671H7.31394V12.5697H24.6983L20.3614 16.9066L21.1332 17.6784L26.83 12.0184L21.1332 6.35835Z" fill="black"/>
+                            </svg>
+
+                        </div>
+                        <span class="nav__item">Logout</span>
+                    </a>
+                </li>
                 </ul>
             </div>
-        </div>
 
     </aside>
     {%endif%}
@@ -232,7 +293,7 @@
 const sidebar = document.getElementById('sidebar');
 
 toggleButton.addEventListener('click', () => {
-  sidebar.classList.toggle('hidden');
+  sidebar.classList.toggle('close');
 });
 
 
