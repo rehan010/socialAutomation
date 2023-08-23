@@ -2,7 +2,7 @@ from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.utils import user_username
 from allauth.exceptions import ImmediateHttpResponse
 from django.contrib.auth import views as auth_views
-from django.contrib.auth import login
+from django.contrib.auth import login,update_session_auth_hash
 from django.http import response
 from .signals import *
 from django.shortcuts import redirect, render
@@ -13,6 +13,7 @@ import requests
 from .restapis import *
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from rest_framework.generics import ListAPIView,DestroyAPIView, RetrieveUpdateAPIView
+from rest_framework.views import APIView
 from django.db.models import Q
 from .serializer import *
 from django.views.decorators.csrf import csrf_exempt
@@ -315,7 +316,6 @@ class ConnectPageView(LoginRequiredMixin, CreateView):
 
         user = self.request.user  # Set the user to the logged-in user
         social = SocialAccount.objects.filter(user=user.id)
-        print(social)
         access_token = {}
         for _ in social:
             access_token[_.provider] = SocialToken.objects.filter(account_id=_)
@@ -483,46 +483,39 @@ class PostCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.request.user  # Set the user to the logged-in user
-        social = SocialAccount.objects.filter(user=user.id)
-        access_token = {}
-        data = {}
-        for _ in social:
-            access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
-
-        # Making Data
-
-        for _ in social:
-            # For Faceboook
-            if _.provider == 'facebook':
-
-                page_data = facebook_page_data(access_token.get("facebook"))
-
-                data["facebook_page"] = page_data
-            # For Instagram
-            if _.provider == 'instagram':
-
-                insta_data = get_instagram_user_data(access_token.get("facebook"))
-
-                data["insta_data"] = insta_data
-            # print()
-            if _.provider == 'linkedin_oauth2':
-                linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
-                data['linkedin_page'] = linkedin_page
+        # user = self.request.user  # Set the user to the logged-in user
+        # social = SocialAccount.objects.filter(user=user.id)
+        # access_token = {}
+        # data = {}
+        # for _ in social:
+        #     access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
+        #
+        # # Making Data
+        #
+        # for _ in social:
+        #     # For Faceboook
+        #     if _.provider == 'facebook':
+        #
+        #         page_data = facebook_page_data(access_token.get("facebook"))
+        #
+        #         data["facebook_page"] = page_data
+        #     # For Instagram
+        #     if _.provider == 'instagram':
+        #
+        #         insta_data = get_instagram_user_data(access_token.get("facebook"))
+        #
+        #         data["insta_data"] = insta_data
+        #     # print()
+        #     if _.provider == 'linkedin_oauth2':
+        #         linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
+        #         data['linkedin_page'] = linkedin_page
 
         comment_check = True
-        self.request.session['context'] = data
 
-        context = {'comment_check': comment_check, "data": data, 'form': self.get_form()}
+
+        context = {'comment_check': comment_check, 'form': self.get_form()}
         return context
 
-    def form_invalid(self, form):
-        print(self.request.POST)
-        print(self.request.POST.getlist("facebook[]"))
-        print(self.request.FILES.get('file'))
-
-        # return render(self.request, 'social/create_post.html')
-        return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
 
     def form_valid(self, form):
         requestdata = dict(self.request.POST)
@@ -847,6 +840,40 @@ class PostCreateView(CreateView):
     #     return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
 
 
+class PageDataView(APIView):
+    def get(self,request):
+        user = self.request.user  # Set the user to the logged-in user
+        social = SocialAccount.objects.filter(user=user.id)
+        access_token = {}
+        data = {}
+        for _ in social:
+            access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
+
+        # Making Data
+
+        for _ in social:
+            # For Faceboook
+            if _.provider == 'facebook':
+                page_data = facebook_page_data(access_token.get("facebook"))
+
+                data["facebook_page"] = page_data
+            # For Instagram
+            if _.provider == 'instagram':
+                insta_data = get_instagram_user_data(access_token.get("facebook"))
+
+                data["insta_data"] = insta_data
+            # print()
+            if _.provider == 'linkedin_oauth2':
+                linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
+                data['linkedin_page'] = linkedin_page
+
+        self.request.session['context'] = data
+
+        print(self.request.session['context'])
+
+
+
+        return JsonResponse(data)
 
 
 class PostDraftView(UpdateView):
@@ -1355,4 +1382,23 @@ class ConnectionView(ConnectionsView):
 
 class SocialPorfileView(TemplateView):
     template_name = 'social/social_profile.html'
+
+class EditUserView(LoginRequiredMixin,UpdateView):
+    template_name =  'registration/edituser.html'
+    model = User
+    form_class = CustomUserUpdateForm
+    success_url = reverse_lazy('my_profile')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        kwargs['request'] = self.request
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+
+
 

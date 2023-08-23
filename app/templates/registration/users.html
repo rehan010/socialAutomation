@@ -7,7 +7,13 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
+<style>
 
+    .borders{
+        border: 1px solid black !important;
+    }
+
+</style>
 <div class="w-full px-6 py-6 mx-auto m-0 font-sans text-base antialiased font-normal leading-default bg-gray-50 text-slate-500">
     <br>
 
@@ -135,29 +141,56 @@
                           <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                           <span class="text-xs font-semibold leading-tight text-slate-400">{{user.selected_user.date_joined}}</span>
                         </td>
-                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                    <button class="openDialogButton text-xs font-semibold leading-tight text-slate-400" data-target="dialog{{ user.id }}">Edit</button>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent modalContainer">
+                            <button class="openDialogButton text-xs font-semibold leading-tight text-slate-400 modal-button" data-target="dialog{{ user.id }}">Edit</button>
 
-
-                                    <dialog id="dialog{{ user.id }}" class="bg-gray-900 rounded-lg shadow-soft-md" >
-                                        <div class="bg-white rounded-lg shadow-md p-4">
-                                            <h3 class="text-xl font-bold">Edit Role</h3>
-                                            <input type="hidden" id="changerole" name="changerole" value="">
-                                            <br>
-                                            <select class="roleSelect1 w-full mb-4 border border-gray-900 rounded-lg p-2 text-xs focus:border-gray-500">
-                                                <option value="READ">Read</option>
-                                                <option value="WRITE">Write</option>
-                                                <option value="ADMIN">Admin</option>
-                                            </select>
-                                            <div class="flex justify-end">
-                                                <button type="submit" class="saveRoleDialog px-3 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2" data-target="dialog{{ user.id }}">Save
-                                                </button>
-                                                <button type="button" class="closeDialogButton px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-red-900 to-yellow-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline  rounded" data-target="dialog{{ user.id }}">Cancel
-                                                </button>
+                            <div id="dialog{{ user.id }}" class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster"
+                                    style="background: rgba(0,0,0,.7);">
+                                <div
+                                    class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                                    <div class="modal-content py-2 text-left px-6">
+                                        <!--Title-->
+                                        <div class="flex justify-between items-center pb-3">
+                                            <p class="text-2xl font-bold">Edit Role</p>
+                                            <div class="modal-close cursor-pointer z-50">
+                                                <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                    viewBox="0 0 18 18">
+                                                    <path
+                                                        d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
+                                                    </path>
+                                                </svg>
                                             </div>
                                         </div>
-                                    </dialog>
-                                </td>
+                                        <!--Body-->
+                                        <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
+                                            <div class="py-4">
+                                                <input type="hidden" id="changerole" name="changerole" value=""/>
+                                                <select class="roleSelect1 w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
+                                                    <option value="READ" {% if user.role == 'READ' %} selected {% endif %}>Read</option>
+                                                    <option value="WRITE" {% if user.role == 'WRITE' %} selected {% endif %}>Write</option>
+                                                    <option value="ADMIN" {% if user.role == 'ADMIN' %} selected {% endif %}>Admin</option>
+                                                </select>
+                                            </div>
+                                        <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
+                                        <!--Footer-->
+                                        <div class="flex justify-end pt-2">
+                                            <div
+                                                class="closeDialogButton focus:outline-none modal-close px-4 p-2 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">
+                                                <span>Cancel</span>
+                                            </div>
+
+
+                                            <button type="submit" class="saveRoleDialog focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-2" data-target="dialog{{ user.id }}">
+                                                    <span>Confirm</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                        </td>
 
                       </tr>
                         {% endif %}
@@ -248,7 +281,7 @@
           </div>
         </div>
     <br>
-
+</div>
 <script>
 
         document.getElementById("addPeopleBtn").addEventListener("click", function () {
@@ -475,17 +508,17 @@
 
             const csrfToken = getCSRFToken();
             const target = button.getAttribute('data-target');
+
             const roleSelect = document.querySelector(`#${target} .roleSelect1`);
-            const changeroleInput = document.querySelector(`#${target} #changerole`)
+            const changeroleInput = document.querySelector(`#${target} #changerole`);
             changeroleInput.value = roleSelect.value;
             const newrole = changeroleInput.value;
-            console.log(newrole);
             const originalString = target;
             const user = originalString.replace("dialog", "");
             console.log(user);
                 const dialog = document.getElementById(target);
-                if (dialog) {
-                    dialog.close();
+                if (dialog.style.display == 'flex') {
+                    modalClose(dialog);
                 }
 
             const url = '/change_role/';
@@ -505,6 +538,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                window.location.reload();
                 console.log(data.message);
             })
             .catch(error => {
@@ -515,28 +549,56 @@
 
     });
 
-    const openDialogButtons = document.querySelectorAll('.openDialogButton');
-    const closeDialogButtons = document.querySelectorAll('.closeDialogButton');
+    function modalClose(modal){
+    modal.classList.remove('fadeIn');
+    modal.classList.add('fadeOut');
 
-    openDialogButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const target = button.getAttribute('data-target');
-            const dialog = document.getElementById(target);
-            if (dialog) {
-                dialog.showModal();
+    modal.style.display = 'none';
+
+}
+
+function openModal(modal){
+    modal.classList.remove('fadeOut');
+    modal.classList.add('fadeIn');
+    modal.style.display = 'flex';
+}
+
+
+
+
+
+        const modalContainers = document.querySelectorAll('.modalContainer');
+
+        if (modalContainers.length > 0){
+
+        modalContainers.forEach((containers)=> {
+
+        const modalButton = containers.querySelector('.modal-button');
+        const modal = containers.querySelector('.main-modal');
+        const closeButton = containers.querySelectorAll('.modal-close');
+
+        modalButton.onclick = (e) => openModal(modal);
+
+
+        for (let i = 0; i < closeButton.length; i++) {
+
+            const elements = closeButton[i];
+
+            elements.onclick = (e) => modalClose(modal);
+
+            modal.style.display = 'none';
+
+            window.onclick = function (event) {
+                if (event.target == modal) modalClose(modal);
             }
-        });
+        }
+
+
     });
 
-    closeDialogButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const target = button.getAttribute('data-target');
-            const dialog = document.getElementById(target);
-            if (dialog) {
-                dialog.close();
-            }
-        });
-    });
+
+}
+
 
 
 

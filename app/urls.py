@@ -11,6 +11,7 @@ urlpatterns = [
     path('accounts/register/', RegisterView.as_view(), name='register'),
     path('accounts/register/invite', RegisterViewInvite.as_view(), name='register_with_company'),
 
+
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('accounts/password_change/', PasswordChangeView.as_view(), name='password_change'),
     path('accounts/password_change/done', PasswordChangeDoneView.as_view(), name='password_change_done'),
@@ -26,7 +27,7 @@ urlpatterns = [
     path('users/', UserView.as_view(),name='my_user'),
     path('get/users/', UserSearchView.as_view(),name='get_users'),
     path('users/create/invite', UserCreateView.as_view(),name='create_user'),
-
+    path('user/edit/<pk>',EditUserView.as_view(),name = "edit_user"),
     path('assign_manager/', assign_manager.as_view(), name='assign_manager'),
     path('change_role/', change_role.as_view(), name='change_role'),
     path('accept_invitation/', views.accept_invitation_view, name='accept_invitation_view'),
@@ -49,6 +50,8 @@ urlpatterns = [
     path('delete-post/<int:pk>/', PostDeleteView.as_view(), name='delete_post'),
 
     path('social/social/connections/',ConnectionView.as_view(),name = "socialaccount_connections"),
-    path('social/social/profile/<provider>',SocialPorfileView.as_view(),name = "social_profile")
+    path('social/social/profile/<provider>',SocialPorfileView.as_view(),name = "social_profile"),
+
+    path('social/page/',PageDataView.as_view(),name = "page_data")
 
 ]

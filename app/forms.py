@@ -1,7 +1,8 @@
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm,UserChangeForm,PasswordChangeForm
 from django import forms
 from .models import *
 from django.core.exceptions import ValidationError
+from django.contrib.auth import login, password_validation, update_session_auth_hash
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -30,6 +31,85 @@ class CustomUserInvitationForm(UserCreationForm):
             'bio': forms.TextInput(attrs={'class': 'form-control'}),
             'company': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+class CustomUserUpdateForm(UserChangeForm):
+
+    old_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        required=False
+    )
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        required=False
+    )
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        required=False
+    )
+    class Meta(UserChangeForm.Meta):
+        model = User
+        fields = ['username','first_name','last_name','email','bio','old_password','new_password1','new_password2']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'bio': forms.TextInput(attrs={'class': 'form-control'}),
+
+
+        }
+
+    def __init__(self, user,request, *args, **kwargs):
+        self.user = user
+        self.request = request
+        super().__init__(*args, **kwargs)
+
+
+
+
+    def clean_old_password(self):
+
+        old_password = self.cleaned_data["old_password"]
+
+        if old_password:
+            if not self.user.check_password(old_password):
+                raise forms.ValidationError(
+                    "Your old password was entered incorrectly. Please enter it again.",
+                )
+            return old_password
+
+    def clean_new_password2(self):
+        password1 = self.cleaned_data.get("new_password1")
+        password2 = self.cleaned_data.get("new_password2")
+        if (password1 and not password2) or (password2 and not password1) or (password1 and password2 and password1 != password2):
+            raise forms.ValidationError("Passwords do not match.")
+
+        elif not password1 and not password2:
+            self.cleaned_data['new_password1'] = None
+            return
+        else:
+
+            try:
+                password_validation.validate_password(password2, self.instance)
+            except ValidationError as error:
+                self.add_error("new_password2", error)
+                return
+            return password2
+
+
+
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        password = self.cleaned_data["new_password2"]
+        if password:
+            user.set_password(password)
+            update_session_auth_hash(self.request, user)
+            login(self.request,user)
+        if commit:
+            user.save()
+        return user
+
 
 
 

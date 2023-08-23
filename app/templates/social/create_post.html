@@ -1,456 +1,676 @@
-{%extends 'registration/base.html'%}
-{%load static%}
-{% block custom_css %}
-
-{% endblock %}
-
+{%extends 'registration/base.html'%} 
+{%load static%} 
+{% block custom_css %} 
+{% endblock %} 
 
 {% block content %}
 
 <head>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+  />
 </head>
 <!--<div class="heading text-center font-bold text-2xl m-5 text-gray-800">New Post</div>-->
-<br/>
-<br/>
+<br />
+<br />
 <style>
-  body {background:white !important;}
-  .pt-5{
-    padding-top:1.25rem !important;
+  body {
+    background: white !important;
   }
-  .py-3{
-        padding-top: 0.75rem !important;
+  .pt-5 {
+    padding-top: 1.25rem !important;
+  }
+  .py-3 {
+    padding-top: 0.75rem !important;
     padding-bottom: 0.75rem !important;
   }
-
 </style>
 
-  <div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
-    <form method="post" id ="yourForm" enctype="multipart/form-data" class="w-100" id="yourForm">
-        {% csrf_token %}
-      <div class="emoji-picker-container">
-      <textarea name="post" cols="40" rows="10" data-emojiable="true" class="description bg-gray-100 sec p-3 h-48 border border-gray-300 outline-none w-full" placeholder="Describe Everything about this post" id="id_post"></textarea>
+<div
+  class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl"
+>
+  <form
+    method="post"
+    id="yourForm"
+    enctype="multipart/form-data"
+    class="w-100"
+    id="yourForm"
+  >
+    {% csrf_token %}
+    <div class="emoji-picker-container">
+      <textarea
+        name="post"
+        cols="40"
+        rows="10"
+        data-emojiable="true"
+        class="description bg-gray-100 sec p-3 h-48 border border-gray-300 outline-none w-full"
+        placeholder="Describe Everything about this post"
+        id="id_post"
+      ></textarea>
+    </div>
+    <div class="icons flex text-gray-500 m-2">
+      <!--            <svg class="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7"-->
+      <!--                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">-->
+      <!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"-->
+      <!--                      d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>-->
+      <!--            </svg>-->
+      <div class="count ml-auto text-gray-400 text-xs font-semibold">0/300</div>
+    </div>
+    {% if form.name.errors %}
+    <div class="error-message">{{ form.post.errors }}</div>
+    {% endif %}
+    <div class="flex items-center justify-center w-full">
+      <label
+        for="dropzone-file"
+        class="flex flex-col items-center justify-center w-full h-36 border-dashed border-2 border-gray-200 bg-white-100 rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-white-700 hover:bg-gray-100 hover:border-gray-400"
+      >
+        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+          <svg
+            class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 20 16"
+          >
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+            />
+          </svg>
+          <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+            <span class="font-semibold">Click to upload</span> or drag and drop
+          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            SVG, PNG, JPG or GIF (MAX. 800x400px)
+          </p>
         </div>
-        <div class="icons flex text-gray-500 m-2" >
-<!--            <svg class="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7"-->
-<!--                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">-->
-<!--                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"-->
-<!--                      d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>-->
-<!--            </svg>-->
-            <div class="count ml-auto text-gray-400 text-xs font-semibold">0/300</div>
-        </div>
-        {% if form.name.errors %}
-        <div class="error-message">{{ form.post.errors }}</div>
-        {% endif %}
-         <div class="flex items-center justify-center w-full" >
-            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-36 border-dashed border-2 border-gray-200 bg-white-100 rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-white-700 hover:bg-gray-100 hover:border-gray-400">
-                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                    <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                    </svg>
-                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
-                </div>
-                <input id="dropzone-file" name="images" type="file" class="hidden" multiple="multiple" onchange="previewImages(event)"/>
-                <p id="error-message" style="color: red; display: none;">Video is too large. Max size: 20MB</p>
+        <input
+          id="dropzone-file"
+          name="images"
+          type="file"
+          class="hidden"
+          multiple="multiple"
+          onchange="previewImages(event)"
+        />
+        <p id="error-message" style="color: red; display: none">
+          Video is too large. Max size: 20MB
+        </p>
+      </label>
+    </div>
+    <div id="image-preview-container" class="flex flex-wrap"></div>
+
+    <!--                Platforms-->
+    <div class="d-flex p-2" id="pageSelection">
+      <div class="col-sm-3">
+        <div class="relative inline-block">
+          <button
+            type="button"
+            data-te-ripple-init
+            data-te-ripple-color="light"
+            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
+            style="background-color: #1877f2"
+            id="facebook_page"
+          >
+            <svg
+              aria-hidden="true"
+              class="w-4 h-4 mr-2 text-gray-200 animate-spin fill-blue-600"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="mr-2 h-4 w-4 hidden"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"
+              />
+            </svg>
+            Facebook
+          </button>
+          <div
+            class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
+            style="min-height: 2.5rem"
+          >
+            {% for obj in data.facebook_page%}
+            <label
+              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <input
+                type="checkbox"
+                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
+                name="facebook"
+                value="{{obj.id}}"
+              />
+              <span class="ml-2 text-sm">{{obj.name}}</span>
             </label>
+            {% endfor %}
+          </div>
         </div>
-        <div id="image-preview-container" class="flex flex-wrap"></div>
+      </div>
+      <div class="col-sm-3">
+        <div class="relative inline-block">
+          <button
+            type="button"
+            data-te-ripple-init
+            data-te-ripple-color="light"
+            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
+            style="background-color: #c13584"
+            id="insta_data"
+          >
+            <svg
+              aria-hidden="true"
+              class="w-4 h-4 mr-2 text-gray-200 animate-spin fill-blue-600"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
 
-
-        <!--                Platforms-->
-        <div class="d-flex p-2" id="pageSelection">
-            <div class="col-sm-3">
-                <div class="relative inline-block">
-                    <button type="button" data-te-ripple-init data-te-ripple-color="light"
-                            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
-                            style="background-color: #1877f2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="currentColor"
-                             viewBox="0 0 24 24">
-                            <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
-                        </svg>
-                        Facebook
-                    </button>
-                    <div class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
-                         style="min-height: 2.5rem;">
-                        {% for obj in data.facebook_page%}
-                        <label class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                            <input type="checkbox"
-                                   class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
-                                   name="facebook" value="{{obj.id}}"/>
-                            <span class="ml-2 text-sm">{{obj.name}}</span>
-                        </label>
-                        {% endfor %}
-
-                    </div>
-
-                </div>
-            </div>
-            <div class="col-sm-3">
-                <div class="relative inline-block">
-                    <button type="button" data-te-ripple-init data-te-ripple-color="light"
-                            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
-                            style="background-color: #c13584;">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="currentColor"
-                             viewBox="0 0 24 24">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                        Instagram
-                    </button>
-                    <div class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
-                         style="min-height: 2.5rem;">
-                        {% for obj in data.insta_data %}
-                        <label class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                            <input type="checkbox"
-                                   class="form-checkbox h-4 w-4 text-blue-500 transition duration-150 ease-in-out"
-                                   name="instagram" value="{{obj.id}}"/>
-                            <span class="ml-2 text-sm text-gray-700">{{obj.name}}</span>
-                        </label>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-3">
-
-                    <button type="button" data-te-ripple-init data-te-ripple-color="light"
-                            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
-                            style="background-color: #0077b5">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" fill="currentColor"
-                             viewBox="0 0 24 24">
-                            <path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/>
-                        </svg>
-                        Linkdein
-                    </button>
-                    <div class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
-                         style="min-height: 2.5rem;">
-
-                        {% for obj in data.linkedin_page%}
-
-
-                        <label class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                            <input type="checkbox"
-                                   class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
-                                   name="linkedin" value="{{ obj.key }}">
-                            <span class="ml-2 text-sm">{{obj.name}}</span>
-                        </label>
-                        {% endfor %}
-                    </div>
-
-            </div>
-            <div class="col-sm-3">
-                  <button type="button" data-te-ripple-init data-te-ripple-color="light"
-                          class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg"
-                          style="background-color: #4285F4">
-                      <svg class="-ml-1 mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab"
-                           data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                          <path fill="currentColor"
-                                d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
-                      </svg>
-                      Google
-                  </button>
-            </div>
-            <input type="hidden" name="checkbox_selected" id="checkboxSelected">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="mr-2 h-4 w-4 hidden"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
+              />
+            </svg>
+            Instagram
+          </button>
+          <div
+            class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
+            style="min-height: 2.5rem"
+          >
+            {% for obj in data.insta_data %}
+            <label
+              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <input
+                type="checkbox"
+                class="form-checkbox h-4 w-4 text-blue-500 transition duration-150 ease-in-out"
+                name="instagram"
+                value="{{obj.id}}"
+              />
+              <span class="ml-2 text-sm text-gray-700">{{obj.name}}</span>
+            </label>
+            {% endfor %}
+          </div>
         </div>
-        <br/>
-        <br/>
-        <!-- Scheduling options -->
+      </div>
+      <div class="col-sm-3">
+        <div class="relative inline-block">
+          <button
+            type="button"
+            data-te-ripple-init
+            data-te-ripple-color="light"
+            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
+            style="background-color: #0077b5"
+            id="linkedin_page"
+          >
+            <svg
+              aria-hidden="true"
+              class="w-4 h-4 mr-2 text-gray-200 animate-spin fill-blue-600"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="mr-2 h-4 w-4 hidden"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"
+              />
+            </svg>
+            Linkdein
+          </button>
+          <div
+            class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
+            style="min-height: 2.5rem"
+          >
+            {% for obj in data.linkedin_page %}
 
-        <div class="-mx-3 flex flex-col items-end flex-wrap " id="date-div">
-            <div class="w-56 px-3">
-                <div class="mb-3">
-                    <label
-                        for="date"
-                        class="mb-2 pl-1 block text-base text-[#07074D]">
-                        Schedule Date :
-                    </label>
-                    <input
-                        type="date"
-                        name="date"
-                        id="date"
-                        class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"/>
-                </div>
-            </div>
-            <div class="w-56 px-3">
-                <div class="mb-3">
-                    <label
-                        for="time"
-                        class="mb-2 pl-1 block text-base text-[#07074D]">
-                        Schedule Time :
-                    </label>
-                    <input
-                        type="time"
-                        name="time"
-                        id="time"
-                        class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"/>
-                </div>
-            </div>
+            <label
+              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <input
+                type="checkbox"
+                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
+                name="linkedin"
+                value="{{ obj.key }}"
+              />
+              <span class="ml-2 text-sm">{{obj.name}}</span>
+            </label>
+            {% endfor %}
+          </div>
         </div>
-        <li class="relative block px-0 py-1 bg-white border-0 rounded-t-lg text-inherit">
-                <div class="min-h-6 mb-0.5 block pl-0">
-                  <input id="follow" name="comment_check" class="mt-0.54 rounded-10 duration-250 ease-soft-in-out after:rounded-circle after:shadow-soft-2xl after:duration-250 checked:after:translate-x-5.25 h-5 relative float-left ml-auto w-10 cursor-pointer appearance-none border border-solid border-gray-200 bg-slate-800/10 bg-none bg-contain bg-left bg-no-repeat align-top transition-all after:absolute after:top-px after:h-4 after:w-4 after:translate-x-px after:bg-white after:content-[''] checked:border-slate-800/95 checked:bg-slate-800/95 checked:bg-none checked:bg-right" type="checkbox" {% if comment_check %}checked{% endif %}>
-                    <label for="follow" class="w-4/5 mb-0 ml-4 overflow-hidden font-normal cursor-pointer select-none text-sm text-ellipsis whitespace-nowrap text-slate-500" for="follow">Allow Comments</label>
-                </div>
-        </li>
-
-
-
-        <div class="w-full flex items-center mt-1">
-<!--            <label class="mr-4 font-bold">Schedule</label>-->
-
-            <div class="ml-auto flex">
-                <div class="inline-block px-6 py-3 font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-l-xl cursor-pointer leading-pro text-sm ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25  ">
-                   <button id="draftBtn">Save as Draft</button>
-                </div>
-                <div class="inline-block px-6 py-3 font-bold text-center text-white uppercase align-middle transition-all bg-transparent  cursor-pointer leading-pro text-sm ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25">
-                    <input type="hidden" id="publishInput" name="action" value="">
-                    <button class="" id="publishButton"
-                    type="submit">Publish Now
-                    </button>
-                </div>
-
-                <div class="flex items-center justify-center px-12 py-3 mr-3 font-bold text-center text-center text-white uppercase align-middle transition-all bg-transparent rounded-r-xl cursor-pointer leading-pro text-sm ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25">
-                   <button id="scheduleBtn" class="w-full h-full">Schedule</button>
-                </div>
-
-            </div>
+      </div>
+      <div class="col-sm-3">
+        <div class="relative inline-block">
+          <button
+            type="button"
+            data-te-ripple-init
+            data-te-ripple-color="light"
+            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg"
+            style="background-color: #4285f4"
+            id="google_data"
+          >
+            <svg
+              aria-hidden="true"
+              class="w-4 h-4 mr-2 text-gray-200 animate-spin fill-blue-600"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            <svg
+              class="-ml-1 mr-2 h-4 w-4 hidden"
+              aria-hidden="true"
+              focusable="false"
+              data-prefix="fab"
+              data-icon="google"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 488 512"
+            >
+              <path
+                fill="currentColor"
+                d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
+              ></path>
+            </svg>
+            Google
+          </button>
         </div>
-    </form>
+      </div>
+      <input type="hidden" name="checkbox_selected" id="checkboxSelected" />
+    </div>
+    <br />
+    <br />
+    <!-- Scheduling options -->
+
+    <div class="-mx-3 flex flex-col items-end flex-wrap" id="date-div">
+      <div class="w-56 px-3">
+        <div class="mb-3">
+          <label for="date" class="mb-2 pl-1 block text-base text-[#07074D]">
+            Schedule Date :
+          </label>
+          <input
+            type="date"
+            name="date"
+            id="date"
+            class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+          />
+        </div>
+      </div>
+      <div class="w-56 px-3">
+        <div class="mb-3">
+          <label for="time" class="mb-2 pl-1 block text-base text-[#07074D]">
+            Schedule Time :
+          </label>
+          <input
+            type="time"
+            name="time"
+            id="time"
+            class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+          />
+        </div>
+      </div>
+    </div>
+    <li
+      class="relative block px-0 py-1 bg-white border-0 rounded-t-lg text-inherit"
+    >
+      <div class="min-h-6 mb-0.5 block pl-0">
+        <input
+          id="follow"
+          name="comment_check"
+          class="mt-0.54 rounded-10 duration-250 ease-soft-in-out after:rounded-circle after:shadow-soft-2xl after:duration-250 checked:after:translate-x-5.25 h-5 relative float-left ml-auto w-10 cursor-pointer appearance-none border border-solid border-gray-200 bg-slate-800/10 bg-none bg-contain bg-left bg-no-repeat align-top transition-all after:absolute after:top-px after:h-4 after:w-4 after:translate-x-px after:bg-white after:content-[''] checked:border-slate-800/95 checked:bg-slate-800/95 checked:bg-none checked:bg-right"
+          type="checkbox"
+          {%
+          if
+          comment_check
+          %}checked{%
+          endif
+          %}
+        />
+        <label
+          for="follow"
+          class="w-4/5 mb-0 ml-4 overflow-hidden font-normal cursor-pointer select-none text-sm text-ellipsis whitespace-nowrap text-slate-500"
+          for="follow"
+          >Allow Comments</label
+        >
+      </div>
+    </li>
+
+    <div class="w-full flex items-center mt-1">
+      <!--            <label class="mr-4 font-bold">Schedule</label>-->
+
+      <div class="ml-auto flex">
+        <div
+          class="inline-block px-6 py-3 font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-l-xl cursor-pointer leading-pro text-sm ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25"
+        >
+          <button id="draftBtn">Save as Draft</button>
+        </div>
+        <div
+          class="inline-block px-6 py-3 font-bold text-center text-white uppercase align-middle transition-all bg-transparent cursor-pointer leading-pro text-sm ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25"
+        >
+          <input type="hidden" id="publishInput" name="action" value="" />
+          <button class="" id="publishButton" type="submit">Publish Now</button>
+        </div>
+
+        <div
+          class="flex items-center justify-center px-12 py-3 mr-3 font-bold text-center text-center text-white uppercase align-middle transition-all bg-transparent rounded-r-xl cursor-pointer leading-pro text-sm ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25"
+        >
+          <button id="scheduleBtn" class="w-full h-full">Schedule</button>
+        </div>
+      </div>
+    </div>
+  </form>
 </div>
-    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
 
-    <script src="{% static 'lib/js/config.min.js'%}"></script>
-    <script src="{% static 'lib/js/util.min.js'%}"></script>
-    <script src="{% static 'lib/js/jquery.emojiarea.min.js'%}"></script>
-    <script src="{% static 'lib/js/emoji-picker.min.js'%}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
+<script src="{% static 'lib/js/config.min.js'%}"></script>
+<script src="{% static 'lib/js/util.min.js'%}"></script>
+<script src="{% static 'lib/js/jquery.emojiarea.min.js'%}"></script>
+<script src="{% static 'lib/js/emoji-picker.min.js'%}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
-    {% verbatim %}
+      {% verbatim %}
 
-      $(function() {
-        // Initializes and creates emoji set from sprite sheet
-        window.emojiPicker = new EmojiPicker({
-          emojiable_selector: '[data-emojiable=true]',
-          assetsPath: '../../static/lib/img/',
-          popupButtonClasses: 'fa fa-smile-o' // far fa-smile if you're using FontAwesome 5
+        $(function() {
+          // Initializes and creates emoji set from sprite sheet
+          window.emojiPicker = new EmojiPicker({
+            emojiable_selector: '[data-emojiable=true]',
+            assetsPath: '../../static/lib/img/',
+            popupButtonClasses: 'fa fa-smile-o' // far fa-smile if you're using FontAwesome 5
+          });
+          // Finds all elements with `emojiable_selector` and converts them to rich emoji input fields
+          // You may want to delay this step if you have dynamically created input fields that appear later in the loading process
+          // It can be called as many times as necessary; previously converted input fields will not be converted again
+          window.emojiPicker.discover();
         });
-        // Finds all elements with `emojiable_selector` and converts them to rich emoji input fields
-        // You may want to delay this step if you have dynamically created input fields that appear later in the loading process
-        // It can be called as many times as necessary; previously converted input fields will not be converted again
-        window.emojiPicker.discover();
+            {% endverbatim %}
+
+
+    const dropdownButton = document.querySelectorAll('.dropdownButton');
+
+    dropdownButton.forEach((button) => {
+      const nextElement = button.nextElementSibling;
+    button.addEventListener('click', () => {
+
+      nextElement.classList.toggle("hidden")
+
+
       });
-          {% endverbatim %}
+
+      document.body.addEventListener('click',(event)=>{
+          if(!button.contains(event.target) && !nextElement.contains(event.target)&&event.target !== nextElement){
+              nextElement.classList.add('hidden')
+          }
+      })
 
 
-  const dropdownButton = document.querySelectorAll('.dropdownButton');
-  console.log(dropdownButton)
+      });
 
-  dropdownButton.forEach((button) => {
-    const nextElement = button.nextElementSibling;
-  button.addEventListener('click', () => {
-    
-    nextElement.classList.toggle("hidden")
-    
-    
+  const sehedule_controller = document.querySelectorAll(".Scheduling-contoller");
+  sehedule_controller.forEach((button) => {
+    button.addEventListener('click', () => {
+      // Remove active class from all buttons
+      sehedule_controller.forEach((btn) => {
+        btn.classList.remove("bg-gray-400");
+        const checkbox = btn.children[0];
+        checkbox.checked = false;
+      });
+
+      // Toggle active class on clicked button
+      const checkbox = button.children[0];
+      button.classList.add("bg-gray-400");
+      checkbox.checked = true;
     });
-
-    document.body.addEventListener('click',(event)=>{
-        if(!button.contains(event.target) && !nextElement.contains(event.target)&&event.target !== nextElement){
-            nextElement.classList.add('hidden')
-        }
-    })
-
-
-});
-
-const sehedule_controller = document.querySelectorAll(".Scheduling-contoller");
-sehedule_controller.forEach((button) => {
-  button.addEventListener('click', () => {
-    // Remove active class from all buttons
-    sehedule_controller.forEach((btn) => {
-      btn.classList.remove("bg-gray-400");
-      const checkbox = btn.children[0];
-      checkbox.checked = false;
-    });
-
-    // Toggle active class on clicked button
-    const checkbox = button.children[0];
-    button.classList.add("bg-gray-400");
-    checkbox.checked = true;
   });
-});
-  
 
-  function showDiv() {
 
-    const myDiv = document.getElementById("date-div");
-    myDiv.classList.remove("hidden");
-  }
+    function showDiv() {
 
-  function hideDiv() {
-    const myDiv = document.getElementById("date-div");
-    myDiv.classList.add("hidden");
-  }
-    function previewImages(event) {
-        var files = event.target.files;
-        var container = document.getElementById("image-preview-container");
-
-        const maxFileSizeMB = 20;
-        const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
-        const fileInput = event.target;
-        const errorMessage = document.getElementById('error-message');
-
-        if (fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-
-            if (file.size > maxFileSizeBytes) {
-                // Reset the file input value to clear the selected file
-                fileInput.value = '';
-                errorMessage.style.display = 'block';
-            } else {
-                errorMessage.style.display = 'none';
-            }
-        }
-
-        // Display the uploaded images
-        for (var i = 0; i < files.length; i++) {
-            var file = files[i];
-            var reader = new FileReader();
-
-            reader.onload = (function (file) {
-                return function (e) {
-                    var imageContainer = document.createElement("div");
-                    imageContainer.classList.add("relative", "inline-block", "mr-2", "mb-2");
-
-                    var image = document.createElement("img");
-                    image.src = e.target.result;
-                    image.classList.add("w-44", "h-auto");
-
-                    var removeIcon = document.createElement("span");
-                    removeIcon.innerHTML = "&times;";
-                    removeIcon.classList.add("absolute", "top-0", "right-0", "text-red-500", "cursor-pointer");
-
-                    removeIcon.addEventListener("click", function () {
-                        imageContainer.remove();
-                    });
-
-                    imageContainer.appendChild(image);
-                    imageContainer.appendChild(removeIcon);
-                    container.appendChild(imageContainer);
-                };
-            })(file);
-
-            reader.readAsDataURL(file);
-        }
+      const myDiv = document.getElementById("date-div");
+      myDiv.classList.remove("hidden");
     }
-    document.addEventListener("DOMContentLoaded", function() {
 
-    var publishButton = document.getElementById("publishButton");
-    var scheduleButton = document.getElementById("scheduleBtn");
-    var publishInput = document.getElementById("publishInput");
-    var draft = document.getElementById("draftBtn");
+    function hideDiv() {
+      const myDiv = document.getElementById("date-div");
+      myDiv.classList.add("hidden");
+    }
+      function previewImages(event) {
+          var files = event.target.files;
+          var container = document.getElementById("image-preview-container");
 
-    publishButton.addEventListener("click", function() {
+          const maxFileSizeMB = 20;
+          const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
+          const fileInput = event.target;
+          const errorMessage = document.getElementById('error-message');
 
-    publishInput.value = "publish";
-    });
-    scheduleButton.addEventListener("click", function() {
+          if (fileInput.files.length > 0) {
+              const file = fileInput.files[0];
 
-    publishInput.value = "schedule";
-    });
-    draft.addEventListener("click", function() {
+              if (file.size > maxFileSizeBytes) {
+                  // Reset the file input value to clear the selected file
+                  fileInput.value = '';
+                  errorMessage.style.display = 'block';
+              } else {
+                  errorMessage.style.display = 'none';
+              }
+          }
 
-    publishInput.value = "draft";
-    });
-    });
+          // Display the uploaded images
+          for (var i = 0; i < files.length; i++) {
+              var file = files[i];
+              var reader = new FileReader();
 
-    document.addEventListener("DOMContentLoaded", function () {
-    // Get the schedule button element
-    const scheduleBtn = document.getElementById("scheduleBtn");
+              reader.onload = (function (file) {
+                  return function (e) {
+                      var imageContainer = document.createElement("div");
+                      imageContainer.classList.add("relative", "inline-block", "mr-2", "mb-2");
 
-    // Function to show the date-time picker when the button is clicked
-    scheduleBtn.addEventListener("click", function () {
-      const currentDate = new Date();
-      flatpickr("#scheduleDateTimePicker", {
-        enableTime: true,
-        minDate: currentDate,
-        defaultDate: currentDate,
+                      var image = document.createElement("img");
+                      image.src = e.target.result;
+                      image.classList.add("w-44", "h-auto");
+
+                      var removeIcon = document.createElement("span");
+                      removeIcon.innerHTML = "&times;";
+                      removeIcon.classList.add("absolute", "top-0", "right-0", "text-red-500", "cursor-pointer");
+
+                      removeIcon.addEventListener("click", function () {
+                          imageContainer.remove();
+                      });
+
+                      imageContainer.appendChild(image);
+                      imageContainer.appendChild(removeIcon);
+                      container.appendChild(imageContainer);
+                  };
+              })(file);
+
+              reader.readAsDataURL(file);
+          }
+      }
+      document.addEventListener("DOMContentLoaded", function() {
+
+      var publishButton = document.getElementById("publishButton");
+      var scheduleButton = document.getElementById("scheduleBtn");
+      var publishInput = document.getElementById("publishInput");
+      var draft = document.getElementById("draftBtn");
+
+      publishButton.addEventListener("click", function() {
+
+      publishInput.value = "publish";
       });
+      scheduleButton.addEventListener("click", function() {
+
+      publishInput.value = "schedule";
+      });
+      draft.addEventListener("click", function() {
+
+      publishInput.value = "draft";
+      });
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+      // Get the schedule button element
+      const scheduleBtn = document.getElementById("scheduleBtn");
+
+      // Function to show the date-time picker when the button is clicked
+      scheduleBtn.addEventListener("click", function () {
+        const currentDate = new Date();
+        flatpickr("#scheduleDateTimePicker", {
+          enableTime: true,
+          minDate: currentDate,
+          defaultDate: currentDate,
+        });
+      });
+
+
+
+    //   Function to submit the form with the selected scheduled date-time
+    //   const form = document.getElementById("scheduleForm");
+    //   form.addEventListener("submit", function (event) {
+    //     event.preventDefault();
+    //     const selectedDateTime = document.getElementById("scheduleDateTimePicker").value;
+
+    //     alert(`Post Scheduled for: ${selectedDateTime}`);
+    //   });
     });
 
-    // Function to submit the form with the selected scheduled date-time
-    const form = document.getElementById("scheduleForm");
-    form.addEventListener("submit", function (event) {
+    const form = document.getElementById('yourForm');
+    const checkboxInputs = document.querySelectorAll('input[type="checkbox"]');
+    const checkboxSelectedInput = document.getElementById('checkboxSelected');
+    console.log(checkboxSelectedInput);
+
+    form.addEventListener('submit', function (event) {
       event.preventDefault();
-      const selectedDateTime = document.getElementById("scheduleDateTimePicker").value;
 
-      alert(`Post Scheduled for: ${selectedDateTime}`);
-    });
-  });
+      // Check if at least one checkbox is selected
+      const atLeastOneChecked = Array.from(checkboxInputs).some(input => input.checked);
 
-  const form = document.getElementById('yourForm');
-  const checkboxInputs = document.querySelectorAll('input[type="checkbox"]');
-  const checkboxSelectedInput = document.getElementById('checkboxSelected');
-  console.log(checkboxSelectedInput);
+      if (atLeastOneChecked) {
 
-  form.addEventListener('submit', function (event) {
-    event.preventDefault();
+        checkboxSelectedInput.value = 1;
 
-    // Check if at least one checkbox is selected
-    const atLeastOneChecked = Array.from(checkboxInputs).some(input => input.checked);
-
-    if (atLeastOneChecked) {
-
-      checkboxSelectedInput.value = 1;
-
-      form.submit();
-    } else {
-      console.log('Hi');
-      alert('Please select at least one page to post.');
-    }
-  });
-
-    document.getElementById("yourForm").addEventListener("submit", function(event) {
-        const pageCheckboxes = document.querySelectorAll("#pageSelection input[type=checkbox]");
-        let atLeastOneSelected = false;
-
-        // Check if at least one checkbox is selected
-        for (const checkbox of pageCheckboxes) {
-            if (checkbox.checked) {
-                atLeastOneSelected = true;
-                break;
-            }
-        }
-
-        if (!atLeastOneSelected) {
-            event.preventDefault(); // Prevent form submission
-
-            const alertBox = document.createElement("div");
-            alertBox.className = "alert-box";
-            alertBox.textContent = "Please select at least one page.";
-            document.body.appendChild(alertBox);
-
-            setTimeout(function() {
-                document.body.removeChild(alertBox);
-            }, 3000); // Remove the alert after 3 seconds
-        }
+        form.submit();
+      } else {
+        console.log('Hi');
+        alert('Please select at least one page to post.');
+      }
     });
 
+      document.getElementById("yourForm").addEventListener("submit", function(event) {
+          const pageCheckboxes = document.querySelectorAll("#pageSelection input[type=checkbox]");
+          let atLeastOneSelected = false;
+
+          // Check if at least one checkbox is selected
+          for (const checkbox of pageCheckboxes) {
+              if (checkbox.checked) {
+                  atLeastOneSelected = true;
+                  break;
+              }
+          }
+
+          if (!atLeastOneSelected) {
+              event.preventDefault(); // Prevent form submission
+
+              const alertBox = document.createElement("div");
+              alertBox.className = "alert-box";
+              alertBox.textContent = "Please select at least one page.";
+              document.body.appendChild(alertBox);
+
+              setTimeout(function() {
+                  document.body.removeChild(alertBox);
+              }, 3000); // Remove the alert after 3 seconds
+          }
+      });
+
+
+
+      function createDropdown(dataList){
+          console.log(dataList)
+      }
+
+
+      async function getdata() {
+      try {
+          const response = await fetch('/social/page/');
+          if (response.ok) {
+              const data = await response.json();
+              console.log(data)
+              console.log(data.length)
+              for(var i =0;i<data.length; i++){
+                  console.log(data[i])
+              }
+
+
+          } else {
+              console.error(`Failed to fetch data. Status code: ${response.status}`);
+          }
+      } catch (error) {
+          console.error('An error occurred:', error);
+      }
+      }
+
+      getdata();
 </script>
 <style>
-    .alert-box {
-        position: fixed;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: red;
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-    }
+  .alert-box {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: red;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+  }
 </style>
-
-
 
 {% endblock %}
