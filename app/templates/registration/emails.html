@@ -5,6 +5,7 @@ Hello {{ recipient_name }},
 You are invited to join our app!
 Click on the link below to create your account:
 Join Now : {{ invite_link }}
-
+{% if reject_link %}
 Reject Now : {{ reject_link }}
+{% endif %}
 

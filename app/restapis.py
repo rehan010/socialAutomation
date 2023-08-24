@@ -1634,15 +1634,16 @@ def linkedin_org_stats(access_token_string, id, data_list):
 
 
 
-def linkedin_retrieve_access_token(self):
-    user = self.request.user
+def linkedin_retrieve_access_token(self,post_id):
+    posts = PostModel.objects.get(id=post_id)
+    user = posts.user
     if len(SocialAccount.objects.filter(user=user.id,provider='linkedin_oauth2')) > 0:
         social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
         if social:
             ids = SharePage.objects.filter(user=social.pk)
             access_token = SocialToken.objects.filter(account_id=social)
             access_token_string = ', '.join(str(obj) for obj in access_token)
-            posts = PostModel.objects.filter(user=user.id)
+
 
             return  posts, access_token_string, ids, social
     else:

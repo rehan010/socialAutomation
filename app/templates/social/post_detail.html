@@ -230,7 +230,7 @@
 <!--            </div>-->
 <!--        </div>-->
 <!--    </div>-->
-    <div class="w-2/3 mx-auto bg-white shadow-md rounded-lg p-8">
+    <div class="w-1/2 mx-auto bg-white shadow-md rounded-lg p-8">
                 <div class="pl-4">
                     <header class="border-b border-grey-400">
                         <a href="#"
@@ -287,6 +287,7 @@
                         </a>
                     </div>
                 </div>
+                <br>
                 <!-- Likes and Comment Count -->
                 <div class="flex justify-between items-center text-gray-600 mb-2">
                     <div class="flex items-center">
@@ -315,6 +316,8 @@
                         {% endif %}
                     </div>
                 </div>
+                <br>
+                {% if user_role == 'ADMIN' or user_role == 'MANAGER' and permission == 'WRITE' %}
 
                 <!-- New Comment Card -->
                 <div class="w-full border rounded-lg p-3 mb-4">
@@ -329,6 +332,20 @@
 <!--                    {% endif %}-->
                     <button class="mt-2 px-4 py-2 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">Post Comment</button>
                 </div>
+                {% elif post.user == request.user %}
+                <div class="w-full border rounded-lg p-3 mb-4">
+                    <textarea class="w-full border rounded-lg bg-gray-100 p-2" name="comment" placeholder="Write a comment..."></textarea>
+<!--                    {% if provider_name == 'facebook' %}-->
+<!--                        <div>-->
+<!--                            <label for="file-upload" class="file-upload-label">-->
+<!--                                <i class="fa-solid fa-paperclip"></i>-->
+<!--                            </label>-->
+<!--                            <input type="file" name="comment_media" id="file-upload" class="file-upload hidden">-->
+<!--                        </div>-->
+<!--                    {% endif %}-->
+                    <button class="mt-2 px-4 py-2 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">Post Comment</button>
+                </div>
+                {% endif %}
 
                     {% if post.comment_check %}
 
@@ -365,7 +382,7 @@
                                         {% endfor %}
                                         {% endif %}
                                     </div>
-
+                                    {% if user_role == 'ADMIN' or user_role == 'MANAGER' and permission == 'WRITE' %}
                                     <!-- Reply Text Area -->
                                     <div class="mt-4">
                                         <textarea class="w-full border rounded-lg p-2" name="reply" placeholder="Write a reply..."></textarea>
@@ -379,6 +396,20 @@
 <!--                                        {% endif %}-->
                                         <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">Reply</button>
                                     </div>
+                                    {% elif post.user == request.user %}}
+                                    <div class="mt-4">
+                                        <textarea class="w-full border rounded-lg p-2" name="reply" placeholder="Write a reply..."></textarea>
+<!--                                        {% if provider_name == 'facebook' %}-->
+<!--                                        <div>-->
+<!--                                            <label for="file-upload" class="file-upload-label">-->
+<!--                                                <i class="fa-solid fa-paperclip"></i>-->
+<!--                                            </label>-->
+<!--                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">-->
+<!--                                        </div>-->
+<!--                                        {% endif %}-->
+                                        <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">Reply</button>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

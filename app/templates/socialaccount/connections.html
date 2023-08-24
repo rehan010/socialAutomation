@@ -383,15 +383,22 @@ if (socialcontainers.length > 0){
         const modalbutton = div.querySelector('.modal-button');
         const modal = div.querySelector('.main-modal');
         const closeButton = div.querySelectorAll('.modal-close');
-
-        modalbutton.onclick = (e) => openModal(modal);
         
+        try{
+            modalbutton.onclick = (e) => openModal(modal);
+        }catch(e){
+            console.log(e)
+        }
 
         for (let i = 0; i < closeButton.length; i++) {
 
             const elements = closeButton[i];
 
-            elements.onclick = (e) => modalClose(modal);
+            try{
+                elements.onclick = (e) => modalClose(modal);
+            }catch(e){
+                console.log(e)
+            }
 
             modal.style.display = 'none';
 

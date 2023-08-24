@@ -75,7 +75,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # CSRF_TRUSTED_ORIGINS=['https://c681-72-255-15-110.ngrok-free.app']
 # CORS_URLS_REGEX = r'^/accounts/register/.*$'
 
-LOGIN_REDIRECT_URL = "dashboard"
+LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = "base"
 
 
@@ -90,6 +90,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'app.context_processor.context.user_role',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -312,15 +313,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # settings.py
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_USE_TLS = True  # Use TLS encryption for secure communication with the email server
-# EMAIL_HOST_USER = 'social_presence@gmail.com'  # Email account to send emails from
-# EMAIL_HOST_PASSWORD = 'social_presence123'  # Password of the email account
-# EMAIL_HOST = "localhost"
-# EMAIL_PORT = 1025
-
-# settings.py
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

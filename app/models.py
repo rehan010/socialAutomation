@@ -91,13 +91,16 @@ class BaseModel(models.Model):
 class InviteEmploye(BaseModel):
 
     STATUS_CHOICES = [('PENDING', 'PENDING'), ('ACCEPTED', 'ACCEPTED'), ('REJECTED', 'REJECTED')]
-    ROLE_CHOICES = [('ADMIN', 'ADMIN'), ('WRITE', 'WRITE'), ('READ', 'READ')]
+    ROLE_CHOICES = [('ADMIN', 'ADMIN'), ('MANAGER', 'MANAGER')]
+    PERMISSIONS = [('HIDE', 'HIDE'), ('READ', 'READ'), ('WRITE', 'WRITE')]
     token = models.CharField(max_length=255, blank=True)
     invited_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     email = models.EmailField(("email address"), blank=True)
     status = models.CharField(choices=STATUS_CHOICES,default='PENDING', blank=True)
     selected_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="selected_user")
-    role = models.CharField(choices=ROLE_CHOICES, default='READ')
+    role = models.CharField(choices=ROLE_CHOICES, default='MANAGER')
+    permission = models.CharField(choices=PERMISSIONS, default='HIDE')
+
 
     class Meta:
         db_table = 'invite'

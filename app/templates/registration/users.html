@@ -8,20 +8,20 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <style>
-
     .borders{
-        border: 1px solid black !important;
+        border:1px solid black !important;
     }
-
 </style>
+
 <div class="w-full px-6 py-6 mx-auto m-0 font-sans text-base antialiased font-normal leading-default bg-gray-50 text-slate-500">
     <br>
-
+    {% if user_role == 'ADMIN' %}
     <div class="flex items-center justify-between px-4 py-2 ">
         <h1 class="text-2xl font-bold font-cool text-black">Manage access</h1>
-        <button id="addPeopleBtn" class="px-3 py-2 text-xs text-white rounded-lg ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline"><i class="fas fa-plus" aria-hidden="true"></i>
+        <button id="addPeopleBtn" class="px-3 py-2 text-xs font-bold text-white rounded-lg ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline"><i class="fas fa-plus" aria-hidden="true"></i>
                     &nbsp;&nbsp;Add User</button>
     </div>
+    {% endif %}
     <div id="searchBarDiv" class="mt-8 mx-4 p-4 border border-gray-300 shadow-md rounded-lg" style="display:none">
         <div class="relative">
             <button id="closeSearchBtn" class="absolute top-2 right-4 text-red-500">&#10006;</button>
@@ -47,29 +47,39 @@
             <div id="selectedUserBox" class="p-2 bg-blue-100 rounded-lg hidden flex items-center justify-between">
                 <input type="hidden" id="user" name="user" value="">
                 <input type="hidden" id="role" name="role" value="">
+                <input type="hidden" id="permission" name="permission" value="">
                 <br>
                 <span id="selectedUserName" style="font-weight: bold;"></span>
                 <button id="closeUserBtn" class="absolute left-1  text-red-500">&#10006;</button>
                 <select id="roleSelect" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
-                    <option value="READ">Read</option>
-                    <option value="WRITE">Write</option>
-                    <option value="ADMIN">Admin</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="MANAGER">MANAGER</option>
+                </select>
+                <select id="permissionSelect" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded hidden">
+                    <option value="HIDE">HIDE</option>
+                    <option value="READ">READ</option>
+                    <option value="WRITE">WRITE</option>
                 </select>
                 <button id="assignManagerButton" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline  rounded">SEND INVITE</button>
                 {% csrf_token %}
             </div>
             <div id="emailInputBox" class="hidden p-2 bg-blue-100 rounded-lg flex items-center justify-between">
                 <input type="text" id="email" name="email"
-                       class="w-4/5 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500">
-                <div class="flex gap-4">
+                       class="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500">
+                <div class="flex gap-6">
                 <select id="roleSelectEmail" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
-                    <option value="READ">Read</option>
-                    <option value="WRITE">Write</option>
-                    <option value="ADMIN">Admin</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="MANAGER">MANAGER</option>
+                </select>
+                <select id="permissionSelectEmail" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded hidden">
+                    <option value="HIDE">HIDE</option>
+                    <option value="READ">READ</option>
+                    <option value="WRITE">WRITE</option>
                 </select>
                 <button id="addEmailButton" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">INVITE</button>
                 </div>
             </div>
+            <div id="errorText" class="hidden text-red-500 mt-2">Invalid email format. Please enter a valid email address.</div>
         </div>
     </div>
     <br>
@@ -87,17 +97,19 @@
                       <tr>
                         <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Name</th>
                         <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Email</th>
+                        <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Invited By</th>
                         <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Function</th>
                         <th class="px-6 py-3  font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Role</th>
-<!--                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Accounts</th>-->
+                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Invited On</th>
                         <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Created On</th>
                         <th class="px-6 py-3 font-semibold capitalize align-middle bg-transparent border-b border-gray-200 border-solid shadow-none tracking-none whitespace-nowrap text-slate-400 opacity-70"></th>
                       </tr>
                     </thead>
                     <tbody>
-                    {%for user in invites %}
-                      {% if user.status == 'ACCEPTED' %}
-                      <tr>
+
+
+                    {% for user in invites %}
+                    <tr>
                         <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                           <div class="flex px-2 py-1">
                             <div>
@@ -123,129 +135,6 @@
                           </div>
                         </td>
                         <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <p class="mb-0 text-xs font-semibold leading-tight">Manager</p>
-                          <p class="mb-0 text-xs leading-tight text-slate-400">Organization</p>
-                        </td>
-                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                            {% if user.role == 'READ' %}
-                            <span class="bg-gradient-to-tl from-gray-600 to-red-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>
-                            {% elif user.role == 'WRITE' %}
-                            <span class="bg-gradient-to-tl from-green-500 to-green-900 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>
-                            {% else %}
-                            <span class="bg-gradient-to-tl from-black to-purple-600 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>
-                            {% endif %}
-                        </td>
-<!--                        <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">-->
-<!--                          <span class="text-xs font-semibold leading-tight text-slate-400">{{user.selected_user.date_joined}}</span>-->
-<!--                        </td>-->
-                          <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <span class="text-xs font-semibold leading-tight text-slate-400">{{user.selected_user.date_joined}}</span>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent modalContainer">
-                            <button class="openDialogButton text-xs font-semibold leading-tight text-slate-400 modal-button" data-target="dialog{{ user.id }}">Edit</button>
-
-                            <div id="dialog{{ user.id }}" class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster"
-                                    style="background: rgba(0,0,0,.7);">
-                                <div
-                                    class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
-                                    <div class="modal-content py-2 text-left px-6">
-                                        <!--Title-->
-                                        <div class="flex justify-between items-center pb-3">
-                                            <p class="text-2xl font-bold">Edit Role</p>
-                                            <div class="modal-close cursor-pointer z-50">
-                                                <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                                                    viewBox="0 0 18 18">
-                                                    <path
-                                                        d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
-                                                    </path>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <!--Body-->
-                                        <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
-                                            <div class="py-4">
-                                                <input type="hidden" id="changerole" name="changerole" value=""/>
-                                                <select class="roleSelect1 w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
-                                                    <option value="READ" {% if user.role == 'READ' %} selected {% endif %}>Read</option>
-                                                    <option value="WRITE" {% if user.role == 'WRITE' %} selected {% endif %}>Write</option>
-                                                    <option value="ADMIN" {% if user.role == 'ADMIN' %} selected {% endif %}>Admin</option>
-                                                </select>
-                                            </div>
-                                        <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
-                                        <!--Footer-->
-                                        <div class="flex justify-end pt-2">
-                                            <div
-                                                class="closeDialogButton focus:outline-none modal-close px-4 p-2 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">
-                                                <span>Cancel</span>
-                                            </div>
-
-
-                                            <button type="submit" class="saveRoleDialog focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-2" data-target="dialog{{ user.id }}">
-                                                    <span>Confirm</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-
-                        </td>
-
-                      </tr>
-                        {% endif %}
-                        {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    <br>
-    <div class="flex flex-wrap -mx-3">
-          <div class="flex-none w-full max-w-full px-3">
-            <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
-              <div class="p-6 pb-0 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
-                <h6 class="text-xl font-bold">Invitations</h6>
-              </div>
-              <div class="flex-auto px-0 pt-0 pb-2">
-                <div class="p-0 overflow-x-auto">
-                  <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
-                    <thead class="align-bottom">
-                      <tr>
-                        <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Name</th>
-                        <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Email</th>
-                        <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Invited By</th>
-                        <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Role Assigned</th>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Invited On</th>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Status</th>
-                        <th class="px-6 py-3 font-semibold capitalize align-middle bg-transparent border-b border-gray-200 border-solid shadow-none tracking-none whitespace-nowrap text-slate-400 opacity-70"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                    {%for user in invites %}
-                      {% if user.status != 'ACCEPTED' %}
-                      <tr>
-                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <div class="flex px-2 py-1">
-                            <div>
-                              <img src="{% static 'assets/img/team-1.jpg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
-                            </div>
-                              <div class="flex flex-col justify-center">
-                                    <h6 class="mb-0 text-sm leading-normal">{{user.selected_user.first_name}}
-                                        {{user.selected_user.last_name}}</h6>
-                              </div>
-                          </div>
-                        </td>
-                          <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <div class="flex px-2 py-1">
-                              <div class="flex flex-col justify-center">
-                                    <p class="mb-0 text-xs leading-tight text-slate-400">{{user.email}}</p>
-                              </div>
-                          </div>
-                        </td>
-                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                           <p class="mb-0 text-xs font-semibold leading-tight">
                                         {{user.invited_by.first_name}}
                                         {{user.invited_by.last_name}}</p>
@@ -255,11 +144,14 @@
                             <p class="mb-0 text-xs leading-tight text-slate-400">
                                         {{user.invited_by.company}}</p>
                         </td>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                          <p class="mb-0 text-xs font-semibold leading-tight">Manager</p>
+                          <p class="mb-0 text-xs leading-tight text-slate-400">Organization</p>
+                        </td>
                         <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                            {% if user.role == 'READ' %}
-                            <span class="bg-gradient-to-tl from-gray-600 to-red-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>
-                            {% elif user.role == 'WRITE' %}
-                            <span class="bg-gradient-to-tl from-green-500 to-green-900 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>
+                            {% if user.role == 'MANAGER' %}
+                            <span class="bg-gradient-to-tl from-gray-600 to-red-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>-<span class="bg-gradient-to-tl from-blue-600 to-blue-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.permission}}</span>
+
                             {% else %}
                             <span class="bg-gradient-to-tl from-black to-purple-600 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>
                             {% endif %}
@@ -267,12 +159,62 @@
                         <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                           <span class="text-xs font-semibold leading-tight text-slate-400">{{user.created_at}}</span>
                         </td>
+
                           <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <span class="text-xs font-semibold leading-tight text-slate-400">{{user.status}}</span>
+                              {% if user.status == 'ACCEPTED' %}
+                          <span class="text-xs font-semibold leading-tight text-slate-400">{{user.selected_user.date_joined}}</span>
+                              {% elif user.status == 'PENDING' %}
+                              <span class="text-xs font-semibold leading-tight text-slate-400">PENDING</span>
+                              {% else %}
+                              <span class="text-xs font-semibold leading-tight text-slate-400">REJECTED</span>
+                              {% endif %}
+                        </td>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    {% if user.status == 'ACCEPTED' %}
+                                    <button class="openDialogButton modal-button ml-auto cursor-pointer fas fa-pencil-alt text-slate-700" data-target="dialog{{ user.id }}"></button>
+                                     <div id="dialog{{ user.id }}" class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster hidden" style="background: rgba(0,0,0,.7);">
+                                         <div class="modal-container border border-teal-500 shadow-lg bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                                            <div class="modal-content py-2 text-left px-6">
+                                                <!--Title-->
+                                                <div class="flex justify-between items-center pb-3">
+                                                    <p class="text-2xl font-bold">Edit Role</p>
+                                                    <div class="modal-close cursor-pointer z-50">
+                                                    </div>
+                                                </div>
+                                                <!--Body-->
+                                                <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
+                                                    <div class="flex justify-center">
+                                                        <input type="hidden" id="changerole" name="changerole" value=""/>
+                                                        <input type="hidden" id="changeperm" name="changeperm" value="">
+                                                        <select class="roleSelect1 w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
+                                                            <option value="ADMIN" {% if user.role == 'ADMIN' %} selected {% endif %} >ADMIN</option>
+                                                            <option value="MANAGER" {% if user.role == 'MANAGER' %} selected {% endif %} >MANAGER</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="flex justify-center">
+                                                        <select class="permissionSelect1  w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
+                                                                <option value="HIDE">HIDE</option>
+                                                                <option value="READ">READ</option>
+                                                                <option value="WRITE">WRITE</option>
+                                                        </select>
+                                                    </div>
+                                                    <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
+                                                    <!--Footer-->
+                                                    <div class="flex justify-between">
+                                                        <button type="submit" class="saveRoleDialog focus:outline-none px-4 p-2 mb-2 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-2" data-target="dialog{{ user.id }}">Confirm</button>
+                                                        <button type="button" class="closeDialogButton focus:outline-none modal-close px-4 p-2 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black" data-target="dialog{{ user.id }}">Cancel</button>
+                                                    </div>
+                                            </div>
+                                         </div>
+                                     </div>
+                                    {% else %}
+                                    <button class=" ml-auto cursor-pointer fas fa-pencil-alt text-slate-700"></button>
+                                    {% endif %}
                         </td>
                       </tr>
-                        {% endif %}
+
                         {% endfor %}
+
                     </tbody>
                   </table>
                 </div>
@@ -281,7 +223,6 @@
           </div>
         </div>
     <br>
-</div>
 <script>
 
         document.getElementById("addPeopleBtn").addEventListener("click", function () {
@@ -326,6 +267,7 @@
                         const emailInputBox = document.getElementById("emailInputBox");
                         emailInputBox.classList.remove("hidden");
                         emailInputBox.querySelector("input[name=email]").value = searchQuery;
+                        errorText.classList.add('hidden');
                     } else {
                         const emailInputBox = document.getElementById("emailInputBox");
                         emailInputBox.classList.add("hidden");
@@ -405,7 +347,37 @@
         }
     }
 
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleSelectEmail = document.getElementById('roleSelectEmail');
+        const permissionSelectEmail = document.getElementById('permissionSelectEmail');
+
+        roleSelectEmail.addEventListener('change', function() {
+            const selectedRole = roleSelectEmail.value;
+
+            if (selectedRole === 'MANAGER') {
+                permissionSelectEmail.classList.remove('hidden');
+            } else {
+                permissionSelectEmail.classList.add('hidden');
+
+            }
+        });
+        const roleSelect = document.getElementById('roleSelect');
+        const permissionSelect = document.getElementById('permissionSelect');
+
+        roleSelect.addEventListener('change', function () {
+            if (this.value === 'MANAGER') {
+                permissionSelect.classList.remove('hidden');
+            } else {
+                permissionSelect.classList.add('hidden');
+
+            }
+        });
+
+
+    });
+
     const roleSelect = document.getElementById("roleSelect");
+    const permissionSelect = document.getElementById("permissionSelect");
     const assignManagerButton = document.getElementById("assignManagerButton");
     assignManagerButton.addEventListener("click", function () {
 
@@ -418,12 +390,17 @@
                 const selectedRole = roleSelect.value;
                 const user_role = document.getElementById("role");
                 user_role.value = selectedRole;
+                const perm = permissionSelect.value;
+                const perm_val = document.getElementById("permission");
+                perm_val.value = perm
+                const permission = document.getElementById("permission").value;
                 const role = document.getElementById("role").value;
 
                 const url = '/assign_manager/';
                 const data = {
                     user: user_id,
                     role: role,
+                    permission: permission,
                     csrfmiddlewaretoken: csrfToken,
                 };
 
@@ -449,57 +426,125 @@
          location.reload();
     });
 
+
     const roleSelectEmail = document.getElementById("roleSelectEmail");
+    const permissionSelectEmail = document.getElementById('permissionSelectEmail');
     const addEmailButton = document.getElementById("addEmailButton");
+
     addEmailButton.addEventListener("click", function () {
         const emailInput = document.querySelector("#emailInputBox input[name=email]");
         const email = emailInput.value.trim();
 
         if (email) {
             var email_value = document.getElementById("email")
-            const csrfToken = getCSRFToken();
-            email_value.value = email;
-            const email_id = document.getElementById("email").value;
-            console.log(email_id);
-            const emailInputBox = document.getElementById("emailInputBox");
-            emailInputBox.classList.add("hidden");
-            emailInput.value = "";
-            const selectedRoleEmail = roleSelectEmail.value;
-            const user_role = document.getElementById("role");
-            user_role.value = selectedRoleEmail;
-            const role = document.getElementById("role").value;
+            const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email_value.value);
+            if (!isValidEmail) {
+                errorText.classList.remove('hidden');
+                event.preventDefault(); // Prevent form submission
 
-            // Hide the search results box
-            document.getElementById("searchResults").classList.add("hidden");
-            // Clear the search input
-            document.getElementById("searchInput").value = "";
+            }
+            else{
+                errorText.classList.add('hidden');
+                const csrfToken = getCSRFToken();
+                email_value.value = email;
+                const email_id = document.getElementById("email").value;
+                const emailInputBox = document.getElementById("emailInputBox");
+                emailInputBox.classList.add("hidden");
+                emailInput.value = "";
+                const selectedRoleEmail = roleSelectEmail.value;
+                const user_role = document.getElementById("role");
+                user_role.value = selectedRoleEmail;
+                const permEmail = permissionSelectEmail.value;
+                const perm = document.getElementById("permission");
+                perm.value = permEmail
+                const permission = document.getElementById("permission").value;
+                const role = document.getElementById("role").value;
+
+                // Hide the search results box
+                document.getElementById("searchResults").classList.add("hidden");
+                // Clear the search input
+                document.getElementById("searchInput").value = "";
 
 
-            const url = '/assign_manager/';
-                const data = {
-                    email: email_id,
-                    role: role,
-                    csrfmiddlewaretoken: csrfToken,
-                };
+                const url = '/assign_manager/';
+                    const data = {
+                        email: email_id,
+                        role: role,
+                        permission: permission,
+                        csrfmiddlewaretoken: csrfToken,
+                    };
 
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                    },
-                    body: JSON.stringify(data),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data.message);
-                })
-                .catch(error => {
-                    console.error("Error sending invite to this email:", error);
-                });
-                location.reload();
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken,
+                        },
+                        body: JSON.stringify(data),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.message);
+                    })
+                    .catch(error => {
+                        console.error("Error sending invite to this email:", error);
+                    });
+                    location.reload();
+            }
+        }else {
+            errorText.classList.add('hidden');
         }
     });
+
+    function modalClose(modal){
+    modal.classList.remove('fadeIn');
+    modal.classList.add('fadeOut');
+
+    modal.style.display = 'none';
+
+    }
+
+    function openModal(modal){
+        modal.classList.remove('fadeOut');
+        modal.classList.add('fadeIn');
+        modal.style.display = 'flex';
+    }
+
+
+
+
+
+    const modalContainers = document.querySelectorAll('.modalContainer');
+
+        if (modalContainers.length > 0){
+
+            modalContainers.forEach((containers)=> {
+
+                const modalButton = containers.querySelector('.modal-button');
+                console.log('HI');
+                const modal = containers.querySelector('.main-modal');
+                const closeButton = containers.querySelectorAll('.modal-close');
+
+                modalButton.onclick = (e) => openModal(modal);
+
+
+                for (let i = 0; i < closeButton.length; i++) {
+
+                    const elements = closeButton[i];
+
+                    elements.onclick = (e) => modalClose(modal);
+
+                    modal.style.display = 'none';
+
+                    window.onclick = function (event) {
+                        if (event.target == modal) modalClose(modal);
+                    }
+                }
+            });
+
+        }
+
+
 
     const saveRoleDialog = document.querySelectorAll('.saveRoleDialog');
 
@@ -510,21 +555,23 @@
             const target = button.getAttribute('data-target');
 
             const roleSelect = document.querySelector(`#${target} .roleSelect1`);
+            const permSelect = document.querySelector(`#${target} .permissionSelect1`);
             const changeroleInput = document.querySelector(`#${target} #changerole`);
+            const changeperm = document.querySelector(`#${target} #changeperm`);
+            changeperm.value = permSelect.value;
+            const newperm = changeperm.value;
             changeroleInput.value = roleSelect.value;
             const newrole = changeroleInput.value;
+            console.log(newperm);
             const originalString = target;
             const user = originalString.replace("dialog", "");
             console.log(user);
-                const dialog = document.getElementById(target);
-                if (dialog.style.display == 'flex') {
-                    modalClose(dialog);
-                }
 
             const url = '/change_role/';
             const data = {
                 user: user,
                 role: newrole,
+                permission: newperm,
                 csrfmiddlewaretoken: csrfToken,
             };
 
@@ -538,9 +585,12 @@
             })
             .then(response => response.json())
             .then(data => {
-                window.location.reload();
                 console.log(data.message);
-            })
+                const target = button.getAttribute('data-target');
+                const dialog = document.getElementById(target);
+                if (dialog) {
+                    dialog.style.display = 'none';
+                }})
             .catch(error => {
                 console.error("Error sending api request ", error);
             });
@@ -549,56 +599,40 @@
 
     });
 
-    function modalClose(modal){
-    modal.classList.remove('fadeIn');
-    modal.classList.add('fadeOut');
+    const openDialogButtons = document.querySelectorAll('.openDialogButton');
+    const closeDialogButtons = document.querySelectorAll('.closeDialogButton');
 
-    modal.style.display = 'none';
+    openDialogButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const target = button.getAttribute('data-target');
+            const dialog = document.getElementById(target);
+            if (dialog) {
+                dialog.style.display = 'flex';
 
-}
+                const roleSelect = document.querySelector(`#${target} .roleSelect1`);
+                const permissionSelect = document.querySelector(`#${target} .permissionSelect1`);
 
-function openModal(modal){
-    modal.classList.remove('fadeOut');
-    modal.classList.add('fadeIn');
-    modal.style.display = 'flex';
-}
-
-
-
-
-
-        const modalContainers = document.querySelectorAll('.modalContainer');
-
-        if (modalContainers.length > 0){
-
-        modalContainers.forEach((containers)=> {
-
-        const modalButton = containers.querySelector('.modal-button');
-        const modal = containers.querySelector('.main-modal');
-        const closeButton = containers.querySelectorAll('.modal-close');
-
-        modalButton.onclick = (e) => openModal(modal);
-
-
-        for (let i = 0; i < closeButton.length; i++) {
-
-            const elements = closeButton[i];
-
-            elements.onclick = (e) => modalClose(modal);
-
-            modal.style.display = 'none';
-
-            window.onclick = function (event) {
-                if (event.target == modal) modalClose(modal);
+                roleSelect.addEventListener('change', function () {
+                    if (this.value === 'MANAGER') {
+                        permissionSelect.classList.remove('hidden');
+                    } else {
+                        permissionSelect.classList.add('hidden');
+                    }
+                });
             }
-        }
 
-
+        });
     });
 
-
-}
-
+    closeDialogButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const target = button.getAttribute('data-target');
+            const dialog = document.getElementById(target);
+            if (dialog) {
+                dialog.style.display='none';
+            }
+        });
+    });
 
 
 

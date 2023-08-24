@@ -8,7 +8,7 @@
 
 <div class="relative sm:w-1/2 w-full flex flex-col p-5 items-center justify-center text-start">
         <div class="flex flex-col lg:w-3/5 w-full p-2">
-            <h1 class="text-3xl	font-bold py-4 sm:text-start text-center">Sign Up</h1>
+            <h1 class="text-3xl	font-bold py-4 sm:text-start text-center text-transparent bg-gradient-to-tl from-blue-600 to-cyan-400 bg-clip-text">Sign Up</h1>
 
         <form method="post">
                 {% csrf_token %}
@@ -30,10 +30,10 @@
                     {% endif %}
 
                 <div class="flex flex-col mb-3">
-                    <label for="{{ field.id_for_label }}" class="py-1">{{ field.label_tag }}</label>
+                    <label for="{{ field.id_for_label }}" class="mb-2 ml-1 font-bold text-xs text-slate-700">{{ field.label_tag }}</label>
                     <input type="{{ field.field.widget.input_type }}" id="{{ field.id_for_label }}"
                            name="{{ field.html_name }}" value="{{ field.value|default_if_none:'' }}"
-                           class="outline-none w-full py-1 border border-gray-400"
+                           class="focus:shadow-soft-primary-outline text-sm leading-5.6 ease-soft block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 transition-all focus:border-fuchsia-300 focus:outline-none focus:transition-shadow"
                     {% if field.field.required %}required{% endif %}>
                 </div>
 
@@ -41,11 +41,10 @@
                 {% endfor %}
                 <br/>
 
-                <br/>
 
-                <button type="submit" class="bg-blue-500 text-white p-3 w-full">
-                    Sign Up
-                </button>
+                <div class="text-center">
+                        <button type="submit" class="inline-block w-full px-6 py-3 mt-6 mb-0 font-bold text-center text-white uppercase align-middle transition-all bg-transparent border-0 rounded-lg cursor-pointer shadow-soft-md bg-x-25 bg-150 leading-pro text-xs ease-soft-in tracking-tight-soft bg-gradient-to-tl from-blue-600 to-cyan-400 hover:scale-102 hover:shadow-soft-xs active:opacity-85">Sign Up</button>
+                </div>
 
             </form>
 
