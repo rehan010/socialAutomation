@@ -8,13 +8,12 @@ from django.contrib.auth import login, password_validation, update_session_auth_
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = UserCreationForm.Meta.fields + ("email", "bio", "company")
+        fields = UserCreationForm.Meta.fields + ("email", "company")
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
             'password2': forms.PasswordInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'bio': forms.TextInput(attrs={'class': 'form-control'}),
             'company': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
@@ -48,7 +47,7 @@ class CustomUserUpdateForm(UserChangeForm):
     )
     class Meta(UserChangeForm.Meta):
         model = User
-        fields = ['username','first_name','last_name','email','bio','old_password','new_password1','new_password2']
+        fields = ['username','first_name','last_name','profile_image','email','bio','old_password','new_password1','new_password2']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -57,13 +56,13 @@ class CustomUserUpdateForm(UserChangeForm):
             'bio': forms.TextInput(attrs={'class': 'form-control'}),
 
 
+
         }
 
     def __init__(self, user,request, *args, **kwargs):
         self.user = user
         self.request = request
         super().__init__(*args, **kwargs)
-
 
 
 
@@ -107,6 +106,9 @@ class CustomUserUpdateForm(UserChangeForm):
             update_session_auth_hash(self.request, user)
             login(self.request,user)
         if commit:
+            if self.request.POST.get('remove_image'):
+                user.profile_image.delete()
+                user.profile_image = None
             user.save()
         return user
 

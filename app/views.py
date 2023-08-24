@@ -520,6 +520,23 @@ class PostCreateView(CreateView):
     def form_valid(self, form):
         requestdata = dict(self.request.POST)
         context = self.request.session.get('context')
+        facebook_errors = facebook_validator(self.request)
+        instagram_errors = instagram_validator(self.request)
+        linkedin_errors = linkedin_validator(self.request)
+        if facebook_errors or instagram_errors or linkedin_errors:
+            for errors in facebook_errors:
+                messages.error(self.request,facebook_errors[errors])
+
+            for errors in instagram_errors:
+                messages.error(self.request, instagram_errors[errors])
+
+            for errors in linkedin_errors:
+                messages.error(self.request, linkedin_errors[errors])
+
+            return self.form_invalid(form)
+
+
+
         requestdata.pop("csrfmiddlewaretoken")
         caption = requestdata.pop("post")
         post = form.save(commit=False)
@@ -554,9 +571,9 @@ class PostCreateView(CreateView):
         if requestdata.get("linkedin") or requestdata.get('facebook') or requestdata.get('instagram'):
             for page in requestdata.get("linkedin") or []:
                 i = 0
-                while context.get('linkedin_page')[i].get('key') != page:
+                while context.get('linkedin')[i].get('key') != page:
                     i += 1
-                info = context.get('linkedin_page').pop(i)
+                info = context.get('linkedin').pop(i)
 
                 share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin',
                                                                       user=self.request.user, name=info['name'])
@@ -565,10 +582,10 @@ class PostCreateView(CreateView):
 
             for page in requestdata.get("facebook") or []:
                 i = 0
-                while context.get('facebook_page')[i].get('id') != page:
+                while context.get('facebook')[i].get('id') != page:
                     i += 1
 
-                info = context.get('facebook_page').pop(i)
+                info = context.get('facebook').pop(i)
 
                 ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
 
@@ -587,11 +604,11 @@ class PostCreateView(CreateView):
                     share_pages.append(sharepage)
             for page in requestdata.get("instagram") or []:
                 i = 0
-                while context.get('insta_data')[i].get('id') != page:
+                while context.get('instagram')[i].get('id') != page:
                     i += 1
 
 
-                info = context.get('insta_data').pop(i)
+                info = context.get('instagram').pop(i)
                 ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
                 # Store Shared Page
                 if ispageexist:
@@ -846,6 +863,7 @@ class PageDataView(APIView):
         social = SocialAccount.objects.filter(user=user.id)
         access_token = {}
         data = {}
+
         for _ in social:
             access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
 
@@ -856,20 +874,18 @@ class PageDataView(APIView):
             if _.provider == 'facebook':
                 page_data = facebook_page_data(access_token.get("facebook"))
 
-                data["facebook_page"] = page_data
+                data["facebook"] = page_data
             # For Instagram
             if _.provider == 'instagram':
                 insta_data = get_instagram_user_data(access_token.get("facebook"))
 
-                data["insta_data"] = insta_data
+                data["instagram"] = insta_data
             # print()
             if _.provider == 'linkedin_oauth2':
                 linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
-                data['linkedin_page'] = linkedin_page
+                data['linkedin'] = linkedin_page
 
         self.request.session['context'] = data
-
-        print(self.request.session['context'])
 
 
 
@@ -900,16 +916,16 @@ class PostDraftView(UpdateView):
             if _.provider == 'facebook':
                 page_data = facebook_page_data(access_token.get("facebook"))
 
-                data["facebook_page"] = page_data
+                data["facebook"] = page_data
             # For Instagram
             if _.provider == 'instagram':
                 insta_data = get_instagram_user_data(access_token.get("facebook"))
 
-                data["insta_data"] = insta_data
+                data["insta"] = insta_data
             # print()
             if _.provider == 'linkedin_oauth2':
                 linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
-                data['linkedin_page'] = linkedin_page
+                data['linkedin'] = linkedin_page
 
         self.request.session['context'] = data
         comment_check = post.comment_check
@@ -958,9 +974,9 @@ class PostDraftView(UpdateView):
         if requestdata.get("linkedin") or requestdata.get('facebook') or requestdata.get('instagram'):
             for page in requestdata.get("linkedin") or []:
                 i = 0
-                while context.get('linkedin_page')[i].get('key') != page:
+                while context.get('linkedin')[i].get('key') != page:
                     i += 1
-                info = context.get('linkedin_page').pop(i)
+                info = context.get('linkedin').pop(i)
 
                 share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin',
                                                                       user=self.request.user, name=info['name'])
@@ -969,10 +985,10 @@ class PostDraftView(UpdateView):
 
             for page in requestdata.get("facebook") or []:
                 i = 0
-                while context.get('facebook_page')[i].get('id') != page:
+                while context.get('facebook')[i].get('id') != page:
                     i += 1
 
-                info = context.get('facebook_page').pop(i)
+                info = context.get('facebook').pop(i)
 
                 ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
 
@@ -991,10 +1007,10 @@ class PostDraftView(UpdateView):
                     share_pages.append(sharepage)
             for page in requestdata.get("instagram") or []:
                 i = 0
-                while context.get('insta_data')[i].get('id') != page:
+                while context.get('instagram')[i].get('id') != page:
                     i += 1
 
-                info = context.get('insta_data').pop(i)
+                info = context.get('instagram').pop(i)
                 ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
                 # Store Shared Page
                 if ispageexist:
@@ -1395,9 +1411,21 @@ class EditUserView(LoginRequiredMixin,UpdateView):
         kwargs['request'] = self.request
         return kwargs
 
-    def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)
+    # def form_invalid(self, form):
+    #     form
+    #     return super().form_invalid(form)
+    #
+    # def form_valid(self, form):
+    #     # checkbox = self.request.POST.get('remove_image')
+    #     # if(checkbox):
+    #     #     user = form.user
+    #     #     user.profile_image.delete()
+    #     #     user.profile_image = None
+    #
+    #
+    #
+    #     form.save()
+    #     return super().form_valid(form)
 
 
 

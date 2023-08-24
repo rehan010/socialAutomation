@@ -56,6 +56,7 @@ class User(AbstractUser):
     company = models.TextField(blank=True, null=True)
     manager = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     is_invited = models.BooleanField(default=False)
+    profile_image = models.ImageField(upload_to='media',blank=True)
 
 
 

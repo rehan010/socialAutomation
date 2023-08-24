@@ -1693,7 +1693,7 @@ def linkedin_get_user_organization(accesstoken):
 
         localizedName = data['localizedName']
         names_with_ids[id] = localizedName
-        my_object['key'] = id
+        my_object['id'] = id
         my_object['name'] = localizedName
         organization_count = SharePage.objects.filter(org_id=id).count()
         if organization_count > 0:
@@ -2157,6 +2157,56 @@ def meta_nested_comment(urn,text,media,access_token,provider_name):
 
     response_json = response.json()
 
+
+def linkedin_validator(request):
+    video = 0
+    img = 0
+    images = request.FILES.getlist('images')
+    errors = {}
+    for image in images:
+        if image.name.endswith('.mp4'):
+            video +=1
+        else:
+            img +=1
+
+        if video >= 1 and img >= 1 and errors.get('Invalid Number') == None:
+            errors["Invalid Number"] = "Linkedin cannot contain both image and video"
+            print("Can not contain video and image")
+
+        if video > 1 and errors.get('Video') == None:
+            errors['Video'] = "Linkedin can not contain more than one video"
+            print("Can not contain more than one Video")
+
+    return errors
+
+
+def instagram_validator(request):
+    errors = {}
+    if not request.POST.get("post"):
+        errors["Invalid Post for insta"] = "Instagram media can not be post without text"
+    return errors
+
+
+def facebook_validator(request):
+    video = 0
+    img = 0
+    images = request.FILES.getlist('images')
+    errors = {}
+    for image in images:
+        if image.name.endswith('.mp4'):
+            video +=1
+        else:
+            img +=1
+
+        if video >= 1 and img >= 1 and errors.get('Invalid Number') == None:
+            errors["Invalid Number"] = "Facebook cannot contain both image and video"
+            print("Can not contain video and image")
+
+        if video > 1 and errors.get('Video') == None:
+            errors['Video'] = "Facebook can not contain more than one video"
+            print("Can not contain more than one Video")
+
+    return errors
 
 
 

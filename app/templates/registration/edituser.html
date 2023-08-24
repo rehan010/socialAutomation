@@ -3,6 +3,13 @@
 {% load static %}
 
 {% block custom_css %}
+<head>
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+  <!-- or -->
+  <link rel="stylesheet"
+  href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+</head>
 <style>
     .min-h-custom{
         min-height:13rem;
@@ -23,204 +30,265 @@
             <div class="relative p-0 overflow-hidden bg-center bg-cover rounded-2xl min-h-custom" style="background-image:url('{% static 'image/social_image_login.png'%}');background-position-y: 50%">
                 <span class="absolute top-0 left-0 w-full h-full bg-blue-500 opacity-60"></span>
             </div>
-            <div class="flex flex-col items-center flex-wrap justify-center">
-                <div class="lg:w-2/12 w-4/12 px-3 flex-0">
-                    <div class="relative mb-6 -mt-6 lg:mb-0 lg:-mt-16 z-50">
-                          <img src="{% static 'assets/img/team-3.jpg'%}" class=" h-auto max-w-full rounded-full border-2 border-white border-solid" alt="user1">
+            <form method="post" enctype="multipart/form-data">
+                <div class="flex flex-col items-center flex-wrap justify-center">
+                    <div class="lg:w-2/12 w-4/12 px-3 flex-0">
+                        <div class="relative mb-6 -mt-6 lg:mb-0 lg:-mt-16 z-50">
+                            <div class="relative flex items-center justify-center max-w-content">
+                                <div class="md:h-44 md:w-44 h-36 w-36 rounded-full overflow-hidden border-2 border-white border-solid relative">
+                                    {% if user.profile_image %}
+                                    <img src="{{ user.profile_image.url }}" class="w-full h-full object-cover" alt="user1" id="imageContainer">
+                                    {% else %}
+                                    <img src="{% static 'image/default.png' %}" class="w-full h-full object-cover" alt="user1" id="imageContainer">
+                                    {% endif %}
+                                </div>
+                                <button type="button" class="absolute rounded-full h-auto lg:w-13 bg-gray-100 text-center hover:bg-gray-200 cursor-pointer p-2 right-0 bottom-0 modal-button">
+                                        <i class='bx bx-camera lg:text-4xl text-4xl'></i>
+                                </button>
+
+                                <div class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster"
+                                    style="background: rgba(0,0,0,.7);display: none;">
+                                    <div
+                                        class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                                        <div class="modal-content py-2 text-left px-6">
+                                            <!--Title-->
+                                            <div class="flex justify-between items-center pb-3">
+                                                <p class="text-2xl font-bold">Edit Profile Image</p>
+                                                <div class="modal-close cursor-pointer z-50">
+                                                    <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                        viewBox="0 0 18 18">
+                                                        <path
+                                                            d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
+                                                        </path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <!--Footer-->
+                                            <div class="flex justify-end pt-2">
+
+
+                                                <label for="id_remove_image"
+                                                    class="focus:outline-none px-4 p-2 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">
+                                                    <input type="checkbox" class="hidden"  name="remove_image" id="id_remove_image" onchange="removeImage(event)" />
+                                                    <span>Remove</span>
+
+                                                </label>
+
+
+                                                <label for="id_profile_image" class="focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-2">
+                                                    <input type="file" class="hidden"  name="profile_image" accept="image/*" id="id_profile_image" onchange="previewImage(event)" />
+<!--                                                    <i class='bx bx-camera lg:text-4xl text-4xl'></i>-->
+
+                                                        <span>Change</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+<!--                                <label for= "id_profile_image" class="absolute rounded-full h-auto lg:w-13 bg-gray-100 text-center hover:bg-gray-200 cursor-pointer p-2 right-0 bottom-0">-->
+<!--                                    <input type="file" class="hidden"  name="profile_image" accept="image/*" id="id_profile_image" onchange="previewImage(event)" />-->
+<!--                                    <i class='bx bx-camera lg:text-4xl text-4xl'></i>-->
+<!--                                </label>-->
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="text-center my-4">
+                        <h5 class="block mb-1 text-xl font-semibold">{{user.first_name}} {{user.last_name}}</h5>
+                        <span class="block mb-0 font-semibold leading-normal text-sm">Manager @{{user.company}}</span>
                     </div>
                 </div>
-                <div class="text-center my-4">
-                    <h5 class="block mb-1 text-xl font-semibold">{{user.first_name}} {{user.last_name}}</h5>
-                    <span class="block mb-0 font-semibold leading-normal text-sm">Manager @{{user.company}}</span>
-                </div>
-            </div>
-            <form method="post">
-                {% csrf_token %}
 
-                <div class="p-6 mt-2">
+                    {% csrf_token %}
 
-                <div class="px-3">
-                    <p class="leading-normal uppercase text-sm">
-                        User Information
-                    </p>
-                    <div class="grid grid-cols-4 grid-rows-4 gap-x-10 lg:w-4/6 md:5/6 w-full mt-3">
-<!--                    {% for field in form %}-->
-<!--                        <div class="col-span-2">-->
-<!--                                <div class="mb-4">-->
-<!--                                    <label for="{{field.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">-->
-<!--                                        {{field.label_tag}}-->
-<!--                                    </label>-->
-<!--                                    {{field}}-->
+                    <div class="p-6 mt-2">
+
+                    <div class="px-3">
+                        <p class="leading-normal uppercase text-sm">
+                            User Information
+                        </p>
+                        <div class="grid grid-cols-4 grid-rows-4 gap-x-10 lg:w-4/6 md:5/6 w-full mt-3">
+<!--                        {% for field in form %}-->
+<!--                            <div class="col-span-2">-->
+<!--                                    <div class="mb-4">-->
+<!--                                        <label for="{{field.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">-->
+<!--                                            {{field.label_tag}}-->
+<!--                                        </label>-->
+<!--                                        {{field}}-->
+<!--                                    </div>-->
 <!--                                </div>-->
-<!--                            </div>-->
 
-<!--                        {% endfor %}-->
-<!--                        {{ form.old_password.label_tag }}-->
-<!--                         {{ form.old_password }}-->
-                         <div class="col-span-2 mb-4">
-                                <div>
-                                    <label for="{{form.username.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
-                                        Username
+<!--                            {% endfor %}-->
+    <!--                        {{ form.old_password.label_tag }}-->
+    <!--                         {{ form.old_password }}-->
+                             <div class="col-span-2 mb-4">
+                                    <div>
+                                        <label for="{{form.username.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
+                                            Username
+                                        </label>
+                                        {{field}}
+                                        <input type="text" name="username" value="{{ form.username.value|default_if_none:'' }}" for="{{form.username.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+                                    </div>
+                                    {% if form.username.errors%}
+                                    <div class="mt-2">
+                                        {% for errors in form.username.errors %}
+                                        <p class="text-red-600 text-sm mb-1">{{errors}}</p>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+
+                            <div class="col-span-2 mb-4">
+                                <div class="">
+                                    <label for = "{{form.email.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
+                                        Email Address
                                     </label>
-                                    {{field}}
-                                    <input type="text" name="username" value="{{ form.username.value|default_if_none:'' }}" for="{{form.username.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+                                    <input type="text" name="email" value="{{form.email.value}}" id="{{form.email.value|default_if_none:'' }}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
                                 </div>
-                                {% if form.username.errors%}
-                                <div class="mt-2">
-                                    {% for errors in form.username.errors %}
-                                    <p class="text-red-600 text-sm mb-1">{{errors}}</p>
-                                    {% endfor %}
-                                </div>
+                                {% if form.email.errors %}
+                                    <div class="mt-2">
+                                        {% for errors in form.email.errors %}
+                                        <p class="text-red-600 text-sm mb-1">{{errors}}</p>
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
+
                             </div>
 
 
-                        <div class="col-span-2 mb-4">
-                            <div class="">
-                                <label for = "{{form.email.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
-                                    Email Address
-                                </label>
-                                <input type="text" name="email" value="{{form.email.value}}" id="{{form.email.value|default_if_none:'' }}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
-                            </div>
-                            {% if form.email.errors %}
-                                <div class="mt-2">
-                                    {% for errors in form.email.errors %}
-                                    <p class="text-red-600 text-sm mb-1">{{errors}}</p>
-                                    {% endfor %}
+                            <div class="col-span-2 mb-4">
+                                <div class="">
+                                    <label for = "{{form.first_name.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
+                                        First name
+                                    </label>
+                                    <input type="text" name="first_name" value="{{form.first_name.value|default_if_none:'' }}" for = "{{form.first_name.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+
+                                     {% if form.first_name.errors %}
+                                    <div class="mt-2">
+                                        {% for errors in form.first_name.errors %}
+                                        <p class="text-red-600 text-sm mb-1">{{errors}}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+
                                 </div>
+
+                            </div>
+                            <div class="col-span-2 mb-4">
+                                <div class="">
+                                    <label for = "{{form.last_name.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
+                                        Last name
+                                    </label>
+                                    <input type="text" name="last_name" value="{{form.last_name.value|default_if_none:'' }}" for = "{{form.last_name.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+                                    {% if form.last_name.errors %}
+                                    <div class="mt-2">
+                                        {% for errors in form.last_name.errors %}
+                                        <p class="text-red-600 text-sm mb-1">{{errors}}</p>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+                            <div class="col-span-4 mt-2">
+                                <div class="mb-4 md:w-1/2 md:pr-3">
+                                    <label for = "{{form.old_password.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
+                                        Old Password
+                                    </label>
+                                    <input type="password" name="old_password"  for = "{{form.old_password.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+                                    {% if form.old_password.errors %}
+                                    <div >
+                                        {% for errors in form.old_password.errors %}
+                                        <p class="text-red-600 text-sm mb-1">{{errors}}</p>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                            <div class="col-span-2">
+                                <div class="mb-4">
+                                    <label for = "{{form.new_password1.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
+                                        New Password
+                                    </label>
+                                    <input type="password" name="new_password1" for = "{{form.new_password1.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+
+                                </div>
+
+                            </div>
+                            <div class="col-span-2">
+                                <div class="mb-4">
+                                    <label for = "{{form.new_password2.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
+                                        Confirm Password
+                                    </label>
+                                    <input type="password" name="new_password2" for ="{{form.new_password2.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+
+                                </div>
+                            </div>
+                            {% if form.new_password2.errors%}
+                                    <div class="mt-2 col-span-4">
+                                        {% for errors in form.new_password2.errors %}
+                                        <p class="text-red-600 text-sm mb-1">{{errors}}</p>
+                                        {% endfor %}
+                                    </div>
                             {% endif %}
-
                         </div>
-
-
-                        <div class="col-span-2 mb-4">
-                            <div class="">
-                                <label for = "{{form.first_name.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
-                                    First name
-                                </label>
-                                <input type="text" name="first_name" value="{{form.first_name.value|default_if_none:'' }}" for = "{{form.first_name.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
-
-                                 {% if form.first_name.errors %}
-                                <div class="mt-2">
-                                    {% for errors in form.first_name.errors %}
-                                    <p class="text-red-600 text-sm mb-1">{{errors}}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-
-
-                            </div>
-
-                        </div>
-                        <div class="col-span-2 mb-4">
-                            <div class="">
-                                <label for = "{{form.last_name.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
-                                    Last name
-                                </label>
-                                <input type="text" name="last_name" value="{{form.last_name.value|default_if_none:'' }}" for = "{{form.last_name.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
-                                {% if form.last_name.errors %}
-                                <div class="mt-2">
-                                    {% for errors in form.last_name.errors %}
-                                    <p class="text-red-600 text-sm mb-1">{{errors}}</p>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-
-                            </div>
-
-                        </div>
-                        <div class="col-span-4 mt-2">
-                            <div class="mb-4 md:w-1/2 md:pr-3">
-                                <label for = "{{form.old_password.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
-                                    Old Password
-                                </label>
-                                <input type="password" name="old_password"  for = "{{form.old_password.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
-                                {% if form.old_password.errors %}
-                                <div >
-                                    {% for errors in form.old_password.errors %}
-                                    <p class="text-red-600 text-sm mb-1">{{errors}}</p>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                        </div>
-                        <div class="col-span-2">
+                        <hr class="h-px mx-0 my-4 bg-black opacity-10"/>
+                        <p class="leading-normal uppercase text-sm mb-3">
+                            Company
+                        </p>
+                        <div class="w-4/6">
                             <div class="mb-4">
-                                <label for = "{{form.new_password1.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
-                                    New Password
-                                </label>
-                                <input type="password" name="new_password1" for = "{{form.new_password1.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+                                    <label for = "{{ form.company.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
+                                        Company
+                                    </label>
+                                    <input type="text" name="company" value="{{user.company}}" for = "{{form.company.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-gray-100 bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all" disabled>
 
                             </div>
 
                         </div>
-                        <div class="col-span-2">
+                        <hr class="h-px mx-0 my-4 bg-black opacity-10"/>
+                        <p class="leading-normal uppercase text-sm mb-3">
+                            About Me
+                        </p>
+                        <div class="w-4/6">
                             <div class="mb-4">
-                                <label for = "{{form.new_password2.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
-                                    Confirm Password
-                                </label>
-                                <input type="password" name="new_password2" for ="{{form.new_password2.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
-
+                                    <label for = "{{form.bio.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
+                                        About Me
+                                    </label>
+                                    <input type="text" name="bio" value="{{form.bio.value}}" for = "{{form.bio.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+                                    {% if form.bio.errors %}
+                                    <div>
+                                        {% for errors in form.bio.errors %}
+                                        <p class="text-red-600 text-sm mb-1">{{errors}}</p>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
                             </div>
-                        </div>
-                        {% if form.new_password2.errors%}
-                                <div class="mt-2 col-span-4">
-                                    {% for errors in form.new_password2.errors %}
-                                    <p class="text-red-600 text-sm mb-1">{{errors}}</p>
-                                    {% endfor %}
-                                </div>
-                        {% endif %}
-                    </div>
-                    <hr class="h-px mx-0 my-4 bg-black opacity-10"/>
-                    <p class="leading-normal uppercase text-sm mb-3">
-                        Company
-                    </p>
-                    <div class="w-4/6">
-                        <div class="mb-4">
-                                <label for = "{{ form.company.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
-                                    Company
-                                </label>
-                                <input type="text" name="company" value="{{user.company}}" for = "{{form.company.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-gray-100 bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all" disabled>
 
                         </div>
-
                     </div>
-                    <hr class="h-px mx-0 my-4 bg-black opacity-10"/>
-                    <p class="leading-normal uppercase text-sm mb-3">
-                        About Me
-                    </p>
-                    <div class="w-4/6">
-                        <div class="mb-4">
-                                <label for = "{{form.bio.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
-                                    About Me
-                                </label>
-                                <input type="text" name="bio" value="{{form.bio.value}}" for = "{{form.bio.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
-                                {% if form.bio.errors %}
-                                <div>
-                                    {% for errors in form.bio.errors %}
-                                    <p class="text-red-600 text-sm mb-1">{{errors}}</p>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                        </div>
 
-                    </div>
+
                 </div>
 
-
-            </div>
-
-            <div class="flex justify-end m-3">
-<!--                <a href="{{ request.META.HTTP_REFERER }}" class="hover:no-underline hover:text-black focus:outline-none px-4 p-2 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">-->
-<!--                    Back-->
-<!--                </a>-->
-                <button type="submit" class="focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-4 mr-3">
-                    Save
-                </button>
+                <div class="flex justify-end m-3">
+    <!--                <a href="{{ request.META.HTTP_REFERER }}" class="hover:no-underline hover:text-black focus:outline-none px-4 p-2 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">-->
+    <!--                    Back-->
+    <!--                </a>-->
+                    <button type="submit" class="focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-4 mr-3">
+                        Save
+                    </button>
 
 
-            </div>
+                </div>
 
 
 
@@ -230,9 +298,79 @@
 
 
 <script>
-    function goBack() {
-    window.history.back();
-}
+    
+    function previewImage(event) {
+     var files = event.target.files;
+     var imageContainer = document.getElementById("imageContainer");
+     console.log(imageContainer);
+      const fileInput = event.target;
+
+       // Display the uploaded images
+         for (var i = 0; i < files.length; i++) {
+             var file = files[i];
+             var reader = new FileReader();
+
+             reader.onload = (function (file) {
+                 return function (e) {
+                     imageContainer.src = e.target.result;
+
+                 };
+             })(file);
+
+             reader.readAsDataURL(file);
+         }
+     }
+
+
+     function removeImage(event){
+        var checkbox = document.getElementById("id_remove_image");
+        var imageContainer = document.getElementById("imageContainer");
+        var checkbox_label = checkbox.parentElement;
+
+        if(checkbox.checked){
+            imageContainer.src = "{% static 'image/default.png' %}"
+            checkbox_label.style.display = 'none';
+
+        }
+
+     }
+
+     const modalClose = (modal) => {
+    modal.classList.remove('fadeIn');
+    modal.classList.add('fadeOut');
+
+    modal.style.display = 'none';
+
+    }
+
+    const openModal = (modal) => {
+        modal.classList.remove('fadeOut');
+        modal.classList.add('fadeIn');
+        modal.style.display = 'flex';
+    }
+
+
+        const modalbutton = document.querySelector('.modal-button');
+        const modal = document.querySelector('.main-modal');
+        const closeButton = document.querySelectorAll('.modal-close');
+
+        modalbutton.onclick = (e) => openModal(modal);
+
+
+        for (let i = 0; i < closeButton.length; i++) {
+
+            const elements = closeButton[i];
+
+            elements.onclick = (e) => modalClose(modal);
+
+            modal.style.display = 'none';
+
+            window.onclick = function (event) {
+                if (event.target == modal) modalClose(modal);
+            }
+        }
+
+
 </script>
 
 {% endblock %}
