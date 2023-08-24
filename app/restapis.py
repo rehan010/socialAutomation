@@ -1634,7 +1634,7 @@ def linkedin_org_stats(access_token_string, id, data_list):
 
 
 
-def linkedin_retrieve_access_token(self,post_id):
+def linkedin_retrieve_access_token(post_id):
     posts = PostModel.objects.get(id=post_id)
     user = posts.user
     if len(SocialAccount.objects.filter(user=user.id,provider='linkedin_oauth2')) > 0:

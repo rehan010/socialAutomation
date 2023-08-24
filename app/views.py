@@ -858,29 +858,27 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        user = self.request.user
         user_manager = self.request.user.manager
 
 
         if user_manager != None:
             provider_name = "linkedin"
+            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user=self.request.user.manager.id))
             user2 = User.objects.get(id=user_manager.id)
 
-            if len(SocialAccount.objects.filter(Q(user=user.id) | Q(user=user2.id), provider='linkedin_oauth2')) > 0:
-                linkedin_post_admin = PostModel.objects.filter(Q(user=user.pk) | Q(user=user2.pk),prepost_page__provider=provider_name).distinct()
+            if len(posts.objects.filter(prepost_page__provider=provider_name)) > 0:
+                linkedin_post_admin = posts.objects.filter(prepost_page__provider=provider_name).distinct()
             else:
                 linkedin_post_admin = ''
 
             provider_name1 = "facebook"
             provider_name2 = "instagram"
 
-            if len(SocialAccount.objects.filter(Q(user=user.id) | Q(user=user2.id), provider='facebook')) > 0:
+            if len(posts.objects.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2))) > 0:
 
                 # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
-                facebook_post_admin = PostModel.objects.filter(Q(user=user.pk) | Q(user=user2.pk),
-                                                         prepost_page__provider=provider_name1).distinct()
-                instagram_post_admin = PostModel.objects.filter(Q(user=user.pk) | Q(user=user2.pk),
-                                                          prepost_page__provider=provider_name2).distinct()
+                facebook_post_admin = posts.objects.filter(prepost_page__provider=provider_name1).distinct()
+                instagram_post_admin = posts.objects.filter(prepost_page__provider=provider_name2).distinct()
 
             else:
                 facebook_post_admin = ''
@@ -888,9 +886,8 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
 
             provider_name3 = "Google Books"
 
-            if len(SocialAccount.objects.filter(Q(user=user.id) | Q(user=user2.id), provider='facebook')) > 0:
-                google_post_admin = PostModel.objects.filter(Q(user=user.pk) | Q(user=user2.pk),
-                                                       prepost_page__provider=provider_name3).distinct()
+            if len(posts.objects.filter(prepost_page__provider=provider_name3)) > 0:
+                google_post_admin = posts.objects.filter(prepost_page__provider=provider_name3).distinct()
             else:
                 google_post_admin = ''
         else:
@@ -923,7 +920,7 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
         provider_name3 = "Google Books"
 
         if len(PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name3))> 0:
-            google_post = PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name3).distinct()
+            google_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name3).distinct()
         else:
             google_post = ''
 
@@ -963,7 +960,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         post_id = self.kwargs['post_id']
         page_id = self.kwargs['page_id']
-        result = linkedin_retrieve_access_token(self, post_id)
+        result = linkedin_retrieve_access_token(post_id)
         posts = result[0]
         access_token_string = result[1]
         ids = result[2]
@@ -1042,20 +1039,29 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             }
         elif self.request.GET.get('page_name') == 'instagram':
             provider_name = "instagram"
-            instagram_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
+            instagram_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
+            user = instagram_post.user
             org_id = instagram_post.post_urn.all().filter(pk=page_id).first().org.org_id
             post_urn = instagram_post.post_urn.all().filter(pk=page_id).first().urn
-            facebook_account = SocialAccount.objects.get(user_id = self.request.user.id,provider = "facebook")
-            access_token_string = SocialToken.objects.get(account = facebook_account).token
-            urn = post_urn
-            if urn == '' or urn == None:
-                pass
-            else:
+            if len(SocialAccount.objects.filter(user=user.id, provider="facebook")) > 0:
+                facebook_account = SocialAccount.objects.get(user=user.id, provider="facebook")
+                if facebook_account:
+                    access_token_string = SocialToken.objects.get(account=facebook_account).token
+                    urn = post_urn
+                    if urn == '' or urn == None:
+                        pass
+                    else:
 
-                result = insta_socialactions(urn, access_token_string)
-                no_likes = result[0]
-                no_comments = result[1]
-                data = result[2]
+                        result = insta_socialactions(urn, access_token_string)
+                        no_likes = result[0]
+                        no_comments = result[1]
+                        data = result[2]
+            else:
+                urn = ''
+                no_likes = ''
+                no_comments = ''
+                data = ''
+
 
             context = {
                 'ids': urn,
