@@ -42,49 +42,53 @@
                                     <img src="{% static 'image/default.png' %}" class="w-full h-full object-cover" alt="user1" id="imageContainer">
                                     {% endif %}
                                 </div>
-                                <button type="button" class="absolute rounded-full h-auto lg:w-13 bg-gray-100 text-center hover:bg-gray-200 cursor-pointer p-2 right-0 bottom-0 modal-button">
-                                        <i class='bx bx-camera lg:text-4xl text-4xl'></i>
-                                </button>
+<!--                                <button type="button" class="absolute rounded-full h-auto lg:w-13 bg-gray-100 text-center hover:bg-gray-200 cursor-pointer p-2 right-0 bottom-0 modal-button">-->
+<!--                                        <i class='bx bx-camera lg:text-4xl text-4xl'></i>-->
+<!--                                </button>-->
+                                <label for="id_profile_image" class="absolute rounded-full h-auto lg:w-13 bg-gray-100 text-center hover:bg-gray-200 cursor-pointer p-2 right-0 bottom-0 modal-button">
+                                    <input type="file" class="hidden"  name="profile_image" accept="image/*" id="id_profile_image" onchange="previewImage(event)" />
+                                    <i class='bx bx-camera lg:text-4xl text-4xl'></i>
+                                </label>
 
-                                <div class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster"
-                                    style="background: rgba(0,0,0,.7);display: none;">
-                                    <div
-                                        class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
-                                        <div class="modal-content py-2 text-left px-6">
-                                            <!--Title-->
-                                            <div class="flex justify-between items-center pb-3">
-                                                <p class="text-2xl font-bold">Edit Profile Image</p>
-                                                <div class="modal-close cursor-pointer z-50">
-                                                    <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                                                        viewBox="0 0 18 18">
-                                                        <path
-                                                            d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
-                                                        </path>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                            <!--Footer-->
-                                            <div class="flex justify-end pt-2">
-
-
-                                                <label for="id_remove_image"
-                                                    class="focus:outline-none px-4 p-2 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">
-                                                    <input type="checkbox" class="hidden"  name="remove_image" id="id_remove_image" onchange="removeImage(event)" />
-                                                    <span>Remove</span>
-
-                                                </label>
+<!--                                <div class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster"-->
+<!--                                    style="background: rgba(0,0,0,.7);display: none;">-->
+<!--                                    <div-->
+<!--                                        class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">-->
+<!--                                        <div class="modal-content py-2 text-left px-6">-->
+<!--                                            &lt;!&ndash;Title&ndash;&gt;-->
+<!--                                            <div class="flex justify-between items-center pb-3">-->
+<!--                                                <p class="text-2xl font-bold">Edit Profile Image</p>-->
+<!--                                                <div class="modal-close cursor-pointer z-50">-->
+<!--                                                    <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"-->
+<!--                                                        viewBox="0 0 18 18">-->
+<!--                                                        <path-->
+<!--                                                            d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">-->
+<!--                                                        </path>-->
+<!--                                                    </svg>-->
+<!--                                                </div>-->
+<!--                                            </div>-->
+<!--                                            &lt;!&ndash;Footer&ndash;&gt;-->
+<!--                                            <div class="flex justify-end pt-2">-->
 
 
-                                                <label for="id_profile_image" class="focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-2">
-                                                    <input type="file" class="hidden"  name="profile_image" accept="image/*" id="id_profile_image" onchange="previewImage(event)" />
-<!--                                                    <i class='bx bx-camera lg:text-4xl text-4xl'></i>-->
+<!--                                                <label for="id_remove_image"-->
+<!--                                                    class="focus:outline-none px-4 p-2 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black">-->
+<!--                                                    <input type="checkbox" class="hidden"  name="remove_image" id="id_remove_image" onchange="removeImage(event)" />-->
+<!--                                                    <span>Remove</span>-->
 
-                                                        <span>Change</span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+<!--                                                </label>-->
+
+
+<!--                                                <label for="id_profile_image" class="focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-2">-->
+<!--                                                    <input type="file" class="hidden"  name="profile_image" accept="image/*" id="id_profile_image" onchange="previewImage(event)" />-->
+<!--&lt;!&ndash;                                                    <i class='bx bx-camera lg:text-4xl text-4xl'></i>&ndash;&gt;-->
+
+<!--                                                        <span>Change</span>-->
+<!--                                                </label>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
 
 
 
@@ -322,53 +326,53 @@
      }
 
 
-     function removeImage(event){
-        var checkbox = document.getElementById("id_remove_image");
-        var imageContainer = document.getElementById("imageContainer");
-        var checkbox_label = checkbox.parentElement;
+<!--     function removeImage(event){-->
+<!--        var checkbox = document.getElementById("id_remove_image");-->
+<!--        var imageContainer = document.getElementById("imageContainer");-->
+<!--        var checkbox_label = checkbox.parentElement;-->
 
-        if(checkbox.checked){
-            imageContainer.src = "{% static 'image/default.png' %}"
-            checkbox_label.style.display = 'none';
+<!--        if(checkbox.checked){-->
+<!--            imageContainer.src = "{% static 'image/default.png' %}"-->
+<!--            checkbox_label.style.display = 'none';-->
 
-        }
+<!--        }-->
 
-     }
+<!--     }-->
 
-     const modalClose = (modal) => {
-    modal.classList.remove('fadeIn');
-    modal.classList.add('fadeOut');
+<!--     const modalClose = (modal) => {-->
+<!--    modal.classList.remove('fadeIn');-->
+<!--    modal.classList.add('fadeOut');-->
 
-    modal.style.display = 'none';
+<!--    modal.style.display = 'none';-->
 
-    }
+<!--    }-->
 
-    const openModal = (modal) => {
-        modal.classList.remove('fadeOut');
-        modal.classList.add('fadeIn');
-        modal.style.display = 'flex';
-    }
-
-
-        const modalbutton = document.querySelector('.modal-button');
-        const modal = document.querySelector('.main-modal');
-        const closeButton = document.querySelectorAll('.modal-close');
-
-        modalbutton.onclick = (e) => openModal(modal);
+<!--    const openModal = (modal) => {-->
+<!--        modal.classList.remove('fadeOut');-->
+<!--        modal.classList.add('fadeIn');-->
+<!--        modal.style.display = 'flex';-->
+<!--    }-->
 
 
-        for (let i = 0; i < closeButton.length; i++) {
+<!--        const modalbutton = document.querySelector('.modal-button');-->
+<!--        const modal = document.querySelector('.main-modal');-->
+<!--        const closeButton = document.querySelectorAll('.modal-close');-->
 
-            const elements = closeButton[i];
+<!--        modalbutton.onclick = (e) => openModal(modal);-->
 
-            elements.onclick = (e) => modalClose(modal);
 
-            modal.style.display = 'none';
+<!--        for (let i = 0; i < closeButton.length; i++) {-->
 
-            window.onclick = function (event) {
-                if (event.target == modal) modalClose(modal);
-            }
-        }
+<!--            const elements = closeButton[i];-->
+
+<!--            elements.onclick = (e) => modalClose(modal);-->
+
+<!--            modal.style.display = 'none';-->
+
+<!--            window.onclick = function (event) {-->
+<!--                if (event.target == modal) modalClose(modal);-->
+<!--            }-->
+<!--        }-->
 
 
 </script>

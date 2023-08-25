@@ -511,9 +511,14 @@ class PostCreateView(CreateView):
     def form_valid(self, form):
         requestdata = dict(self.request.POST)
         context = self.request.session.get('context')
+
+
+        linkedin_errors = linkedin_validator(self.request)
         facebook_errors = facebook_validator(self.request)
         instagram_errors = instagram_validator(self.request)
-        linkedin_errors = linkedin_validator(self.request)
+
+
+
         if facebook_errors or instagram_errors or linkedin_errors:
             for errors in facebook_errors:
                 messages.error(self.request,facebook_errors[errors])
@@ -644,6 +649,19 @@ class PageDataView(APIView):
         access_token = {}
         data = {}
 
+        try:
+            post_id = request.query_params.get('pk')
+            if post_id:
+                postIds = []
+                post = PostModel.objects.get(pk=post_id)
+                for page in post.prepost_page.all():
+                    postIds.append(page.org_id)
+                data['posts'] = postIds
+        except Exception as e:
+            e
+
+
+
         for _ in social:
             access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
 
@@ -692,6 +710,23 @@ class PostDraftView(UpdateView):
 
     def form_valid(self, form):
         requestdata = dict(self.request.POST)
+
+        linkedin_errors = linkedin_validator(self.request)
+        facebook_errors = facebook_validator(self.request)
+        instagram_errors = instagram_validator(self.request)
+
+        if facebook_errors or instagram_errors or linkedin_errors:
+            for errors in facebook_errors:
+                messages.error(self.request, facebook_errors[errors])
+
+            for errors in instagram_errors:
+                messages.error(self.request, instagram_errors[errors])
+
+            for errors in linkedin_errors:
+                messages.error(self.request, linkedin_errors[errors])
+
+            return self.form_invalid(form)
+
         context = self.request.session.get('context')
         post_id = self.kwargs.get('pk')
         post = PostModel.objects.get(pk=post_id)
