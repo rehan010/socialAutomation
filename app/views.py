@@ -112,21 +112,8 @@ def my_business_view(request):
         error_message = f"Error: {response.status_code} - {response.text}"
         return render(request, 'error.html', {'error_message': error_message})
 
-class BaseView(LoginRequiredMixin,TemplateView):
+class BaseView(TemplateView):
     template_name = "registration/base.html"
-    # model = User
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     user = self.request.user
-    #     user_manager = user.manager
-    #     if user_manager:
-    #         invite = InviteEmploye.objects.get(invited_by=user_manager, selected_user=user)
-    #         role = invite.role
-    #     else:
-    #         role ='WRITE'
-    #
-    #     context['role'] = role
-    #     return context
 
 class ProfileView(LoginRequiredMixin,TemplateView):
     template_name = "registration/profile.html"
