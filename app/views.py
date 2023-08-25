@@ -870,22 +870,28 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
                 else:
                     google_post = ''
         else:
+            invited = InviteEmploye.objects.filter(invited_by=self.request.user)
+            invites = []
+            for user in invited:
+                invited_users_id = user.selected_user.id
+                invites.append(invited_users_id)
+            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites))
 
             provider_name = "linkedin"
-            if len(PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name)) > 0:
+            if len(posts.filter(prepost_page__provider=provider_name)) > 0:
 
-                linkedin_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name).distinct()
+                linkedin_post = posts.filter(prepost_page__provider=provider_name).distinct()
             else:
                 linkedin_post = ''
 
             provider_name1 = "facebook"
             provider_name2 = "instagram"
-            if len(PostModel.objects.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2),user=self.request.user.pk)) > 0:
+            if len(posts.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2))) > 0:
 
 
             # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
-                facebook_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name1).distinct()
-                instagram_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name2).distinct()
+                facebook_post = posts.filter(prepost_page__provider=provider_name1).distinct()
+                instagram_post = posts.filter(prepost_page__provider=provider_name2).distinct()
 
             else:
                 facebook_post = ''
@@ -894,8 +900,8 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
 
             provider_name3 = "Google Books"
 
-            if len(PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name3)) > 0:
-                google_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name3).distinct()
+            if len(posts.filter(prepost_page__provider=provider_name3)) > 0:
+                google_post = posts.filter(prepost_page__provider=provider_name3).distinct()
             else:
                 google_post = ''
 
