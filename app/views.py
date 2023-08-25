@@ -866,19 +866,19 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
             posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user=self.request.user.manager.id))
             user2 = User.objects.get(id=user_manager.id)
 
-            if len(posts.objects.filter(prepost_page__provider=provider_name)) > 0:
-                linkedin_post_admin = posts.objects.filter(prepost_page__provider=provider_name).distinct()
+            if len(posts.filter(prepost_page__provider=provider_name)) > 0:
+                linkedin_post_admin = posts.filter(prepost_page__provider=provider_name).distinct()
             else:
                 linkedin_post_admin = ''
 
             provider_name1 = "facebook"
             provider_name2 = "instagram"
 
-            if len(posts.objects.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2))) > 0:
+            if len(posts.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2))) > 0:
 
                 # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
-                facebook_post_admin = posts.objects.filter(prepost_page__provider=provider_name1).distinct()
-                instagram_post_admin = posts.objects.filter(prepost_page__provider=provider_name2).distinct()
+                facebook_post_admin = posts.filter(prepost_page__provider=provider_name1).distinct()
+                instagram_post_admin = posts.filter(prepost_page__provider=provider_name2).distinct()
 
             else:
                 facebook_post_admin = ''
@@ -886,8 +886,8 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
 
             provider_name3 = "Google Books"
 
-            if len(posts.objects.filter(prepost_page__provider=provider_name3)) > 0:
-                google_post_admin = posts.objects.filter(prepost_page__provider=provider_name3).distinct()
+            if len(posts.filter(prepost_page__provider=provider_name3)) > 0:
+                google_post_admin = posts.filter(prepost_page__provider=provider_name3).distinct()
             else:
                 google_post_admin = ''
         else:

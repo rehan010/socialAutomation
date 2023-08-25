@@ -421,12 +421,7 @@
           name="comment_check"
           class="mt-0.54 rounded-10 duration-250 ease-soft-in-out after:rounded-circle after:shadow-soft-2xl after:duration-250 checked:after:translate-x-5.25 h-5 relative float-left ml-auto w-10 cursor-pointer appearance-none border border-solid border-gray-200 bg-slate-800/10 bg-none bg-contain bg-left bg-no-repeat align-top transition-all after:absolute after:top-px after:h-4 after:w-4 after:translate-x-px after:bg-white after:content-[''] checked:border-slate-800/95 checked:bg-slate-800/95 checked:bg-none checked:bg-right"
           type="checkbox"
-          {%
-          if
-          comment_check
-          %}checked{%
-          endif
-          %}
+          {% if comment_check %}checked{% endif %}
         />
         <label
           for="follow"
@@ -648,27 +643,27 @@
 
     });
 
-    const form = document.getElementById('yourForm');
-    const checkboxInputs = document.querySelectorAll('input[type="checkbox"]');
-    const checkboxSelectedInput = document.getElementById('checkboxSelected');
-    console.log(checkboxSelectedInput);
+<!--    const form = document.getElementById('yourForm');-->
+<!--    const checkboxInputs = document.querySelectorAll('input[type="checkbox"]');-->
+<!--    const checkboxSelectedInput = document.getElementById('checkboxSelected');-->
+<!--    console.log(checkboxSelectedInput);-->
 
-    form.addEventListener('submit', function (event) {
-      event.preventDefault();
+<!--    form.addEventListener('submit', function (event) {-->
+<!--      event.preventDefault();-->
 
-      // Check if at least one checkbox is selected
-      const atLeastOneChecked = Array.from(checkboxInputs).some(input => input.checked);
+<!--      // Check if at least one checkbox is selected-->
+<!--      const atLeastOneChecked = Array.from(checkboxInputs).some(input => input.checked);-->
 
-      if (atLeastOneChecked) {
+<!--      if (atLeastOneChecked) {-->
 
-        checkboxSelectedInput.value = 1;
+<!--        checkboxSelectedInput.value = 1;-->
 
-        form.submit();
-      } else {
-        console.log('Hi');
-        alert('Please select at least one page to post.');
-      }
-    });
+<!--        form.submit();-->
+<!--      } else {-->
+<!--        console.log('Hi');-->
+<!--        alert('Please select at least one page to post.');-->
+<!--      }-->
+<!--    });-->
 
       document.getElementById("yourForm").addEventListener("submit", function(event) {
           const pageCheckboxes = document.querySelectorAll("#pageSelection input[type=checkbox]");
