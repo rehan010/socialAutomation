@@ -1070,7 +1070,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
                 org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
                 post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
-                result = linkedin_retrieve_access_token(self)
+                result = linkedin_retrieve_access_token(post_id)
 
                 access_token = result[1]
                 social = result[3]
@@ -1120,7 +1120,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
 
                 post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
-                result = linkedin_retrieve_access_token(self)
+                result = linkedin_retrieve_access_token(post_id)
 
                 access_token = result[1]
                 social = result[3]

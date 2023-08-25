@@ -48,12 +48,6 @@
       <div class="emoji-picker-container">
       <textarea name="post" cols="40" rows="10" data-emojiable="true" class="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none w-full"  id="id_post">{{post.post}}</textarea>
         </div>
-      {% for page in post.prepost_page.all %}
-      <div><label>{{page.org_id}}</label></div>
-      {% endfor %}
-      {% for obj in data %}
-      <div><label>{{data}}</label></div>
-      {% endfor %}
         <div class="icons flex text-gray-500 m-2" >
         <div class="count ml-auto text-gray-400 text-xs font-semibold">0/300</div>
         </div>
