@@ -564,6 +564,8 @@ def instagram_post_single_media(page_id,access_token,media,post,page):
     post_urn.save()
     post.post_urn.add(post_urn)
     print("Post Successfull Created")
+    post.published_at = timezone.now()
+    post.save()
 
 
 
@@ -695,6 +697,8 @@ def facebook_post_multiimage(data,images,post,sharepage):
     print("Post Successfull Created")
 
     post.post_urn.add(post_urn)
+    post.published_at = timezone.now()
+    post.save()
 
 def create_insta_post(page_id,access_token,media,post,page):
 
@@ -729,6 +733,8 @@ def facebook_post_video(data,video,post,sharepage):
     post_urn.save()
 
     post.post_urn.add(post_urn)
+    post.published_at = timezone.now()
+    post.save()
 
 
 
@@ -849,6 +855,8 @@ def instagram_multi_media(page_id,access_token,media,post,page):
     post_urn.save()
 
     post.post_urn.add(post_urn)
+    post.published_at = timezone.now()
+    post.save()
 
 
 
@@ -887,6 +895,7 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
                             post_urn.org = org
                             post_urn.save()
                         post.post_urn.add(post_urn)
+                        post.published_at = timezone.now()
                         post.save()
                         print("Video Posted successfully.")
 
@@ -934,6 +943,7 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
                         post_urn.org = org
                         post_urn.save()
                     post.post_urn.add(post_urn)
+                    post.published_at = timezone.now()
                     post.save()
 
 
@@ -949,6 +959,7 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
                         post_urn.org = org
                         post_urn.save()
                     post.post_urn.add(post_urn)
+                    post.published_at = timezone.now()
                     post.save()
                 else:
                     print("API request failed with status code:", response.status_code)
@@ -962,6 +973,7 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
                 post_urn.org = org
                 post_urn.save()
             post.post_urn.add(post_urn)
+            post.published_at = timezone.now()
             post.save()
         else:
             print("API request failed with status code:", response.status_code)

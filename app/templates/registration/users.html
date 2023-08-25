@@ -113,7 +113,11 @@
                         <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                           <div class="flex px-2 py-1">
                             <div>
-                              <img src="{% static 'assets/img/team-4.jpg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                {% if user.selected_user.profile_image %}
+                                <img src="{{ user.selected_user.profile_image.url }}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" >
+                                {% else %}
+                                <img src="{% static 'assets/img/team-4.jpg'%}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                {% endif %}
                             </div>
                               <div class="flex flex-col justify-center">
                                   {% if user.selected_user.first_name == '' %}
@@ -193,9 +197,9 @@
                                                     </div>
                                                     <div class="flex justify-center">
                                                         <select class="permissionSelect1  w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
-                                                                <option value="HIDE">HIDE</option>
-                                                                <option value="READ">READ</option>
-                                                                <option value="WRITE">WRITE</option>
+                                                                <option value="HIDE" {% if user.permission == 'HIDE' %} selected {% endif %} >HIDE</option>
+                                                                <option value="READ" {% if user.permission == 'READ' %} selected {% endif %} >READ</option>
+                                                                <option value="WRITE" {% if user.permission == 'WRITE' %} selected {% endif %} >WRITE</option>
                                                         </select>
                                                     </div>
                                                     <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">

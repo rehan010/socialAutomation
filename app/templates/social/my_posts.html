@@ -179,8 +179,11 @@
                                     <div class="flex px-4 py-1">
 
                                         <div class="flex flex-col justify-center items-center w-full">
-                                            <h6 class="mb-0 text-sm leading-normal">
-                                                {{p.schedule_datetime|naturaltime}}</h6>
+                                            {% if p.status == 'SCHEDULED' %}
+                                            <h6 class="mb-0 text-sm leading-normal">{{p.schedule_datetime|naturaltime}}</h6>
+                                            {% else %}
+                                            <h6 class="mb-0 text-sm leading-normal">{{p.published_at|naturaltime}}</h6>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </td>
@@ -259,7 +262,6 @@
                             <!--                            </tr>-->
                         </thead>
                         <tbody>
-                        {% if linkedin_post %}
                         {% for p in linkedin_post %}
                         <tr>
                             <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
@@ -342,7 +344,11 @@
                                 <div class="flex px-4 py-1">
 
                                     <div class="flex flex-col justify-center items-center w-full">
+                                        {% if p.status == 'SCHEDULED' %}
                                         <h6 class="mb-0 text-sm leading-normal">{{p.schedule_datetime|naturaltime}}</h6>
+                                        {% else %}
+                                        <h6 class="mb-0 text-sm leading-normal">{{p.published_at|naturaltime}}</h6>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </td>
@@ -381,129 +387,6 @@
                             </td>
                         </tr>
                         {% endfor %}
-                        {% else %}
-                        {% for p in linkedin_post_admin %}
-                        <tr>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                <div class="flex px-2 py-1">
-                                    <div>
-                                        <img src="{% static 'assets/img/team-3.jpg'%}"
-                                             class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                             alt="user1">
-                                    </div>
-                                    <div class="flex flex-col justify-center">
-                                        <h6 class="mb-0 text-sm leading-normal font-semibold">{{p.user|title}}</h6>
-                                        <p class="mb-0 text-xs leading-tight text-slate-400 pt-1">{{p.user.email}}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                <div class="flex px-2 py-1">
-                                    <div class="flex flex-col justify-center">
-
-                                        <h6 class="mb-0 text-sm leading-normal">{{p.post|truncatewords:5}}</h6>
-
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                <div class="mt-2 avatar-group media-div">
-                                    {% if p.images %}
-                                    {% for image in p.images.all %}
-                                    {% if image.is_mp4_file %}
-                                    Video
-                                    {% else %}
-                                    <a href="javascript:;"
-                                       class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30"
-                                       data-target="tooltip_trigger" data-placement="bottom">
-                                        <img src="{{image.image.url}}" class="w-full rounded-full" alt="team1"/>
-                                    </a>
-                                    <div data-target="tooltip"
-                                         class="hidden px-2 py-1 text-white bg-black rounded-lg text-sm" role="tooltip">
-                                        {{image.image}}
-                                        <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']"
-                                             data-popper-arrow></div>
-                                    </div>
-
-                                    {% endif %}
-                                    {% endfor %}
-                                    {% endif %}
-
-                                </div>
-                            </td>
-                            {% if p.status == 'PROCESSING' %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-blue-700 to-gray-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% elif p.status == 'DRAFT' %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-red-700 to-yellow-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% elif p.status == 'SCHEDULED' %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-purple-700 to-blue-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% else %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-green-500 to-green-900 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% endif %}
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                <div class="flex px-4 py-1">
-
-                                    <div class="flex flex-col justify-center items-center w-full">
-                                        <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                <div class="flex px-4 py-1">
-
-                                    <div class="flex flex-col justify-center items-center w-full">
-                                        <h6 class="mb-0 text-sm leading-normal">{{p.schedule_datetime|naturaltime}}</h6>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                <div class="flex px-2 py-1">
-                                    {% if p.status == 'PUBLISHED' %}
-                                    <div class="flex flex-col justify-center">
-                                        {% for page_name in p.post_urn.all %}
-                                        {%if page_name.org.provider == 'linkedin'%}
-                                        <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.org}}</h6>
-
-                                        </a>
-                                        {%endif%}
-                                        {%endfor%}
-
-                                    </div>
-                                    {% elif p.status == 'DRAFT' %}
-                                    <div class="flex flex-col justify-center">
-                                        <a href="{%url 'post_draft' p.pk %}">
-                                            <h6 class="mb-0 text-sm leading-normal">PUBLISH THIS DRAFT</h6>
-
-                                        </a>
-                                    </div>
-                                    {% else %}
-                                    <div class="flex flex-col justify-center">
-                                        {% for page_name in p.prepost_page.all %}
-                                        {%if page_name.provider == 'linkedin'%}
-                                        <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
-                                        {%endif%}
-                                        {%endfor%}
-
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        <tr>
-                            {% endfor %}
-                        {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -545,9 +428,7 @@
 
                         </thead>
                         <tbody>
-                        {% if user_role == 'MANAGER' and permission == 'HIDE' or instagram_post.user == self.request.user  %}
                         {% for p in instagram_post %}
-
                         <tr>
                             <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                                 <div class="flex px-2 py-1">
@@ -630,7 +511,11 @@
                                 <div class="flex px-4 py-1">
 
                                     <div class="flex flex-col justify-center items-center w-full">
+                                        {% if p.status == 'SCHEDULED' %}
                                         <h6 class="mb-0 text-sm leading-normal">{{p.schedule_datetime|naturaltime}}</h6>
+                                        {% else %}
+                                        <h6 class="mb-0 text-sm leading-normal">{{p.published_at|naturaltime}}</h6>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </td>
@@ -669,130 +554,6 @@
                             </td>
                         </tr>
                         {% endfor %}
-                        {% else %}
-                        {% for p in instagram_post_admin %}
-                        <tr>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                <div class="flex px-2 py-1">
-                                    <div>
-                                        <img src="{% static 'assets/img/team-3.jpg'%}"
-                                             class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                             alt="user1">
-                                    </div>
-                                    <div class="flex flex-col justify-center">
-                                        <h6 class="mb-0 text-sm leading-normal font-semibold">{{p.user|title}}</h6>
-                                        <p class="mb-0 text-xs leading-tight text-slate-400 pt-1">{{p.user.email}}</p>
-                                    </div>
-                                </div>
-                            </td>
-
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                <div class="flex px-2 py-1">
-                                    <div class="flex flex-col justify-center">
-                                        <a href="#">
-                                            <h6 class="mb-0 text-sm leading-normal">{{p.post|truncatewords:5}}</h6>
-                                        </a>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                <div class="mt-2 avatar-group media-div">
-                                    {% if p.images %}
-                                    {% for image in p.images.all %}
-                                    {% if image.is_mp4_file %}
-                                    Video
-                                    {% else %}
-                                    <a href="javascript:;"
-                                       class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30"
-                                       data-target="tooltip_trigger" data-placement="bottom">
-                                        <img src="{{image.image.url}}" class="w-full rounded-full" alt="team1"/>
-                                    </a>
-                                    <div data-target="tooltip"
-                                         class="hidden px-2 py-1 text-white bg-black rounded-lg text-sm" role="tooltip">
-                                        {{image.image}}
-                                        <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']"
-                                             data-popper-arrow></div>
-                                    </div>
-
-                                    {% endif %}
-                                    {% endfor %}
-                                    {% endif %}
-
-                                </div>
-                            </td>
-                            {% if p.status == 'PROCESSING' %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-blue-700 to-gray-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% elif p.status == 'DRAFT' %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-red-700 to-yellow-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% elif p.status == 'SCHEDULED' %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-purple-700 to-blue-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% else %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-green-500 to-green-900 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% endif %}
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                <div class="flex px-4 py-1">
-
-                                    <div class="flex flex-col justify-center items-center w-full">
-                                        <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                <div class="flex px-4 py-1">
-
-                                    <div class="flex flex-col justify-center items-center w-full">
-                                        <h6 class="mb-0 text-sm leading-normal">{{p.schedule_datetime|naturaltime}}</h6>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                <div class="flex px-2 py-1">
-                                    {% if p.status == 'PUBLISHED' %}
-                                    <div class="flex flex-col justify-center">
-                                        {% for page_name in p.post_urn.all %}
-                                        {%if page_name.org.provider == 'instagram'%}
-                                        <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.org}}</h6>
-
-                                        </a>
-                                        {%endif%}
-                                        {%endfor%}
-
-                                    </div>
-                                    {% elif p.status == 'DRAFT' %}
-                                    <div class="flex flex-col justify-center">
-                                        <a href="{%url 'post_draft' p.pk %}">
-                                            <h6 class="mb-0 text-sm leading-normal">PUBLISH THIS DRAFT</h6>
-
-                                        </a>
-                                    </div>
-                                    {% else %}
-                                    <div class="flex flex-col justify-center">
-                                        {% for page_name in p.prepost_page.all %}
-                                        {%if page_name.provider == 'instagram'%}
-                                        <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
-                                        {%endif%}
-                                        {%endfor%}
-
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -833,9 +594,7 @@
 
                         </thead>
                         <tbody>
-                        {% if user_role == 'MANAGER' and permission == 'HIDE' %}
                         {% for p in google_post %}
-
                         <tr>
                             <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                                 <div class="flex px-2 py-1">
@@ -960,137 +719,7 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            {% endfor %}
-                        {% else %}
-                        {% for p in google_post_admin %}
-                        <tr>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                <div class="flex px-2 py-1">
-                                    <div>
-                                        <img src="{% static 'assets/img/team-3.jpg'%}"
-                                             class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
-                                             alt="user1">
-                                    </div>
-                                    <div class="flex flex-col justify-center">
-                                        <h6 class="mb-0 text-sm leading-normal font-semibold">{{p.user|title}}</h6>
-                                        <p class="mb-0 text-xs leading-tight text-slate-400 pt-1">{{p.user.email}}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                <div class="flex px-2 py-1">
-                                    <div class="flex flex-col justify-center">
-                                        <h6 class="mb-0 text-sm leading-normal">{{p.post|truncatewords:5}}</h6>
-                                    </div>
-                                </div>
-                            </td>
-
-
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
-                                <div class="mt-2 avatar-group media-div">
-                                    {% if p.images %}
-                                    {% for image in p.images.all %}
-                                    {% if image.is_mp4_file %}
-                                    Video
-                                    {% else %}
-                                    <a href="javascript:;"
-                                       class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30"
-                                       data-target="tooltip_trigger" data-placement="bottom">
-                                        <img src="{{image.image.url}}" class="w-full rounded-full" alt="team1"/>
-                                    </a>
-                                    <div data-target="tooltip"
-                                         class="hidden px-2 py-1 text-white bg-black rounded-lg text-sm" role="tooltip">
-                                        {{image.image}}
-                                        <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']"
-                                             data-popper-arrow></div>
-                                    </div>
-
-                                    {% endif %}
-                                    {% endfor %}
-                                    {% endif %}
-
-                                </div>
-                            </td>
-                            </td>
-
-                            {% if p.status == 'PROCESSING' %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-blue-700 to-gray-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% elif p.status == 'DRAFT' %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-red-700 to-yellow-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% elif p.status == 'SCHEDULED' %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-purple-700 to-blue-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% else %}
-                            <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
-                                <span class="bg-gradient-to-tl from-green-500 to-green-900 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
-
-                            </td>
-                            {% endif %}
-
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                <div class="flex px-4 py-1">
-
-                                    <div class="flex flex-col justify-center items-center w-full">
-
-                                        <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
-
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                <div class="flex px-4 py-1">
-
-                                    <div class="flex flex-col justify-center items-center w-full">
-                                        <h6 class="mb-0 text-sm leading-normal">{{p.created_at|naturaltime}}</h6>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                <div class="flex px-2 py-1">
-                                    {% if p.status == 'PUBLISHED' %}
-                                    <div class="flex flex-col justify-center">
-                                        {% for page_name in p.post_urn.all %}
-                                        {%if page_name.org.provider == 'facebook' %}
-                                        <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.org}}</h6>
-
-                                        </a>
-                                        {%endif%}
-                                        {%endfor%}
-
-                                    </div>
-                                    {% elif p.status == 'DRAFT' %}
-                                    <div class="flex flex-col justify-center">
-                                        <a href="{%url 'post_draft' p.pk %}">
-                                            <h6 class="mb-0 text-sm leading-normal">PUBLISH THIS DRAFT</h6>
-
-                                        </a>
-                                    </div>
-                                    {% else %}
-                                    <div class="flex flex-col justify-center">
-                                        {% for page_name in p.prepost_page.all %}
-                                        {%if page_name.provider == 'facebook' %}
-                                        <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
-                                        {%endif%}
-                                        {%endfor%}
-
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            {% endfor %}
-                            {% endif %}
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>

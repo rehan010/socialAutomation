@@ -317,7 +317,7 @@
                     </div>
                 </div>
                 <br>
-                {% if user_role == 'ADMIN' or user_role == 'MANAGER' and permission == 'WRITE' %}
+                {% if user_role == 'MANAGER' and permission == 'WRITE' %}
 
                 <!-- New Comment Card -->
                 <div class="w-full border rounded-lg p-3 mb-4">
@@ -382,7 +382,7 @@
                                         {% endfor %}
                                         {% endif %}
                                     </div>
-                                    {% if user_role == 'ADMIN' or user_role == 'MANAGER' and permission == 'WRITE' %}
+                                    {% if user_role == 'MANAGER' and permission == 'WRITE' %}
                                     <!-- Reply Text Area -->
                                     <div class="mt-4">
                                         <textarea class="w-full border rounded-lg p-2" name="reply" placeholder="Write a reply..."></textarea>

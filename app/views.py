@@ -184,12 +184,14 @@ class change_role(CreateView):
             data = json.loads(request.body)
             invite_id = data.get('user')
             role = data.get('role')
+            permission = data.get('permission')
 
             invite = InviteEmploye.objects.get(pk=invite_id)
             selected_user = User.objects.get(pk=invite.selected_user.id)
             invite.role = role
+            invite.permission = permission
             invite.save()
-            return JsonResponse({'message': 'New role of' + ' ' + selected_user.username + ' ' + 'is' + ' ' + role})
+            return JsonResponse({'message': 'New role of' + ' ' + selected_user.username + ' ' + 'is' + ' ' + role + ' with permission' + ' ' + permission})
         else:
             return JsonResponse({'error': 'Selected user not found.'}, status=400)
 
@@ -793,7 +795,7 @@ class PostDraftView(UpdateView):
         return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
 
 
-class PostsGetView(LoginRequiredMixin,TemplateView):
+class PostsGetView(LoginRequiredMixin, TemplateView):
     template_name = 'social/my_posts.html'
 
     def get_context_data(self, **kwargs):
@@ -802,68 +804,100 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
         user_manager = self.request.user.manager
 
 
-        if user_manager != None:
-            provider_name = "linkedin"
-            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user=self.request.user.manager.id))
-            user2 = User.objects.get(id=user_manager.id)
 
-            if len(posts.filter(prepost_page__provider=provider_name)) > 0:
-                linkedin_post_admin = posts.filter(prepost_page__provider=provider_name).distinct()
+        if user_manager != None:
+            role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
+            user_role = role.role
+            user_permission = role.permission
+            if user_permission == 'HIDE':
+                provider_name = "linkedin"
+                if len(PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name)) > 0:
+
+                    linkedin_post = PostModel.objects.filter(user=self.request.user.pk,
+                                                             prepost_page__provider=provider_name).distinct()
+                else:
+                    linkedin_post = ''
+
+                provider_name1 = "facebook"
+                provider_name2 = "instagram"
+                if len(PostModel.objects.filter(
+                        Q(prepost_page__provider=provider_name1) | Q(prepost_page__provider=provider_name2),
+                        user=self.request.user.pk)) > 0:
+
+                    # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
+                    facebook_post = PostModel.objects.filter(user=self.request.user.pk,
+                                                             prepost_page__provider=provider_name1).distinct()
+                    instagram_post = PostModel.objects.filter(user=self.request.user.pk,
+                                                              prepost_page__provider=provider_name2).distinct()
+
+                else:
+                    facebook_post = ''
+                    instagram_post = ''
+
+                provider_name3 = "Google Books"
+
+                if len(PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name3)) > 0:
+                    google_post = PostModel.objects.filter(user=self.request.user.pk,
+                                                           prepost_page__provider=provider_name3).distinct()
+                else:
+                    google_post = ''
             else:
-                linkedin_post_admin = ''
+                provider_name = "linkedin"
+                posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user=self.request.user.manager.id))
+
+
+                if len(posts.filter(prepost_page__provider=provider_name)) > 0:
+                    linkedin_post= posts.filter(prepost_page__provider=provider_name).distinct()
+                else:
+                    linkedin_post = ''
+
+                provider_name1 = "facebook"
+                provider_name2 = "instagram"
+
+                if len(posts.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2))) > 0:
+
+                    facebook_post = posts.filter(prepost_page__provider=provider_name1).distinct()
+                    instagram_post = posts.filter(prepost_page__provider=provider_name2).distinct()
+
+                else:
+                    facebook_post = ''
+                    instagram_post = ''
+
+                provider_name3 = "Google Books"
+
+                if len(posts.filter(prepost_page__provider=provider_name3)) > 0:
+                    google_post = posts.filter(prepost_page__provider=provider_name3).distinct()
+                else:
+                    google_post = ''
+        else:
+
+            provider_name = "linkedin"
+            if len(PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name)) > 0:
+
+                linkedin_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name).distinct()
+            else:
+                linkedin_post = ''
 
             provider_name1 = "facebook"
             provider_name2 = "instagram"
+            if len(PostModel.objects.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2),user=self.request.user.pk)) > 0:
 
-            if len(posts.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2))) > 0:
 
-                # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
-                facebook_post_admin = posts.filter(prepost_page__provider=provider_name1).distinct()
-                instagram_post_admin = posts.filter(prepost_page__provider=provider_name2).distinct()
+            # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
+                facebook_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name1).distinct()
+                instagram_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name2).distinct()
 
             else:
-                facebook_post_admin = ''
-                instagram_post_admin = ''
+                facebook_post = ''
+                instagram_post = ''
+
 
             provider_name3 = "Google Books"
 
-            if len(posts.filter(prepost_page__provider=provider_name3)) > 0:
-                google_post_admin = posts.filter(prepost_page__provider=provider_name3).distinct()
+            if len(PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name3)) > 0:
+                google_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name3).distinct()
             else:
-                google_post_admin = ''
-        else:
-            google_post_admin = ''
-            facebook_post_admin = ''
-            instagram_post_admin = ''
-            linkedin_post_admin = ''
-
-        provider_name = "linkedin"
-        if len(PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name)) > 0:
-
-            linkedin_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name).distinct()
-        else:
-            linkedin_post = ''
-
-        provider_name1 = "facebook"
-        provider_name2 = "instagram"
-        if len(PostModel.objects.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2),user=self.request.user.pk)) > 0:
-
-
-        # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
-            facebook_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name1).distinct()
-            instagram_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name2).distinct()
-
-        else:
-            facebook_post = ''
-            instagram_post = ''
-
-
-        provider_name3 = "Google Books"
-
-        if len(PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name3)) > 0:
-            google_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name3).distinct()
-        else:
-            google_post = ''
+                google_post = ''
 
 
         context = {
@@ -871,13 +905,13 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
             # 'data_list': data_list,
             'posts': PostModel.objects.filter(user_id=self.request.user.id),
             'google_post': google_post,
-            'google_post_admin': google_post_admin,
+
             'instagram_post': instagram_post,
-            'instagram_post_admin': instagram_post_admin,
+
             'facebook_post': facebook_post,
-            'facebook_post_admin': facebook_post_admin,
+
             'linkedin_post': linkedin_post,
-            'linkedin_post_admin': linkedin_post_admin,
+
         }
 
         return context
