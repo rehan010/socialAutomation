@@ -5,7 +5,7 @@
 
 {% block content %}
 <head>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+<!--    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">-->
 </head>
 <style>
   figure {
@@ -396,7 +396,7 @@
 <!--                                        {% endif %}-->
                                         <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">Reply</button>
                                     </div>
-                                    {% elif post.user == request.user %}}
+                                    {% elif post.user == request.user %}
                                     <div class="mt-4">
                                         <textarea class="w-full border rounded-lg p-2" name="reply" placeholder="Write a reply..."></textarea>
 <!--                                        {% if provider_name == 'facebook' %}-->

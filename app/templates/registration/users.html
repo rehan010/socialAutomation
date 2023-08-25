@@ -419,6 +419,8 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log(data.message); // Handle the response from the server
+                    location.reload();
+
                 })
                 .catch(error => {
                     console.error("Error assigning manager:", error);
@@ -489,6 +491,7 @@
                     .then(response => response.json())
                     .then(data => {
                         console.log(data.message);
+                        location.reload();
                     })
                     .catch(error => {
                         console.error("Error sending invite to this email:", error);
@@ -590,6 +593,7 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data.message);
+                location.reload();
                 const target = button.getAttribute('data-target');
                 const dialog = document.getElementById(target);
                 if (dialog) {
