@@ -37,13 +37,13 @@
     transform: translatey(50%);
     opacity: 0;
     transition: opacity 0.3s;
-}
+  }
 
-.dropdownButton:hover .tooltiptext{
-    visibility: visible;
-    opacity: 1;
+  .dropdownButton:hover .tooltiptext{
+      visibility: visible;
+      opacity: 1;
 
-}
+  }
 
 </style>
 
@@ -310,7 +310,7 @@
                 d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"
               />
             </svg>
-            Linkdein
+            Linkedin
           </button>
           <div
             class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
@@ -651,6 +651,7 @@
 <!--    form.addEventListener('submit', function (event) {-->
 <!--      event.preventDefault();-->
 
+
 <!--      // Check if at least one checkbox is selected-->
 <!--      const atLeastOneChecked = Array.from(checkboxInputs).some(input => input.checked);-->
 
@@ -658,12 +659,14 @@
 
 <!--        checkboxSelectedInput.value = 1;-->
 
+
 <!--        form.submit();-->
 <!--      } else {-->
 <!--        console.log('Hi');-->
 <!--        alert('Please select at least one page to post.');-->
 <!--      }-->
 <!--    });-->
+
 
       document.getElementById("yourForm").addEventListener("submit", function(event) {
           const pageCheckboxes = document.querySelectorAll("#pageSelection input[type=checkbox]");

@@ -501,40 +501,7 @@ class PostCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # user = self.request.user  # Set the user to the logged-in user
-        # social = SocialAccount.objects.filter(user=user.id)
-        # access_token = {}
-        # data = {}
-        # for _ in social:
-        #     access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
-        #
-        # # Making Data
-        #
-        # for _ in social:
-        #     # For Faceboook
-        #     if _.provider == 'facebook':
-        #
-        #         page_data = facebook_page_data(access_token.get("facebook"))
-        #
-        #         data["facebook_page"] = page_data
-        #     # For Instagram
-        #     if _.provider == 'instagram':
-        #
-        #         insta_data = get_instagram_user_data(access_token.get("facebook"))
-        #
-        #         data["insta_data"] = insta_data
-        #     # print()
-        #     if _.provider == 'linkedin_oauth2':
-        #         linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
-        #         data['linkedin_page'] = linkedin_page
-
-
-
         comment_check = True
-
-
-
         context = {'comment_check': comment_check, 'form': self.get_form()}
         return context
 
@@ -669,7 +636,7 @@ class PostCreateView(CreateView):
 
 
 class PageDataView(APIView):
-    def get(self,request):
+    def get(self, request):
         user = self.request.user  # Set the user to the logged-in user
         social = SocialAccount.objects.filter(user=user.id)
         access_token = {}
@@ -710,34 +677,8 @@ class PostDraftView(UpdateView):
         context = super().get_context_data(**kwargs)
         post_id = self.kwargs['pk']
         post = PostModel.objects.get(pk=post_id)
-        user = self.request.user  # Set the user to the logged-in user
-        social = SocialAccount.objects.filter(user=user.id)
-        access_token = {}
-        data = {}
-        for _ in social:
-            access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
-
-        # Making Data
-
-        for _ in social:
-            # For Faceboook
-            if _.provider == 'facebook':
-                page_data = facebook_page_data(access_token.get("facebook"))
-
-                data["facebook"] = page_data
-            # For Instagram
-            if _.provider == 'instagram':
-                insta_data = get_instagram_user_data(access_token.get("facebook"))
-
-                data["insta"] = insta_data
-            # print()
-            if _.provider == 'linkedin_oauth2':
-                linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
-                data['linkedin'] = linkedin_page
-
-        self.request.session['context'] = data
         comment_check = post.comment_check
-        context = {"data": data, 'form': self.get_form(), 'post': post, 'comment_check': comment_check}
+        context = {'form': self.get_form(), 'post': post, 'comment_check': comment_check}
         return context
 
     def form_invalid(self, form):
@@ -782,7 +723,7 @@ class PostDraftView(UpdateView):
         if requestdata.get("linkedin") or requestdata.get('facebook') or requestdata.get('instagram'):
             for page in requestdata.get("linkedin") or []:
                 i = 0
-                while context.get('linkedin')[i].get('key') != page:
+                while context.get('linkedin')[i]['id'] != page:
                     i += 1
                 info = context.get('linkedin').pop(i)
 
@@ -909,8 +850,8 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
 
 
         # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
-            facebook_post = PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name1).distinct()
-            instagram_post = PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name2).distinct()
+            facebook_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name1).distinct()
+            instagram_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name2).distinct()
 
         else:
             facebook_post = ''
@@ -919,7 +860,7 @@ class PostsGetView(LoginRequiredMixin,TemplateView):
 
         provider_name3 = "Google Books"
 
-        if len(PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name3))> 0:
+        if len(PostModel.objects.filter(user=self.request.user.pk,prepost_page__provider=provider_name3)) > 0:
             google_post = PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name3).distinct()
         else:
             google_post = ''
