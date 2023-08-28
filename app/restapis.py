@@ -2250,5 +2250,20 @@ def facebook_validator(request):
 
 
 
+def fb_object_like(urn,access_token):
+
+    url = f"https://graph.facebook.com/v17.0/{urn}/likes"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.post(url=url,headers=headers)
+
+    return response.json()
+
+
+
+
 
 

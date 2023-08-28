@@ -183,21 +183,75 @@
 
 {%endblock%}
 
-    <!-- Sidebar -->
+     <nav class="relative flex flex-wrap items-center justify-between px-0 py-2 mx-6 transition-all shadow-none duration-250 ease-soft-in rounded-2xl lg:flex-nowrap lg:justify-start">
+        <div class="flex items-center justify-between w-full px-4 py-1 mx-auto flex-wrap-inherit">
+            <div class="h-12 text-center">
+                <i class="absolute top-0 right-0 p-4 opacity-50 cursor-pointer fas fa-times cross text-slate-400 xl:hidden" sidenav-close="" aria-hidden="true"></i>
+                <a href="javascript:;" class="block px-2 py-2 m-0 text-lg whitespace-nowrap text-center text-slate-700 hover:no-underline hover:text-slate-700" target="_blank">
+                    <span class="ml-1 font-semibold transition-all duration-200 ease-nav-brand">SMART PRESENCE</span>
+                </a>
+            </div>
+            {% if user.is_authenticated %}
+                <li class="relative list-none ml-auto">
+                   <div class="flex" >
+                       <div class="transition-all duration-200 ease-soft-in-out h-10 w-10 rounded-xl overflow-hidden mr-2">
+                           {% if user.profile_image %}
+                            <img src="{{ user.profile_image.url }}" class="w-full h-full object-cover" alt="user1" >
+                            {% else %}
+                            <img src="{% static 'image/default.png' %}" class="w-full h-full object-cover" alt="user1">
+                            {% endif %}
+                        </div>
+                        <a class="cursor-pointer hover:no-underline hover:border-2 hover:border-black hover:text-black" id="profile_dropdown_button">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm text-black font-semibold">{{user.username}}</p>
+                                <i class="fa-solid fa-chevron-down mr-3"></i>
+                            </div>
+                            <p class="text-xs">{{user.email}}</p>
+                        </a>
+
+
+                    <ul class="hidden text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding px-2 py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show" id="profile_dropdown" style="display:none;">
+                      <!-- add show class on dropdown open js -->
+                        <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                            <a href = "{% url 'edit_user' user.pk%}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" href="javascript:;">
+                              <div class="flex items-center">
+                                  <i class="fa-solid fa-user-pen mr-2"></i>
+                                    <p>Edit Profile</p>
+                              </div>
+                            </a>
+                         </li>
+
+                        <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                            <a href = "{% url 'logout' %}"
+                                    class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" href="javascript:;">
+                              <div class="flex items-center">
+                                 <i class="fa-solid fa-right-from-bracket mr-2"></i>
+                                    <p>Logout</p>
+                              </div>
+                            </a>
+                         </li>
+                    </ul>
+                   </div>
+               </li>
+            {% else %}
+            <div class="ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'register' %}">SignUp</a>
+                </li>
+            </div>
+            {% endif %}
+
+        </div>
+
+    </nav>
+<div class="w-full flex h-screen">
     {% if user.is_authenticated %}
 
-    <aside class="max-w-62.5 ease-nav-brand z-990 z-990 fixed inset-y-0 my-4 ml-4 block w-full -translate-x-full flex-wrap items-center justify-between overflow-y-auto rounded-2xl border-0 bg-white p-0 antialiased shadow-none transition-transform duration-200 xl:left-0 xl:translate-x-0 xl:bg-transparent ps" id="sidebar">
-        <div class="h-19.5 text-center">
-            <i class="absolute top-0 right-0 p-4 opacity-50 cursor-pointer fas fa-times cross text-slate-400 xl:hidden" sidenav-close="" aria-hidden="true"></i>
-            <a href="javascript:;" class="block px-8 py-6 m-0 text-lg whitespace-nowrap text-slate-700 hover:no-underline hover:text-slate-700" target="_blank">
-                <span class="ml-1 font-semibold transition-all duration-200 ease-nav-brand">SMART PRESENCE</span>
-            </a>
-        </div>
-        <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
+    <aside class="w-52 relative h-screen ease-nav-brand inset-y-10 ml-4 flex-wrap items-center justify-between overflow-y-auto rounded-2xl border-0 bg-white p-0 antialiased shadow-none transition-transform duration-200 flex-wrap items-center justify-between overflow-y-auto rounded-2xl bg-white p-0 antialiased shadow-none transition-transform duration-200 left-0 translate-x-0 top-0" id="sidebar">
           <div class="w-full flex items-center justify-center">
-
-
-
             <ul class="space-y-2 m-2 w-full">
 <!--            {{ role }}-->
 <!--            <div class="px-2 pt-4 pb-8 border-r ">-->
@@ -226,7 +280,7 @@
 
                 <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
                     <a href="{% url 'my_profile' %}"
-                    class="  flex items-center py-3 px-4 rounded space-x-2 hover:no-underline hover:text-black">
+                    class="  flex items-center py-2 px-4 rounded space-x-2 hover:no-underline hover:text-black">
                     <div class="w-5">
 
                         <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -241,7 +295,7 @@
 
                 <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
                     <a href="{% url 'dashboard' %}"
-                    class="flex items-center py-3 px-4 space-x-2 hover:no-underline hover:text-black">
+                    class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-black">
                     <div class="w-5">
                         <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M0.552278 25C0.479771 25 0.407969 24.9854 0.340973 24.957C0.273977 24.9286 0.213098 24.8869 0.161813 24.8344C0.110529 24.7819 0.0698429 24.7196 0.0420788 24.6509C0.0143147 24.5823 1.63047e-05 24.5087 0 24.4345L0 0.565577C1.44925e-05 0.491285 0.0143116 0.417717 0.0420749 0.349089C0.0698382 0.28046 0.110524 0.218121 0.161809 0.165604C0.213093 0.113087 0.273973 0.0714245 0.34097 0.0430164C0.407967 0.0146065 0.47977 -2.47955e-05 0.552278 1.90735e-06L23.8484 1.90735e-06C23.9948 3.62396e-05 24.1352 0.0596523 24.2387 0.165707C24.3422 0.271763 24.4003 0.415594 24.4004 0.565577L24.4004 24.4345C24.4003 24.5844 24.3422 24.7283 24.2387 24.8343C24.1352 24.9404 23.9948 25 23.8484 25L0.552278 25ZM1.10424 23.8689H11.6537L11.6537 16.5307H1.10424L1.10424 23.8689ZM12.7577 23.8689L23.2961 23.8689L23.2961 8.30871L12.7577 8.30871L12.7577 23.8689ZM1.10424 15.3996L11.6537 15.3996L11.6537 1.13112H1.10424L1.10424 15.3996ZM12.7577 7.17732L23.2961 7.17732V1.13112L12.7577 1.13112L12.7577 7.17732Z" fill="black"/>
@@ -256,7 +310,7 @@
 
                 <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
                     <a href="{% url 'my_posts' user.pk %}"
-                    class="flex items-center py-3 px-4 space-x-2 text-black hover:no-underline hover:text-black">
+                    class="flex items-center py-2 px-4 space-x-2 text-black hover:no-underline hover:text-black">
 
 
                         <div class="w-5">
@@ -287,7 +341,7 @@
                 </li>
                 <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
                     <a href="{% url 'socialaccount_connections' %}"
-                    class="flex items-center text-black py-3 px-4 space-x-2 hover:no-underline hover:text-black">
+                    class="flex items-center text-black py-2 px-4 space-x-2 hover:no-underline hover:text-black">
                         <!-- <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"> -->
                             <!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
                             <!-- <path d="M352 224H305.5c-45 0-81.5 36.5-81.5 81.5c0 22.3 10.3 34.3 19.2 40.5c6.8 4.7 12.8 12 12.8 20.3c0 9.8-8 17.8-17.8 17.8h-2.5c-2.4 0-4.8-.4-7.1-1.4C210.8 374.8 128 333.4 128 240c0-79.5 64.5-144 144-144h80V34.7C352 15.5 367.5 0 386.7 0c8.6 0 16.8 3.2 23.2 8.9L548.1 133.3c7.6 6.8 11.9 16.5 11.9 26.7s-4.3 19.9-11.9 26.7l-139 125.1c-5.9 5.3-13.5 8.2-21.4 8.2H384c-17.7 0-32-14.3-32-32V224zM80 96c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16H400c8.8 0 16-7.2 16-16V384c0-17.7 14.3-32 32-32s32 14.3 32 32v48c0 44.2-35.8 80-80 80H80c-44.2 0-80-35.8-80-80V112C0 67.8 35.8 32 80 32h48c17.7 0 32 14.3 32 32s-14.3 32-32 32H80z"/> -->
@@ -308,7 +362,7 @@
                 {% if user_role == 'ADMIN' %}
                 <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
                     <a href="{% url 'my_user' %}"
-                    class="flex items-center py-3 px-4 space-x-2 hover:no-underline hover:text-black">
+                    class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-black">
                         <!-- <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 640 512">! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc.<path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192h42.7c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0H21.3C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7h42.7C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3H405.3zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352H378.7C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7H154.7c-14.7 0-26.7-11.9-26.7-26.7z"/></svg> -->
 
                         <div class="w-4 mr-1">
@@ -346,102 +400,35 @@
 
     </aside>
     {%endif%}
+
+    <main class="flex-1">
+
+        {% block content %}
+        <!-- Main content goes here -->
+        {%endblock%}
+
+
+    </main>
+</div>
+    <!-- Sidebar -->
+
     <!-- Main Content -->
 
 
 
- <main class="ease-soft-in-out xl:ml-68.5 relative h-full  rounded-xl transition-all duration-200 ps ps--active-y relative">
-    <nav class="relative flex flex-wrap items-center justify-between px-0 py-2 mx-6 transition-all shadow-none duration-250 ease-soft-in rounded-2xl lg:flex-nowrap lg:justify-start">
-        <div class="flex items-center justify-between w-full px-4 py-1 mx-auto flex-wrap-inherit">
-            {% if user.is_authenticated %}
-                <li class="relative list-none ml-auto">
-                   <div class="flex" >
-                       <div class="transition-all duration-200 ease-soft-in-out h-10 w-10 rounded-xl overflow-hidden mr-2">
-                           {% if user.profile_image %}
-                            <img src="{{ user.profile_image.url }}" class="w-full h-full object-cover" alt="user1" >
-                            {% else %}
-                            <img src="{% static 'image/default.png' %}" class="w-full h-full object-cover" alt="user1">
-                            {% endif %}
-                        </div>
+<x></x>
+<!--<br>-->
+<!--<br>-->
+<!--<br>-->
+<!--<br>-->
 
-
-                        <a class="cursor-pointer hover:no-underline hover:border-2 hover:border-black hover:text-black" id="profile_dropdown_button">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm text-black font-semibold">{{user.username}}</p>
-                                <i class="fa-solid fa-chevron-down mr-3"></i>
-                            </div>
-
-                            <p class="text-xs">{{user.email}}</p>
-                        </a>
-
-
-                    <ul class="hidden text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding px-2 py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show" id="profile_dropdown" style="display:none;">
-                      <!-- add show class on dropdown open js -->
-                        <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
-                            <a href = "{% url 'edit_user' user.pk%}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" href="javascript:;">
-                              <div class="flex items-center">
-                                  <i class="fa-solid fa-user-pen mr-2"></i>
-                                    <p>Edit Profile</p>
-
-
-        <!--                          <h6 class="mb-1 text-sm font-normal leading-normal"><span class="font-semibold">New message</span> from Laur</h6>-->
-
-                              </div>
-                            </a>
-                         </li>
-
-                        <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
-                            <a href = "{% url 'logout' %}"
-                                    class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" href="javascript:;">
-                              <div class="flex items-center">
-                                 <i class="fa-solid fa-right-from-bracket mr-2"></i>
-                                    <p>Logout</p>
-                              </div>
-                            </a>
-                         </li>
-                    </ul>
-                   </div>
-               </li>
-            {% else %}
-            <div class="ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'register' %}">SignUp</a>
-                </li>
-            </div>
-            {% endif %}
-
-        </div>
-
-    </nav>
-     <div class="container">
-        {% block content %}
-        <!-- Main content goes here -->
-        {%endblock%}
-     </div>
-
-    </main>
-<br>
-<br>
-<br>
-<br>
-
-<!--<footer>-->
-<!--    &copy; 2023 Smart Presence . All rights reserved.-->
-<!--</footer>-->
+<footer class="relative mt-4">
+    &copy; 2023 Smart Presence . All rights reserved.
+</footer>
 
 </body>
 <script>
-<!--    const toggleButton = document.getElementById('toggleButton');-->
-<!--const sidebar = document.getElementById('sidebar');-->
-
-<!--toggleButton.addEventListener('click', () => {-->
-<!--  sidebar.classList.toggle('close');-->
-<!--});-->
-
-   const profileDropdownbutton = document.getElementById('profile_dropdown_button');
+  const profileDropdownbutton = document.getElementById('profile_dropdown_button');
    const profileDropdown = document.getElementById('profile_dropdown');
     console.log(profileDropdownbutton);
     console.log(profileDropdown);
@@ -452,6 +439,16 @@
         profileDropdown.style.display = 'block';
        }
 });
+
+
+    const toggleButton = document.getElementById('toggleButton');
+const sidebar = document.getElementById('sidebar');
+
+toggleButton.addEventListener('click', () => {
+  sidebar.classList.toggle('close');
+});
+
+
 
 
 
