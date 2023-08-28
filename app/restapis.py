@@ -420,7 +420,7 @@ def createfacebookpost(request):
 
 
 
-def facebook_page_data(accesstoken):
+def facebook_page_data(accesstoken,userid):
 
     url = "https://graph.facebook.com/v17.0/me/accounts?fields=access_token,id,name"
 
@@ -429,16 +429,23 @@ def facebook_page_data(accesstoken):
     }
 
     response = requests.get(url,headers=headers)
-    # print(response.json())
-    data = {}
-
-    return response.json().get("data")
+    response = response.json().get('data')
 
 
 
+    # inserting user id in every object refering that the page is of that user
+    if response:
+        response_final = list(map(lambda page: {**page,"user":userid},response))
+        return response_final
 
 
-def get_instagram_user_data(accesstoken):
+    return response
+
+
+
+
+
+def get_instagram_user_data(accesstoken,userid):
 
     url = "https://graph.facebook.com/v17.0/me/accounts?fields=instagram_business_account"
 
@@ -447,26 +454,22 @@ def get_instagram_user_data(accesstoken):
     }
 
     response = requests.get(url,headers=headers)
-
-    data = {}
-    print(response.json())
-    instaid = None
-
     accounts = []
 
     for _ in response.json().get('data'):
         if _.get("instagram_business_account"):
-            instaid = _.get("instagram_business_account")["id"]
+            id = _.get("instagram_business_account")["id"]
 
             try:
-                url = f"https://graph.facebook.com/v17.0/{instaid}?fields=name,profile_picture_url"
+                url = f"https://graph.facebook.com/v17.0/{id}?fields=name,profile_picture_url"
                 response = requests.get(url,headers=headers)
-
-                accounts.append(response.json())
+                response = response.json()
+                response['user'] = userid
+                accounts.append(response)
 
             except Exception as e:
-
                     print(e)
+
     return accounts
 
 
@@ -1666,7 +1669,7 @@ def linkedin_retrieve_access_token(post_id):
         return posts, access_token_string, ids, social
 
 
-def linkedin_get_user_organization(accesstoken):
+def linkedin_get_user_organization(accesstoken,userid):
 
     url = "https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee"
 
@@ -1708,6 +1711,7 @@ def linkedin_get_user_organization(accesstoken):
         names_with_ids[id] = localizedName
         my_object['id'] = id
         my_object['name'] = localizedName
+        my_object['user'] = userid  # referring to the user of the page
         organization_count = SharePage.objects.filter(org_id=id).count()
         if organization_count > 0:
             my_object['checked'] = True
@@ -1717,8 +1721,7 @@ def linkedin_get_user_organization(accesstoken):
     data = my_list
     return data
 
-    data = {}
-    response.json().get("data")
+
 
 
 

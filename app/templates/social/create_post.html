@@ -768,6 +768,7 @@
           if (response.ok) {
               const data = await response.json();
               const dropdownButtons = document.getElementsByClassName('dropdownButton');
+              console.log(data);
               for(button in dropdownButtons){
                   var buttonId = dropdownButtons[button].id
                   createDropdown(data[buttonId],dropdownButtons[button]);

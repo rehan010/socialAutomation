@@ -75,7 +75,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # CORS_URLS_REGEX = r'^/accounts/register/.*$'
 
 LOGIN_REDIRECT_URL = 'dashboard'
-LOGOUT_REDIRECT_URL = "base"
+LOGOUT_REDIRECT_URL = "login"
 
 
 ROOT_URLCONF = 'Automatation.urls'

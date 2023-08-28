@@ -558,9 +558,11 @@ class PostCreateView(CreateView):
                 while context.get('linkedin')[i]['id'] != page:
                     i += 1
                 info = context.get('linkedin').pop(i)
+                user = User.objects.get(id = info['user'])
+                share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin', user=user, name=info['name'])
 
-                share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin',
-                                                                      user=self.request.user, name=info['name'])
+                if created:
+                    share_page.access_token = SocialToken.objects.get(account__user__id=info['user'],app__provider="linkedin_oauth2").token
 
                 share_pages.append(share_page)
 
@@ -578,7 +580,8 @@ class PostCreateView(CreateView):
                     share_pages.append(sharepage)
 
                 else:
-                    sharepage = SharePage.objects.create(user=self.request.user)
+                    user = User.objects.get(id=info['user'])
+                    sharepage = SharePage.objects.create(user=user)
                     sharepage.name = info.get('name')
                     sharepage.access_token = info.get('access_token')
                     sharepage.org_id = info.get('id')
@@ -600,9 +603,10 @@ class PostCreateView(CreateView):
                     share_pages.append(sharepage)
 
                 else:
-                    sharepage = SharePage.objects.create(user=self.request.user)
+                    user = User.objects.get(id=info['user'])
+                    sharepage = SharePage.objects.create(user=user)
                     sharepage.name = info.get('name')
-                    sharepage.access_token = info.get('access_token')
+                    sharepage.access_token = SocialToken.objects.get(account__user__id = info['user'],app__provider = "facebook").token
                     sharepage.org_id = info.get('id')
                     sharepage.provider = "instagram"
                     sharepage.save()
@@ -632,7 +636,19 @@ class PostCreateView(CreateView):
 class PageDataView(APIView):
     def get(self, request):
         user = self.request.user  # Set the user to the logged-in user
-        social = SocialAccount.objects.filter(user=user.id)
+        user_manager = self.request.user.manager
+
+        if user_manager:
+            selected_user = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
+            permission = selected_user.permission
+
+            if permission == "WRITE":
+                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user=user_manager.id))
+            else:
+                social = SocialAccount.objects.filter(Q(user=user.id))
+
+        else:
+            social = SocialAccount.objects.filter(Q(user=user.id))
         access_token = {}
         data = {}
 
@@ -650,22 +666,32 @@ class PageDataView(APIView):
 
 
         for _ in social:
-            access_token[_.provider] = SocialToken.objects.filter(account_id=_)[0].token
+            if access_token.get(_.user.username) == None:
+                access_token[_.user.username] = {}
+                access_token[_.user.username][_.provider] =  SocialToken.objects.filter(account_id=_)[0].token
+                access_token[_.user.username]['id'] =  _.user.id
+
+
+            else:
+                access_token[_.user.username][_.provider] = SocialToken.objects.filter(account_id=_)[0].token
 
         # Making Data
         for _ in social:
             # For Faceboook
             if _.provider == 'facebook':
-                page_data = facebook_page_data(access_token.get("facebook"))
-                data["facebook"] = page_data
-                insta_data = get_instagram_user_data(access_token.get("facebook"))
-                data["instagram"] = insta_data
+                data["facebook"] = []
+                data["instagram"] = []
+                page_data = facebook_page_data(access_token.get(_.user.username).get("facebook"),access_token[_.user.username]['id'])
+                data["facebook"] += page_data
+                insta_data = get_instagram_user_data(access_token.get(_.user.username).get("facebook"),access_token[_.user.username]['id'])
+                data["instagram"] += insta_data
             # For Instagram
 
             # print()
             if _.provider == 'linkedin_oauth2':
-                linkedin_page = linkedin_get_user_organization(access_token.get("linkedin_oauth2"))
-                data['linkedin'] = linkedin_page
+                data['linkedin'] = []
+                linkedin_page = linkedin_get_user_organization(access_token.get(_.user.username).get("linkedin_oauth2"),access_token[_.user.username]['id'])
+                data['linkedin'] += linkedin_page
 
         self.request.session['context'] = data
 
@@ -686,6 +712,7 @@ class PostDraftView(UpdateView):
         post = PostModel.objects.get(pk=post_id)
         comment_check = post.comment_check
         context = {'form': self.get_form(), 'post': post, 'comment_check': comment_check}
+        # context = {'form': self.get_form(), 'comment_check': comment_check}
         return context
 
     def form_invalid(self, form):
@@ -750,9 +777,12 @@ class PostDraftView(UpdateView):
                 while context.get('linkedin')[i]['id'] != page:
                     i += 1
                 info = context.get('linkedin').pop(i)
+                user = User.objects.get(id=info['user'])
 
                 share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin',
-                                                                      user=self.request.user, name=info['name'])
+                                                                      user=user, name=info['name'])
+                if created:
+                    share_page.access_token = SocialToken.objects.get(account__user__id = info['user'],app__provider = "linkedin_oauth2").token
 
                 share_pages.append(share_page)
 
@@ -770,7 +800,8 @@ class PostDraftView(UpdateView):
                     share_pages.append(sharepage)
 
                 else:
-                    sharepage = SharePage.objects.create(user=self.request.user)
+                    user = User.objects.get(id=info['user'])
+                    sharepage = SharePage.objects.create(user=user)
                     sharepage.name = info.get('name')
                     sharepage.access_token = info.get('access_token')
                     sharepage.org_id = info.get('id')
@@ -791,9 +822,10 @@ class PostDraftView(UpdateView):
                     share_pages.append(sharepage)
 
                 else:
-                    sharepage = SharePage.objects.create(user=self.request.user)
+                    user = User.objects.get(id=info['user'])
+                    sharepage = SharePage.objects.create(user=user)
                     sharepage.name = info.get('name')
-                    sharepage.access_token = info.get('access_token')
+                    sharepage.access_token = SocialToken.objects.get(account__user__id = info['user'],app__provider = "facebook").token
                     sharepage.org_id = info.get('id')
                     sharepage.provider = "instagram"
                     sharepage.save()
@@ -811,7 +843,7 @@ class PostDraftView(UpdateView):
                 image_model.save()
                 image_object.append(image_model)
         post.images.add(*image_object)
-
+        post.prepost_page.clear()
         post.prepost_page.add(*share_pages)
 
         return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
@@ -892,7 +924,7 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
                 else:
                     google_post = ''
         else:
-            invited = InviteEmploye.objects.filter(invited_by=self.request.user)
+            invited = InviteEmploye.objects.filter(invited_by=self.request.user,status = "ACCEPTED")
             invites = []
             for user in invited:
                 invited_users_id = user.selected_user.id
@@ -963,11 +995,11 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         post_id = self.kwargs['post_id']
         page_id = self.kwargs['page_id']
-        result = linkedin_retrieve_access_token(post_id)
-        posts = result[0]
-        access_token_string = result[1]
-        ids = result[2]
-        social = result[3]
+        # result = linkedin_retrieve_access_token(post_id)
+        # posts = result[0]
+        # access_token_string = result[1]
+        # ids = result[2]
+        # social = result[3]
 
         posted_on = Post_urn.objects.get(id=page_id).org.name
         name = self.request.GET.get('page_name')
@@ -980,6 +1012,9 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
             org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
             post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
+
+            # my eddited
+            access_token_string = linkedin_post.post_urn.all().filter(pk=page_id).first().org.access_token
 
             urn = post_urn
             if urn == '' or urn == None:
@@ -998,7 +1033,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                         data = result[2]
 
             context = {
-                'ids': ids,
+                'ids': urn,
                 'no_likes': no_likes,
                 'no_comments': no_comments,
                 'data': data,
@@ -1020,8 +1055,6 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             if urn == '' or urn == None:
                 pass
             else:
-
-
                 result = fb_socialactions(urn,access_token_string)
                 no_likes = result[0]
                 no_comments = result[1]
@@ -1046,24 +1079,17 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             user = instagram_post.user
             org_id = instagram_post.post_urn.all().filter(pk=page_id).first().org.org_id
             post_urn = instagram_post.post_urn.all().filter(pk=page_id).first().urn
-            if len(SocialAccount.objects.filter(user=user.id, provider="facebook")) > 0:
-                facebook_account = SocialAccount.objects.get(user=user.id, provider="facebook")
-                if facebook_account:
-                    access_token_string = SocialToken.objects.get(account=facebook_account).token
-                    urn = post_urn
-                    if urn == '' or urn == None:
-                        pass
-                    else:
+            access_token = instagram_post.post_urn.all().filter(pk=page_id).first().org.access_token
+            urn = post_urn
 
-                        result = insta_socialactions(urn, access_token_string)
-                        no_likes = result[0]
-                        no_comments = result[1]
-                        data = result[2]
+            if urn == '' or urn == None:
+                pass
             else:
-                urn = ''
-                no_likes = ''
-                no_comments = ''
-                data = ''
+
+                result = insta_socialactions(urn, access_token)
+                no_likes = result[0]
+                no_comments = result[1]
+                data = result[2]
 
 
             context = {
@@ -1131,11 +1157,16 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
 
                 org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
-                post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
-                result = linkedin_retrieve_access_token(post_id)
+                post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first()
+                access_token = post_urn.org.access_token
+                user = post_urn.org.user
+                social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
+                post_urn = post_urn.urn
 
-                access_token = result[1]
-                social = result[3]
+                # result = linkedin_retrieve_access_token(post_id)
+                #
+                # access_token = result[1]
+                # social = result[3]
                 # if comment != '' and media == None:
                 if comment != '':
                     create_comment(access_token, post_urn, comment, social)
@@ -1155,15 +1186,12 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
                 result = meta_comments(urn, comment, media, access_token)
 
-
-
             elif self.request.GET.get('page_name') == 'instagram':
                 provider_name = "instagram"
                 instagram_post = PostModel.objects.get(post_urn__org__provider = provider_name,id = post_id, post_urn__pk = page_id)
                 post_urn = instagram_post.post_urn.all().filter(pk = page_id).first()
-
-                facebook_account = SocialAccount.objects.get(user_id=self.request.user.id, provider="facebook")
-                access_token = SocialToken.objects.get(account=facebook_account).token
+                # facebook_account = SocialAccount.objects.get(user_id=self.request.user.id, provider="facebook")
+                access_token = post_urn.org.access_token
                 text = instagram_post.post
                 urn = post_urn.urn
 
@@ -1181,11 +1209,15 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
                 org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
 
-                post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
-                result = linkedin_retrieve_access_token(post_id)
+                post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first()
+                access_token = post_urn.org.access_token
+                user = post_urn.org.user
+                social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
+                post_urn = post_urn.urn
 
-                access_token = result[1]
-                social = result[3]
+                # result = linkedin_retrieve_access_token(post_id)
+                # access_token = result[1]
+                # social = result[3]
                 for comment_urn, reply in reply_data.items():
                     # if reply[0] != '' and reply[1] is None:
                     if reply[0] != '':
@@ -1212,8 +1244,11 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                         pass
             else:
                 provider_name = "instagram"
-                facebook_account = SocialAccount.objects.get(user_id=self.request.user.id, provider="facebook")
-                access_token = SocialToken.objects.get(account=facebook_account).token
+                instagram_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,
+                                                      post_urn__pk=page_id)
+                post_urn = instagram_post.post_urn.all().filter(pk=page_id).first()
+
+                access_token = post_urn.org.access_token
                 for comment_urn, reply in reply_data.items():
                     if reply[0] != '':
                         result = meta_nested_comment(comment_urn, reply[0], reply[1], access_token, provider_name)

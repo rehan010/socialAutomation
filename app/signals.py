@@ -115,6 +115,7 @@ def publish_post_on_social_media(instance):
     # Put your code to publish the post on the social media platform here
     # For example, if the post platform is "linkedin," use your existing code to publish on LinkedIn
     # Remember to handle any exceptions that may occur during the publishing process
+    print(1)
     share_page = instance.prepost_page.all()
     images = instance.images.all()
     print(images)
@@ -145,9 +146,7 @@ def publish_post_on_social_media(instance):
             create_fb_post(page_id, access_token, media, post, share_page)
 
         elif page.provider == "instagram":
-            socialaccount = SocialAccount.objects.get(user=page.user.id,provider = 'facebook')
-            access_token = SocialToken.objects.filter(account = socialaccount)[0]
-            print(access_token)
+            access_token = page.access_token
             post = instance
             page_id = page.org_id
             media = images
