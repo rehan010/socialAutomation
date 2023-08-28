@@ -20,12 +20,12 @@ urlpatterns = [
     path('accounts/reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('', BaseView.as_view(), name="base"),
     path('dashboard', DashboardView.as_view(), name="dashboard"),
-    path('connect/page',ConnectPageView.as_view(),name='connect_page'),
-    path('profile/',ProfileView.as_view(),name='my_profile'),
+    path('connect/page', ConnectPageView.as_view(), name='connect_page'),
+    path('profile/', ProfileView.as_view(),name='my_profile'),
     path('users/', UserView.as_view(),name='my_user'),
-    path('get/users/', UserSearchView.as_view(),name='get_users'),
-    path('users/create/invite', UserCreateView.as_view(),name='create_user'),
-    path('user/edit/<pk>',EditUserView.as_view(),name = "edit_user"),
+    path('get/users/', UserSearchView.as_view(), name='get_users'),
+    path('users/create/invite', UserCreateView.as_view(), name='create_user'),
+    path('user/edit/<pk>', EditUserView.as_view(), name="edit_user"),
     path('assign_manager/', assign_manager.as_view(), name='assign_manager'),
     path('change_role/', change_role.as_view(), name='change_role'),
     path('accept_invitation/', views.accept_invitation_view, name='accept_invitation_view'),
@@ -47,9 +47,9 @@ urlpatterns = [
 
     path('delete-post/<int:pk>/', PostDeleteView.as_view(), name='delete_post'),
 
-    path('social/social/connections/',ConnectionView.as_view(),name = "socialaccount_connections"),
-    path('social/social/profile/<provider>',SocialPorfileView.as_view(),name = "social_profile"),
+    path('social/social/connections/', ConnectionView.as_view(),name = "socialaccount_connections"),
+    path('social/social/profile/<provider>', SocialPorfileView.as_view(),name = "social_profile"),
 
-    path('social/page/',PageDataView.as_view(),name = "page_data")
+    path('social/page/', PageDataView.as_view(),name = "page_data")
 
 ]

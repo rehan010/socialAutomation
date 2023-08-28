@@ -562,8 +562,8 @@ class PostCreateView(CreateView):
                 share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin', user=user, name=info['name'])
 
                 if created:
-                    share_page.access_token = SocialToken.objects.get(account__user__id=info['user'],app__provider="linkedin_oauth2").token
-
+                    share_page.access_token = SocialToken.objects.get(account__user__id=info['user'], app__provider="linkedin_oauth2").token
+                    share_page.save()
                 share_pages.append(share_page)
 
             for page in requestdata.get("facebook") or []:
@@ -770,6 +770,7 @@ class PostDraftView(UpdateView):
         else:
                 post.status == 'DRAFT'
                 post.publish_check = False
+        post.prepost_page.clear()
         share_pages = []
         if requestdata.get("linkedin") or requestdata.get('facebook') or requestdata.get('instagram'):
             for page in requestdata.get("linkedin") or []:
@@ -901,7 +902,7 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
 
 
                 if len(posts.filter(prepost_page__provider=provider_name)) > 0:
-                    linkedin_post= posts.filter(prepost_page__provider=provider_name).distinct()
+                    linkedin_post = posts.filter(prepost_page__provider=provider_name).distinct()
                 else:
                     linkedin_post = ''
 
@@ -1071,7 +1072,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'post_id': post_id,
                 'page_id':page_id,
                 'provider_name': provider_name,
-                'reply_media_counter':0
+                'reply_media_counter': 0
             }
         elif self.request.GET.get('page_name') == 'instagram':
             provider_name = "instagram"
@@ -1139,6 +1140,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         comment = self.request.POST.get('comment')
         comment_urn_list = request.POST.getlist('comment_urn')
         media = request.FILES.get('comment_media')
+        # post_like = request.POST.get('post_like')
 
         reply_list = request.POST.getlist('reply')
         reply_data = {}
@@ -1256,6 +1258,18 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                         pass
 
             return redirect(reverse("my_detail_posts", kwargs={'post_id': post_id, 'page_id': page_id}) + f'?page_name={self.request.GET.get("page_name")}')
+        # elif post_like:
+        #     if self.request.GET.get('page_name') == 'linkedin':
+        #         provider_name = "linkedin"
+        #         linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
+        #         user = linkedin_post.user
+        #         post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
+        #         result = linkedin_retrieve_access_token(post_id)
+        #
+        #         access_token = result[1]
+        #         social = result[3]
+        #         result = post_like_linkedin(post_urn, user, access_token)
+
         else:
             pass
 

@@ -1647,6 +1647,24 @@ def linkedin_org_stats(access_token_string, id, data_list):
     # return data_list
 
 
+def post_like_linkedin(post_urn, user, access_token):
+
+    url = "https://api.linkedin.com/rest/reactions?actor=urn%3Ali%3Aperson%3A" + user.id
+
+    payload = json.dumps({
+        "root": post_urn,
+        "reactionType": "LIKE"
+    })
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + access_token,
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
 
 
 def linkedin_retrieve_access_token(post_id):
