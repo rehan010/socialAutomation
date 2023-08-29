@@ -1269,7 +1269,6 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         #         access_token = result[1]
         #         social = result[3]
         #         result = post_like_linkedin(post_urn, user, access_token)
-
         else:
             pass
 
@@ -1282,15 +1281,14 @@ class ConnectionView(ConnectionsView):
         context = super(ConnectionView, self).get_context_data()
 
         from allauth.socialaccount.models import SocialApp
-        print(context)
+
         social_apps = SocialApp.objects.all()
 
         for apps in social_apps:
-            print(apps.provider)
             context[f'{apps.provider}_app'] = apps
             try:
                 context[f'{apps.provider}'] = SocialAccount.objects.filter(user=self.request.user.id, provider=apps.provider)[0]
-                print(apps.name)
+
 
             except Exception as e:
                  print(e)
@@ -1312,21 +1310,46 @@ class EditUserView(LoginRequiredMixin,UpdateView):
         kwargs['request'] = self.request
         return kwargs
 
+    def form_invalid(self, form):
+        invalid_form = super(EditUserView,self).form_invalid((form))
+        invalid_form.context_data['user'] = self.request.user
+        return invalid_form
+
     # def form_invalid(self, form):
     #     form
     #     return super().form_invalid(form)
     #
-    # def form_valid(self, form):
-    #     # checkbox = self.request.POST.get('remove_image')
-    #     # if(checkbox):
-    #     #     user = form.user
-    #     #     user.profile_image.delete()
-    #     #     user.profile_image = None
-    #
-    #
-    #
+    def form_valid(self, form):
+        # checkbox = self.request.POST.get('remove_image')
+        # if(checkbox):
+        #     user = form.user
+        #     user.profile_image.delete()
+        #     user.profile_image = None
     #     form.save()
     #     return super().form_valid(form)
+        old_password = form.cleaned_data.get("old_password")
+        new_password1 = form.cleaned_data.get("new_password1")
+        new_password2 = form.cleaned_data.get("new_password2")
+
+        if old_password and not self.request.user.check_password(old_password):
+            form.add_error('old_password',"Your old password was entered incorrectly. Please enter it again.")
+            return self.form_invalid(form)
+
+        if new_password1 and new_password2 and new_password1!=new_password2:
+            form.add_error("new_password2", "Passwords do not match.")
+            return self.form_invalid(form)
+
+        try:
+        # Validate new password
+            password_validation.validate_password(new_password2, self.request.user)
+
+        except forms.ValidationError as error:
+            form.add_error("new_password2", error)
+            return self.form_invalid(form)
+
+        return super().form_valid(form)
+
+
 
 
 

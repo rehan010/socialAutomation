@@ -25,7 +25,7 @@
 
 {% block content %}
 
-    <div class="w-full max-w-full px-3 py-4 shrink-0 md:flex-0">
+    <div class="w-full max-w-full px-3 py-4 shrink-0 md:flex-0 mb-14">
         <div class="relative flex flex-col min-w-0 break-words bg-white border-0 shadow-xl rounded-2xl">
         <div class="relative flex items-center p-0 mt-6 overflow-hidden bg-center bg-cover min-h-custom rounded-2xl" style="background-image: url('{% static "image/social_image_login.png" %}'); background-position-y: 50%">
             <span class="absolute inset-y-0 w-full h-full bg-center bg-cover bg-gradient-to-tl from-purple-500 to-red-500 opacity-60"></span>
@@ -37,9 +37,9 @@
                             <div class="relative flex items-center justify-center max-w-content">
                                 <div class="md:h-44 md:w-44 h-36 w-36 rounded-full overflow-hidden border-2 border-white border-solid relative">
                                     {% if user.profile_image %}
-                                    <img src="{{ user.profile_image.url }}" class="w-full h-full object-cover" alt="user1" id="imageContainer">
+                                        <img src="{{ user.profile_image.url }}" class="w-full h-full object-cover" alt="user1" id="imageContainer">
                                     {% else %}
-                                    <img src="{% static 'image/default.png' %}" class="w-full h-full object-cover" alt="user1" id="imageContainer">
+                                        <img src="{% static 'image/default.png' %}" class="w-full h-full object-cover" alt="user1" id="imageContainer">
                                     {% endif %}
                                 </div>
 <!--                                <button type="button" class="absolute rounded-full h-auto lg:w-13 bg-gray-100 text-center hover:bg-gray-200 cursor-pointer p-2 right-0 bottom-0 modal-button">-->
@@ -130,6 +130,8 @@
     <!--                        {{ form.old_password.label_tag }}-->
     <!--                         {{ form.old_password }}-->
                              <div class="col-span-2 mb-4">
+                                 {{user.profile_image.url}}
+                                 {{user.first_name}}
                                     <div>
                                         <label for="{{form.username.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
                                             Username

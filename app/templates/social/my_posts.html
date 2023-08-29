@@ -96,7 +96,7 @@
                                     <div class="flex px-2 py-1">
                                         <div>
                                              {% if p.user.profile_image %}
-                                            <img src="{{ user.profile_image.url }}"
+                                            <img src="{{ p.user.profile_image.url }}"
                                                  class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
                                                  alt="{{p.user}}">
                                             {% else %}
@@ -275,7 +275,7 @@
                                 <div class="flex px-2 py-1">
                                     <div>
                                          {% if p.user.profile_image %}
-                                            <img src="{{ user.profile_image.url }}"
+                                            <img src="{{ p.user.profile_image.url }}"
                                                  class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
                                                  alt="{{p.user}}">
                                             {% else %}
@@ -447,7 +447,7 @@
                                 <div class="flex px-2 py-1">
                                     <div>
                                          {% if p.user.profile_image %}
-                                            <img src="{{ user.profile_image.url }}"
+                                            <img src="{{ p.user.profile_image.url }}"
                                                  class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
                                                  alt="{{p.user}}">
                                         {% else %}
@@ -481,7 +481,7 @@
                                     Video
                                     {% else %}
                                     <a href="javascript:;"
-                                       class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30"
+                                       class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30 rotate-180"
                                        data-target="tooltip_trigger" data-placement="bottom">
                                         <img src="{{image.image.url}}" class="w-full rounded-full" alt="team1"/>
                                     </a>
@@ -620,7 +620,7 @@
                                 <div class="flex px-2 py-1">
                                     <div>
                                          {% if p.user.profile_image %}
-                                            <img src="{{ user.profile_image.url }}"
+                                            <img src="{{ p.user.profile_image.url }}"
                                                  class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl"
                                                  alt="{{p.user}}">
                                         {% else %}
