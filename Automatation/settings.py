@@ -357,3 +357,7 @@ GRAPH_MODELS = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 SOCIALACCOUNT_ADAPTER  = 'app.adapter.CustomAccountAdapter'
+try:
+    from Automatation.local_settings import *
+except ImportError:
+    pass
