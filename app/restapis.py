@@ -59,7 +59,7 @@ def getmedia(accountid,access_token):
         # print(_)
         # Getting Insights of the media
         mediaid = _.get("id")
-        print(mediaid)
+        # print(mediaid)
         url = f"https://graph.facebook.com/{mediaid}/insights"
         insightsresponse = requests.get(url,headers=headers,params=metric)
         # print(insightsresponse.json())
@@ -75,7 +75,7 @@ def getmedia(accountid,access_token):
         data_wrt_media['engaements'] = insightsdata[0]['values'][0]['value']
         data_wrt_media['impression'] = insightsdata[1]['values'][0]['value']
         data_wrt_media['reach'] = insightsdata[2]['values'][0]['value']
-        print(data_wrt_media['engaements'])
+        # print(data_wrt_media['engaements'])
         data_wrt_media['image'] = _.get('media_url')
         data_wrt_media['caption'] = _.get("caption")
         data_wrt_media['likes'] = _.get("like_count")
@@ -468,7 +468,8 @@ def get_instagram_user_data(accesstoken,userid):
                 accounts.append(response)
 
             except Exception as e:
-                    print(e)
+                    # print(e)
+                    e
 
     return accounts
 
@@ -482,7 +483,7 @@ def fb_video_post(data,images,post_model,sharepage):
         'description': post_model.post,
     }
     video_path = os.path.join(settings.BASE_DIR, "media/" + str(images[0].image))
-    print(video_path)
+    # print(video_path)
 
     files = {'source': open(video_path, 'rb')}
 
@@ -510,9 +511,9 @@ def fb_video_post(data,images,post_model,sharepage):
 
 def instagram_post_single_media(page_id,access_token,media,post,page):
 
-    print("Excuting Single Instagram Post Function")
+    # print("Excuting Single Instagram Post Function")
     url = f"https://graph.facebook.com/v17.0/{page_id}/media/"
-    print(url)
+    # print(url)
     data = {
         "caption": post.post
          }
@@ -527,25 +528,25 @@ def instagram_post_single_media(page_id,access_token,media,post,page):
     else:
         data['image_url'] = media[0].image_url
 
-    print("data is",data)
+    # print("data is",data)
     response = requests.post(url, headers=headers, json=data)
 
     mediaid = response.json().get('id')
-    print("media id is",mediaid,response.json())
+    # print("media id is",mediaid,response.json())
 
     if data.get('media_type') == 'VIDEO':
         while True:
-            print("Waiting for 10s till the media is created")
+            # print("Waiting for 10s till the media is created")
             time.sleep(10)
             check_url = f"https://graph.facebook.com/v17.0/{mediaid}?fields=status_code,status,id"
 
             response = requests.request("GET",url=check_url,headers=headers)
             status = response.json().get("status_code")
-            print(status)
+            # print(status)
             if status == "FINISHED":
                 break
             elif status == "ERROR" or status == "FATAL":
-                print("Error Has Occured")
+                # print("Error Has Occured")
                 return
             else:
                 pass
@@ -562,11 +563,11 @@ def instagram_post_single_media(page_id,access_token,media,post,page):
     response = requests.post(url, headers=headers, data=data)
     response = response.json()
     post_id = response.get('id')
-    print("Post id is ",post_id,response)
+    # print("Post id is ",post_id,response)
     post_urn = Post_urn.objects.create(org=page, urn=post_id)
     post_urn.save()
     post.post_urn.add(post_urn)
-    print("Post Successfull Created")
+    # print("Post Successfull Created")
     post.published_at = timezone.now()
     post.save()
 
@@ -689,15 +690,15 @@ def facebook_post_multiimage(data,images,post,sharepage):
             images[_].save()
             data_post[f"attached_media[{_}]"] = f'{{"media_fbid": "{response_id}"}}'
 
-    print("Data ",data_post)
+    # print("Data ",data_post)
 
     response = requests.post(url,headers=headers,data=data_post)
     response = response.json()
     post_id = response["id"]
-    print(post_id)
+    # print(post_id)
     post_urn = Post_urn.objects.create(org = sharepage,urn = post_id)
     post_urn.save()
-    print("Post Successfull Created")
+    # print("Post Successfull Created")
 
     post.post_urn.add(post_urn)
     post.published_at = timezone.now()
@@ -750,14 +751,14 @@ def get_instagram_image_id(image,page_id,access_token):
     data_post = {
         "image_url":image.image_url
     }
-    print(data_post)
+    # print(data_post)
 
     # data_post = {
     #     "image_url":"https://messangel.caansoft.com/uploads/social_prefrences/image/1691750723366-homepage-seen-computer-screen_CvuwFmi.jpg"
     # }
 
     response = requests.post(url,headers=headers,data=data_post)
-    print(response.json())
+    # print(response.json())
     return response.json()
 
 def get_instagram_video_id(video,page_id,access_token):
@@ -771,7 +772,7 @@ def get_instagram_video_id(video,page_id,access_token):
         'video_url':{video.image_url},
         'media_type':'VIDEO',
     }
-    print(data_post)
+    # print(data_post)
     # data_post = {
     #     'video_url':"https://messangel.caansoft.com/uploads/social_prefrences/video/1691750720923-send_WqThsJC.mp4",
     #     'media_type':'VIDEO',
@@ -783,7 +784,7 @@ def get_instagram_video_id(video,page_id,access_token):
 
 
 def get_instagram_media_id(data_post,headers,page_id):
-    print("Getting Media id")
+    # print("Getting Media id")
     url = f"https://graph.facebook.com/v17.0/{page_id}/media?media_type=CAROUSEL"
 
     response = requests.request("POST", url, headers=headers, data=data_post)
@@ -791,8 +792,8 @@ def get_instagram_media_id(data_post,headers,page_id):
     if response.json().get('id'):
         return response
     else:
-        print(response.json())
-        print("Sleeping For 30s till data arrive")
+        # print(response.json())
+        # print("Sleeping For 30s till data arrive")
         time.sleep(30)
         response = get_instagram_media_id(data_post,headers,page_id)
 
@@ -820,24 +821,24 @@ def instagram_multi_media(page_id,access_token,media,post,page):
         "caption": post.post,
         "children": ",".join(childern_list)
     })
-    print(data_post)
+    # print(data_post)
 
     media_id = get_instagram_media_id(data_post,headers,page_id).json().get('id')
-    print(media_id)
+    # print(media_id)
     if is_video:
         while True:
-            print("Waiting for 10s till the media is created")
+            # print("Waiting for 10s till the media is created")
             time.sleep(10)
             check_url = f"https://graph.facebook.com/v17.0/{media_id}?fields=status_code,status,id"
 
             response = requests.request("GET", url=check_url, headers=headers)
-            print(response.json())
+            # print(response.json())
             status = response.json().get("status_code")
-            print(status)
+            # print(status)
             if status == "FINISHED":
                 break
             elif status == "ERROR" or status == "FATAL":
-                print("Error Has Occured")
+                # print("Error Has Occured")
                 return
             else:
                 pass
@@ -851,7 +852,7 @@ def instagram_multi_media(page_id,access_token,media,post,page):
 
     response_2 = requests.post(url_2,headers=headers,data=data_post_2)
     response_2 = response_2.json()
-    print(response_2)
+    # print(response_2)
 
     post_id = response_2.get('id')
     post_urn = Post_urn.objects.create(org=page, urn=post_id)
@@ -900,13 +901,15 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
                         post.post_urn.add(post_urn)
                         post.published_at = timezone.now()
                         post.save()
-                        print("Video Posted successfully.")
+                        # print("Video Posted successfully.")
 
-                    else:
-                        print("Post Failed" + response.status_code)
+                    # else:
+                        # print("Post Failed" + response.status_code)
 
             else:
-                print("Video did not Register")
+                pass
+
+                # print("Video did not Register")
 
         if len(updated_image_list) != 0:
             image_list = []
@@ -925,12 +928,12 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
                         image_list.append({'id': image_urn, 'altText': 'test'})
 
                         response = upload_img(upload_url, image_file, access_token_string)
-                        if response.status_code == 201:
-                            print("Image successfully uploaded to LinkedIn.")
+                        # if response.status_code == 201:
+                        #     print("Image successfully uploaded to LinkedIn.")
 
             count = 0
             for image in image_list:
-                print(image)
+                # print(image)
                 if 'id' in image:
                     count += 1
 
@@ -951,7 +954,8 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
 
 
                 else:
-                    print("API request failed with status code:", response.status_code)
+                    pass
+                    # print("API request failed with status code:", response.status_code)
             else:
                 response = post_linkedin(image_list, post, org_id, access_token_string)
                 if response.status_code == 201:
@@ -965,7 +969,8 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
                     post.published_at = timezone.now()
                     post.save()
                 else:
-                    print("API request failed with status code:", response.status_code)
+                    pass
+                    # print("API request failed with status code:", response.status_code)
     else:
         response = text_post_linkedin(post, access_token_string, org_id)
         if response.status_code == 201:
@@ -979,7 +984,8 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
             post.published_at = timezone.now()
             post.save()
         else:
-            print("API request failed with status code:", response.status_code)
+            pass
+            # print("API request failed with status code:", response.status_code)
 
 def post_nested_comment_linkedin(social,access_token,post_urn,reply,comment_urn):
     user = social.uid
@@ -1005,9 +1011,10 @@ def post_nested_comment_linkedin(social,access_token,post_urn,reply,comment_urn)
     response = requests.request("POST", url, headers=headers, data=payload)
     if response.status_code == 201:
         response = response.json()
-        print("Replied to Comment successfully.")
+        # print("Replied to Comment successfully.")
     else:
-        print("Failed to reply.")
+        pass
+        # print("Failed to reply.")
 
     return response
 
@@ -1025,11 +1032,11 @@ def post_nested_comment_media_linkedin(social,access_token,post_urn,reply,commen
         image_model.save()
         image_file = image_model.image
         response = upload_img(upload_url, image_file, access_token_string)
-        if response.status_code == 201:
-            print("Media succesfully uploaded")
-
-        else:
-            print("Media Upload Failed")
+        # if response.status_code == 201:
+        #     # print("Media succesfully uploaded")
+        #
+        # else:
+        #     # print("Media Upload Failed")
 
         user = social.uid
         encoded_urn = quote(comment_urn, safe='')
@@ -1063,9 +1070,9 @@ def post_nested_comment_media_linkedin(social,access_token,post_urn,reply,commen
         response = requests.request("POST", url, headers=headers, data=payload)
         if response.status_code == 201:
             response = response.json()
-            print("Replied to Comment successfully.")
-        else:
-            print("Failed to reply.")
+            # print("Replied to Comment successfully.")
+        # else:
+        #     print("Failed to reply.")
 
         return response
 
@@ -1138,13 +1145,13 @@ def get_nested_comments(access_token,comment_urn):
                     obj = {'name': name, "profile_image": display_image, "text": text, "urls": urls}
                     replies.append(obj)
         else:
-            print("No Replies on Comments")
+            # print("No Replies on Comments")
             obj = {}
             replies.append(obj)
 
     else:
-        print("Fetching Replies Failed")
-
+        # print("Fetching Replies Failed")
+        pass
     return replies
 
 def create_comment_media_linkedin(org_id,access_token, post_urn, comment, social, media):
@@ -1156,18 +1163,18 @@ def create_comment_media_linkedin(org_id,access_token, post_urn, comment, social
         response_json = response.json()
         upload_url = response_json['value']['uploadUrl']
         image_urn = response_json['value']['image']
-        print(upload_url)
+        # print(upload_url)
         image_url = get_image_url(media)
         image_path = image_url.get('files')[0].get('path')
         image_model = ImageModel(image=media, image_url=image_path, image_urn=image_urn)
         image_model.save()
         image_file = image_model.image
         response = upload_img(upload_url, image_file, access_token_string)
-        if response.status_code == 201:
-            print("Media succesfully uploaded")
-
-        else:
-            print("Media Upload Failed")
+        # if response.status_code == 201:
+        #     print("Media succesfully uploaded")
+        #
+        # else:
+        #     print("Media Upload Failed")
     headers = {
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json',
@@ -1198,11 +1205,11 @@ def create_comment_media_linkedin(org_id,access_token, post_urn, comment, social
 
     if response.status_code == 201:
         response = response.json()
-        print("Comment created successfully.")
-        print(response)
-    else:
-        print("Failed to create comment.")
-        print(response.json())
+        # print("Comment created successfully.")
+        # print(response)
+    # else:
+        # print("Failed to create comment.")
+        # print(response.json())
     return response
 
 def image_comment(org_id,access_token, post_urn, comment, social, media):
@@ -1239,7 +1246,7 @@ def image_comment(org_id,access_token, post_urn, comment, social, media):
 
     response = requests.request("POST", url, headers=headers, data=payload)
     data = response.json()
-    print(data)
+    # print(data)
     asset = data["value"]["asset"]
     upload_url = data["value"]["uploadMechanism"]["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"]["uploadUrl"]
 
@@ -1270,12 +1277,12 @@ def image_comment(org_id,access_token, post_urn, comment, social, media):
     # Open the image file in binary mode and send it as the request body
     with open(output_path, "rb") as file:
         response = requests.request("PUT", url, headers=headers, data=file)
-        if response.status_code == 201:
-                print(response)
-                print("Media succesfully uploaded")
-
-        else:
-                print("Media Upload Failed")
+        # if response.status_code == 201:
+        #         print(response)
+        #         print("Media succesfully uploaded")
+        #
+        # else:
+        #         print("Media Upload Failed")
 
     parts = asset.split(':')
     asset_id = parts[-1]
@@ -1306,12 +1313,12 @@ def image_comment(org_id,access_token, post_urn, comment, social, media):
     response = requests.post(post_url, headers=headers, data=post_data)
     if response.status_code == 201:
         response = response.json()
-        print("Comment created successfully.")
-        print(response['$URN'])
-        print(response)
-    else:
-        print("Failed to create comment.")
-        print(response.json())
+        # print("Comment created successfully.")
+        # print(response['$URN'])
+        # print(response)
+    # else:
+    #     print("Failed to create comment.")
+    #     print(response.json())
     return response
 
 
@@ -1340,11 +1347,11 @@ def create_comment(access_token, post_urn, comment, social):
 
     if response.status_code == 201:
         response = response.json()
-        print("Comment created successfully.")
-        print(response['$URN'])
-    else:
-        print("Failed to create comment.")
-        print(response.json())
+        # print("Comment created successfully.")
+        # print(response['$URN'])
+    # else:
+    #     print("Failed to create comment.")
+    #     print(response.json())
     return response
 
 def ugcpost_socialactions(urn, access_token_string,linkedin_post):
@@ -1664,7 +1671,7 @@ def post_like_linkedin(post_urn, user, access_token):
 
     response = requests.request("POST", url, headers=headers, data=payload)
 
-    print(response.text)
+    # print(response.text)
 
 
 def linkedin_retrieve_access_token(post_id):
@@ -1764,13 +1771,13 @@ def reduce_pixel_count(input_path, output_path, max_pixels):
 
                 # Save the resized image
                 resized_image.save(output_path)
-                print(f"Image pixel count reduced and saved as {output_path}")
+                # print(f"Image pixel count reduced and saved as {output_path}")
             else:
                 # No need to resize, save the image as it is
                 image.save(output_path)
-                print(f"Image pixel count is within the specified limit. Image saved as {output_path}")
+                # print(f"Image pixel count is within the specified limit. Image saved as {output_path}")
     except Exception as e:
-        print(f"Error occurred while processing the image: {e}")
+        e
 
 
 
@@ -1792,7 +1799,7 @@ def get_img_urn(org_id,access_token_string):
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
-    print(response.json())
+    # print(response.json())
     return response
 
 def get_video_urn(org_id,access_token_string):
@@ -1831,7 +1838,7 @@ def upload_img(upload_url, image_file, access_token_string):
     # Set the path to the imaganasrehman/Pyce file on your local machine
 
     image_path = os.path.join(settings.BASE_DIR, "media/" + str(image_file))
-    print(image_path)
+    # print(image_path)
     # image_path = "/Users/harmProjects/social_automation/social_auto/media/" + str(image_file)
     input_path = image_path
     output_path = input_path
@@ -1862,8 +1869,8 @@ def upload_video(upload_url,video_file):
     }
     with open(video_path, 'rb') as file:
         response = requests.request("PUT", url, headers=headers, data=file)
-        if response.status_code == 201:
-            print("Video Succesfully Uploaded")
+        # if response.status_code == 201:
+        # # print("Video Succesfully Uploaded")
         return response
 
 
@@ -1912,7 +1919,7 @@ def post_video_linkedin(image_urn, access_token_string, org_id, post):
 def post_linkedin(image_list,post,org_id,access_token):
     url = "https://api.linkedin.com/rest/posts"
 
-    print(post)
+    # print(post)
 
     payload = json.dumps({
         "author": "urn:li:organization:" + org_id,
@@ -2207,11 +2214,11 @@ def linkedin_validator(request):
 
             if video >= 1 and img >= 1 and errors.get('Invalid Number') == None:
                 errors["Invalid Number"] = "Linkedin cannot contain both image and video"
-                print("Can not contain video and image")
+                # print("Can not contain video and image")
 
             if video > 1 and errors.get('Video') == None:
                 errors['Video'] = "Linkedin can not contain more than one video"
-                print("Can not contain more than one Video")
+                # print("Can not contain more than one Video")
 
     return errors
 
@@ -2240,11 +2247,11 @@ def facebook_validator(request):
 
             if video >= 1 and img >= 1 and errors.get('Invalid Number') == None:
                 errors["Invalid Number"] = "Facebook cannot contain both image and video"
-                print("Can not contain video and image")
+                # print("Can not contain video and image")
 
             if video > 1 and errors.get('Video') == None:
                 errors['Video'] = "Facebook can not contain more than one video"
-                print("Can not contain more than one Video")
+                # print("Can not contain more than one Video")
 
     return errors
 

@@ -54,7 +54,7 @@ def get_id_token(access_token):
         return id_token
     else:
         # Token verification failed
-        print(f"Token verification failed: {response.text}")
+
         return None
 
 
@@ -75,7 +75,7 @@ def verify_google_oauth_token(token):
 
     except ValueError as e:
         # Token verification failed
-        print(f"Token verification failed: {str(e)}")
+
         return None
 
 def my_business_view(request):
@@ -198,7 +198,7 @@ class assign_manager(CreateView):
 
             try:
                 token = generate_random_token()
-                print("Random Token:", token)
+
                 if email is None:
                     selected_user = User.objects.get(pk=user_id)
                     invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=selected_user.email, selected_user=selected_user, role=role, permission=permission)
@@ -328,7 +328,7 @@ class ConnectPageView(LoginRequiredMixin, CreateView):
             access_token[_.provider] = SocialToken.objects.filter(account_id=_)
 
 
-        print(access_token)
+
 
 
         my_list = []
@@ -687,7 +687,8 @@ class PageDataView(APIView):
                 data["instagram"] += insta_data
             # For Instagram
 
-            # print()
+
+
             if _.provider == 'linkedin_oauth2':
                 data['linkedin'] = []
                 linkedin_page = linkedin_get_user_organization(access_token.get(_.user.username).get("linkedin_oauth2"),access_token[_.user.username]['id'])
@@ -716,10 +717,6 @@ class PostDraftView(UpdateView):
         return context
 
     def form_invalid(self, form):
-        print(self.request.POST)
-        print(self.request.POST.getlist("facebook[]"))
-        print(self.request.FILES.get('file'))
-
         return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
 
     def form_valid(self, form):
@@ -1291,7 +1288,7 @@ class ConnectionView(ConnectionsView):
 
 
             except Exception as e:
-                 print(e)
+                e
 
         return context
 
@@ -1315,10 +1312,7 @@ class EditUserView(LoginRequiredMixin,UpdateView):
         invalid_form.context_data['user'] = self.request.user
         return invalid_form
 
-    # def form_invalid(self, form):
-    #     form
-    #     return super().form_invalid(form)
-    #
+
     def form_valid(self, form):
         # checkbox = self.request.POST.get('remove_image')
         # if(checkbox):

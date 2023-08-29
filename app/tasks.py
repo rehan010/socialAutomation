@@ -6,7 +6,7 @@ from django.db.models import Q
 
 @app.task
 def task_one():
-    print(" task one called and worker is running good")
+    # print(" task one called and worker is running good")
     post = PostModel.objects.filter(Q(status='PROCESSING')|Q(status='SCHEDULED'))
     for _ in post:
         schedule_signals_task(_)

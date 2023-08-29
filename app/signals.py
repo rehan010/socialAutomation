@@ -191,11 +191,11 @@ def publish_post_on_social_media(instance):
 
 @shared_task
 def schedule_signals_task(instance):
-    print(instance)
+    # print(instance)
     try:
         post = PostModel.objects.get(id=instance.id)
         for image in instance.images.all():
-            print(image.image)
+            # print(image.image)
             save_file1(image)
 
         if instance:
@@ -213,8 +213,8 @@ def schedule_signals_task(instance):
 
                 # time_remaining = instance.schedule_datetime - timezone.now()
                 # Schedule the task to publish the post on the scheduled date
-                print(current_datetime )
-                print(given_datetime_str)
+                # print(current_datetime )
+                # print(given_datetime_str)
                 if given_datetime_str < current_datetime:
                     schedule_publish_task(instance)
                 else:
