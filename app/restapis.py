@@ -123,6 +123,7 @@ def fb_social_action_data_organizer(elements,headers):
                         urls.append(attachment.get('media').get('source'))
 
                 obj['urls'] = urls
+                obj['liked'] = element.get('user_likes')
 
                 if element.get('comments'):
 
@@ -141,16 +142,36 @@ def fb_social_action_data_organizer(elements,headers):
 def fb_socialactions(post_urn,access_token):
 
 
-
-    url = f"https://graph.facebook.com/{post_urn}?fields=likes.summary(true),comments.summary(true)"
-
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
+    try:
+        url = f"https://graph.facebook.com/{post_urn}?fields=likes.summary(true),comments.summary(true),post_id"
 
-    response = requests.get(url=url,headers=headers)
+        response = requests.get(url=url, headers=headers)
 
-    response_json = response.json()
+        response_json = response.json()
+
+        if response_json.get('post_id') == None:
+            raise Exception("Response not Valid")
+
+        post = Post_urn.objects.get(urn = post_urn)
+        org_id = post.org.org_id
+        post.urn = org_id + "_" + response_json.get('post_id')
+        post.save()
+
+        post_urn = post.urn
+
+    except Exception as e:
+
+        url = f"https://graph.facebook.com/{post_urn}?fields=likes.summary(true),comments.summary(true)"
+        response = requests.get(url=url, headers=headers)
+
+        response_json = response.json()
+
+
+
+
 
     t_likes = response_json.get("likes",{}).get("summary",{}).get("total_count",{})
 
@@ -161,7 +182,7 @@ def fb_socialactions(post_urn,access_token):
     form.post_comments = t_comments
     form.save()
 
-    url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from,reactions,attachment,comments{{message,created_time,from,reactions,attachment,comments{{message, created_time,from, reactions, attachment}}}}"
+    url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from,reactions,attachment,user_likes,comments{{message,created_time,from,reactions,attachment,user_likes,comments{{message, created_time,from, reactions, attachment,user_likes}}}}"
 
 #     comments{message,created_time,from}  field to get replies
     headers = {
@@ -2270,7 +2291,15 @@ def fb_object_like(urn,access_token):
     return response.json()
 
 
+def fb_object_unlike(urn,access_token):
 
+    url = f"https://graph.facebook.com/v17.0/{urn}/likes"
 
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = requests.delete(url=url, headers=headers)
+
+    return response.json()
 
 

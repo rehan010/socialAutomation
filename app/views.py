@@ -1048,6 +1048,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             facebook_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
             org_id = facebook_post.post_urn.all().filter(pk=page_id).first().org.org_id
             post_urn = facebook_post.post_urn.all().filter(pk = page_id).first().urn
+            is_liked = facebook_post.post_urn.all().filter(pk = page_id).first().is_liked
             access_token_string = facebook_post.post_urn.all().filter(pk=page_id).first().org.access_token
             urn = post_urn
             if urn == '' or urn == None:
@@ -1061,6 +1062,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             context = {
                 'ids': urn,
                 'no_likes': no_likes,
+                'is_liked': is_liked,
                 'no_comments': no_comments,
                 'data': data,
                 'posts': PostModel.objects.filter(user_id=self.request.user.id),
@@ -1284,8 +1286,7 @@ class ConnectionView(ConnectionsView):
         for apps in social_apps:
             context[f'{apps.provider}_app'] = apps
             try:
-                context[f'{apps.provider}'] = SocialAccount.objects.filter(user=self.request.user.id, provider=apps.provider)[0]
-
+                context[f'{apps.provider}'] = SocialAccount.objects.filter(user=self.request.user.id, provider=apps.provider).first()
 
             except Exception as e:
                 e
@@ -1343,6 +1344,60 @@ class EditUserView(LoginRequiredMixin,UpdateView):
 
         return super().form_valid(form)
 
+
+
+class LikeApiView(APIView):
+    def post(self, request,page_id, post_id, *kwargs):
+        page_id = self.kwargs['page_id']
+        post_id = self.kwargs['post_id']
+        comment_urn = self.request.data.get('urn')
+        like_response = "Enter Valid Urn"
+        if self.request.GET.get('page_name') == "facebook":
+            try:
+                provider_name = "facebook"
+                facebook_post = PostModel.objects.get(post_urn__org__provider = provider_name, id=post_id, post_urn__pk=page_id)
+                page_post = facebook_post.post_urn.all().filter(pk = page_id).first()
+                access_token = page_post.org.access_token
+                urn = page_post.urn
+
+                if comment_urn:
+                    like_response = fb_object_like(comment_urn,access_token)
+                else:
+                    like_response = fb_object_like(urn,access_token)
+                    page_post.is_liked = True
+                    page_post.save()
+            except Exception as e:
+                return JsonResponse(e,safe=False)
+        else:
+            pass
+
+        return JsonResponse(like_response)
+
+    def delete(self, request,page_id, post_id, *kwargs):
+        page_id = self.kwargs['page_id']
+        post_id = self.kwargs['post_id']
+        comment_urn = self.request.data.get('urn')
+        unlike_response = "Enter Valid Urn"
+        if self.request.GET.get('page_name') == "facebook":
+            try:
+                provider_name = "facebook"
+                facebook_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
+                page_post = facebook_post.post_urn.all().filter(pk=page_id).first()
+                access_token = page_post.org.access_token
+                urn = page_post.urn
+
+                if comment_urn:
+                    unlike_response = fb_object_unlike(comment_urn, access_token)
+                else:
+                    unlike_response = fb_object_unlike(urn, access_token)
+                    page_post.is_liked = False
+                    page_post.save()
+            except Exception as e:
+                return JsonResponse(e)
+        else:
+            pass
+
+        return JsonResponse(unlike_response)
 
 
 

@@ -43,6 +43,7 @@ urlpatterns = [
     path('create/post/', PostCreateView.as_view(), name='create_post'),
     path('posts/<int:pk>', PostsGetView.as_view(), name='my_posts'),
     path('posts/detail/<int:post_id>/<int:page_id>', PostsDetailView.as_view(), name='my_detail_posts'),
+    path('posts/like/<int:post_id>/<int:page_id>', LikeApiView.as_view(), name='like_apiview'),
     path('post_draft/<int:pk>', PostDraftView.as_view(), name='post_draft'),
 
     path('delete-post/<int:pk>/', PostDeleteView.as_view(), name='delete_post'),

@@ -105,28 +105,49 @@
                 </a>
             </div>
         </div>
+        <input type="hidden" value="{{page_id}}" id="page_id" >
+        <input type="hidden" value="{{post_id}}" id="post_id" >
         <br>
         <!-- Likes and Comment Count -->
         <div class="flex justify-between items-center text-gray-600 mb-2">
             <div class="flex items-center">
                 {% if user_role == 'MANAGER' and permission == 'WRITE' %}
-                <button
-                        class="like-button relative focus:outline-red">
-                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                    </svg>
-                </button>
+                        {% if is_liked %}
+                             <button onclick="deleteLike('',event)" type="button" class="like-button relative focus:outline-red">
+                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        {% else %}
+                            <button onclick="postLike('',event)" type="button" class="like-button relative focus:outline-red">
+                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        {% endif %}
                 {% elif post.user == request.user %}
-                <button
-                        class="like-button relative focus:outline-none">
-                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                    </svg>
-                </button>
+
+                        {% if is_liked %}
+                             <button onclick="deleteLike('',event)" type="button" class="like-button relative focus:outline-red">
+                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        {% else %}
+                            <button onclick="postLike('',event)" type="button" class="like-button relative focus:outline-red">
+                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        {% endif %}
                 {% else %}
                 <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
                      xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -169,6 +190,15 @@
             <!--                            <input type="file" name="comment_media" id="file-upload" class="file-upload hidden">-->
             <!--                        </div>-->
             <!--                    {% endif %}-->
+
+
+            <button class="like-button relative focus:outline-red">
+                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+            </button>
             <button class="mt-2 px-4 py-2 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
                 Post Comment
             </button>
@@ -185,6 +215,7 @@
             <!--                            <input type="file" name="comment_media" id="file-upload" class="file-upload hidden">-->
             <!--                        </div>-->
             <!--                    {% endif %}-->
+
             <button class="mt-2 px-4 py-2 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
                 Post Comment
             </button>
@@ -207,6 +238,26 @@
                     <p class="font-bold">{{ comment.name }}:</p>
                     <p class="text-gray-700">{{ comment.text }}</p>
 
+                    <div class="w-full flex justify-end">
+                        {% if comment.liked %}
+                             <button onclick="deleteLike('{{ comment.comment_urn }}',event)" type="button" class="like-button relative focus:outline-red">
+                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        {% else %}
+                            <button onclick="postLike('{{ comment.comment_urn }}',event)" type="button" class="like-button relative focus:outline-red">
+                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        {% endif %}
+                    </div>
+
 
                     <div class="mt-4 space-y-4">
                         {% if comment.replies|length > 0 %}
@@ -216,11 +267,31 @@
                             <img class="h-10 w-10 rounded-full object-cover" src="{{ reply.profile_image }}" alt=""/>
                             {% endif %}
                             {% if reply.text %}
-                            <div class=" rounded-lg p-3">
+                            <div class="flex-1 rounded-lg p-3">
                                 <!-- Reply content -->
                                 <p class="font-bold">{{ reply.name }}:</p>
                                 <p class="text-gray-700">{{ reply.text }}</p>
+                                <div class="w-full flex justify-end">
+                                    {% if reply.liked %}
+                                         <button onclick="deleteLike('{{ reply.comment_urn }}',event)" type="button" class="like-button relative focus:outline-red">
+                                            <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                                                 fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                            </svg>
+                                        </button>
+                                    {% else %}
+                                        <button onclick="postLike('{{ reply.comment_urn }}',event)" type="button" class="like-button relative focus:outline-red">
+                                            <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                            </svg>
+                                        </button>
+                                    {% endif %}
+                                </div>
                             </div>
+
                             {% endif %}
 
                         </div>
@@ -240,6 +311,9 @@
                         <!--                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">-->
                         <!--                                        </div>-->
                         <!--                                        {% endif %}-->
+
+
+
                         <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
                             Reply
                         </button>
@@ -256,6 +330,7 @@
                         <!--                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">-->
                         <!--                                        </div>-->
                         <!--                                        {% endif %}-->
+
                         <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
                             Reply
                         </button>
@@ -294,6 +369,71 @@
             videoElement.play();
         }
     });
+
+    function getCSRFToken() {
+        const csrfTokenInput = document.querySelector('input[name=csrfmiddlewaretoken]');
+        if (csrfTokenInput) {
+            return csrfTokenInput.value;
+        } else {
+            return null;
+        }
+    }
+
+
+    async function postLike(urn = null,event){
+      const page_id = document.getElementById('page_id').value;
+      const post_id = document.getElementById('post_id').value;
+      const searchParams = new URLSearchParams(window.location.search);
+      const provider_name = searchParams.get('page_name');
+      const csrfToken = getCSRFToken();
+      const like = event.target;
+      const parentButton = event.currentTarget;
+
+      const json = { 'urn': urn }
+      const res = await fetch(
+          `/posts/like/${post_id}/${page_id}?page_name=${provider_name}`,{
+              method:'Post',
+               headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+               body: JSON.stringify(json)
+        });
+      const data = await res.json();
+
+    like.style.fill = 'red';
+    parentButton.onclick = (event) => deleteLike(urn,event);
+
+
+  }
+
+
+    async function deleteLike(urn = null,event){
+      const page_id = document.getElementById('page_id').value;
+      const post_id = document.getElementById('post_id').value;
+      const searchParams = new URLSearchParams(window.location.search);
+      const provider_name = searchParams.get('page_name');
+      const csrfToken = getCSRFToken();
+      const like = event.target;
+      const parentButton = event.currentTarget;
+      const json = { 'urn': urn }
+      console.log(json);
+      const res = await fetch(
+          `/posts/like/${post_id}/${page_id}?page_name=${provider_name}`,{
+              method:'Delete',
+               headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+               body: JSON.stringify(json)
+        });
+      const data = await res.json();
+
+    like.style.fill = 'none';
+    parentButton.onclick = (event) => postLike(urn ,event);
+
+
+  }
 
 
 </script>
