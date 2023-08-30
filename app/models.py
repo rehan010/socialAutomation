@@ -139,7 +139,7 @@ class ImageModel(models.Model):
         return file_extension == 'mp4'
 
 class PostModel(BaseModel):
-    POST_TYPE = [('DRAFT', 'DRAFT'), ('PUBLISHED', 'PUBLISHED'), ('SCHEDULED', 'SCHEDULED'), ('PROCESSING','PROCESSING')]
+    POST_TYPE = [('DRAFT', 'DRAFT'), ('PUBLISHED', 'PUBLISHED'), ('SCHEDULED', 'SCHEDULED'), ('PROCESSING', 'PROCESSING')]
     post = models.TextField(blank=True)
     images = models.ManyToManyField('ImageModel')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -150,6 +150,7 @@ class PostModel(BaseModel):
     publish_check = models.BooleanField(default=False)
     status = models.CharField(default='DRAFT', max_length=100, choices=POST_TYPE)
     published_at = models.DateTimeField(null=True, blank=True)
+
 
 
     def __str__(self):

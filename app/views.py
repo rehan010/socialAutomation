@@ -606,7 +606,7 @@ class PostCreateView(CreateView):
                     user = User.objects.get(id=info['user'])
                     sharepage = SharePage.objects.create(user=user)
                     sharepage.name = info.get('name')
-                    sharepage.access_token = SocialToken.objects.get(account__user__id = info['user'],app__provider = "facebook").token
+                    sharepage.access_token = SocialToken.objects.get(account__user__id = info['user'], app__provider = "facebook").token
                     sharepage.org_id = info.get('id')
                     sharepage.provider = "instagram"
                     sharepage.save()
@@ -993,11 +993,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         post_id = self.kwargs['post_id']
         page_id = self.kwargs['page_id']
-        # result = linkedin_retrieve_access_token(post_id)
-        # posts = result[0]
-        # access_token_string = result[1]
-        # ids = result[2]
-        # social = result[3]
+
 
         posted_on = Post_urn.objects.get(id=page_id).org.name
         name = self.request.GET.get('page_name')
@@ -1007,9 +1003,11 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
             provider_name = "linkedin"
             linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
+            social = SocialAccount.objects.get(user=linkedin_post.user.id, provider='linkedin_oauth2')
 
             org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
             post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
+            is_liked = linkedin_post.post_urn.all().filter(pk=page_id).first().is_liked
 
             # my eddited
             access_token_string = linkedin_post.post_urn.all().filter(pk=page_id).first().org.access_token
@@ -1039,7 +1037,9 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'post': linkedin_post,
                 'posted_on': posted_on,
                 'post_id': post_id,
-                'provider_name': provider_name
+                'page_id': page_id,
+                'provider_name': provider_name,
+                'is_liked': is_liked
             }
 
         elif self.request.GET.get('page_name') == 'facebook':
@@ -1054,7 +1054,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             if urn == '' or urn == None:
                 pass
             else:
-                result = fb_socialactions(urn,access_token_string)
+                result = fb_socialactions(urn, access_token_string)
                 no_likes = result[0]
                 no_comments = result[1]
                 data = result[2]
@@ -1069,7 +1069,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'post': facebook_post,
                 'posted_on': posted_on,
                 'post_id': post_id,
-                'page_id':page_id,
+                'page_id': page_id,
                 'provider_name': provider_name,
                 'reply_media_counter': 0
             }
@@ -1139,7 +1139,8 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         comment = self.request.POST.get('comment')
         comment_urn_list = request.POST.getlist('comment_urn')
         media = request.FILES.get('comment_media')
-        # post_like = request.POST.get('post_like')
+        post_id = self.kwargs['post_id']
+        page_id = self.kwargs['page_id']
 
         reply_list = request.POST.getlist('reply')
         reply_data = {}
@@ -1150,9 +1151,8 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             reply_data[comment_urn].append(reply_media)
             reply_media_counter = reply_media_counter+1
 
-        post_id = self.kwargs['post_id']
-        page_id = self.kwargs['page_id']
-        if comment != '' or media != None:
+
+        if comment != ''  or media != None and len(reply_list)==0:
             if self.request.GET.get('page_name') == 'linkedin':
                 provider_name = "linkedin"
                 linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
@@ -1169,7 +1169,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 # access_token = result[1]
                 # social = result[3]
                 # if comment != '' and media == None:
-                if comment != '':
+                if comment != '' or comment != None:
                     create_comment(access_token, post_urn, comment, social)
                 # elif media != '':
                 #     # create_comment_media_linkedin(org_id, access_token, post_urn, comment, social, media)
@@ -1361,19 +1361,35 @@ class LikeApiView(APIView):
                 urn = page_post.urn
 
                 if comment_urn:
-                    like_response = fb_object_like(comment_urn,access_token)
+                    like_response = fb_object_like(comment_urn, access_token)
                 else:
-                    like_response = fb_object_like(urn,access_token)
+                    like_response = fb_object_like(urn, access_token)
                     page_post.is_liked = True
                     page_post.save()
             except Exception as e:
                 return JsonResponse(e,safe=False)
+        elif self.request.GET.get('page_name') == 'linkedin':
+            try:
+                provider_name = "linkedin"
+                linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
+                social = SocialAccount.objects.get(user=linkedin_post.user.id, provider='linkedin_oauth2')
+                urn = linkedin_post.post_urn.all().filter(pk=page_id).first()
+                post_urn = urn.urn
+                access_token = urn.org.access_token
+
+                if comment_urn:
+                    like_response = comment_like_linkedin(comment_urn, social, access_token)
+                else:
+                    like_response = post_like_linkedin(post_urn, social, access_token)
+                    urn.is_liked = True
+                    urn.save()
+            except Exception as e:
+                return JsonResponse(e, safe=False)
         else:
             pass
-
         return JsonResponse(like_response)
 
-    def delete(self, request,page_id, post_id, *kwargs):
+    def delete(self, request, page_id, post_id, *kwargs):
         page_id = self.kwargs['page_id']
         post_id = self.kwargs['post_id']
         comment_urn = self.request.data.get('urn')
@@ -1394,9 +1410,26 @@ class LikeApiView(APIView):
                     page_post.save()
             except Exception as e:
                 return JsonResponse(e)
+        elif self.request.GET.get('page_name') == 'linkedin':
+            try:
+                provider_name = "linkedin"
+                linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,
+                                                      post_urn__pk=page_id)
+                social = SocialAccount.objects.get(user=linkedin_post.user.id, provider='linkedin_oauth2')
+                urn = linkedin_post.post_urn.all().filter(pk=page_id).first()
+                post_urn = urn.urn
+                access_token = urn.org.access_token
+
+                if comment_urn:
+                    unlike_response = delete_comment_like_linkedin(comment_urn, social, access_token)
+                else:
+                    unlike_response = delete_post_like_linkedin(post_urn, social, access_token)
+                    urn.is_liked = False
+                    urn.save()
+            except Exception as e:
+                return JsonResponse(e)
         else:
             pass
-
         return JsonResponse(unlike_response)
 
 
