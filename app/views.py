@@ -1372,9 +1372,11 @@ class LikeApiView(APIView):
             try:
                 provider_name = "linkedin"
                 linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
-                social = SocialAccount.objects.get(user=linkedin_post.user.id, provider='linkedin_oauth2')
                 urn = linkedin_post.post_urn.all().filter(pk=page_id).first()
                 post_urn = urn.urn
+                user = urn.org.user
+                social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
+
                 access_token = urn.org.access_token
 
                 if comment_urn:
