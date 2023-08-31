@@ -1003,7 +1003,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
             provider_name = "linkedin"
             linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
-            social = SocialAccount.objects.get(user=linkedin_post.user.id, provider='linkedin_oauth2')
+            # social = SocialAccount.objects.get(user=linkedin_post.user.id, provider='linkedin_oauth2')
 
             org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
             post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
