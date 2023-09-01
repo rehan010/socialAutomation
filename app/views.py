@@ -776,12 +776,13 @@ class PostDraftView(UpdateView):
                     i += 1
                 info = context.get('linkedin').pop(i)
                 user = User.objects.get(id=info['user'])
+                share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin', user=user,
+                                                                      name=info['name'])
 
-                share_page, created = SharePage.objects.get_or_create(org_id=page, provider='linkedin',
-                                                                      user=user, name=info['name'])
                 if created:
-                    share_page.access_token = SocialToken.objects.get(account__user__id = info['user'],app__provider = "linkedin_oauth2").token
-
+                    share_page.access_token = SocialToken.objects.get(account__user__id=info['user'],
+                                                                      app__provider="linkedin_oauth2").token
+                    share_page.save()
                 share_pages.append(share_page)
 
             for page in requestdata.get("facebook") or []:
@@ -823,7 +824,8 @@ class PostDraftView(UpdateView):
                     user = User.objects.get(id=info['user'])
                     sharepage = SharePage.objects.create(user=user)
                     sharepage.name = info.get('name')
-                    sharepage.access_token = SocialToken.objects.get(account__user__id = info['user'],app__provider = "facebook").token
+                    sharepage.access_token = SocialToken.objects.get(account__user__id=info['user'],
+                                                                     app__provider="facebook").token
                     sharepage.org_id = info.get('id')
                     sharepage.provider = "instagram"
                     sharepage.save()
@@ -841,7 +843,7 @@ class PostDraftView(UpdateView):
                 image_model.save()
                 image_object.append(image_model)
         post.images.add(*image_object)
-        post.prepost_page.clear()
+
         post.prepost_page.add(*share_pages)
 
         return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
