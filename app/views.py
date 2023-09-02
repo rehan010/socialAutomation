@@ -31,11 +31,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from allauth.socialaccount.models import SocialToken
 from django.utils.timezone import make_aware
-from datetime import datetime
+from datetime import datetime, date, timedelta
 # from .signals import post_update_signal
 from django.contrib import messages
 from django.contrib.auth import logout
 from allauth.socialaccount.views import ConnectionsView
+from django.db.models import Sum
 
 
 def get_id_token(access_token):
@@ -280,17 +281,69 @@ class DashboardView(LoginRequiredMixin,TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        today = date.today()
+        curr_date = datetime.now()
+        before_date = datetime.now() + timedelta(days=-7)
+        week_before_date = before_date + timedelta(days=-7)
 
         # Add your context data here
         if self.request.user.is_authenticated:
-            context['point_files'] = list(PointFileModel.objects.filter(user=self.request.user.pk,is_deleted=False).values('id', 'name','point_file'))
-            lat_long= {}
-            for _ in context['point_files']:
-                lat_long_list = list(LatLongModel.objects.filter(file=_['id']).values('latitude', 'longitude'))
-                # Convert Decimal values to float
-                _['lat_long'] = [{'latitude': float(lat['latitude']), 'longitude': float(lat['longitude'])} for lat
-                                    in lat_long_list]
-            # my_business_view(self.request)
+            user_manager = self.request.user.manager
+
+            if user_manager != None:
+                role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
+                user_role = role.role
+                user_permission = role.permission
+                if user_permission == 'HIDE':
+
+                    total_posts = PostModel.objects.filter(user=self.request.user)
+
+                else:
+                    total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager))
+            else:
+                invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
+                invites = []
+                for user in invited:
+                    invited_users_id = user.selected_user.id
+                    invites.append(invited_users_id)
+                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites))
+            # Post,likes,comments for today
+            user_post = total_posts.filter(created_at__date=today)
+            user_likes_annotated = user_post.annotate(total_post_likes=Sum('post_urn__post_likes'))
+            user_comments_annotated = user_post.annotate(total_post_comments=Sum('post_urn__post_comments'))
+            total_likes = user_likes_annotated.aggregate(total_likes=Sum('total_post_likes'))
+            total_comments = user_comments_annotated.aggregate(total_comments=Sum('total_post_comments'))
+
+            # All Post,likes,comments
+            post_likes = total_posts.annotate(total_post_likes=Sum('post_urn__post_likes'))
+            likes = post_likes.aggregate(total_likes=Sum('total_post_likes'))
+            post_comments = total_posts.annotate(total_post_comments=Sum('post_urn__post_comments'))
+            comments = post_comments.aggregate(comments=Sum('total_post_comments'))
+
+            #Weekly comparison
+            current_week_post = len(total_posts.filter(created_at__lte=curr_date, created_at__gte=before_date))
+            previous_week_post = len(total_posts.filter(created_at__lte=before_date, created_at__gte=week_before_date))
+            if previous_week_post > 0:
+                change_per = (current_week_post - previous_week_post)*(100/previous_week_post)
+            else:
+                change_per = 100
+
+            context['likes_today'] = total_likes['total_likes']
+            context['post_percentage'] = change_per
+            context['likes'] = likes['total_likes']
+            context['comments_today'] = total_comments['total_comments']
+            context['comments'] = comments['comments']
+            context['total_posts'] = len(total_posts)
+            context['post_today'] = len(user_post)
+
+            # context['point_files'] = list(PointFileModel.objects.filter(user=self.request.user.pk,is_deleted=False).values('id', 'name','point_file'))
+            # lat_long= {}
+            # for _ in context['point_files']:
+            #     lat_long_list = list(LatLongModel.objects.filter(file=_['id']).values('latitude', 'longitude'))
+            #     # Convert Decimal values to float
+            #     _['lat_long'] = [{'latitude': float(lat['latitude']), 'longitude': float(lat['longitude'])} for lat
+            #                         in lat_long_list]
+            # # my_business_view(self.request)
 
         return context
 
