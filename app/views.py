@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from django.db.models import Q
 from .serializer import *
 from django.views.decorators.csrf import csrf_exempt
-
+from django.utils.safestring import mark_safe
 # from django.contrib.auth.models import User
 from .models import User
 from allauth.socialaccount.models import EmailAddress,SocialAccount,SocialToken
@@ -37,6 +37,9 @@ from django.contrib import messages
 from django.contrib.auth import logout
 from allauth.socialaccount.views import ConnectionsView
 from django.db.models import Sum
+from django.db.models.functions import ExtractMonth, ExtractYear
+from django.db.models import Count
+import calendar
 
 
 def get_id_token(access_token):
@@ -276,15 +279,20 @@ class UserCreateView(LoginRequiredMixin,TemplateView):
     template_name = "registration/register.html"
 
 
-class DashboardView(LoginRequiredMixin,TemplateView):
+class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "registration/dashboard.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         today = date.today()
+        year = timezone.now().year
         curr_date = datetime.now()
         before_date = datetime.now() + timedelta(days=-7)
         week_before_date = before_date + timedelta(days=-7)
+        start_of_day = curr_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        start = int(start_of_day.timestamp() * 1000)
+
+
 
         # Add your context data here
         if self.request.user.is_authenticated:
@@ -296,43 +304,120 @@ class DashboardView(LoginRequiredMixin,TemplateView):
                 user_permission = role.permission
                 if user_permission == 'HIDE':
 
-                    total_posts = PostModel.objects.filter(user=self.request.user)
+                    total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED')
 
                 else:
-                    total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager))
+                    total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager), status='PUBLISHED')
             else:
                 invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
                 invites = []
                 for user in invited:
                     invited_users_id = user.selected_user.id
                     invites.append(invited_users_id)
-                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites))
+                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), status='PUBLISHED')
+
+
+            posts_monthly = total_posts.filter(created_at__year=year).annotate(month=ExtractMonth('created_at'),
+                                                                                     year=ExtractYear('created_at')).values('year', 'month').annotate(post_count=Count('id')).order_by('year', 'month')
+
+            # Assuming you have the queryset data stored in a variable named `monthly_post_counts`
+            label = []
+            data = []
+
+            # Iterate through the queryset and extract the labels and data
+
+            for item in posts_monthly:
+                month_year_label = f"{calendar.month_name[item['month']]} {item['year']}"
+                label.append(month_year_label)
+                data.append(item['post_count'])
+            labels_json = json.dumps(label)
+            data_json = json.dumps(data)
+            context['data'] = data_json
+            context['labels'] = labels_json
+
             # Post,likes,comments for today
             user_post = total_posts.filter(created_at__date=today)
-            user_likes_annotated = user_post.annotate(total_post_likes=Sum('post_urn__post_likes'))
-            user_comments_annotated = user_post.annotate(total_post_comments=Sum('post_urn__post_comments'))
-            total_likes = user_likes_annotated.aggregate(total_likes=Sum('total_post_likes'))
-            total_comments = user_comments_annotated.aggregate(total_comments=Sum('total_post_comments'))
+            likes_today = 0
+            comments_today = 0
+            likes_overall = 0
+            comments_overall = 0
 
-            # All Post,likes,comments
-            post_likes = total_posts.annotate(total_post_likes=Sum('post_urn__post_likes'))
-            likes = post_likes.aggregate(total_likes=Sum('total_post_likes'))
-            post_comments = total_posts.annotate(total_post_comments=Sum('post_urn__post_comments'))
-            comments = post_comments.aggregate(comments=Sum('total_post_comments'))
+            linkedin_post = total_posts.filter(post_urn__org__provider="linkedin")
+            if len(linkedin_post) > 0:
+                org_urn_dict = {}
+                for post in linkedin_post:
+                    for urn in post.post_urn.all():
+                        if urn.org.provider =='linkedin':
+                            org_id = urn.org.org_id
+                            post_urn = urn.urn
+                            if org_id in org_urn_dict:
+                                org_urn_dict[org_id].append(post_urn)
+                            else:
+                                org_urn_dict[org_id] = [post_urn]
+
+                for org_id, urn_list in org_urn_dict.items():
+
+                    result = linkedin_share_stats(urn_list, org_id, urn, start)
+                    likes = result[0]
+                    comments = result[1]
+
+                    likes_today += likes
+                    comments_today += comments
+
+                    result = linkedin_share_stats_overall(urn_list, org_id, urn)
+                    likes_ovr = result[0]
+                    comments_ovr = result[1]
+
+                    likes_overall += likes_ovr
+                    comments_overall += comments_ovr
+
+            fb_post = total_posts.filter(post_urn__org__provider="facebook")
+            if len(fb_post) > 0:
+                org_urn_dict = {}
+                for post in fb_post:
+                    for urn in post.post_urn.all():
+                        if urn.org.provider =='facebook':
+                            org_id = urn.org.org_id
+                            post_urn = urn.urn
+                            if org_id in org_urn_dict:
+                                org_urn_dict[org_id].append(post_urn)
+                            else:
+                                org_urn_dict[org_id] = [post_urn]
+
+                for org_id, urn_list in org_urn_dict.items():
+                    pass
+
+
+
+            insta_post = total_posts.filter(post_urn__org__provider="instagram")
+            if len(insta_post) > 0:
+                org_urn_dict = {}
+                for post in insta_post:
+                    for urn in post.post_urn.all():
+                        if urn.org.provider =='instagram':
+                            org_id = urn.org.org_id
+                            post_urn = urn.urn
+                            if org_id in org_urn_dict:
+                                org_urn_dict[org_id].append(post_urn)
+                            else:
+                                org_urn_dict[org_id] = [post_urn]
+
+                for org_id, urn_list in org_urn_dict.items():
+                    pass
 
             #Weekly comparison
             current_week_post = len(total_posts.filter(created_at__lte=curr_date, created_at__gte=before_date))
             previous_week_post = len(total_posts.filter(created_at__lte=before_date, created_at__gte=week_before_date))
             if previous_week_post > 0:
-                change_per = (current_week_post - previous_week_post)*(100/previous_week_post)
+                change_per = round((current_week_post - previous_week_post)*(100/previous_week_post), 1)
             else:
                 change_per = 100
 
-            context['likes_today'] = total_likes['total_likes']
+            context['likes_today'] = likes_today
             context['post_percentage'] = change_per
-            context['likes'] = likes['total_likes']
-            context['comments_today'] = total_comments['total_comments']
-            context['comments'] = comments['comments']
+            context['likes'] = likes_overall
+            context['comments_today'] = comments_today
+            context['comments'] = comments_overall
             context['total_posts'] = len(total_posts)
             context['post_today'] = len(user_post)
 

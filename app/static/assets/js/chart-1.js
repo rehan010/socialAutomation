@@ -4,17 +4,17 @@ var ctx = document.getElementById("chart-bars").getContext("2d");
 
 new Chart(ctx, {
   type: "bar",
-  data: {
-    labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    data: {
+    labels: labels, // Use the labels from your context
     datasets: [
       {
-        label: "Sales",
+        label: "Posts",
         tension: 0.4,
         borderWidth: 0,
         borderRadius: 4,
         borderSkipped: false,
         backgroundColor: "#fff",
-        data: [450, 200, 100, 220, 500, 100, 400, 230, 500],
+        data: data, // Use the data from your context
         maxBarThickness: 6,
       },
     ],

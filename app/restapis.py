@@ -1748,6 +1748,55 @@ def post_like_linkedin(post_urn, social, access_token):
 
     return response.json()
 
+def linkedin_share_stats_overall(urn_list, org_id, urn):
+    encoded = ','.join(quote(a, safe='') for a in urn_list)
+    access_token = urn.org.access_token
+
+    url = "https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id + "&shares=List(" + encoded + ")"
+
+    payload = {}
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Authorization': 'Bearer ' + access_token,
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data = response.json()
+    if data['elements']:
+        like_count = data["elements"][0]["totalShareStatistics"]["likeCount"]
+        comment_count = data["elements"][0]["totalShareStatistics"]["commentCount"]
+    else:
+        like_count = 0
+        comment_count = 0
+
+    return like_count, comment_count
+
+def linkedin_share_stats(urn_list, org_id, urn, start):
+
+        encoded = ','.join(quote(a, safe='') for a in urn_list)
+        access_token = urn.org.access_token
+
+        url = "https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id + "&shares=List(" +encoded+ ")&timeIntervals=(timeRange:(start:" +str(start)+ "),timeGranularityType:DAY)"
+
+        payload = {}
+        headers = {
+            'X-Restli-Protocol-Version': '2.0.0',
+            'Linkedin-Version': '202304',
+            'Authorization': 'Bearer ' + access_token,
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+        data = response.json()
+        if data['elements']:
+            like_count = data["elements"][0]["totalShareStatistics"]["likeCount"]
+            comment_count = data["elements"][0]["totalShareStatistics"]["commentCount"]
+        else:
+            like_count = 0
+            comment_count = 0
+
+        return like_count, comment_count
+
 
 def comment_like_linkedin(comment_urn, social, access_token):
     url = "https://api.linkedin.com/rest/reactions?actor=urn%3Ali%3Aperson%3A" + social.uid
