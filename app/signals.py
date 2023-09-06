@@ -3,7 +3,6 @@
 
 
 from django.urls import reverse
-
 from .restapis import *
 from .models import PostModel,SharePage,ImageModel
 from celery import shared_task

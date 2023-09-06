@@ -305,9 +305,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 if user_permission == 'HIDE':
 
                     total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED')
+                    sharepages = SharePage.objects.filter(user = self.request.user)
 
                 else:
                     total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager), status='PUBLISHED')
+                    sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager))
             else:
                 invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
                 invites = []
@@ -315,6 +317,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     invited_users_id = user.selected_user.id
                     invites.append(invited_users_id)
                 total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), status='PUBLISHED')
+                sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invites))
 
 
             posts_monthly = total_posts.filter(created_at__year=year).annotate(month=ExtractMonth('created_at'),
@@ -371,39 +374,38 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     likes_overall += likes_ovr
                     comments_overall += comments_ovr
 
-            fb_post = total_posts.filter(post_urn__org__provider="facebook")
-            if len(fb_post) > 0:
-                org_urn_dict = {}
-                for post in fb_post:
-                    for urn in post.post_urn.all():
-                        if urn.org.provider =='facebook':
-                            org_id = urn.org.org_id
-                            post_urn = urn.urn
-                            if org_id in org_urn_dict:
-                                org_urn_dict[org_id].append(post_urn)
-                            else:
-                                org_urn_dict[org_id] = [post_urn]
 
-                for org_id, urn_list in org_urn_dict.items():
-                    pass
+            fb_post = total_posts.filter(post_urn__org__provider="facebook")
+
+            fb_pages = sharepages.filter(provider = "facebook")
+
+            for page in fb_pages:
+                access_token = page.access_token
+                page_id = page.org_id
+
+                result = fb_page_insights(access_token,page_id)
+                likes = result[0]
+                comments = result[1]
+                likes_today += likes
+                comments_today += comments
+
+
 
 
 
             insta_post = total_posts.filter(post_urn__org__provider="instagram")
-            if len(insta_post) > 0:
-                org_urn_dict = {}
-                for post in insta_post:
-                    for urn in post.post_urn.all():
-                        if urn.org.provider =='instagram':
-                            org_id = urn.org.org_id
-                            post_urn = urn.urn
-                            if org_id in org_urn_dict:
-                                org_urn_dict[org_id].append(post_urn)
-                            else:
-                                org_urn_dict[org_id] = [post_urn]
+            insta_accounts = sharepages.filter(provider = "instagram")
 
-                for org_id, urn_list in org_urn_dict.items():
-                    pass
+            for account in insta_accounts:
+                access_token = account.access_token
+                account_id = account.org_id
+
+                result = instagram_page_insigths(access_token,account_id)
+                likes = result[0]
+                comments = result[1]
+
+                likes_today += likes
+                comments_today += comments
 
             #Weekly comparison
             current_week_post = len(total_posts.filter(created_at__lte=curr_date, created_at__gte=before_date))
@@ -1433,8 +1435,82 @@ class ConnectionView(ConnectionsView):
 
         return context
 
-class SocialPorfileView(TemplateView):
+class SocialProfileView(LoginRequiredMixin,TemplateView):
     template_name = 'social/social_profile.html'
+
+    def get_context_data(self, **kwargs):
+        provider_name = self.request.GET.get('provider_name')
+        providertoGetdetails = self.request.GET.get('provider_name')
+        user = self.request.user
+
+        if provider_name == "instagram":
+            provider_name = "facebook"
+
+        user_manager = self.request.user.manager
+
+        if user_manager:
+            selected_user = InviteEmploye.objects.get(selected_user=self.request.user,
+                                                      invited_by=self.request.user.manager)
+            role = selected_user.role
+
+
+            if role == "ADMIN":
+                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user=user_manager.id),provider = provider_name)
+            else:
+                social = SocialAccount.objects.filter(Q(user=user.id), provider = provider_name)
+
+        else:
+            social = SocialAccount.objects.filter(Q(user=user.id),provider = provider_name)
+        access_token = {}
+        data = {}
+
+        for _ in social:
+                access_token[_.user.id] = SocialToken.objects.filter(account_id=_).first().token
+
+
+        user_access_token = access_token[user.id]
+
+        if providertoGetdetails == "facebook":
+            try:
+                data = fb_page_detail(user_access_token)
+                if data.get('error') != None:
+                    raise Exception(data['error'])
+
+                data['pages'] = {}
+                for _ in social:
+                    response = facebook_page_data(access_token.get(_.user.id),_.user.id)
+                    data['pages'][_.user.id] = response
+                data['provider'] = "facebook"
+            except Exception as e:
+                data['error'] = e
+
+        elif providertoGetdetails == "instagram":
+            try:
+                accounts = get_instagram_user_data(user_access_token,user.id)
+                instagram__connected_social_account = SocialAccount.objects.get( user = user.id,provider = "instagram")
+                data['pages'] = {}
+                for account in accounts:
+                    if account.get('username') == instagram__connected_social_account.extra_data.get('username'):
+                       data.update(instagram_details(user_access_token,account['id']))
+                       if data.get("error") != None:
+                            raise Exception(data['error'])
+
+                data['pages'][user.id] = accounts
+
+                access_token.pop(user.id)
+
+                for user_id in access_token:
+                    accounts = get_instagram_user_data(access_token[user_id],user_id)
+                    data['pages'][user_id] = accounts
+
+            except Exception as e:
+                data['error'] = e
+
+
+
+
+        context = data
+        return context
 
 class EditUserView(LoginRequiredMixin,UpdateView):
     template_name =  'registration/edituser.html'

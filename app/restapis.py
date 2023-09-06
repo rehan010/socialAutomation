@@ -1,6 +1,6 @@
 import time
 from io import BytesIO
-
+import datetime
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import requests
@@ -16,7 +16,7 @@ from allauth.socialaccount.models import SocialToken
 from django.shortcuts import redirect
 import requests
 from django.http import JsonResponse
-from urllib.parse import quote
+from urllib.parse import quote,urlparse
 
 import json
 from django.conf import settings
@@ -164,7 +164,7 @@ def fb_socialactions(post_urn, access_token):
 
     except Exception as e:
 
-        url = f"https://graph.facebook.com/{post_urn}?fields=likes.summary(true),comments.summary(true)"
+        url = f"https://graph.facebook.com/{post_urn}?fields=reactions.summary(true),comments.summary(true)"
         response = requests.get(url=url, headers=headers)
 
         response_json = response.json()
@@ -173,7 +173,7 @@ def fb_socialactions(post_urn, access_token):
 
 
 
-    t_likes = response_json.get("likes",{}).get("summary",{}).get("total_count",{})
+    t_likes = response_json.get("reactions",{}).get("summary",{}).get("total_count",{})
 
     t_comments = response_json.get("comments",{}).get("summary",{}).get("total_count",{})
 
@@ -443,7 +443,7 @@ def createfacebookpost(request):
 
 def facebook_page_data(accesstoken,userid):
 
-    url = "https://graph.facebook.com/v17.0/me/accounts?fields=access_token,id,name"
+    url = "https://graph.facebook.com/v17.0/me/accounts?fields=access_token,id,name,picture{url}"
 
     headers = {
         "Authorization": f"Bearer {accesstoken}"
@@ -453,11 +453,17 @@ def facebook_page_data(accesstoken,userid):
     response = response.json().get('data')
 
 
+    for page in response:
+        picture = page.pop('picture')
+        page['profile_picture_url'] = picture.get('data').get('url') if picture.get('data') else ''
+        page['user'] = userid
+
+
 
     # inserting user id in every object refering that the page is of that user
-    if response:
-        response_final = list(map(lambda page: {**page,"user":userid},response))
-        return response_final
+    # if response:
+    #     response_final = list(map(lambda page: {**page,"user":userid},response))
+    #     return response_final
 
 
     return response
@@ -482,7 +488,7 @@ def get_instagram_user_data(accesstoken,userid):
             id = _.get("instagram_business_account")["id"]
 
             try:
-                url = f"https://graph.facebook.com/v17.0/{id}?fields=name,profile_picture_url"
+                url = f"https://graph.facebook.com/v17.0/{id}?fields=name,profile_picture_url,username"
                 response = requests.get(url,headers=headers)
                 response = response.json()
                 response['user'] = userid
@@ -1763,7 +1769,7 @@ def linkedin_share_stats_overall(urn_list, org_id, urn):
 
     response = requests.request("GET", url, headers=headers, data=payload)
     data = response.json()
-    if data['elements']:
+    if data.get('elements'):
         like_count = data["elements"][0]["totalShareStatistics"]["likeCount"]
         comment_count = data["elements"][0]["totalShareStatistics"]["commentCount"]
     else:
@@ -1788,7 +1794,7 @@ def linkedin_share_stats(urn_list, org_id, urn, start):
 
         response = requests.request("GET", url, headers=headers, data=payload)
         data = response.json()
-        if data['elements']:
+        if data.get('elements'):
             like_count = data["elements"][0]["totalShareStatistics"]["likeCount"]
             comment_count = data["elements"][0]["totalShareStatistics"]["commentCount"]
         else:
@@ -2443,5 +2449,377 @@ def fb_object_unlike(urn,access_token):
     response = requests.delete(url=url, headers=headers)
 
     return response.json()
+
+
+def fb_page_detail(access_token):
+    url = "https://graph.facebook.com/v17.0/me?fields=name,email,about,location"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url,headers=headers)
+    data = {}
+    if response.status_code == 200:
+        response = response.json()
+        data['name'] = response.get('name')
+        data['email'] = response.get('email')
+        data['location'] = response.get('location').get('name') if response.get('location') is not None else ""
+
+        return data
+
+    else:
+        data = {'name': '' , 'email':"" , 'branches': ''}
+        data['error'] = 'failed to fetch data. Unexpected Error has occurred'
+        return data
+
+
+def instagram_details(access_token,instagram_id):
+
+    # "https://graph.facebook.com/v17.0/{id}?fields=name,profile_picture_url,username"
+    url = f"https://graph.facebook.com/v17.0/{instagram_id}?fields=name,biography,username"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url = url,headers =headers)
+    data = {}
+
+    if response.status_code == 200:
+        response = response.json()
+        data['name'] = response.get('name')
+        data['username'] = response.get('username')
+        data['description'] = response.get('biography')
+        data['profile_picture'] = response.get('profile_picture_url')
+
+    else:
+        data['error'] = 'failed to fetch data. Unexpected Error has occurred'
+
+    return data
+
+
+
+
+def fb_page_insights(access_token,page_id):
+
+    url = f"https://graph.facebook.com/v17.0/{page_id}/insights"
+
+    params = {
+        'metric': 'page_fans,page_actions_post_reactions_total,page_post_engagements',
+        'period':'day',
+        'since': int(datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp()),
+        'until': int((datetime.datetime.now() + datetime.timedelta(days=1)).timestamp())
+    }
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    try:
+        response = requests.get(url=url,headers=headers,params=params)
+
+        if response.status_code == 200:
+            response = response.json()['data']
+
+            reactions_values = response[1]['values'][0]['value']
+            newpagelike = response[0]['values'][0]['value']
+            total_reaction = 0
+            for reaction in reactions_values:
+                total_reaction += reactions_values[reaction]
+
+
+            url = f"https://graph.facebook.com/v17.0/{page_id}/feed?fields=comments.summary(true).filter(stream).order(reverse_chronological),reactions.summary(true)"
+
+            response = requests.get(url=url,headers = headers)
+            total_comment = 0
+            if response.status_code == 200:
+                response = response.json()['data']
+
+                for obj in response:
+
+                    comment_list = obj['comments']['data']
+                    for comments in comment_list:
+                        created_time = comments['created_time']
+                        converted_createdtime = datetime.datetime.strptime(created_time, '%Y-%m-%dT%H:%M:%S+0000').date()
+
+                        if converted_createdtime == datetime.datetime.now(timezone.utc).date():
+                            total_comment += 1
+                        elif converted_createdtime > datetime.datetime.now(timezone.utc).date() or converted_createdtime < datetime.datetime.now(timezone.utc).date():
+                            break
+
+
+
+
+
+            # since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30)
+            # since = int(datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+
+            # try:
+            #     media_count = fb_media_count(access_token, page_id, since)
+            #     response['media_count'] = media_count
+            #
+            #
+            # except Exception as e:
+            #     raise Exception(e)
+
+        else:
+            raise Exception("failed to fetch")
+
+        return total_reaction,total_comment,newpagelike
+
+    except Exception as e:
+        return None
+
+
+def fb_media_count(access_token,page_id,since, until= int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
+                          media_count=0, fields=''):
+    url = f"https://graph.facebook.com/v17.0/{page_id}/feed?since={since}&until={until}"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    try:
+        response = requests.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            responses = response.json()['data']
+
+            pagination = response.json()['paging']
+
+            media_count += len(responses)
+
+            next = pagination.get('next')
+
+            if next:
+                url_components = urlparse(next)
+                query_params = url_components.query.split('&')
+                fields = "&".join(query_params[2:])
+
+                fb_media_count(access_token, page_id, since, until, media_count, fields)
+
+        else:
+            raise Exception("failed to fetch")
+
+    except Exception as e:
+        e
+
+    return media_count
+
+def instagram_page_insigths(access_token, instagram_id):
+    url = f"https://graph.facebook.com/v17.0/{instagram_id}/insights"
+
+    params = {
+        'metric': 'likes,comments,follows_and_unfollows',
+        'period': 'day',
+        'metric_type': 'total_value',
+        # 'since': int((datetime.datetime.now() - datetime.timedelta(days=30)).timestamp()),
+        'since': int(datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp()),
+        'untill': int(datetime.datetime.now().timestamp())
+    }
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    try:
+        response = requests.get(url=url, headers=headers, params=params)
+        total_likes = 0
+        total_comments = 0
+        if response.status_code == 200:
+            response = response.json()['data']
+
+            total_likes = response[0]['total_value']['value']
+            total_comments = response[1]['total_value']['value']
+
+            # since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30)
+            # since = int(datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+            #
+            # try:
+            #     media_count = instagram_count_media(access_token, instagram_id, since)
+            #     response['media_count'] = media_count
+            #
+            #
+            # except Exception as e:
+            #     raise Exception(e)
+
+        else:
+            raise Exception("failed to fetch")
+
+        return total_likes , total_comments
+
+    except Exception as e:
+        return None
+
+
+def instagram_count_media(access_token, instagram_id, since, until= int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
+                          media_count=0, fields=''):
+    url = f"https://graph.facebook.com/v17.0/{instagram_id}/media?fields=timestamp&since={since}&until={until}" + fields
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    try:
+        response = requests.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            responses = response.json()['data']
+
+            pagination = response.json()['paging']
+
+            media_count += len(responses)
+
+            next = pagination.get('next')
+
+            if next:
+                url_components = urlparse(next)
+                query_params = url_components.query.split('&')
+                fields = "&".join(query_params[2:])
+
+                instagram_count_media(access_token, instagram_id, since, until, media_count, fields)
+
+        else:
+            raise Exception("failed to fetch")
+
+    except Exception as e:
+        e
+
+    return media_count
+
+
+
+def fb_post_insights(urn_list,urn,since = None,until = None):
+
+    access_token = urn.org.access_token
+    base_url = 'https://graph.facebook.com/v17.0/'
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        'Content-Type': 'application/json'
+    }
+    batch_request1 = []
+    batch_request2 = []
+    for post_id in urn_list:
+        request1 = {
+        'method': 'GET',
+        'relative_url': f'{post_id}/insights?metric=post_reactions_by_type_total', #period life time
+        # 'relative_url': f'{post_id}/reactions?since={since}&until={until}',
+        }
+        request2 = {
+            'method': 'GET',
+            'relative_url': f'{post_id}?fields=comments.summary(true)'
+        }
+
+    batch_request1.append(request1)
+    batch_request2.append((request2))
+
+    batch_request1 = json.dumps(batch_request1)
+
+    response1 = requests.post(base_url,headers=headers,params={'batch':batch_request1,'include_headers':'false'})
+
+    reaction_response = response1.json()
+    total_reactions = 0
+    for reaction in reaction_response:
+        response = json.load(reaction.get('body'))
+
+        if response.get('data'):
+            values = response.get('data')['values'][0]['value']
+
+            for value in values:
+                total_reactions += values[value]
+
+        # total_reactions += facebook_count_reactions(response)
+
+
+    response2 = requests.post(base_url,headers=headers,params={'batch':batch_request2,'include_headers':'false'})
+
+
+    comment_response = response2.json()
+    total_comments = 0
+
+    for comment in comment_response:
+        pass
+
+
+
+
+
+    total_comments = comment_response['comments']['summary']['total_count']
+
+
+    return total_reactions , total_comments
+
+
+
+
+
+
+
+def facebook_count_reactions(response, response_request = None,total_reactions = 0,send_request = False):
+
+    if send_request == True:
+        response = requests.get(response_request)
+        response = response.json()
+
+
+    total_reactions += len(response.get('data'))
+
+    if response.get('next'):
+        response_request = response.get('next')
+        facebook_count_reactions(response,response_request,total_reactions,True)
+
+    return total_reactions
+
+
+
+
+
+
+
+
+
+def instagram_post_insights(urn_list,urn):
+
+    # lifetime post media insigths
+
+    access_token = urn.org.access_token
+    base_url = 'https://graph.facebook.com/v17.0/'
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        'Content-Type': 'application/json'
+    }
+    batch_request1 = []
+    for post_id in urn_list:
+        request1 = {
+            'method': 'GET',
+            'relative_url': f'{post_id}//insights?metric=likes,comments',
+        }
+
+
+    batch_request1.append(request1)
+
+
+    batch_request1 = json.dumps(batch_request1)
+
+    response1 = requests.post(base_url, headers=headers, params={'batch': batch_request1, 'include_headers': 'false'})
+
+    reaction_response = response1.json()
+    total_likes = 0
+    total_comments = 0
+    for reaction in reaction_response:
+        response = json.load(reaction.get('body'))
+        data = response['data']
+        total_likes += data[0]['values'][0]['value']
+        total_comments += data[1]['values'][0]['value']
+
+
+
+    return total_likes, total_comments
+
+
+
+
 
 

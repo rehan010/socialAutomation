@@ -26,7 +26,7 @@
                 <div class="grid md:grid-cols-4 grid-col-6 gap-6 m-4">
                         <div class="relative flex flex-col items-center justify-center bg-gray-100 cursor-pointer m-3 social-container">
                         {% if facebook %}
-                            <a href="{% url 'social_profile' facebook %}" class="no-underline hover:no-underline">
+                            <a href="{% url 'social_profile' %}?provider_name={{ facebook.provider }}" class="no-underline hover:no-underline">
                         {% else %}
                             <a href="#" class="no-underline hover:no-underline">   
                         {% endif %}
@@ -38,7 +38,7 @@
                                 <div class="bg-white w-full p-2 flex item-center justify-center mt-auto border-2 border-black sm:text-base text-sm">
                                 {% if facebook %}
                                 <div class="w-5/6 text-center break-all">
-                                        <a href="{% url 'social_profile' facebook %}" class="no-underline hover:no-underline">
+                                        <a href="{% url 'social_profile' %}?provider_name={{ facebook.provider }}" class="no-underline hover:no-underline">
                                             <span>{{facebook.extra_data.name}}</span>
                                         </a>
                                     </div>
@@ -104,7 +104,7 @@
 
                         <div class="relative flex flex-col items-center justify-center bg-gray-100 cursor-pointer m-3 social-container">
                             {% if instagram %}
-                                <a href="{% url 'social_profile' instagram %}" class="no-underline hover:no-underline">
+                                <a href="{% url 'social_profile'%}?provider_name={{ instagram.provider }}" class="no-underline hover:no-underline">
                             {% else %}
                                 <a href="#" class="no-underline hover:no-underline">
                             {% endif %}
@@ -118,7 +118,7 @@
                                 {% if instagram %}
                                 
                                     <div class="w-5/6 text-center break-all">
-                                        <a href="{% url 'social_profile' instagram %}" class="no-underline hover:no-underline">
+                                        <a href="{% url 'social_profile'%}?provider_name={{ instagram.provider }}" class="no-underline hover:no-underline">
 
                                             <span>{{instagram.extra_data.username}}</span>
                                         </a>
@@ -186,7 +186,7 @@
 
                         <div class="relative flex flex-col items-center justify-center bg-gray-100 cursor-pointer m-3 social-container">
                             {% if linkedin_oauth2 %}
-                            <a href="{% url 'social_profile' linkedin_oauth2 %}" class="no-underline hover:no-underline">
+                            <a href="{% url 'social_profile'  %}?provider_name = {{linkedin_oauth2.provider}}" class="no-underline hover:no-underline">
                             {% else %}
                             <a href="#"  class="no-underline hover:no-underline">
                             {% endif %}
@@ -199,7 +199,7 @@
                                 <div class="bg-white w-full p-2 flex item-center justify-center mt-auto border-2 border-black sm:text-base text-sm">
                                     {% if linkedin_oauth2 %}
                                         <div class="w-5/6 text-center break-all">
-                                            <a href="{% url 'social_profile' linkedin_oauth2 %}" class="no-underline hover:no-underline">                                                
+                                            <a href="?provider_name = {{linkedin_oauth2.provider}}" class="no-underline hover:no-underline">
                                                 <span>{{linkedin_oauth2.extra_data.firstName.localized.en_US}} {{linkedin_oauth2.extra_data.lastName.localized.en_US}}</span>
                                             </a>
                                         </div>
@@ -265,7 +265,7 @@
 
                         <div class="relative flex flex-col items-center justify-center bg-gray-100 cursor-pointer m-3 social-container">
                                 {% if google %}    
-                                <a href="{% url 'social_profile' google %}" class="no-underline hover:no-underline">
+                                <a href="{% url 'social_profile' %}?provider_name = {{google.provider}}" class="no-underline hover:no-underline">
                                 {% else %}
                                 <a href="#" class="no-underline hover:no-underline">
                                 {% endif %}
@@ -278,7 +278,7 @@
                                     {% if google %}
 
                                         <div class="w-5/6 text-center break-all">
-                                            <a href="{% url 'social_profile' google %}" class="no-underline hover:no-underline">
+                                            <a href="{% url 'social_profile' %}?provider_name = {{google.provider}}" class="no-underline hover:no-underline">
 
                                                 <span>{{google.extra_data.name}}</span>
                                             </a>
