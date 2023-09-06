@@ -36,10 +36,8 @@ from datetime import datetime, date, timedelta
 from django.contrib import messages
 from django.contrib.auth import logout
 from allauth.socialaccount.views import ConnectionsView
-from django.db.models import Sum
-from django.db.models.functions import ExtractMonth, ExtractYear
-from django.db.models import Count
-import calendar
+from django.utils.html import escape
+
 
 
 def get_id_token(access_token):
@@ -292,8 +290,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         start_of_day = curr_date.replace(hour=0, minute=0, second=0, microsecond=0)
         start = int(start_of_day.timestamp() * 1000)
 
-
-
         # Add your context data here
         if self.request.user.is_authenticated:
             user_manager = self.request.user.manager
@@ -305,11 +301,14 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 if user_permission == 'HIDE':
 
                     total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED')
-                    sharepages = SharePage.objects.filter(user = self.request.user)
+                    sharepages = SharePage.objects.filter(user=self.request.user)
 
                 else:
                     total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager), status='PUBLISHED')
                     sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager))
+
+                    # org = SharePage.objects.filter(user=self.request.user)
+
             else:
                 invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
                 invites = []
@@ -317,26 +316,114 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     invited_users_id = user.selected_user.id
                     invites.append(invited_users_id)
                 total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), status='PUBLISHED')
+
                 sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invites))
 
+                # org = SharePage.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites))
 
-            posts_monthly = total_posts.filter(created_at__year=year).annotate(month=ExtractMonth('created_at'),
-                                                                                     year=ExtractYear('created_at')).values('year', 'month').annotate(post_count=Count('id')).order_by('year', 'month')
+            results_ln = []
+            results_fb = []
+            results_insta = []
 
-            # Assuming you have the queryset data stored in a variable named `monthly_post_counts`
-            label = []
-            data = []
 
-            # Iterate through the queryset and extract the labels and data
+            current_date = timezone.now().date()
 
-            for item in posts_monthly:
-                month_year_label = f"{calendar.month_name[item['month']]} {item['year']}"
-                label.append(month_year_label)
-                data.append(item['post_count'])
-            labels_json = json.dumps(label)
-            data_json = json.dumps(data)
-            context['data'] = data_json
-            context['labels'] = labels_json
+            # Calculate the start date (seven days ago)
+            start_date = current_date - timedelta(days=6)
+
+
+            # Loop through the days of the week
+            for day in range(7):
+                # Calculate the end date for the current day
+                end_date = start_date + timedelta(days=1)
+
+                # Query the database to count the number of posts created on the current day
+                post_count_ln = total_posts.filter(post_urn__org__provider='linkedin', created_at__gte=start_date, created_at__lt=end_date).count()
+                post_count_fb = total_posts.filter(post_urn__org__provider='facebook', created_at__gte=start_date, created_at__lt=end_date).count()
+                post_count_insta = total_posts.filter(post_urn__org__provider='instagram', created_at__gte=start_date, created_at__lt=end_date).count()
+
+                # Append the result to the list
+                results_ln.append((start_date.strftime("%A"), post_count_ln))
+                results_fb.append((start_date.strftime("%A"), post_count_fb))
+                results_insta.append((start_date.strftime("%A"), post_count_insta))
+
+                # Move to the next day
+                start_date = end_date
+
+            #Monthly Post Platfrom Wise
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=30)
+
+            # Initialize lists to store the months and counts for each provider
+            months = []  # To store months
+            linkedin_counts = []  # To store LinkedIn counts
+            facebook_counts = []  # To store Facebook counts
+            instagram_counts = []  # To store Instagram counts
+
+            # Loop through each month within the past 30 days
+            current_month = start_date.replace(day=1)  # Start with the first day of the start month
+            while current_month <= end_date:
+                # Calculate the start and end of the current month
+                next_month = current_month.replace(day=28) + timedelta(days=4)  # Get the last day of the month
+                end_month = next_month - timedelta(days=next_month.day)
+
+                # Query the database to count posts for LinkedIn, Facebook, and Instagram in the current month
+                post_count_ln = total_posts.filter(post_urn__org__provider='linkedin', created_at__gte=current_month,
+                                                   created_at__lte=end_month).count()
+                post_count_fb = total_posts.filter(post_urn__org__provider='facebook', created_at__gte=current_month,
+                                                   created_at__lte=end_month).count()
+                post_count_insta = total_posts.filter(post_urn__org__provider='instagram',
+                                                      created_at__gte=current_month, created_at__lte=end_month).count()
+
+                # Store the current month in the "months" list (assuming all months are the same)
+                months.append(current_month.strftime("%B %Y"))
+
+                # Store the counts in their respective provider-specific lists
+                linkedin_counts.append(post_count_ln)
+                facebook_counts.append(post_count_fb)
+                instagram_counts.append(post_count_insta)
+
+                # Move to the next month
+                current_month = next_month
+
+            # months = list(monthly_counts_ln.keys())
+            # linkedin_counts = list(monthly_counts_ln.values())
+            # facebook_counts = list(monthly_counts_fb.values())
+            # instagram_counts = list(monthly_counts_insta.values())
+
+            context["linkedin_counts"] = linkedin_counts
+            context["facebook_counts"] = facebook_counts
+            context["instagram_counts"] = instagram_counts
+            context["months"] = months
+
+            labels = []
+            values_ln = []
+            values_fb = []
+            values_insta = []
+
+            for item in results_ln:
+                labels.append(item[0])
+                values_ln.append(item[1])
+            for item in results_fb:
+                values_fb.append(item[1])
+            for item in results_insta:
+                values_insta.append(item[1])
+
+            day_name_mapping = {
+                'Monday': 'Mon',
+                'Tuesday': 'Tue',
+                'Wednesday': 'Wed',
+                'Thursday': 'Thu',
+                'Friday': 'Fri',
+                'Saturday': 'Sat',
+                'Sunday': 'Sun'
+            }
+            label = [day_name_mapping[day] for day in labels]
+
+            context['data_ln'] = values_ln
+            context['labels'] = label
+            context['data_fb'] = values_fb
+            context['data_insta'] = values_insta
 
             # Post,likes,comments for today
             user_post = total_posts.filter(created_at__date=today)
@@ -344,68 +431,82 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             comments_today = 0
             likes_overall = 0
             comments_overall = 0
+            followers_today = 0
+            followers_overall = 0
 
-            linkedin_post = total_posts.filter(post_urn__org__provider="linkedin")
-            if len(linkedin_post) > 0:
-                org_urn_dict = {}
-                for post in linkedin_post:
-                    for urn in post.post_urn.all():
-                        if urn.org.provider =='linkedin':
-                            org_id = urn.org.org_id
-                            post_urn = urn.urn
-                            if org_id in org_urn_dict:
-                                org_urn_dict[org_id].append(post_urn)
-                            else:
-                                org_urn_dict[org_id] = [post_urn]
+            linkedin_org = sharepages.filter(provider="linkedin")
+            if len(linkedin_org) > 0:
+                for page in linkedin_org:
 
-                for org_id, urn_list in org_urn_dict.items():
+                    org_id = page.org_id
+                    access_token = page.access_token
 
-                    result = linkedin_share_stats(urn_list, org_id, urn, start)
+
+                    result = linkedin_share_stats(org_id, access_token, start)
                     likes = result[0]
                     comments = result[1]
 
                     likes_today += likes
                     comments_today += comments
 
-                    result = linkedin_share_stats_overall(urn_list, org_id, urn)
+                    result = linkedin_share_stats_overall(org_id, access_token)
                     likes_ovr = result[0]
                     comments_ovr = result[1]
 
                     likes_overall += likes_ovr
                     comments_overall += comments_ovr
 
+                    result = linkedin_followers_today(org_id, access_token, start)
+                    followers = result
+                    followers_today += followers
+                    result = linkedin_followers(org_id, access_token)
+                    followers_ovr = result
+                    followers_overall += followers_ovr
 
-            fb_post = total_posts.filter(post_urn__org__provider="facebook")
+            fb_org = sharepages.filter(provider="facebook")
+            if len(fb_org) > 0:
+                for page in fb_org:
+                    page_id = page.org_id
+                    access_token = page.access_token
 
-            fb_pages = sharepages.filter(provider = "facebook")
-
-            for page in fb_pages:
-                access_token = page.access_token
-                page_id = page.org_id
-
-                result = fb_page_insights(access_token,page_id)
-                likes = result[0]
-                comments = result[1]
-                likes_today += likes
-                comments_today += comments
+                    result = fb_page_insights(access_token, page_id)
+                    likes = result[0]
+                    comments = result[1]
+                    likes_today += likes
+                    comments_today += comments
 
 
+                    # result = linkedin_followers_today(org_id, access_token, start)
+                    # followers = result
+                    # followers_today += followers
+                    # result = linkedin_followers(org_id, access_token)
+                    # followers_ovr = result
+                    # followers_overall += followers_ovr
+
+            insta_accounts = sharepages.filter(provider="instagram")
+            if len(insta_accounts) > 0:
+                for account in insta_accounts:
+                    access_token = account.access_token
+                    account_id = account.org_id
+
+                    result = instagram_page_insigths(access_token, account_id)
+                    likes = result[0]
+                    comments = result[1]
+
+                    likes_today += likes
+                    comments_today += comments
 
 
 
-            insta_post = total_posts.filter(post_urn__org__provider="instagram")
-            insta_accounts = sharepages.filter(provider = "instagram")
 
-            for account in insta_accounts:
-                access_token = account.access_token
-                account_id = account.org_id
+                    #
+                    # result = linkedin_followers_today(org_id, access_token, start)
+                    # followers = result
+                    # followers_today += followers
+                    # result = linkedin_followers(org_id, access_token)
+                    # followers_ovr = result
+                    # followers_overall += followers_ovr
 
-                result = instagram_page_insigths(access_token,account_id)
-                likes = result[0]
-                comments = result[1]
-
-                likes_today += likes
-                comments_today += comments
 
             #Weekly comparison
             current_week_post = len(total_posts.filter(created_at__lte=curr_date, created_at__gte=before_date))
@@ -422,15 +523,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             context['comments'] = comments_overall
             context['total_posts'] = len(total_posts)
             context['post_today'] = len(user_post)
+            context['followers_today'] = followers_today
+            context['followers_overall'] = followers_overall
 
-            # context['point_files'] = list(PointFileModel.objects.filter(user=self.request.user.pk,is_deleted=False).values('id', 'name','point_file'))
-            # lat_long= {}
-            # for _ in context['point_files']:
-            #     lat_long_list = list(LatLongModel.objects.filter(file=_['id']).values('latitude', 'longitude'))
-            #     # Convert Decimal values to float
-            #     _['lat_long'] = [{'latitude': float(lat['latitude']), 'longitude': float(lat['longitude'])} for lat
-            #                         in lat_long_list]
-            # # my_business_view(self.request)
 
         return context
 
@@ -1455,12 +1550,12 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
 
 
             if role == "ADMIN":
-                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user=user_manager.id),provider = provider_name)
+                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user=user_manager.id), provider=provider_name)
             else:
-                social = SocialAccount.objects.filter(Q(user=user.id), provider = provider_name)
+                social = SocialAccount.objects.filter(Q(user=user.id), provider=provider_name)
 
         else:
-            social = SocialAccount.objects.filter(Q(user=user.id),provider = provider_name)
+            social = SocialAccount.objects.filter(Q(user=user.id), provider=provider_name)
         access_token = {}
         data = {}
 
@@ -1484,6 +1579,27 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
             except Exception as e:
                 data['error'] = e
 
+        elif providertoGetdetails == "instagram":
+            try:
+                accounts = get_instagram_user_data(user_access_token,user.id)
+                instagram__connected_social_account = SocialAccount.objects.get( user = user.id,provider = "instagram")
+                data['pages'] = {}
+                for account in accounts:
+                    if account.get('username') == instagram__connected_social_account.extra_data.get('username'):
+                       data.update(instagram_details(user_access_token,account['id']))
+                       if data.get("error") != None:
+                            raise Exception(data['error'])
+
+                data['pages'][user.id] = accounts
+
+                access_token.pop(user.id)
+
+                for user_id in access_token:
+                    accounts = get_instagram_user_data(access_token[user_id],user_id)
+                    data['pages'][user_id] = accounts
+
+            except Exception as e:
+                data['error'] = e
         elif providertoGetdetails == "instagram":
             try:
                 accounts = get_instagram_user_data(user_access_token,user.id)

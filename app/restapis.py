@@ -1754,12 +1754,9 @@ def post_like_linkedin(post_urn, social, access_token):
 
     return response.json()
 
-def linkedin_share_stats_overall(urn_list, org_id, urn):
-    encoded = ','.join(quote(a, safe='') for a in urn_list)
-    access_token = urn.org.access_token
+def linkedin_share_stats_overall(org_id, access_token):
 
-    url = "https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id + "&shares=List(" + encoded + ")"
-
+    url = "https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id
     payload = {}
     headers = {
         'X-Restli-Protocol-Version': '2.0.0',
@@ -1769,21 +1766,24 @@ def linkedin_share_stats_overall(urn_list, org_id, urn):
 
     response = requests.request("GET", url, headers=headers, data=payload)
     data = response.json()
-    if data.get('elements'):
-        like_count = data["elements"][0]["totalShareStatistics"]["likeCount"]
-        comment_count = data["elements"][0]["totalShareStatistics"]["commentCount"]
+
+    if 'elements' in data and len(data['elements']) > 0:
+        like_count = 0
+        comment_count = 0
+
+        for element in data['elements']:
+            like_count += element['totalShareStatistics']['likeCount']
+            comment_count += element['totalShareStatistics']['commentCount']
+
     else:
         like_count = 0
         comment_count = 0
 
     return like_count, comment_count
 
-def linkedin_share_stats(urn_list, org_id, urn, start):
+def linkedin_share_stats(org_id, access_token, start):
 
-        encoded = ','.join(quote(a, safe='') for a in urn_list)
-        access_token = urn.org.access_token
-
-        url = "https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id + "&shares=List(" +encoded+ ")&timeIntervals=(timeRange:(start:" +str(start)+ "),timeGranularityType:DAY)"
+        url = "https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id + "&timeIntervals=(timeRange:(start:" + str(start) + "),timeGranularityType:DAY)"
 
         payload = {}
         headers = {
@@ -1794,14 +1794,53 @@ def linkedin_share_stats(urn_list, org_id, urn, start):
 
         response = requests.request("GET", url, headers=headers, data=payload)
         data = response.json()
-        if data.get('elements'):
-            like_count = data["elements"][0]["totalShareStatistics"]["likeCount"]
-            comment_count = data["elements"][0]["totalShareStatistics"]["commentCount"]
+        if 'elements' in data and len(data['elements']) > 0:
+            like_count = 0
+            comment_count = 0
+
+            for element in data['elements']:
+                like_count += element['totalShareStatistics']['likeCount']
+                comment_count += element['totalShareStatistics']['commentCount']
+
         else:
             like_count = 0
             comment_count = 0
 
         return like_count, comment_count
+
+
+def linkedin_followers_today(org_id, access_token, start):
+    url = "https://api.linkedin.com/rest/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A"+ org_id +"&timeIntervals=(timeRange:(start:"+str(start)+"),timeGranularityType:DAY)"
+
+    payload = {}
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Authorization': 'Bearer ' + access_token,
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data = response.json()
+    if 'elements' in data and len(data['elements']) > 0:
+        followers = 0
+    else:
+        followers = 0
+
+    return followers
+
+def linkedin_followers(org_id, access_token):
+    url = "https://api.linkedin.com/rest/networkSizes/urn%3Ali%3Aorganization%3A"+org_id+"?edgeType=CompanyFollowedByMember"
+    payload = {}
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Authorization': 'Bearer ' + access_token,
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data = response.json()
+    followers = data['firstDegreeSize']
+    return followers
 
 
 def comment_like_linkedin(comment_urn, social, access_token):
@@ -2521,58 +2560,48 @@ def fb_page_insights(access_token,page_id):
 
         if response.status_code == 200:
             response = response.json()['data']
+            if len(response) > 0:
+                reactions_values = response[1]['values'][0]['value']
+                newpagelike = response[0]['values'][0]['value']
+                total_reaction = 0
+                for reaction in reactions_values:
+                    total_reaction += reactions_values[reaction]
 
-            reactions_values = response[1]['values'][0]['value']
-            newpagelike = response[0]['values'][0]['value']
-            total_reaction = 0
-            for reaction in reactions_values:
-                total_reaction += reactions_values[reaction]
+                url = f"https://graph.facebook.com/v17.0/{page_id}/feed?fields=comments.summary(true).filter(stream).order(reverse_chronological),reactions.summary(true)"
 
+                response = requests.get(url=url, headers=headers)
+                total_comment = 0
+                if response.status_code == 200:
+                    response = response.json()['data']
+                    if len(response) > 0:
+                        for obj in response:
 
-            url = f"https://graph.facebook.com/v17.0/{page_id}/feed?fields=comments.summary(true).filter(stream).order(reverse_chronological),reactions.summary(true)"
+                            comment_list = obj['comments']['data']
+                            for comments in comment_list:
+                                created_time = comments['created_time']
+                                converted_createdtime = datetime.datetime.strptime(created_time,
+                                                                                   '%Y-%m-%dT%H:%M:%S+0000').date()
 
-            response = requests.get(url=url,headers = headers)
-            total_comment = 0
-            if response.status_code == 200:
-                response = response.json()['data']
-
-                for obj in response:
-
-                    comment_list = obj['comments']['data']
-                    for comments in comment_list:
-                        created_time = comments['created_time']
-                        converted_createdtime = datetime.datetime.strptime(created_time, '%Y-%m-%dT%H:%M:%S+0000').date()
-
-                        if converted_createdtime == datetime.datetime.now(timezone.utc).date():
-                            total_comment += 1
-                        elif converted_createdtime > datetime.datetime.now(timezone.utc).date() or converted_createdtime < datetime.datetime.now(timezone.utc).date():
-                            break
-
-
-
-
-
-            # since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30)
-            # since = int(datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
-
-            # try:
-            #     media_count = fb_media_count(access_token, page_id, since)
-            #     response['media_count'] = media_count
-            #
-            #
-            # except Exception as e:
-            #     raise Exception(e)
-
+                                if converted_createdtime == datetime.datetime.now(timezone.utc).date():
+                                    total_comment += 1
+                                elif converted_createdtime > datetime.datetime.now(
+                                        timezone.utc).date() or converted_createdtime < datetime.datetime.now(
+                                        timezone.utc).date():
+                                    break
+                    else:
+                        total_comment = 0
+            else:
+                total_reaction = 0
         else:
             raise Exception("failed to fetch")
 
-        return total_reaction,total_comment,newpagelike
+        return total_reaction, total_comment, newpagelike
 
     except Exception as e:
         return None
 
 
-def fb_media_count(access_token,page_id,since, until= int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
+def fb_media_count(access_token, page_id, since, until=int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
                           media_count=0, fields=''):
     url = f"https://graph.facebook.com/v17.0/{page_id}/feed?since={since}&until={until}"
 
@@ -2629,9 +2658,16 @@ def instagram_page_insigths(access_token, instagram_id):
         total_comments = 0
         if response.status_code == 200:
             response = response.json()['data']
+            if 'data' in response and len(response['data']) > 0:
 
-            total_likes = response[0]['total_value']['value']
-            total_comments = response[1]['total_value']['value']
+                total_likes = response[0]['total_value']['value']
+                total_comments = response[1]['total_value']['value']
+
+            else:
+                total_likes = 0
+                total_comments = 0
+
+
 
             # since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30)
             # since = int(datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
