@@ -458,18 +458,35 @@ def facebook_page_data(accesstoken,userid):
         page['profile_picture_url'] = picture.get('data').get('url') if picture.get('data') else ''
         page['user'] = userid
 
-
-
-    # inserting user id in every object refering that the page is of that user
-    # if response:
-    #     response_final = list(map(lambda page: {**page,"user":userid},response))
-    #     return response_final
-
-
     return response
 
 
+def get_linkedin_user_data(accesstoken):
+    url = "https://api.linkedin.com/v2/me"
 
+    payload = {}
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Authorization': 'Bearer ' + accesstoken,
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data = {}
+
+    if response.status_code == 200:
+        response = response.json()
+
+        data['display_image'] = response['profilePicture']['displayImage']
+        first_name = response['firstName']['localized']['en_US']
+        last_name = response['lastName']['localized']['en_US']
+        data['description'] = response['localizedHeadline']
+        data['name'] = first_name + "" + last_name
+
+        return data
+    else:
+        data = {'name': '', 'job': "", 'display_image': ''}
+        return data
 
 
 def get_instagram_user_data(accesstoken,userid):
@@ -1943,6 +1960,8 @@ def linkedin_get_user_organization(accesstoken,userid):
         localizedName = data['localizedName']
         names_with_ids[id] = localizedName
         my_object['id'] = id
+        if 'coverPhotoV2' in data and 'cropped' in data['coverPhotoV2']:
+            my_object['photo'] = data['coverPhotoV2']['cropped']
         my_object['name'] = localizedName
         my_object['user'] = userid  # referring to the user of the page
         organization_count = SharePage.objects.filter(org_id=id).count()
@@ -1954,8 +1973,52 @@ def linkedin_get_user_organization(accesstoken,userid):
     data = my_list
     return data
 
+def linkedin_page_detail(accesstoken,userid):
+    url = "https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee"
 
+    payload = {}
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Authorization': 'Bearer ' + accesstoken,
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4514:u=51:x=1:i=1687765789:t=1687848629:v=2:sig=AQHjIm1wsBkgK_2TJaHoboqQvmgXp9Aw"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
+    }
 
+    response = requests.request("GET", url, headers=headers, data=payload)
+    response = response.json()
+    targets = [element['organizationalTarget'] for element in response['elements']]
+    data = targets
+    ids = [item.split(':')[-1] for item in data]
+    names_with_ids = {}
+    my_list = []
+    for id in ids:
+        url = "https://api.linkedin.com/v2/organizations/" + id + "?projection=(localizedName,logoV2(original~:playableStreams))"
+
+        payload = {}
+        headers = {
+            'Linkedin-Version': '202304',
+            'X-Restli-Protocol-Version': '2.0.0',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + accesstoken,
+            'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689588794:t=1689613491:v=2:sig=AQEuUJEbIsk57LyEy9HwFJQrEu7ayH9n"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689587318:t=1689613491:v=2:sig=AQGp8c3I7u6ZkNJN7oSt0OLu8JRVv3WX"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=TB01:s=T:r=T:a=T:p=T:g=5807:u=1:x=1:i=1689586527:t=1689672927:v=2:sig=AQFFnf4QlGIIpq60wKa97GoDCwxO3u-D"'
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+        response = response.json()
+
+        my_object = {}
+        name = response['localizedName']
+
+        names_with_ids[id] = name
+        if 'logoV2' in response:
+            my_object['profile_picture_url'] = response['logoV2']['original~']['elements'][0]['identifiers'][0]['identifier']
+        else:
+            my_object['profile_picture_url'] = ''
+        my_object['name'] = name
+        my_object['user'] = userid  # referring to the user of the page
+        my_list.append(my_object)
+    data = my_list
+    return data
 
 
 from PIL import Image
@@ -2538,6 +2601,31 @@ def instagram_details(access_token,instagram_id):
     return data
 
 
+def linkedin_details(access_token,linkedin_id):
+
+    # "https://graph.facebook.com/v17.0/{id}?fields=name,profile_picture_url,username"
+    url = f"https://graph.facebook.com/v17.0/{instagram_id}?fields=name,biography,username"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url = url,headers =headers)
+    data = {}
+
+    if response.status_code == 200:
+        response = response.json()
+        data['name'] = response.get('name')
+        data['username'] = response.get('username')
+        data['description'] = response.get('biography')
+        data['profile_picture'] = response.get('profile_picture_url')
+
+    else:
+        data['error'] = 'failed to fetch data. Unexpected Error has occurred'
+
+    return data
+
+
 
 
 def fb_page_insights(access_token,page_id):
@@ -2657,12 +2745,13 @@ def instagram_page_insigths(access_token, instagram_id):
     total_comments = 0
     try:
         response = requests.get(url=url, headers=headers, params=params)
-
+        total_likes = 0
+        total_comments = 0
         if response.status_code == 200:
-            response = response.json().get('data')
+         response = response.json().get('data')
 
-            total_likes = response[0]['total_value']['value']
-            total_comments = response[1]['total_value']['value']
+         total_likes = response[0]['total_value']['value']
+         total_comments = response[1]['total_value']['value']
 
             # since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30)
             # since = int(datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
@@ -2682,6 +2771,172 @@ def instagram_page_insigths(access_token, instagram_id):
 
     except Exception as e:
         return total_likes , total_comments
+
+
+
+def instagram_count_media(access_token, instagram_id, since, until= int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
+                          media_count=0, fields=''):
+    url = f"https://graph.facebook.com/v17.0/{instagram_id}/media?fields=timestamp&since={since}&until={until}" + fields
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    try:
+        response = requests.get(url=url, headers=headers)
+
+        if response.status_code == 200:
+            responses = response.json()['data']
+
+            pagination = response.json()['paging']
+
+            media_count += len(responses)
+
+            next = pagination.get('next')
+
+            if next:
+                url_components = urlparse(next)
+                query_params = url_components.query.split('&')
+                fields = "&".join(query_params[2:])
+
+                instagram_count_media(access_token, instagram_id, since, until, media_count, fields)
+
+        else:
+            raise Exception("failed to fetch")
+
+    except Exception as e:
+        e
+
+    return media_count
+
+
+
+def fb_post_insights(urn_list,urn,since = None,until = None):
+
+    access_token = urn.org.access_token
+    base_url = 'https://graph.facebook.com/v17.0/'
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        'Content-Type': 'application/json'
+    }
+    batch_request1 = []
+    batch_request2 = []
+    for post_id in urn_list:
+        request1 = {
+        'method': 'GET',
+        'relative_url': f'{post_id}/insights?metric=post_reactions_by_type_total', #period life time
+        # 'relative_url': f'{post_id}/reactions?since={since}&until={until}',
+        }
+        request2 = {
+            'method': 'GET',
+            'relative_url': f'{post_id}?fields=comments.summary(true)'
+        }
+
+    batch_request1.append(request1)
+    batch_request2.append((request2))
+
+    batch_request1 = json.dumps(batch_request1)
+
+    response1 = requests.post(base_url,headers=headers,params={'batch':batch_request1,'include_headers':'false'})
+
+    reaction_response = response1.json()
+    total_reactions = 0
+    for reaction in reaction_response:
+        response = json.load(reaction.get('body'))
+
+        if response.get('data'):
+            values = response.get('data')['values'][0]['value']
+
+            for value in values:
+                total_reactions += values[value]
+
+        # total_reactions += facebook_count_reactions(response)
+
+
+    response2 = requests.post(base_url,headers=headers,params={'batch':batch_request2,'include_headers':'false'})
+
+
+    comment_response = response2.json()
+    total_comments = 0
+
+    for comment in comment_response:
+        pass
+
+
+
+
+
+    total_comments = comment_response['comments']['summary']['total_count']
+
+
+    return total_reactions , total_comments
+
+
+
+
+
+
+
+def facebook_count_reactions(response, response_request = None,total_reactions = 0,send_request = False):
+
+    if send_request == True:
+        response = requests.get(response_request)
+        response = response.json()
+
+
+    total_reactions += len(response.get('data'))
+
+    if response.get('next'):
+        response_request = response.get('next')
+        facebook_count_reactions(response,response_request,total_reactions,True)
+
+    return total_reactions
+
+
+
+
+
+
+
+
+
+def instagram_post_insights(urn_list,urn):
+
+    # lifetime post media insigths
+
+    access_token = urn.org.access_token
+    base_url = 'https://graph.facebook.com/v17.0/'
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        'Content-Type': 'application/json'
+    }
+    batch_request1 = []
+    for post_id in urn_list:
+        request1 = {
+            'method': 'GET',
+            'relative_url': f'{post_id}//insights?metric=likes,comments',
+        }
+
+
+    batch_request1.append(request1)
+
+
+    batch_request1 = json.dumps(batch_request1)
+
+    response1 = requests.post(base_url, headers=headers, params={'batch': batch_request1, 'include_headers': 'false'})
+
+    reaction_response = response1.json()
+    total_likes = 0
+    total_comments = 0
+    for reaction in reaction_response:
+        response = json.load(reaction.get('body'))
+        data = response['data']
+        total_likes += data[0]['values'][0]['value']
+        total_comments += data[1]['values'][0]['value']
+
+
+>>>>>>> Stashed changes
 
 
 # def instagram_count_media(access_token, instagram_id, since, until= int(datetime.datetime.now(datetime.timezone.utc).timestamp()),

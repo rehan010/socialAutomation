@@ -1654,7 +1654,7 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
                 data['pages'] = {}
                 for account in accounts:
                     if account.get('username') == instagram__connected_social_account.extra_data.get('username'):
-                       data.update(instagram_details(user_access_token,account['id']))
+                       data.update(instagram_details(user_access_token, account['id']))
                        if data.get("error") != None:
                             raise Exception(data['error'])
 
@@ -1668,30 +1668,23 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
 
             except Exception as e:
                 data['error'] = e
-        elif providertoGetdetails == "instagram":
-            try:
-                accounts = get_instagram_user_data(user_access_token,user.id)
-                instagram__connected_social_account = SocialAccount.objects.get( user = user.id,provider = "instagram")
-                data['pages'] = {}
-                for account in accounts:
-                    if account.get('username') == instagram__connected_social_account.extra_data.get('username'):
-                       data.update(instagram_details(user_access_token,account['id']))
-                       if data.get("error") != None:
-                            raise Exception(data['error'])
+        elif providertoGetdetails == "linkedin_oauth2":
 
-                data['pages'][user.id] = accounts
+                # accounts = get_linkedin_user_data(user_access_token, user.id)
+                # linkedin__connected_social_account = SocialAccount.objects.get(user=user.id, provider="linkedin_oauth2")
 
-                access_token.pop(user.id)
+                try:
+                    data = get_linkedin_user_data(user_access_token)
+                    if data.get('error') != None:
+                        raise Exception(data['error'])
 
-                for user_id in access_token:
-                    accounts = get_instagram_user_data(access_token[user_id],user_id)
-                    data['pages'][user_id] = accounts
-
-            except Exception as e:
-                data['error'] = e
-
-
-
+                    data['pages'] = {}
+                    for _ in social:
+                        result = linkedin_page_detail(access_token.get(_.user.id), _.user.id)
+                        data['pages'][_.user.id] = result
+                    data['provider'] = "linkedin"
+                except Exception as e:
+                    data['error'] = e
 
 
         context = data

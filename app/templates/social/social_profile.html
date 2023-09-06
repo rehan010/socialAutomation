@@ -14,7 +14,7 @@
             <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" />
             {% elif request.GET.provider_name == 'instagram' %}
              <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" />
-            {% elif request.GET.provider_name == 'linkdein' %}
+            {% elif request.GET.provider_name == 'linkedin_oauth2' %}
              <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" />
             {% elif request.GET.provider_name == 'google' %}
             <img src="{% static '\assets\img\Social-Logos\google_logo.png'%}" />
@@ -51,7 +51,7 @@
                     {% for id , page in pages.items %}
                         {% if id == user.id %}
                             {% for p  in page %}
-                            <span>{{p.name}}, </span>
+                            <span>{{p.name}},</span>
                             {% endfor %}
                         {% endif %}
                     {% endfor %}
@@ -127,7 +127,7 @@
         </div>
         <div class="flex items-center justify-end w-full">
             <div class="bg-red-600 text-white py-2 px-5 mr-32">
-                <a>
+                <a href = '{% url "socialaccount_connections" %}' class="hover:text-white hover:no-underline">
                     Back
                 </a>
             </div>
