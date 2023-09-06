@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User,ImageModel,InviteEmploye
+from .models import User,ImageModel,InviteEmploye,PostModel
 
 class UserGetSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,4 +17,10 @@ class CombinedSerializer(serializers.Serializer):
 class PostImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageModel
+        fields = '__all__'
+
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostModel
         fields = '__all__'

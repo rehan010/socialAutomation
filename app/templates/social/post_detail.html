@@ -34,7 +34,10 @@
                          class="h-9 w-9 rounded-full object-cover"
                          alt="user"/>
                     <span class="block ml-2 font-bold text-black ">{{ posted_on }}</span>
-                    <span class="block text-xs text-gray-600 ml-auto">{{ post.created_at }}</span>
+                    <div class="flex ml-auto relative">
+                        <span class="text-xs text-gray-600" >{{ post.created_at }}</span>
+                    </div>
+
                 </a>
             </header>
         </div>
@@ -148,6 +151,19 @@
 
                 {% if post.comment_check %}
                 <span class="text-gray-600 text-sm font-bold">{{ no_comments }} Comments</span>
+                <div class="mx-4 relative cursor-pointer">
+                    <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
+                    <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
+                        <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                            <a onclick="delete_post_comments()" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline">
+                                <i class="fa-solid fa-trash mx-2"></i> Delete Post
+                            </a>
+
+                        </li>
+
+                    </ul>
+                </div>
+
                 {% else %}
                 <span class="text-gray-600 text-sm font-bold">0</span>
                 {% endif %}
@@ -218,6 +234,18 @@
                                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                             </svg>
                         </button>
+                        <div class="mx-4 relative cursor-pointer">
+                            <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
+                            <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
+                                <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                                    <a onclick="delete_post_comments('{{ comment.comment_urn }}')" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
+                                        <i class="fa-solid fa-trash mx-2"></i> Delete Comment
+                                    </a>
+
+                                </li>
+
+                            </ul>
+                        </div>
                         {% else %}
                         <button onclick="postLike('{{ comment.comment_urn }}',event)" type="button"
                                 class="like-button relative focus:outline-red">
@@ -228,6 +256,18 @@
                                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                             </svg>
                         </button>
+                        <div class="mx-4 relative cursor-pointer">
+                            <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
+                            <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
+                                <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                                    <a onclick="delete_post_comments('{{ comment.comment_urn }}')" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
+                                        <i class="fa-solid fa-trash mx-2"></i> Delete Comment
+                                    </a>
+
+                                </li>
+
+                            </ul>
+                        </div>
                         {% endif %}
                     </div>
                     {% elif post.user == request.user %}
@@ -283,6 +323,18 @@
                                                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                             </svg>
                                         </button>
+                                        <div class="mx-4 relative cursor-pointer">
+                                            <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
+                                            <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
+                                                <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                                                    <a onclick="delete_post_comments('{{ reply.comment_urn }}')" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline">
+                                                        <i class="fa-solid fa-trash mx-2"></i> Delete Reply
+                                                    </a>
+
+                                                </li>
+
+                                            </ul>
+                                        </div>
                                         {% else %}
                                         <button onclick="postLike('{{ reply.comment_urn }}',event)" type="button"
                                                 class="like-button relative focus:outline-red">
@@ -293,6 +345,18 @@
                                                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                             </svg>
                                         </button>
+                                        <div class="mx-4 relative cursor-pointer">
+                                            <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
+                                            <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
+                                                <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                                                    <a onclick="delete_post_comments('{{ reply.comment_urn }}')" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline">
+                                                        <i class="fa-solid fa-trash mx-2"></i> Delete Reply
+                                                    </a>
+
+                                                </li>
+
+                                            </ul>
+                                        </div>
                                         {% endif %}
                                     </div>
                                     {% elif post.user == request.user %}
@@ -406,6 +470,29 @@
     }
 
 
+    const dropdownButtons = document.querySelectorAll(".delete-dropdownButton");
+
+    dropdownButtons.forEach((button) => {
+
+        const dropdown = button.nextElementSibling;
+
+
+        button.addEventListener('click',function(){
+            console.log("Clicked");
+            if(dropdown.style.display == "block"){
+                dropdown.style.display = "none"
+            }
+            else{
+                dropdown.style.display = "block"
+            }
+
+
+
+        })
+
+
+    });
+
     async function postLike(urn = null,event){
       const page_id = document.getElementById('page_id').value;
       const post_id = document.getElementById('post_id').value;
@@ -459,6 +546,48 @@
         like.style.fill = 'none';
         parentButton.onclick = (event) => postLike(urn ,event);
     }
+
+
+    async function delete_post_comments(urn = null){
+        const post_id = document.getElementById('post_id').value;
+        const page_id = document.getElementById('page_id').value;
+        const searchParams = new URLSearchParams(window.location.search);
+        const provider_name = searchParams.get('page_name');
+        const csrfToken = getCSRFToken();
+
+        const json = { 'urn': urn }
+
+        const res = await fetch(
+          `/delete-post/${post_id}?page_name=${provider_name}&page_id=${page_id}`,{
+              method:'Delete',
+               headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+               body: JSON.stringify(json)
+        });
+        const data = await res.json();
+
+        if(data['message'] == "success"  ){
+
+            if(data['request'] === 'post'){
+                var userId = data['user']
+                window.location.href = `/posts/${userId}`
+            }else{
+                window.location.reload();
+            }
+         }
+        else{
+            console.log(data['message'])
+
+        }
+
+
+
+
+
+    }
+
 
 
 </script>

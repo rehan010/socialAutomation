@@ -472,6 +472,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     result = fb_page_insights(access_token, page_id)
                     likes = result[0]
                     comments = result[1]
+                    newfollowers_today = result[2]
+
+                    followers_today += newfollowers_today
                     likes_today += likes
                     comments_today += comments
 
@@ -866,8 +869,6 @@ class PostCreateView(CreateView):
 
 
 
-
-
 class PageDataView(APIView):
     def get(self, request):
         user = self.request.user  # Set the user to the logged-in user
@@ -1213,10 +1214,77 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
 from django.http import JsonResponse
 
 class PostDeleteView(DestroyAPIView):
-    queryset = ImageModel.objects.all()
+    queryset = PostModel.objects.all()
     serializer_class = PostImageSerializer
     def delete(self, request, *args, **kwargs):
-        self.destroy(request, *args, **kwargs)
+        page_id = self.request.GET.get('page_id')
+
+        comment_urn = self.request.data.get('urn')
+        response = {}
+        response['user'] = self.request.user.id
+        post = self.get_object()
+        if self.request.GET.get('page_name') == "facebook":
+            try:
+                post_urn = post.post_urn.all().filter(pk=page_id).first()
+                access_token = post_urn.org.access_token
+                urn = post_urn.urn
+
+                if comment_urn:
+                    response['message'] = delete_meta_posts_comment(access_token,comment_urn)
+                    response['request'] = "comment"
+                else:
+                    response['message'] = delete_meta_posts_comment(access_token,urn)
+                    response['request'] = "post"
+
+                    if response['message'] == 'success':
+                        post.post_urn.remove(post_urn)
+                        if len(post.post_urn.all()) == 0:
+                            post.delete()
+
+
+
+            except Exception as e:
+                return 'falied'
+
+        elif self.request.GET.get('page_name') == "instagram":
+            try:
+
+
+                page_post = post.post_urn.all().filter(pk=page_id).first()
+                access_token = page_post.org.access_token
+                urn = page_post.urn
+
+                if comment_urn:
+                    response['message'] = delete_meta_posts_comment(access_token, comment_urn)
+                    response['request'] = 'comment'
+
+            except Exception as e:
+                return 'falied'
+
+        elif self.request.GET.get('page_name') == "linkedin":
+            try:
+                urn = post.post_urn.all().filter(pk=page_id).first()
+                post_urn = urn.urn
+                user = urn.org.user
+                social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
+
+                access_token = urn.org.access_token
+
+                if comment_urn:
+                    pass
+                else:
+                    pass
+
+            except Exception as e:
+                return 'falied'
+
+        return JsonResponse(response)
+
+
+
+
+
+        # self.destroy(request, *args, **kwargs)
         return JsonResponse({'message': 'Object deleted successfully.'})
 
 
@@ -1621,6 +1689,7 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
 
             except Exception as e:
                 data['error'] = e
+
 
 
 
