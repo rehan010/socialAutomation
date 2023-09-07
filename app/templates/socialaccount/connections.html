@@ -118,7 +118,7 @@
                                 {% if instagram %}
                                 
                                     <div class="w-5/6 text-center break-all">
-                                        <a href="{% url 'social_profile'%}?provider_name={{ instagram.provider }}" class="no-underline hover:no-underline">
+                                        <a href="{% url 'social_profile' %}?provider_name={{ instagram.provider }}" class="no-underline hover:no-underline">
 
                                             <span>{{instagram.extra_data.username}}</span>
                                         </a>

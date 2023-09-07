@@ -119,6 +119,22 @@ class BaseView(TemplateView):
 
 class ProfileView(LoginRequiredMixin,TemplateView):
     template_name = "registration/profile.html"
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        user_manager = user.manager
+
+        if user_manager:
+            invited_user = InviteEmploye.objects.filter(user = user , invited_by= user_manager).first()
+            role = invited_user.role
+            context['user_role'] = role
+
+        else:
+            context['user_role'] = "ADMIN"
+
+        return context
 class UserView(LoginRequiredMixin,TemplateView):
     template_name = "registration/users.html"
     model = User
@@ -565,13 +581,7 @@ class ConnectPageView(LoginRequiredMixin, CreateView):
         for _ in social:
             access_token[_.provider] = SocialToken.objects.filter(account_id=_)
 
-
-
-
-
         my_list = []
-        #
-
         data=my_list
 
         # context
@@ -1090,11 +1100,7 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         user_manager = self.request.user.manager
-
-
-
         if user_manager != None:
             role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
             user_role = role.role
@@ -1165,7 +1171,7 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
             for user in invited:
                 invited_users_id = user.selected_user.id
                 invites.append(invited_users_id)
-            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites))
+            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted = False)
 
             provider_name = "linkedin"
             if len(posts.filter(prepost_page__provider=provider_name)) > 0:
@@ -1699,6 +1705,23 @@ class EditUserView(LoginRequiredMixin,UpdateView):
     form_class = CustomUserUpdateForm
     success_url = reverse_lazy('my_profile')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        user_manager = user.manager
+
+        if user_manager:
+            invited_user = InviteEmploye.objects.filter(user = user , invited_by= user_manager).first()
+            role = invited_user.role
+            context['user_role'] = role
+
+        else:
+            context['user_role'] = "ADMIN"
+
+        return context
+
+
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
@@ -1707,10 +1730,13 @@ class EditUserView(LoginRequiredMixin,UpdateView):
 
     def form_invalid(self, form):
         invalid_form = super(EditUserView,self).form_invalid((form))
+
+        # To use the current user data in context otherwise the form will send user
+        # in context with form data
+        # for example if you password is incorrect and you named your self abc 123
+        # it will show abc 123 with profile image
         invalid_form.context_data['user'] = self.request.user
         return invalid_form
-
-
 
 
 

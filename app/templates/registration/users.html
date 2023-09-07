@@ -39,7 +39,10 @@
         <!--            hx-target="#results" hx-get="{% url 'get_users' %}" hx-trigger="input delay:0.2s"-->
         <div class="relative">
             <input type="text" id="searchInput" name="q"
+
                    class="w-full py-2 px-4 border border-gray-300 rounded-lg pl-10  padding-left-search focus:border-blue-500  glow-blue"
+
+
                    placeholder="   Find a user">
             <span class="absolute top-2 left-2 text-gray-500">
                     &#128269;
@@ -72,7 +75,9 @@
                        class="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500">
                 <div class="flex gap-6">
                 <select id="roleSelectEmail" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
-                    <option value="ADMIN"  class="text-black">ADMIN</option>
+
+                    <option value="ADMIN" class="text-black">ADMIN</option>
+
                     <option value="MANAGER" class="text-black">MANAGER</option>
                 </select>
                 <select id="permissionSelectEmail" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded hidden">

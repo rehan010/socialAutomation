@@ -2683,7 +2683,7 @@ def fb_page_insights(access_token,page_id):
         return total_reaction, total_comment, newpagelike
 
     except Exception as e:
-        return None
+        return total_reaction, total_comment, newpagelike
 
 
 
@@ -3123,6 +3123,7 @@ def delete_meta_posts_comment(access_token,id):
 
 
 
+
 def delete_linkedin_posts(access_token,id):
     encoded_urn = quote(id, safe='')
     url = "https://api.linkedin.com/rest/posts/" + encoded_urn
@@ -3158,4 +3159,5 @@ def delete_linkedin_comments(access_token, post_urn, comment_id, actor):
         return 'success'
     else:
         return 'failed'
+
 
