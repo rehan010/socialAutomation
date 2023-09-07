@@ -316,7 +316,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 user_permission = role.permission
                 if user_permission == 'HIDE':
 
-                    total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED')
+                    total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED',is_deleted = False)
                     sharepages = SharePage.objects.filter(user=self.request.user)
 
                 else:
@@ -331,7 +331,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 for user in invited:
                     invited_users_id = user.selected_user.id
                     invites.append(invited_users_id)
-                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), status='PUBLISHED')
+                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), status='PUBLISHED', is_deleted = False)
 
                 sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invites))
 
@@ -442,7 +442,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             context['data_insta'] = values_insta
 
             # Post,likes,comments for today
-            user_post = total_posts.filter(created_at__date=today)
+            user_post = total_posts.filter(created_at__date=today,is_deleted = False)
             likes_today = 0
             comments_today = 0
             likes_overall = 0
@@ -451,6 +451,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             followers_overall = 0
 
             linkedin_org = sharepages.filter(provider="linkedin")
+            linkedin_post_today = user_post.filter(post_urn__org__provider = "linkedin").distinct().count()
+            linkedin_likes_today = 0
+            linkedin_comments_today = 0
             if len(linkedin_org) > 0:
                 for page in linkedin_org:
 
@@ -462,8 +465,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     likes = result[0]
                     comments = result[1]
 
-                    likes_today += likes
-                    comments_today += comments
+                    linkedin_likes_today += likes
+                    linkedin_comments_today += comments
 
                     result = linkedin_share_stats_overall(org_id, access_token)
                     likes_ovr = result[0]
@@ -480,6 +483,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     followers_overall += followers_ovr
 
             fb_org = sharepages.filter(provider="facebook")
+            facebook_post_today = user_post.filter(post_urn__org__provider = "facebook").distinct().count()
+            facebook_likes_today = 0
+            facebook_comments_today = 0
             if len(fb_org) > 0:
                 for page in fb_org:
                     page_id = page.org_id
@@ -491,18 +497,14 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     newfollowers_today = result[2]
 
                     followers_today += newfollowers_today
-                    likes_today += likes
-                    comments_today += comments
+                    facebook_likes_today += likes
+                    facebook_comments_today += comments
 
-
-                    # result = linkedin_followers_today(org_id, access_token, start)
-                    # followers = result
-                    # followers_today += followers
-                    # result = linkedin_followers(org_id, access_token)
-                    # followers_ovr = result
-                    # followers_overall += followers_ovr
 
             insta_accounts = sharepages.filter(provider="instagram")
+            instagram_post_today = user_post.filter(post_urn__org__provider = "instagram").distinct().count()
+            instagram_likes_today = 0
+            instagram_comments_today = 0
             if len(insta_accounts) > 0:
                 for account in insta_accounts:
                     access_token = account.access_token
@@ -512,19 +514,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     likes = result[0]
                     comments = result[1]
 
-                    likes_today += likes
-                    comments_today += comments
-
-
-
-
-                    #
-                    # result = linkedin_followers_today(org_id, access_token, start)
-                    # followers = result
-                    # followers_today += followers
-                    # result = linkedin_followers(org_id, access_token)
-                    # followers_ovr = result
-                    # followers_overall += followers_ovr
+                    instagram_likes_today += likes
+                    instagram_comments_today += comments
 
 
             #Weekly comparison
@@ -536,12 +527,21 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 change_per = 100
 
             context['likes_today'] = likes_today
+            context['linkedin_likes_today'] = linkedin_likes_today
+            context['facebook_likes_today'] = facebook_likes_today
+            context['instagram_likes_today'] = instagram_likes_today
             context['post_percentage'] = change_per
             context['likes'] = likes_overall
             context['comments_today'] = comments_today
+            context['facebook_comments_today'] = facebook_comments_today
+            context['instagram_comments_today'] = instagram_comments_today
+            context['linkedin_comments_today'] = linkedin_comments_today
             context['comments'] = comments_overall
             context['total_posts'] = len(total_posts)
             context['post_today'] = len(user_post)
+            context['linkedin_post_today'] = linkedin_post_today
+            context['facebook_post_today'] = facebook_post_today
+            context['instagram_post_today'] = instagram_post_today
             context['followers_today'] = followers_today
             context['followers_overall'] = followers_overall
 

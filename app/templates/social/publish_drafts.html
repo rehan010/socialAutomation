@@ -48,7 +48,7 @@
 
   .disabled::before{
     content: "";
-    background-color: rgba(255, 255, 255, 0.1); /* Transparent white overlay */
+    background-color: rgba(255, 255, 255, 0.2); /* Transparent white overlay */
     position: absolute;
     top: 0;
     left: 0;
@@ -815,8 +815,8 @@ function getCookie(name) {
           const response = await fetch(`/social/page/?pk=${post_id}`);
           if (response.ok) {
               const data = await response.json();
-
-              if(Object.keys(data).length === 0){
+               console.log(data)
+              if((Object.keys(data).length === 1 && data['posts']) || Object.keys(data).length === 0){
                      var publishButton = document.getElementById("publishButton");
                      var scheduleButton = document.getElementById("scheduleBtn");
                       console.log(1)
