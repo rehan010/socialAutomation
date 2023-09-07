@@ -55,6 +55,7 @@
                 <input type="hidden" id="user" name="user" value="">
                 <input type="hidden" id="role" name="role" value="">
                 <input type="hidden" id="permission" name="permission" value="">
+                <input type="hidden" id="corp" name="corp" value="">
                 <button id="closeUserBtn" class="absolute left-1 text-red-500">&#10006;</button>
                 <span id="selectedUserName" style="font-weight: bold;" class="flex-1"></span>
                 <div class="flex flex-col items-center justify-center">
@@ -64,7 +65,7 @@
                     </select>
                     <div id="managerCheckbox" class="hidden mt-2 relative right-1 ">
                         <label class="text-xs">
-                            <input type="checkbox" id="managesCorporateAccount" name="managesCorporateAccount"> Corporate Accounts
+                            <input type="checkbox" id="managesCorporateAccount" name="managesCorporateAccount"> Corporate Account
                         </label>
                     </div>
                     <select id="permissionSelect" class=" relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 hidden">
@@ -73,10 +74,8 @@
                     </select>
                     <button id="assignManagerButton" class=" relative right-2 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 ">SEND INVITE</button>
                 </div>
-
                 {% csrf_token %}
             </div>
-
             <div id="emailInputBox" class="hidden p-2 bg-blue-100 rounded-lg flex items-center justify-between">
                 <input type="text" id="email" name="email"
                        class="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500">
@@ -87,7 +86,7 @@
                     </select>
                     <div id="managerCheckboxEmail" class="hidden mt-2 relative right-1 ">
                         <label class="text-xs">
-                            <input type="checkbox" id="managesCorporateAccountEmail" name="managesCorporateAccountEmail"> Corporate Accounts
+                            <input type="checkbox" id="managesCorporateAccountEmail" name="managesCorporateAccountEmail"> Corporate Account
                         </label>
                     </div>
                     <select id="permissionSelectEmail" class=" relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 hidden">
@@ -118,7 +117,7 @@
                         <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Invited By</th>
                         <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Function</th>
                         <th class="px-6 py-3  font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Role</th>
-                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Invited On</th>
+                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Permissions</th>
                         <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Created On</th>
                         <th class="px-6 py-3 font-semibold capitalize align-middle bg-transparent border-b border-gray-200 border-solid shadow-none tracking-none whitespace-nowrap text-slate-400 opacity-70"></th>
                       </tr>
@@ -172,14 +171,17 @@
                         </td>
                         <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                             {% if user.role == 'MEMBER' %}
-                            <span class="bg-gradient-to-tl from-gray-600 to-red-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>-<span class="bg-gradient-to-tl from-blue-600 to-blue-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.permission}}</span>
-
+                            <span class="bg-gradient-to-tl from-gray-600 to-red-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>
                             {% else %}
                             <span class="bg-gradient-to-tl from-black to-purple-600 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>
                             {% endif %}
                         </td>
                         <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <span class="text-xs font-semibold leading-tight text-slate-400">{{user.created_at}}</span>
+                            {% if user.permission != 'HIDE' %}
+                            <span class="bg-gradient-to-tl from-blue-600 to-blue-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.permission}}</span>
+                            {% else %}
+                            <span class=" px-2.5 text-xs  py-1.4  whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-gray">-</span>
+                            {% endif %}
                         </td>
 
                           <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
@@ -208,21 +210,21 @@
                                                     <div class="flex justify-center">
                                                         <input type="hidden" id="changerole" name="changerole" value=""/>
                                                         <input type="hidden" id="changeperm" name="changeperm" value="">
+                                                        <input type="hidden" id="manager_corp" name="manager_corp" value="">
                                                         <select class="roleSelect1 w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
                                                             <option value="ADMIN" {% if user.role == 'ADMIN' %} selected {% endif %} >ADMIN</option>
                                                             <option value="MEMBER" {% if user.role == 'MEMBER' %} selected {% endif %} >MEMBER</option>
                                                         </select>
                                                     </div>
                                                     <div class="flex justify-center">
-                                                        <select class="permissionSelect1  w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
-                                                                <option value="HIDE" {% if user.permission == 'HIDE' %} selected {% endif %} >HIDE</option>
+                                                        <select class="permissionSelect1 hidden w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
                                                                 <option value="READ" {% if user.permission == 'READ' %} selected {% endif %} >READ</option>
                                                                 <option value="WRITE" {% if user.permission == 'WRITE' %} selected {% endif %} >WRITE</option>
                                                         </select>
                                                     </div>
-                                                    <div class="managerCheckboxEdit flex justify-center hidden ">
+                                                    <div class="managerCheckboxEdit flex justify-left ">
                                                         <label>
-                                                            <input class="managesCorporateAccountEdit" type="checkbox"  name="managesCorporateAccountEdit" {% if user.manager_corp == True %} checked="checked" {% endif %}> Manages corporate account
+                                                            <input class="managesCorporateAccountEdit" type="checkbox"  name="managesCorporateAccountEdit" {% if user.manager_corp == True %} checked="checked" {% endif %}> Corporate Account
                                                         </label>
                                                     </div>
                                                     <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
@@ -427,15 +429,22 @@
 
     const roleSelect = document.getElementById("roleSelect");
     const permissionSelect = document.getElementById("permissionSelect");
+    const manage_corp = document.getElementById("managesCorporateAccount");
+    const corp = document.getElementById("corp");
     const assignManagerButton = document.getElementById("assignManagerButton");
     assignManagerButton.addEventListener("click", function () {
 
         if (selectedUser) {
+                if(manage_corp.checked){
+                    corp.value = 'True';
+                }else{
+                    corp.value = 'False';
+                }
+                const corp_value = corp.value;
                 var user = document.getElementById("user");
                 user.value = selectedUser.id;
                 const csrfToken = getCSRFToken();
                 const user_id = document.getElementById("user").value;
-                console.log(user_id);
                 const selectedRole = roleSelect.value;
                 const user_role = document.getElementById("role");
                 user_role.value = selectedRole;
@@ -450,6 +459,7 @@
                     user: user_id,
                     role: role,
                     permission: permission,
+                    manager_corp: corp_value,
                     csrfmiddlewaretoken: csrfToken,
                 };
 
@@ -481,6 +491,7 @@
     const roleSelectEmail = document.getElementById("roleSelectEmail");
     const permissionSelectEmail = document.getElementById('permissionSelectEmail');
     const addEmailButton = document.getElementById("addEmailButton");
+    const manage_corp_email = document.getElementById("managesCorporateAccountEmail");
 
     addEmailButton.addEventListener("click", function () {
         const emailInput = document.querySelector("#emailInputBox input[name=email]");
@@ -496,6 +507,13 @@
             }
             else{
                 errorText.classList.add('hidden');
+                console.log(manage_corp_email.checked);
+                if(manage_corp_email.checked){
+                    corp.value = 'True';
+                }else{
+                    corp.value = 'False';
+                }
+                const corp_email = corp.value;
                 const csrfToken = getCSRFToken();
                 email_value.value = email;
                 const email_id = document.getElementById("email").value;
@@ -522,6 +540,7 @@
                         email: email_id,
                         role: role,
                         permission: permission,
+                        manager_corp: corp_email,
                         csrfmiddlewaretoken: csrfToken,
                     };
 
@@ -573,7 +592,6 @@
             modalContainers.forEach((containers)=> {
 
                 const modalButton = containers.querySelector('.modal-button');
-                console.log('HI');
                 const modal = containers.querySelector('.main-modal');
                 const closeButton = containers.querySelectorAll('.modal-close');
 
@@ -610,20 +628,28 @@
             const permSelect = document.querySelector(`#${target} .permissionSelect1`);
             const changeroleInput = document.querySelector(`#${target} #changerole`);
             const changeperm = document.querySelector(`#${target} #changeperm`);
+            const managecheckbox = document.querySelector(`#${target} .managesCorporateAccountEdit`);
+            const manager_corp = document.querySelector(`#${target} #manager_corp`);
+            if (managecheckbox.checked) {
+                manager_corp.value='True';
+            } else {
+                manager_corp.value='False';
+            }
+            const corp = manager_corp.value;
             changeperm.value = permSelect.value;
             const newperm = changeperm.value;
             changeroleInput.value = roleSelect.value;
             const newrole = changeroleInput.value;
-            console.log(newperm);
             const originalString = target;
             const user = originalString.replace("dialog", "");
-            console.log(user);
+
 
             const url = '/change_role/';
             const data = {
                 user: user,
                 role: newrole,
                 permission: newperm,
+                manager_corp: corp,
                 csrfmiddlewaretoken: csrfToken,
             };
 
@@ -667,8 +693,27 @@
                 const managesCorporateAccountEdit = document.querySelector(`#${target} .managesCorporateAccountEdit`);
                 const managerCheckboxEdit = document.querySelector(`#${target} .managerCheckboxEdit`);
 
+                if (managesCorporateAccountEdit.checked) {
+                    permissionSelect.classList.remove('hidden');
+                } else if (roleSelect.value === 'ADMIN') {
+                    permissionSelect.classList.add('hidden');
+                    managerCheckboxEdit.classList.add('hidden');
+                } else {
+                    permissionSelect.classList.add('hidden');
+                }
                 roleSelect.addEventListener('change', function () {
                     if (this.value === 'MEMBER') {
+                        managerCheckboxEdit.classList.remove('hidden');
+                    } else {
+                        managerCheckboxEdit.classList.add('hidden');
+                        permissionSelect.classList.add('hidden');
+                        managerCheckbox.classList.add('hidden');
+                        managesCorporateAccountEdit.checked = false;
+                        permissionSelect.value = 'HIDE';
+                    }
+                });
+                managesCorporateAccountEdit.addEventListener('change', function () {
+                    if (this.checked) {
                         permissionSelect.classList.remove('hidden');
                     } else {
                         permissionSelect.classList.add('hidden');

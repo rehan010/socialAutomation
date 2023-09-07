@@ -127,7 +127,7 @@ class ProfileView(LoginRequiredMixin,TemplateView):
         user_manager = user.manager
 
         if user_manager:
-            invited_user = InviteEmploye.objects.filter(user = user , invited_by= user_manager).first()
+            invited_user = InviteEmploye.objects.filter(selected_user=user, invited_by=user_manager).first()
             role = invited_user.role
             context['user_role'] = role
 
@@ -189,11 +189,16 @@ class change_role(CreateView):
             data = json.loads(request.body)
             invite_id = data.get('user')
             role = data.get('role')
+            manager_corp = data.get('manager_corp')
             permission = data.get('permission')
-
+            if role == 'MEMBER' and manager_corp == 'False':
+                permission = 'HIDE'
+            elif role == 'ADMIN':
+                permission = 'WRITE'
             invite = InviteEmploye.objects.get(pk=invite_id)
             selected_user = User.objects.get(pk=invite.selected_user.id)
             invite.role = role
+            invite.manager_corp = manager_corp
             invite.permission = permission
             invite.save()
             return JsonResponse({'message': 'New role of' + ' ' + selected_user.username + ' ' + 'is' + ' ' + role + ' with permission' + ' ' + permission})
@@ -210,11 +215,13 @@ class assign_manager(CreateView):
             user_id = data.get('user')
             email = data.get('email')
             role = data.get('role')
+            manager_corp = data.get('manager_corp')
             permission = data.get('permission')
-            if role != 'MEMBER':
+            if role == 'MEMBER' and manager_corp == 'False':
+                permission = "HIDE"
+            if role == 'ADMIN':
+                manager_corp = 'False'
                 permission = "WRITE"
-            if permission != 'HIDE' and role == 'MEMBER':
-                manager_corp = True
             try:
                 token = generate_random_token()
 
@@ -1701,7 +1708,7 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
         return context
 
 class EditUserView(LoginRequiredMixin,UpdateView):
-    template_name =  'registration/edituser.html'
+    template_name = 'registration/edituser.html'
     model = User
     form_class = CustomUserUpdateForm
     success_url = reverse_lazy('my_profile')
@@ -1712,7 +1719,7 @@ class EditUserView(LoginRequiredMixin,UpdateView):
         user_manager = user.manager
 
         if user_manager:
-            invited_user = InviteEmploye.objects.filter(user = user , invited_by= user_manager).first()
+            invited_user = InviteEmploye.objects.filter(selected_user=user , invited_by= user_manager).first()
             role = invited_user.role
             context['user_role'] = role
 
