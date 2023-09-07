@@ -32,21 +32,21 @@ class CustomUserInvitationForm(UserCreationForm):
 
 class CustomUserUpdateForm(UserChangeForm):
 
-    old_password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-        required=False
-    )
-    new_password1 = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-        required=False
-    )
-    new_password2 = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-        required=False
-    )
+    # old_password = forms.CharField(
+    #     widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    #     required=False
+    # )
+    # new_password1 = forms.CharField(
+    #     widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    #     required=False
+    # )
+    # new_password2 = forms.CharField(
+    #     widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    #     required=False
+    # )
     class Meta(UserChangeForm.Meta):
         model = User
-        fields = ['username','first_name','last_name','profile_image','email','bio','old_password','new_password1','new_password2']
+        fields = ['username','first_name','last_name','profile_image','email','bio']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -97,19 +97,19 @@ class CustomUserUpdateForm(UserChangeForm):
 
 
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        password = self.cleaned_data["new_password2"]
-        if password:
-            user.set_password(password)
-            update_session_auth_hash(self.request, user)
-            login(self.request,user)
-        if commit:
-            # if self.request.POST.get('remove_image'):
-            #     user.profile_image.delete()
-            #     user.profile_image = None
-            user.save()
-        return user
+    # def save(self, commit=True):
+    #     user = super().save(commit=False)
+    #     password = self.cleaned_data["new_password2"]
+    #     if password:
+    #         user.set_password(password)
+    #         update_session_auth_hash(self.request, user)
+    #         login(self.request,user)
+    #     if commit:
+    #         # if self.request.POST.get('remove_image'):
+    #         #     user.profile_image.delete()
+    #         #     user.profile_image = None
+    #         user.save()
+    #     return user
 
 
 

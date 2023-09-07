@@ -6,7 +6,7 @@ from django.urls import reverse
 from .restapis import *
 from .models import PostModel,SharePage,ImageModel
 from celery import shared_task
-from allauth.socialaccount.models import SocialAccount, SocialToken
+from allauth.socialaccount.models import SocialAccount, SocialToken,SocialApp
 
 from django.dispatch import receiver
 from django.urls import reverse_lazy
@@ -19,7 +19,20 @@ from django.core.exceptions import PermissionDenied
 
 from datetime import datetime
 from django.utils import timezone
-from django.db.models.signals import m2m_changed
+from django.db.models.signals import m2m_changed, pre_delete
+
+
+
+@receiver(pre_delete , sender = SocialAccount)
+def social_app_deleted(sender,instance,**kwargs):
+    user = instance.user
+
+    if instance.provider == 'linkedin_oauth2':
+        instance_share_pages = SharePage.objects.filter(user = user , provider = "linkedin" )
+    else:
+        instance_share_pages = SharePage.objects.filter(user = user , provider = instance.provider )
+
+    instance_share_pages.delete()
 
 
 # post_save_signal = Signal()

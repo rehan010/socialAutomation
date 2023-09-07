@@ -40,6 +40,23 @@
 
   }
 
+  .disabled{
+        cursor: not-allowed;
+        pointer-events: none;
+        position: relative;
+   }
+
+  .disabled::before{
+    content: "";
+    background-color: rgba(255, 255, 255, 0.1); /* Transparent white overlay */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+  }
+
 </style>
 
   <div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
@@ -798,6 +815,21 @@ function getCookie(name) {
           const response = await fetch(`/social/page/?pk=${post_id}`);
           if (response.ok) {
               const data = await response.json();
+
+              if(Object.keys(data).length === 0){
+                     var publishButton = document.getElementById("publishButton");
+                     var scheduleButton = document.getElementById("scheduleBtn");
+                      console.log(1)
+                      publishButton.disabled = true;
+                      scheduleButton.disabled = true;
+
+                      publishButton.parentElement.classList.remove('hover:scale-102');
+                      publishButton.parentElement.classList.add('disabled');
+                      scheduleButton.parentElement.classList.remove('hover:scale-102');
+                      scheduleButton.parentElement.classList.add('disabled');
+                      console.log(publishButton.parentElement);
+                      console.log(scheduleButton.parentElement);
+              }
 
               const dropdownButtons = document.getElementsByClassName('dropdownButton');
               const ordIds = data.posts;

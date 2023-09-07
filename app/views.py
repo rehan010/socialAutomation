@@ -1708,35 +1708,7 @@ class EditUserView(LoginRequiredMixin,UpdateView):
         return invalid_form
 
 
-    def form_valid(self, form):
-        # checkbox = self.request.POST.get('remove_image')
-        # if(checkbox):
-        #     user = form.user
-        #     user.profile_image.delete()
-        #     user.profile_image = None
-    #     form.save()
-    #     return super().form_valid(form)
-        old_password = form.cleaned_data.get("old_password")
-        new_password1 = form.cleaned_data.get("new_password1")
-        new_password2 = form.cleaned_data.get("new_password2")
 
-        if old_password and not self.request.user.check_password(old_password):
-            form.add_error('old_password',"Your old password was entered incorrectly. Please enter it again.")
-            return self.form_invalid(form)
-
-        if new_password1 and new_password2 and new_password1!=new_password2:
-            form.add_error("new_password2", "Passwords do not match.")
-            return self.form_invalid(form)
-
-        try:
-        # Validate new password
-            password_validation.validate_password(new_password2, self.request.user)
-
-        except forms.ValidationError as error:
-            form.add_error("new_password2", error)
-            return self.form_invalid(form)
-
-        return super().form_valid(form)
 
 
 

@@ -45,6 +45,23 @@
 
   }
 
+   .disabled{
+        cursor: not-allowed;
+        pointer-events: none;
+        position: relative;
+   }
+
+  .disabled::before{
+    content: "";
+    background-color: rgba(255, 255, 255, 0.1); /* Transparent white overlay */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+  }
+
 </style>
 
 <div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl bg-white">
@@ -206,19 +223,19 @@
             class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
             style="min-height: 2.5rem"
           >
-            {% for obj in data.facebook_page%}
-            <label
-              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              <input
-                type="checkbox"
-                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
-                name="facebook"
-                value="{{obj.id}}"
-              />
-              <span class="ml-2 text-sm">{{obj.name}}</span>
-            </label>
-            {% endfor %}
+<!--            {% for obj in data.facebook_page%}-->
+<!--            <label-->
+<!--              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"-->
+<!--            >-->
+<!--              <input-->
+<!--                type="checkbox"-->
+<!--                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"-->
+<!--                name="facebook"-->
+<!--                value="{{obj.id}}"-->
+<!--              />-->
+<!--              <span class="ml-2 text-sm">{{obj.name}}</span>-->
+<!--            </label>-->
+<!--            {% endfor %}-->
           </div>
         </div>
       </div>
@@ -265,19 +282,19 @@
             class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
             style="min-height: 2.5rem"
           >
-            {% for obj in data.insta_data %}
-            <label
-              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              <input
-                type="checkbox"
-                class="form-checkbox h-4 w-4 text-blue-500 transition duration-150 ease-in-out"
-                name="instagram"
-                value="{{obj.id}}"
-              />
-              <span class="ml-2 text-sm text-gray-700">{{obj.name}}</span>
-            </label>
-            {% endfor %}
+<!--            {% for obj in data.insta_data %}-->
+<!--            <label-->
+<!--              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"-->
+<!--            >-->
+<!--              <input-->
+<!--                type="checkbox"-->
+<!--                class="form-checkbox h-4 w-4 text-blue-500 transition duration-150 ease-in-out"-->
+<!--                name="instagram"-->
+<!--                value="{{obj.id}}"-->
+<!--              />-->
+<!--              <span class="ml-2 text-sm text-gray-700">{{obj.name}}</span>-->
+<!--            </label>-->
+<!--            {% endfor %}-->
           </div>
         </div>
       </div>
@@ -323,20 +340,20 @@
             class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
             style="min-height: 2.5rem"
           >
-            {% for obj in data.linkedin_page %}
+<!--            {% for obj in data.linkedin_page %}-->
 
-            <label
-              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              <input
-                type="checkbox"
-                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
-                name="linkedin"
-                value="{{ obj.key }}"
-              />
-              <span class="ml-2 text-sm">{{obj.name}}</span>
-            </label>
-            {% endfor %}
+<!--            <label-->
+<!--              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"-->
+<!--            >-->
+<!--              <input-->
+<!--                type="checkbox"-->
+<!--                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"-->
+<!--                name="linkedin"-->
+<!--                value="{{ obj.key }}"-->
+<!--              />-->
+<!--              <span class="ml-2 text-sm">{{obj.name}}</span>-->
+<!--            </label>-->
+<!--            {% endfor %}-->
           </div>
         </div>
       </div>
@@ -701,7 +718,6 @@
           const loader = platformButton.getElementsByClassName('animate-spin')[0];
           const platformIcon = loader.nextElementSibling;
           console.log(pages)
-          
 
           loader.classList.add('hidden');
           platformIcon.classList.remove('hidden');
@@ -713,6 +729,9 @@
             tooltip.classList.add('tooltiptext')
             tooltip.textContent = "No Page Connected/Check Account";
             platformButton.appendChild(tooltip);
+
+
+
           }
           else{
               const dropdownlist = document.createElement('div');
@@ -722,9 +741,6 @@
                 const pageId = pages[i].id;
                 const pageName = pages[i].name;
 
-                console.log(pageId);
-                console.log(pageName);
-                
                 var label = document.createElement('label');
                 label.classList.add('inline-flex', 'items-center' ,'cursor-pointer', 'block', 'px-2', 'py-2','text-sm','text-gray-700' ,'hover:bg-gray-100');
                 const checkbox = document.createElement('input');
@@ -755,7 +771,7 @@
            })
               
           }
-          console.log(platformButton.id)
+
       }
 
 
@@ -765,7 +781,23 @@
           if (response.ok) {
               const data = await response.json();
               const dropdownButtons = document.getElementsByClassName('dropdownButton');
-              console.log(data);
+              console.log(Object.keys(data).length)
+              if(Object.keys(data).length === 0){
+                     var publishButton = document.getElementById("publishButton");
+                     var scheduleButton = document.getElementById("scheduleBtn");
+                      console.log(1)
+                      publishButton.disabled = true;
+                      scheduleButton.disabled = true;
+
+                      publishButton.parentElement.classList.remove('hover:scale-102');
+                      publishButton.parentElement.classList.add('disabled');
+                      scheduleButton.parentElement.classList.remove('hover:scale-102');
+                      scheduleButton.parentElement.classList.add('disabled');
+                      console.log(publishButton.parentElement);
+                      console.log(scheduleButton.parentElement);
+              }
+
+
               for(button in dropdownButtons){
                   var buttonId = dropdownButtons[button].id
                   createDropdown(data[buttonId],dropdownButtons[button]);
