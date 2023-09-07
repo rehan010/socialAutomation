@@ -51,49 +51,50 @@
                  class="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg overflow-y-auto"
                  style="max-height: 300px;">
             </div>
-            <div id="selectedUserBox" class="p-2 bg-blue-100 rounded-lg hidden flex flex-col items-center justify-center">
+            <div id="selectedUserBox" class="p-2 px-5 bg-blue-100 rounded-lg hidden flex items-center justify-between">
                 <input type="hidden" id="user" name="user" value="">
                 <input type="hidden" id="role" name="role" value="">
                 <input type="hidden" id="permission" name="permission" value="">
                 <button id="closeUserBtn" class="absolute left-1 text-red-500">&#10006;</button>
-                <span id="selectedUserName" style="font-weight: bold;"></span>
-                <select id="roleSelect" class="relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
-                    <option value="ADMIN">ADMIN</option>
-                    <option value="MEMBER">MEMBER</option>
-                </select>
-                <div id="managerCheckbox" class="hidden mt-2 relative right-1 ">
-                    <label>
-                        <input type="checkbox" id="managesCorporateAccount" name="managesCorporateAccount"> Manages corporate account
-                    </label>
+                <span id="selectedUserName" style="font-weight: bold;" class="flex-1"></span>
+                <div class="flex flex-col items-center justify-center">
+                    <select id="roleSelect" class="relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
+                        <option value="ADMIN" class="text-black">ADMIN</option>
+                        <option value="MEMBER" class="text-black">MEMBER</option>
+                    </select>
+                    <div id="managerCheckbox" class="hidden mt-2 relative right-1 ">
+                        <label class="text-xs">
+                            <input type="checkbox" id="managesCorporateAccount" name="managesCorporateAccount"> Corporate Accounts
+                        </label>
+                    </div>
+                    <select id="permissionSelect" class=" relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 hidden">
+                        <option value="READ" class="text-black">READ</option>
+                        <option value="WRITE" class="text-black">WRITE</option>
+                    </select>
+                    <button id="assignManagerButton" class=" relative right-2 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 ">SEND INVITE</button>
                 </div>
-                <select id="permissionSelect" class=" relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 hidden">
-                    <option value="HIDE">None</option>
-                    <option value="READ">READ</option>
-                    <option value="WRITE">WRITE</option>
-                </select>
-                <button id="assignManagerButton" class=" relative right-2 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 ">SEND INVITE</button>
+
                 {% csrf_token %}
             </div>
 
             <div id="emailInputBox" class="hidden p-2 bg-blue-100 rounded-lg flex items-center justify-between">
                 <input type="text" id="email" name="email"
                        class="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500">
-                <div class="flex gap-6">
-                <select id="roleSelectEmail" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
-                    <option value="ADMIN">ADMIN</option>
-                    <option value="MEMBER">MEMBER</option>
-                </select>
-                <div id="managerCheckboxEmail" class="hidden mt-2 ">
-                    <label>
-                        <input type="checkbox" id="managesCorporateAccountEmail" name="managesCorporateAccountEmail"> Manages corporate account
-                    </label>
-                </div>
-                <select id="permissionSelectEmail" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded hidden">
-                    <option value="HIDE">None</option>
-                    <option value="READ">READ</option>
-                    <option value="WRITE">WRITE</option>
-                </select>
-                <button id="addEmailButton" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">INVITE</button>
+                <div class="flex flex-col items-center justify-center mr-5">
+                    <select id="roleSelectEmail" class="relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
+                        <option value="ADMIN" class="text-black">ADMIN</option>
+                        <option value="MEMBER" class="text-black">MEMBER</option>
+                    </select>
+                    <div id="managerCheckboxEmail" class="hidden mt-2 relative right-1 ">
+                        <label class="text-xs">
+                            <input type="checkbox" id="managesCorporateAccountEmail" name="managesCorporateAccountEmail"> Corporate Accounts
+                        </label>
+                    </div>
+                    <select id="permissionSelectEmail" class=" relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 hidden">
+                        <option value="READ" class="text-black">READ</option>
+                        <option value="WRITE" class="text-black">WRITE</option>
+                    </select>
+                    <button id="addEmailButton" class=" relative right-2 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 ">SEND INVITE</button>
                 </div>
             </div>
             <div id="errorText" class="hidden text-red-500 mt-2">Invalid email format. Please enter a valid email address.</div>
