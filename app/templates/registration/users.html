@@ -391,6 +391,7 @@
                 permissionSelectEmail.classList.add('hidden');
                 managerCheckboxEmail.classList.add('hidden');
                 managesCorporateAccountEmail.checked = false;
+                permissionSelectEmail.value = 'READ'
             }
         });
         const roleSelect = document.getElementById('roleSelect');
@@ -403,7 +404,7 @@
                 permissionSelect.classList.add('hidden');
                 managerCheckbox.classList.add('hidden');
                 managesCorporateAccount.checked = false;
-                permissionSelect.value = 'HIDE';
+                permissionSelect.value = 'READ';
             }
         });
         const permissionSelect = document.getElementById('permissionSelect');
