@@ -213,13 +213,14 @@ class assign_manager(CreateView):
             permission = data.get('permission')
             if role != 'MEMBER':
                 permission = "WRITE"
-
+            if permission != 'HIDE' and role == 'MEMBER':
+                manager_corp = True
             try:
                 token = generate_random_token()
 
                 if email is None:
                     selected_user = User.objects.get(pk=user_id)
-                    invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=selected_user.email, selected_user=selected_user, role=role, permission=permission)
+                    invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=selected_user.email, selected_user=selected_user, role=role, permission=permission, manager_corp=manager_corp)
                     invite.save()
                     selected_user.is_invited = True
                     selected_user.save()
@@ -237,7 +238,7 @@ class assign_manager(CreateView):
                     # Send the email using Django's email functionality
                     send_mail(email_subject, email_body, 'social_presence@gmail.com', [email])
                 else:
-                    invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=email, role=role, permission=permission)
+                    invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=email, role=role, permission=permission , manager_corp=manager_corp)
                     invite.save()
 
 

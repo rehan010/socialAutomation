@@ -100,6 +100,7 @@ class InviteEmploye(BaseModel):
     selected_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="selected_user")
     role = models.CharField(choices=ROLE_CHOICES, default='MEMBER')
     permission = models.CharField(choices=PERMISSIONS, default='HIDE')
+    manager_corp = models.BooleanField(default=False)
 
 
     class Meta:

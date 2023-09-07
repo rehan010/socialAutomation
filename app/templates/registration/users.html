@@ -40,14 +40,10 @@
         <div class="flex items-center justify-center mb-6">
             <h2 class="text-lg font-medium text-gray-700">Invite a User</h2>
         </div>
-        <!--            hx-target="#results" hx-get="{% url 'get_users' %}" hx-trigger="input delay:0.2s"-->
         <div class="relative">
             <input type="text" id="searchInput" name="q"
-
                    class="w-full py-2 px-4 border border-gray-300 rounded-lg pl-10  padding-left-search focus:border-blue-500  glow-blue"
-
-
-                   placeholder="   Find a user">
+                   placeholder="   Search Username/Email">
             <span class="absolute top-2 left-2 text-gray-500">
                     &#128269;
                 </span>
@@ -55,37 +51,45 @@
                  class="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg overflow-y-auto"
                  style="max-height: 300px;">
             </div>
-            <div id="selectedUserBox" class="p-2 bg-blue-100 rounded-lg hidden flex items-center justify-between">
+            <div id="selectedUserBox" class="p-2 bg-blue-100 rounded-lg hidden flex flex-col items-center justify-center">
                 <input type="hidden" id="user" name="user" value="">
                 <input type="hidden" id="role" name="role" value="">
                 <input type="hidden" id="permission" name="permission" value="">
-                <br>
+                <button id="closeUserBtn" class="absolute left-1 text-red-500">&#10006;</button>
                 <span id="selectedUserName" style="font-weight: bold;"></span>
-                <button id="closeUserBtn" class="absolute left-1  text-red-500">&#10006;</button>
-                <select id="roleSelect" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
+                <select id="roleSelect" class="relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
                     <option value="ADMIN">ADMIN</option>
                     <option value="MEMBER">MEMBER</option>
                 </select>
-                <select id="permissionSelect" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded hidden">
-                    <option value="HIDE">HIDE</option>
+                <div id="managerCheckbox" class="hidden mt-2 relative right-1 ">
+                    <label>
+                        <input type="checkbox" id="managesCorporateAccount" name="managesCorporateAccount"> Manages corporate account
+                    </label>
+                </div>
+                <select id="permissionSelect" class=" relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 hidden">
+                    <option value="HIDE">None</option>
                     <option value="READ">READ</option>
                     <option value="WRITE">WRITE</option>
                 </select>
-                <button id="assignManagerButton" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline  rounded">SEND INVITE</button>
+                <button id="assignManagerButton" class=" relative right-2 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mt-2 ">SEND INVITE</button>
                 {% csrf_token %}
             </div>
+
             <div id="emailInputBox" class="hidden p-2 bg-blue-100 rounded-lg flex items-center justify-between">
                 <input type="text" id="email" name="email"
                        class="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500">
                 <div class="flex gap-6">
                 <select id="roleSelectEmail" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
-
                     <option value="ADMIN">ADMIN</option>
                     <option value="MEMBER">MEMBER</option>
-
                 </select>
+                <div id="managerCheckboxEmail" class="hidden mt-2 ">
+                    <label>
+                        <input type="checkbox" id="managesCorporateAccountEmail" name="managesCorporateAccountEmail"> Manages corporate account
+                    </label>
+                </div>
                 <select id="permissionSelectEmail" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded hidden">
-                    <option value="HIDE">HIDE</option>
+                    <option value="HIDE">None</option>
                     <option value="READ">READ</option>
                     <option value="WRITE">WRITE</option>
                 </select>
@@ -214,6 +218,11 @@
                                                                 <option value="READ" {% if user.permission == 'READ' %} selected {% endif %} >READ</option>
                                                                 <option value="WRITE" {% if user.permission == 'WRITE' %} selected {% endif %} >WRITE</option>
                                                         </select>
+                                                    </div>
+                                                    <div class="managerCheckboxEdit flex justify-center hidden ">
+                                                        <label>
+                                                            <input class="managesCorporateAccountEdit" type="checkbox"  name="managesCorporateAccountEdit" {% if user.manager_corp == True %} checked="checked" {% endif %}> Manages corporate account
+                                                        </label>
                                                     </div>
                                                     <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
                                                     <!--Footer-->
@@ -367,26 +376,48 @@
     document.addEventListener('DOMContentLoaded', function() {
         const roleSelectEmail = document.getElementById('roleSelectEmail');
         const permissionSelectEmail = document.getElementById('permissionSelectEmail');
+        const managerCheckboxEmail = document.getElementById('managerCheckboxEmail');
+        const managesCorporateAccountEmail = document.getElementById('managesCorporateAccountEmail');
 
         roleSelectEmail.addEventListener('change', function() {
             const selectedRole = roleSelectEmail.value;
 
             if (selectedRole === 'MEMBER') {
-                permissionSelectEmail.classList.remove('hidden');
+                managerCheckboxEmail.classList.remove('hidden');
             } else {
                 permissionSelectEmail.classList.add('hidden');
+                managerCheckboxEmail.classList.add('hidden');
+                managesCorporateAccountEmail.checked = false;
+                permissionSelectEmail.value = 'HIDE';
 
             }
         });
         const roleSelect = document.getElementById('roleSelect');
-        const permissionSelect = document.getElementById('permissionSelect');
-
+        const managerCheckbox = document.getElementById('managerCheckbox');
+        const managesCorporateAccount = document.getElementById('managesCorporateAccount');
         roleSelect.addEventListener('change', function () {
             if (this.value === 'MEMBER') {
+                managerCheckbox.classList.remove('hidden');
+            } else {
+                permissionSelect.classList.add('hidden');
+                managerCheckbox.classList.add('hidden');
+                managesCorporateAccount.checked = false;
+                permissionSelect.value = 'HIDE';
+            }
+        });
+        const permissionSelect = document.getElementById('permissionSelect');
+        managesCorporateAccount.addEventListener('change', function () {
+            if (this.checked) {
                 permissionSelect.classList.remove('hidden');
             } else {
                 permissionSelect.classList.add('hidden');
-
+            }
+        });
+        managesCorporateAccountEmail.addEventListener('change', function () {
+            if (this.checked) {
+                permissionSelectEmail.classList.remove('hidden');
+            } else {
+                permissionSelectEmail.classList.add('hidden');
             }
         });
 
@@ -632,6 +663,8 @@
 
                 const roleSelect = document.querySelector(`#${target} .roleSelect1`);
                 const permissionSelect = document.querySelector(`#${target} .permissionSelect1`);
+                const managesCorporateAccountEdit = document.querySelector(`#${target} .managesCorporateAccountEdit`);
+                const managerCheckboxEdit = document.querySelector(`#${target} .managerCheckboxEdit`);
 
                 roleSelect.addEventListener('change', function () {
                     if (this.value === 'MEMBER') {
