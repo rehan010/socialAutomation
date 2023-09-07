@@ -12,8 +12,12 @@
         border:1px solid black !important;
     }
 
+
     .padding-left-search{
         padding-left: 2.5rem !important;
+
+    #searchResults {
+        top: 100%;
     }
 </style>
 
@@ -34,7 +38,7 @@
             <span class="text-4xl text-gray-700 mr-3">&#128101;</span>
         </div>
         <div class="flex items-center justify-center mb-6">
-            <h2 class="text-lg font-medium text-gray-700">Select a User</h2>
+            <h2 class="text-lg font-medium text-gray-700">Invite a User</h2>
         </div>
         <!--            hx-target="#results" hx-get="{% url 'get_users' %}" hx-trigger="input delay:0.2s"-->
         <div class="relative">
@@ -48,7 +52,7 @@
                     &#128269;
                 </span>
             <div id="searchResults"
-                 class="relative top-12 left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg overflow-y-auto"
+                 class="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg overflow-y-auto"
                  style="max-height: 300px;">
             </div>
             <div id="selectedUserBox" class="p-2 bg-blue-100 rounded-lg hidden flex items-center justify-between">
@@ -60,7 +64,7 @@
                 <button id="closeUserBtn" class="absolute left-1  text-red-500">&#10006;</button>
                 <select id="roleSelect" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
                     <option value="ADMIN">ADMIN</option>
-                    <option value="MANAGER">MANAGER</option>
+                    <option value="MEMBER">MEMBER</option>
                 </select>
                 <select id="permissionSelect" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded hidden">
                     <option value="HIDE">HIDE</option>
@@ -76,9 +80,9 @@
                 <div class="flex gap-6">
                 <select id="roleSelectEmail" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
 
-                    <option value="ADMIN" class="text-black">ADMIN</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="MEMBER">MEMBER</option>
 
-                    <option value="MANAGER" class="text-black">MANAGER</option>
                 </select>
                 <select id="permissionSelectEmail" class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded hidden">
                     <option value="HIDE">HIDE</option>
@@ -158,11 +162,11 @@
                                         {{user.invited_by.company}}</p>
                         </td>
                         <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                          <p class="mb-0 text-xs font-semibold leading-tight">Manager</p>
+                          <p class="mb-0 text-xs font-semibold leading-tight">Member</p>
                           <p class="mb-0 text-xs leading-tight text-slate-400">Organization</p>
                         </td>
                         <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
-                            {% if user.role == 'MANAGER' %}
+                            {% if user.role == 'MEMBER' %}
                             <span class="bg-gradient-to-tl from-gray-600 to-red-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.role}}</span>-<span class="bg-gradient-to-tl from-blue-600 to-blue-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{user.permission}}</span>
 
                             {% else %}
@@ -201,7 +205,7 @@
                                                         <input type="hidden" id="changeperm" name="changeperm" value="">
                                                         <select class="roleSelect1 w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
                                                             <option value="ADMIN" {% if user.role == 'ADMIN' %} selected {% endif %} >ADMIN</option>
-                                                            <option value="MANAGER" {% if user.role == 'MANAGER' %} selected {% endif %} >MANAGER</option>
+                                                            <option value="MEMBER" {% if user.role == 'MEMBER' %} selected {% endif %} >MEMBER</option>
                                                         </select>
                                                     </div>
                                                     <div class="flex justify-center">
@@ -367,7 +371,7 @@
         roleSelectEmail.addEventListener('change', function() {
             const selectedRole = roleSelectEmail.value;
 
-            if (selectedRole === 'MANAGER') {
+            if (selectedRole === 'MEMBER') {
                 permissionSelectEmail.classList.remove('hidden');
             } else {
                 permissionSelectEmail.classList.add('hidden');
@@ -378,7 +382,7 @@
         const permissionSelect = document.getElementById('permissionSelect');
 
         roleSelect.addEventListener('change', function () {
-            if (this.value === 'MANAGER') {
+            if (this.value === 'MEMBER') {
                 permissionSelect.classList.remove('hidden');
             } else {
                 permissionSelect.classList.add('hidden');
@@ -630,7 +634,7 @@
                 const permissionSelect = document.querySelector(`#${target} .permissionSelect1`);
 
                 roleSelect.addEventListener('change', function () {
-                    if (this.value === 'MANAGER') {
+                    if (this.value === 'MEMBER') {
                         permissionSelect.classList.remove('hidden');
                     } else {
                         permissionSelect.classList.add('hidden');

@@ -211,7 +211,7 @@ class assign_manager(CreateView):
             email = data.get('email')
             role = data.get('role')
             permission = data.get('permission')
-            if role != 'MANAGER':
+            if role != 'MEMBER':
                 permission = "WRITE"
 
             try:
