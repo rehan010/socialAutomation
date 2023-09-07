@@ -110,10 +110,15 @@
         <div class="flex gap-x-5">
             {% for id , page in pages.items %}
                 {% for p in page %}
-            <div class="relative flex flex-col items-center justify-center bg-gray-100 w-40 p-2 py-5 break-keep font-bold text-sm">
-                <img src="{{p.profile_picture_url}}" style="width:60px;border-radius:50%;margin-bottom:10px;">
-                <span class = "capitalize">{{p.name}}</span>
-                <span class="uppercase">PK</span>
+            <div class="relative flex flex-col items-center justify-center bg-gray-100 w-40 p-2 py-5 break-keep font-bold text-sm text-center">
+                {% if p.profile_picture_url %}
+                    <img src="{{p.profile_picture_url}}" style="width:60px;border-radius:50%;margin-bottom:10px;">
+                {% else %}
+                    <img src="{% static 'image/default.png' %}" style="width:100px;border-radius:50%;margin-bottom:10px;">
+                {% endif %}
+
+                <span class="capitalize">{{p.name}}</span>
+                <span class="uppercase mt-1">PK</span>
                 <div class="absolute bottom-0 bg-blue-500 w-full text-center mt-3 text-white p-1">
                     <span>Connected</span>
 

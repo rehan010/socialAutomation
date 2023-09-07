@@ -396,7 +396,7 @@
                                             <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
                                             <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
                                                 <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
-                                                    <a onclick="delete_post_comments('{{ reply.comment_urn }}')" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline">
+                                                    <a onclick="delete_post_comments(this)" data-comment-urn="{{ reply.comment_urn }}" data-actor="{{ reply.actor }}" data-comment-id="{{ reply.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
                                                         <i class="fa-solid fa-trash mx-2"></i> Delete Reply
                                                     </a>
 
@@ -537,6 +537,17 @@
       const data = await res.json();
 
         like.style.fill = 'red';
+        if(urn === null || urn === ''){
+            const liketextdiv = document.getElementById('likes-count');
+            const likeCount = liketextdiv.innerText;
+            var likeCountArray = likeCount.split(" ");
+            likeCountArray[0] = (parseInt(likeCountArray[0]) + 1).toString();
+            var newlikeCount = likeCountArray.join(" ");
+            liketextdiv.innerText = newlikeCount;
+        }
+
+        console.log(data);
+
         parentButton.onclick = (event) => deleteLike(urn,event);
     }
 
@@ -564,8 +575,17 @@
                body: JSON.stringify(json)
         });
       const data = await res.json();
-
         like.style.fill = 'none';
+
+        if(urn === null || urn === ''){
+            const liketextdiv = document.getElementById('likes-count');
+            const likeCount = liketextdiv.innerText;
+            var likeCountArray = likeCount.split(" ");
+            likeCountArray[0] = (parseInt(likeCountArray[0]) - 1).toString();
+            var newlikeCount = likeCountArray.join(" ");
+            liketextdiv.innerText = newlikeCount;
+        }
+
         parentButton.onclick = (event) => postLike(urn ,event);
     }
 

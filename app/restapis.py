@@ -177,10 +177,13 @@ def fb_socialactions(post_urn, access_token):
 
     t_comments = response_json.get("comments",{}).get("summary",{}).get("total_count",{})
 
-    form = Post_urn.objects.get(urn=post_urn)
-    form.post_likes = t_likes
-    form.post_comments = t_comments
-    form.save()
+    try:
+        post = Post_urn.objects.get(urn=post_urn)
+        post.post_likes = t_likes
+        post.post_comments = t_comments
+        post.save()
+    except Exception as e:
+        e
 
     url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from,reactions,attachment,user_likes,comments{{message,created_time,from,reactions,attachment,user_likes,comments{{message, created_time,from, reactions, attachment,user_likes}}}}"
 
