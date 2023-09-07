@@ -1220,6 +1220,8 @@ class PostDeleteView(DestroyAPIView):
         page_id = self.request.GET.get('page_id')
 
         comment_urn = self.request.data.get('urn')
+        actor = self.request.data.get('actor')
+        comment_id = self.request.data.get('comment_id')
         response = {}
         response['user'] = self.request.user.id
         post = self.get_object()
@@ -1230,10 +1232,10 @@ class PostDeleteView(DestroyAPIView):
                 urn = post_urn.urn
 
                 if comment_urn:
-                    response['message'] = delete_meta_posts_comment(access_token,comment_urn)
+                    response['message'] = delete_meta_posts_comment(access_token, comment_urn)
                     response['request'] = "comment"
                 else:
-                    response['message'] = delete_meta_posts_comment(access_token,urn)
+                    response['message'] = delete_meta_posts_comment(access_token, urn)
                     response['request'] = "post"
 
                     if response['message'] == 'success':
@@ -1244,7 +1246,7 @@ class PostDeleteView(DestroyAPIView):
 
 
             except Exception as e:
-                return 'falied'
+                return 'failed'
 
         elif self.request.GET.get('page_name') == "instagram":
             try:
@@ -1259,24 +1261,28 @@ class PostDeleteView(DestroyAPIView):
                     response['request'] = 'comment'
 
             except Exception as e:
-                return 'falied'
+                return 'failed'
 
         elif self.request.GET.get('page_name') == "linkedin":
             try:
-                urn = post.post_urn.all().filter(pk=page_id).first()
-                post_urn = urn.urn
-                user = urn.org.user
-                social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
-
-                access_token = urn.org.access_token
+                page_post = post.post_urn.all().filter(pk=page_id).first()
+                post_urn = page_post.urn
+                access_token = page_post.org.access_token
 
                 if comment_urn:
-                    pass
+                    response['message'] = delete_linkedin_comments(access_token, post_urn, comment_id, actor)
+                    response['request'] = 'comment'
                 else:
-                    pass
+                    response['message'] = delete_linkedin_posts(access_token, post_urn)
+                    response['request'] = 'post'
+
+                    if response['message'] == 'success':
+                        post.post_urn.remove(page_post)
+                        if len(post.post_urn.all()) == 0:
+                            post.delete()
 
             except Exception as e:
-                return 'falied'
+                return 'failed'
 
         return JsonResponse(response)
 
@@ -1669,9 +1675,6 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
             except Exception as e:
                 data['error'] = e
         elif providertoGetdetails == "linkedin_oauth2":
-
-                # accounts = get_linkedin_user_data(user_access_token, user.id)
-                # linkedin__connected_social_account = SocialAccount.objects.get(user=user.id, provider="linkedin_oauth2")
 
                 try:
                     data = get_linkedin_user_data(user_access_token)

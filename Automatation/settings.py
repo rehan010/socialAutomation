@@ -219,7 +219,7 @@ SOCIALACCOUNT_PROVIDERS = {
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
         'SCOPE': [
-                    'r_emailaddress',
+
                     'r_liteprofile',
                     'openid',
                     'r_ads_reporting',
@@ -227,7 +227,7 @@ SOCIALACCOUNT_PROVIDERS = {
                     'rw_organization_admin',
                     'w_member_social',
                     'r_ads',
-                    'r_emailaddress',
+                    'r_primarycontact',
                     'w_organization_social',
                     'rw_ads',
                     'r_basicprofile',

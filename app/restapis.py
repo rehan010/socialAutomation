@@ -483,9 +483,29 @@ def get_linkedin_user_data(accesstoken):
         data['description'] = response['localizedHeadline']
         data['name'] = first_name + "" + last_name
 
+        url = "https://api.linkedin.com/v2/clientAwareMemberHandles?q=members&projection=(elements*(primary,type,handle~))"
+
+        payload = {}
+        headers = {
+            'X-Restli-Protocol-Version': '2.0.0',
+            'Linkedin-Version': '202304',
+            'Authorization': 'Bearer ' + accesstoken,
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+        if response.status_code == 200:
+            response = response.json()
+            if 'elements' in response and isinstance(response['elements'], list) and len(response['elements']) > 0:
+                element = response['elements'][0]
+                if 'handle~' in element and isinstance(element['handle~'], dict) and 'emailAddress' in element['handle~']:
+                    data['email'] = element['handle~']['emailAddress']
+                else:
+                    data['email'] = ''
+            else:
+                data['email'] = ''
         return data
     else:
-        data = {'name': '', 'job': "", 'display_image': ''}
+        data = {'name': '', 'job': "", 'display_image': '', 'email': ''}
         return data
 
 
@@ -1150,6 +1170,7 @@ def get_nested_comments(access_token, comment_urn):
                 text = element['message']['text']
                 actor = element['actor']
                 comment_urn = element['$URN']
+                comment_id = element['id']
                 prefix, value = actor.rsplit(':', 1)
                 if prefix == 'urn:li:organization':
                     url = "https://api.linkedin.com/v2/organizations/" + value + "?projection=(localizedName,logoV2(original~:playableStreams))"
@@ -1169,7 +1190,7 @@ def get_nested_comments(access_token, comment_urn):
                     else:
                         display_image = ''
                     name = response['localizedName']
-                    obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn, "urls": urls, 'liked': liked}
+                    obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn, "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
                     replies.append(obj)
                 else:
                     url = "https://api.linkedin.com/v2/people/(id:" + value + ")?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))"
@@ -1191,7 +1212,7 @@ def get_nested_comments(access_token, comment_urn):
                         display_image = ''
                     name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized']['en_US']
 
-                    obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn, "urls": urls, 'liked': liked}
+                    obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn, "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
                     replies.append(obj)
         else:
             # print("No Replies on Comments")
@@ -1468,6 +1489,7 @@ def ugcpost_socialactions(urn, access_token_string,linkedin_post):
                         urls.append(content['url'])
             actor = element.get('actor')
             comment_urn = element.get('$URN')
+            comment_id = element.get('id')
             if 'likesSummary' in element:
                 liked = element['likesSummary']['likedByCurrentUser']
             else:
@@ -1499,7 +1521,7 @@ def ugcpost_socialactions(urn, access_token_string,linkedin_post):
                     else:
                         display_image = ''
                     name = response['localizedName']
-                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls ,"comment_urn": comment_urn,'liked':liked}
+                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls ,"comment_urn": comment_urn,'liked':liked, "comment_id": comment_id, "actor": actor}
                     obj['replies'] = replies
 
                     data.append(obj)
@@ -1524,11 +1546,11 @@ def ugcpost_socialactions(urn, access_token_string,linkedin_post):
                     name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized']['en_US']
 
 
-                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,"comment_urn": comment_urn,'liked':liked}
+                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,"comment_urn": comment_urn,'liked':liked, "comment_id": comment_id, "actor": actor}
                     obj['replies'] = replies
                     data.append(obj)
             else:
-                obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "",'liked': False}
+                obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", 'liked': False, "comment_id": "", "actor": ""}
                 replies = None
                 obj['replies'] = replies
                 data.append(obj)
@@ -1588,6 +1610,7 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                         urls.append(content['url'])
             actor = element.get('actor')
             comment_urn = element.get('$URN')
+            comment_id = element.get('id')
             if 'likesSummary' in element:
                 liked = element['likesSummary']['likedByCurrentUser']
             else:
@@ -1619,7 +1642,7 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                     else:
                         display_image = ''
                     name = response['localizedName']
-                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,"comment_urn": comment_urn,"liked":liked}
+                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,"comment_urn": comment_urn,"liked":liked, "comment_id": comment_id, "actor" : actor}
                     obj['replies'] = replies
                     data.append(obj)
                 else:
@@ -1644,11 +1667,11 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                         display_image = ''
                     name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized']['en_US']
 
-                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,"comment_urn": comment_urn,"liked":liked}
+                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,"comment_urn": comment_urn,"liked":liked, "comment_id": comment_id, "actor" : actor}
                     obj['replies'] = replies
                     data.append(obj)
             else:
-                obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", "liked": False}
+                obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", "liked": False, "comment_id": "", "actor": ""}
                 replies = None
                 obj['replies'] = replies
                 data.append(obj)
@@ -2601,32 +2624,6 @@ def instagram_details(access_token,instagram_id):
     return data
 
 
-def linkedin_details(access_token,linkedin_id):
-
-    # "https://graph.facebook.com/v17.0/{id}?fields=name,profile_picture_url,username"
-    url = f"https://graph.facebook.com/v17.0/{instagram_id}?fields=name,biography,username"
-
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-
-    response = requests.get(url = url,headers =headers)
-    data = {}
-
-    if response.status_code == 200:
-        response = response.json()
-        data['name'] = response.get('name')
-        data['username'] = response.get('username')
-        data['description'] = response.get('biography')
-        data['profile_picture'] = response.get('profile_picture_url')
-
-    else:
-        data['error'] = 'failed to fetch data. Unexpected Error has occurred'
-
-    return data
-
-
-
 
 def fb_page_insights(access_token,page_id):
 
@@ -2936,7 +2933,7 @@ def instagram_post_insights(urn_list,urn):
         total_comments += data[1]['values'][0]['value']
 
 
->>>>>>> Stashed changes
+
 
 
 # def instagram_count_media(access_token, instagram_id, since, until= int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
@@ -3126,6 +3123,39 @@ def delete_meta_posts_comment(access_token,id):
 
 
 
-# def delete_instagram_post_comment(access_token,id):
-#     pass
+def delete_linkedin_posts(access_token,id):
+    encoded_urn = quote(id, safe='')
+    url = "https://api.linkedin.com/rest/posts/" + encoded_urn
+
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    response = requests.delete(url, headers=headers)
+
+    if response.status_code == 204:
+        return 'success'
+    else:
+        return 'failed'
+
+
+def delete_linkedin_comments(access_token, post_urn, comment_id, actor):
+    encoded_urn = quote(post_urn, safe='')
+    encoded_actor = quote(actor, safe='')
+    url = 'https://api.linkedin.com/rest/socialActions/' + encoded_urn + '/comments/' + comment_id +'?actor=' + encoded_actor
+
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    response = requests.delete(url, headers=headers)
+
+    if response.status_code == 204:
+        return 'success'
+    else:
+        return 'failed'
 
