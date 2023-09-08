@@ -324,7 +324,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 user_permission = role.permission
                 if user_permission == 'HIDE':
 
-                    total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED',is_deleted = False)
+                    total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED', is_deleted=False)
                     sharepages = SharePage.objects.filter(user=self.request.user)
 
                 else:
@@ -462,6 +462,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             linkedin_post_today = user_post.filter(post_urn__org__provider = "linkedin").distinct().count()
             linkedin_likes_today = 0
             linkedin_comments_today = 0
+            linkedin_new_followers = 0
             if len(linkedin_org) > 0:
                 for page in linkedin_org:
 
@@ -486,6 +487,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     result = linkedin_followers_today(org_id, access_token, start)
                     followers = result
                     followers_today += followers
+                    linkedin_new_followers += followers
                     result = linkedin_followers(org_id, access_token)
                     followers_ovr = result
                     followers_overall += followers_ovr
@@ -494,6 +496,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             facebook_post_today = user_post.filter(post_urn__org__provider = "facebook").distinct().count()
             facebook_likes_today = 0
             facebook_comments_today = 0
+            facebook_new_followers = 0
             if len(fb_org) > 0:
                 for page in fb_org:
                     page_id = page.org_id
@@ -505,6 +508,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     newfollowers_today = result[2]
 
                     followers_today += newfollowers_today
+                    facebook_new_followers += newfollowers_today
                     facebook_likes_today += likes
                     facebook_comments_today += comments
 
@@ -551,7 +555,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             context['facebook_post_today'] = facebook_post_today
             context['instagram_post_today'] = instagram_post_today
             context['followers_today'] = followers_today
+            context['facebook_new_followers'] = facebook_new_followers
             context['followers_overall'] = followers_overall
+            context['linkedin_new_followers'] = linkedin_new_followers
 
 
         return context
@@ -1109,111 +1115,43 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user_manager = self.request.user.manager
+
         if user_manager != None:
             role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
-            user_role = role.role
             user_permission = role.permission
             if user_permission == 'HIDE':
-                provider_name = "linkedin"
-                if len(PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name)) > 0:
-
-                    linkedin_post = PostModel.objects.filter(user=self.request.user.pk,
-                                                             prepost_page__provider=provider_name).distinct()
-                else:
-                    linkedin_post = ''
-
-                provider_name1 = "facebook"
-                provider_name2 = "instagram"
-                if len(PostModel.objects.filter(
-                        Q(prepost_page__provider=provider_name1) | Q(prepost_page__provider=provider_name2),
-                        user=self.request.user.pk)) > 0:
-
-                    # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
-                    facebook_post = PostModel.objects.filter(user=self.request.user.pk,
-                                                             prepost_page__provider=provider_name1).distinct()
-                    instagram_post = PostModel.objects.filter(user=self.request.user.pk,
-                                                              prepost_page__provider=provider_name2).distinct()
-
-                else:
-                    facebook_post = ''
-                    instagram_post = ''
-
-                provider_name3 = "Google Books"
-
-                if len(PostModel.objects.filter(user=self.request.user.pk, prepost_page__provider=provider_name3)) > 0:
-                    google_post = PostModel.objects.filter(user=self.request.user.pk,
-                                                           prepost_page__provider=provider_name3).distinct()
-                else:
-                    google_post = ''
+                posts = PostModel.objects.filter(user=self.request.user, is_deleted=False)
             else:
-                provider_name = "linkedin"
-                posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user=self.request.user.manager.id))
+                posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager), is_deleted=False)
 
-
-                if len(posts.filter(prepost_page__provider=provider_name)) > 0:
-                    linkedin_post = posts.filter(prepost_page__provider=provider_name).distinct()
-                else:
-                    linkedin_post = ''
-
-                provider_name1 = "facebook"
-                provider_name2 = "instagram"
-
-                if len(posts.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2))) > 0:
-
-                    facebook_post = posts.filter(prepost_page__provider=provider_name1).distinct()
-                    instagram_post = posts.filter(prepost_page__provider=provider_name2).distinct()
-
-                else:
-                    facebook_post = ''
-                    instagram_post = ''
-
-                provider_name3 = "Google Books"
-
-                if len(posts.filter(prepost_page__provider=provider_name3)) > 0:
-                    google_post = posts.filter(prepost_page__provider=provider_name3).distinct()
-                else:
-                    google_post = ''
         else:
-            invited = InviteEmploye.objects.filter(invited_by=self.request.user,status = "ACCEPTED")
+            invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
             invites = []
             for user in invited:
                 invited_users_id = user.selected_user.id
                 invites.append(invited_users_id)
-            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted = False)
+            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted=False)
 
-            provider_name = "linkedin"
-            if len(posts.filter(prepost_page__provider=provider_name)) > 0:
-
-                linkedin_post = posts.filter(prepost_page__provider=provider_name).distinct()
-            else:
-                linkedin_post = ''
-
-            provider_name1 = "facebook"
-            provider_name2 = "instagram"
-            if len(posts.filter(Q(prepost_page__provider=provider_name1)|Q(prepost_page__provider=provider_name2))) > 0:
-
-
-            # facebook_post = PostModel.objects.filter(post_urn__org__provider=provider_name1)
-                facebook_post = posts.filter(prepost_page__provider=provider_name1).distinct()
-                instagram_post = posts.filter(prepost_page__provider=provider_name2).distinct()
-
-            else:
-                facebook_post = ''
-                instagram_post = ''
-
-
-            provider_name3 = "Google Books"
-
-            if len(posts.filter(prepost_page__provider=provider_name3)) > 0:
-                google_post = posts.filter(prepost_page__provider=provider_name3).distinct()
-            else:
-                google_post = ''
-
+        if len(posts.filter(prepost_page__provider="linkedin")) > 0:
+            linkedin_post = posts.filter(prepost_page__provider="linkedin").distinct()
+        else:
+            linkedin_post = ''
+        if len(posts.filter(prepost_page__provider="facebook")) > 0:
+            facebook_post = posts.filter(prepost_page__provider="facebook").distinct()
+        else:
+            facebook_post = ''
+        if len(posts.filter(prepost_page__provider="instagram")) > 0:
+            instagram_post = posts.filter(prepost_page__provider="instagram").distinct()
+        else:
+            instagram_post = ''
+        if len(posts.filter(prepost_page__provider="Google Books")) > 0:
+            google_post = posts.filter(prepost_page__provider="Google Books").distinct()
+        else:
+            google_post = ''
 
         context = {
-            # 'ids': ids,
-            # 'data_list': data_list,
             'posts': PostModel.objects.filter(user_id=self.request.user.id),
+
             'google_post': google_post,
 
             'instagram_post': instagram_post,
