@@ -110,7 +110,7 @@ def fb_social_action_data_organizer(elements,headers):
                 else:
                     display_image = ''
 
-                obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn}
+                obj = {'name': name, "profile_image": display_image, "text": text,'user_id':actor, "comment_urn": comment_urn}
                 urls = []
                 if element.get('attachment'):
                     attachment = element.get('attachment')
@@ -133,19 +133,30 @@ def fb_social_action_data_organizer(elements,headers):
                 data.append(obj)
 
             else:
-                obj = {'name': "", "profile_image": "", "text": "", "comment_urn": "","urls":[]}
+                obj = {'name': "", "profile_image": "", "text": "", "comment_urn": "",'user_id':'',"urls":[]}
                 obj['replies'] = {}
                 data.append(obj)
     return data
 
 
-def fb_socialactions(post_urn, access_token):
+def fb_socialactions(post_urn, access_token,page_id):
 
 
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
+
+    url = f"https://graph.facebook.com/v17.0/{page_id}?fields=picture{{url}}"
+
+    response = requests.get(url=url, headers=headers)
+
+    profile_picture_url = response.json()['picture']['data']['url']
+
     try:
+
+
+
+
         url = f"https://graph.facebook.com/{post_urn}?fields=likes.summary(true),comments.summary(true),post_id"
 
         response = requests.get(url=url, headers=headers)
@@ -197,7 +208,7 @@ def fb_socialactions(post_urn, access_token):
     elements = response_json2.get("data")
 
     data = fb_social_action_data_organizer(elements, headers)
-    return t_likes, t_comments, data
+    return t_likes, t_comments, data , profile_picture_url
 
 
 def insta_social_actions_data_organizer(elements,headers):
@@ -207,20 +218,25 @@ def insta_social_actions_data_organizer(elements,headers):
             text = element["text"]
             comment_urn = element['id']
             if element and len(elements) > 0:
-                actor = element['from']['id']
+                name = element['from']['username']
 
-                url = f"https://graph.facebook.com/v17.0/{actor}?fields=profile_picture_url,name"
+                actor = element.get('user',{}).get('id')
 
-                response_2 = requests.get(url=url, headers=headers)
+                if actor:
 
-                response_json_2 = response_2.json()
+                    url = f"https://graph.facebook.com/v17.0/{actor}?fields=profile_picture_url"
 
-                if "profile_picture_url" in response_json_2:
-                    display_image = response_json_2.get("profile_picture_url")
+                    response_2 = requests.get(url=url, headers=headers)
+
+                    response_json_2 = response_2.json()
+
+                    if "profile_picture_url" in response_json_2:
+                        display_image = response_json_2.get("profile_picture_url")
+                    else:
+                        display_image = ""
                 else:
                     display_image = ""
 
-                name = response_json_2.get("name")
 
                 obj = {'name': name, "profile_image": display_image, "text": text, 'comment_urn': comment_urn}
 
@@ -234,22 +250,32 @@ def insta_social_actions_data_organizer(elements,headers):
                 data.append(obj)
     return data
 
-def insta_socialactions(post_urn,access_token):
-
-    url = f"https://graph.facebook.com/{post_urn}?fields=like_count,comments_count"
-
+def insta_socialactions(post_urn,access_token,user_id):
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
+
+
+    url = f"https://graph.facebook.com/{user_id}?fields=profile_picture_url"
+
+    response = requests.get(url =url, headers = headers)
+
+
+    profile_picture_url = response.json()['profile_picture_url']
+
+
+
+
+
+    url = f"https://graph.facebook.com/{post_urn}?fields=like_count,comments_count"
+
+
 
     response = requests.get(url=url, headers=headers)
 
     response_json = response.json()
 
-
-
     t_likes = response_json.get("like_count")
-
 
     t_comments = response_json.get("comments_count")
 
@@ -259,7 +285,7 @@ def insta_socialactions(post_urn,access_token):
     form.save()
 
 
-    url = f"https://graph.facebook.com/v17.0/{post_urn}/comments/?fields=from,text,like_count,media,replies{{like_count,from,text}}"
+    url = f"https://graph.facebook.com/v17.0/{post_urn}/comments/?fields=from,text,like_count,media,user,replies{{like_count,from,text,user}}"
 
     response = requests.get(url=url,headers=headers)
 
@@ -269,7 +295,7 @@ def insta_socialactions(post_urn,access_token):
 
     data = insta_social_actions_data_organizer(elements,headers)
 
-    return t_likes, t_comments, data
+    return t_likes, t_comments, data , profile_picture_url
 
 
 

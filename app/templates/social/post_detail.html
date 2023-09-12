@@ -50,9 +50,11 @@
             <header class="border-b border-grey-400">
                 <a href="#"
                    class="block cursor-pointer py-4 flex items-center text-sm outline-none focus:outline-none focus:border-gray-300 transition duration-150 ease-in-out">
-                    <img src="https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&h=750&w=1260"
-                         class="h-9 w-9 rounded-full object-cover"
-                         alt="user"/>
+                    {% if picture_url %}
+                        <img src="{{ picture_url }}" class="h-10 w-10 rounded-full object-cover" />
+                    {% else %}
+                        <img class="h-10 w-10 rounded-full object-cover" src="{% static 'image/default.png' %}" alt="user"/>
+                    {% endif %}
                     <span class="block ml-2 font-bold text-black ">{{ posted_on }}</span>
                     <div class="flex ml-auto relative">
                         <span class="text-xs text-gray-600" >{{ post.created_at }}</span>
@@ -230,6 +232,7 @@
         {% if post.comment_check %}
         {% for comment in data %}
         <input type="hidden" name="comment_urn" value="{{ comment.comment_urn }}">
+        <input type="hidden" name="user_id" value="{{comment.user_id}}">
         <div class="w-full  rounded-lg p-3">
             <div class="flex items-start bg-gray-50 space-x-4">
                 {% if comment.profile_image %}

@@ -715,7 +715,7 @@
           loader.classList.add('hidden');
           platformIcon.classList.remove('hidden');
 
-          if(!pages){
+          if(pages.length === 0){
             platformButton.disabled = true;
             platformButton.classList.add('relative')
             const tooltip = document.createElement('div');

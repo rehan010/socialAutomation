@@ -565,11 +565,25 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 class PasswordResetView(auth_views.PasswordResetView):
     template_name = "registration/my_password_reset_form.html"
+    success_url = reverse_lazy('my_password_reset')
+    
+    def get_success_url(self):
+        return self.success_url + "?reset=done"
+
+
 
 
 class PasswordResetDoneView(auth_views.PasswordResetDoneView):
     template_name = "registration/my_password_reset_done.html"
     success_url = reverse_lazy("password_change_done")
+
+class PasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = "registration/password_reset_confirm.html"
+    success_url = reverse_lazy("login")
+    
+
+
+
 
 
 class ConnectPageView(LoginRequiredMixin, CreateView):
@@ -936,11 +950,13 @@ class PageDataView(APIView):
                 access_token[_.user.username][_.provider] = SocialToken.objects.filter(account_id=_)[0].token
 
         # Making Data
+        data["facebook"] = []
+        data["instagram"] = []
+        data['linkedin'] = []
         for _ in social:
             # For Faceboook
             if _.provider == 'facebook':
-                data["facebook"] = []
-                data["instagram"] = []
+
                 page_data = facebook_page_data(access_token.get(_.user.username).get("facebook"),access_token[_.user.username]['id'])
                 data["facebook"] += page_data
                 insta_data = get_instagram_user_data(access_token.get(_.user.username).get("facebook"),access_token[_.user.username]['id'])
@@ -950,7 +966,7 @@ class PageDataView(APIView):
 
 
             if _.provider == 'linkedin_oauth2':
-                data['linkedin'] = []
+
                 linkedin_page = linkedin_get_user_organization(access_token.get(_.user.username).get("linkedin_oauth2"),access_token[_.user.username]['id'])
                 data['linkedin'] += linkedin_page
 
@@ -1291,6 +1307,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                         no_comments = result[1]
                         data = result[2]
 
+
             context = {
                 'ids': urn,
                 'no_likes': no_likes,
@@ -1317,10 +1334,11 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             if urn == '' or urn == None:
                 pass
             else:
-                result = fb_socialactions(urn, access_token_string)
+                result = fb_socialactions(urn, access_token_string,org_id)
                 no_likes = result[0]
                 no_comments = result[1]
                 data = result[2]
+                picture_url = result[3]
 
             context = {
                 'ids': urn,
@@ -1328,6 +1346,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'is_liked': is_liked,
                 'no_comments': no_comments,
                 'data': data,
+                'picture_url':picture_url,
                 'posts': PostModel.objects.filter(user_id=self.request.user.id),
                 'post': facebook_post,
                 'posted_on': posted_on,
@@ -1349,10 +1368,11 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 pass
             else:
 
-                result = insta_socialactions(urn, access_token)
+                result = insta_socialactions(urn, access_token,org_id)
                 no_likes = result[0]
                 no_comments = result[1]
                 data = result[2]
+                picture_url = result[3]
 
 
             context = {
@@ -1360,6 +1380,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'no_likes': no_likes,
                 'no_comments': no_comments,
                 'data': data,
+                 'picture_url':picture_url,
                 'posts': PostModel.objects.filter(user_id=self.request.user.id),
                 'post': instagram_post,
                 'posted_on': posted_on,
@@ -1401,6 +1422,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
     def post(self, request, **kwargs):
         comment = self.request.POST.get('comment')
         comment_urn_list = request.POST.getlist('comment_urn')
+        user_id_list = request.POST.getlist('user_id')
         media = request.FILES.get('comment_media')
         post_id = self.kwargs['post_id']
         page_id = self.kwargs['page_id']
@@ -1408,14 +1430,15 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         reply_list = request.POST.getlist('reply')
         reply_data = {}
         reply_media_counter = 1
-        for comment_urn, reply in zip(comment_urn_list, reply_list):
+        for comment_urn, reply,user_id in zip(comment_urn_list, reply_list,user_id_list):
             reply_data[comment_urn] = [reply]
             reply_media = request.FILES.get(f"reply_media_{reply_media_counter}")
             reply_data[comment_urn].append(reply_media)
+            reply_data[comment_urn].append(user_id)
             reply_media_counter = reply_media_counter+1
 
 
-        if comment != ''  or media != None and len(reply_list)==0:
+        if comment != ''  or media != None and len(reply_list) == 0:
             if self.request.GET.get('page_name') == 'linkedin':
                 provider_name = "linkedin"
                 linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
@@ -1494,6 +1517,20 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                     #     media = reply[1]
                     #     result = post_nested_comment_media_linkedin(social,access_token,post_urn,reply[0],comment_urn, media,org_id)
             elif self.request.GET.get('page_name') == 'facebook':
+
+
+                # message = reply_data[0]
+                # message_split = message.split(" ")
+                # for x in range(len(message_split)):
+                #     if "@" in message_split[x]:
+                #         element = message_split[x]
+                #         newelement = f"@[{{{reply[2]}}}]"
+                #         message_split[x] = newelement
+                #
+                # message = message.join(" ")
+                # reply_data[0] = message
+
+
                 provider_name = "facebook"
                 facebook_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,
                                                       post_urn__pk=page_id)
@@ -1502,6 +1539,17 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
                 access_token = post_urn.org.access_token
                 for comment_urn, reply in reply_data.items():
+
+                    message = reply[0]
+                    message_split = message.split(" ")
+                    for x in range(len(message_split)):
+                        if "@" in message_split[x]:
+                            element = message_split[x]
+                            newelement = f"@[{reply[2]}]"
+                            message_split[x] = newelement
+
+                    message = " ".join(message_split)
+                    reply[0] = message
                     if reply[0] != '' or reply[1]!=None:
                         result = meta_nested_comment(comment_urn, reply[0], reply[1], access_token, provider_name)
                     else:
@@ -1573,15 +1621,39 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
             selected_user = InviteEmploye.objects.get(selected_user=self.request.user,
                                                       invited_by=self.request.user.manager)
             role = selected_user.role
-
+            permission = selected_user.permission
 
             if role == "ADMIN":
+                invited_employees = InviteEmploye.objects.filter(Q(permission="WRITE") | Q(permission="READ"),
+                                                                 invited_by=user)
+
+                invited_employees_list = []
+
+                for user in invited_employees:
+                    employee_id = user.selected_user.id
+                    invited_employees_list.append(employee_id)
+
+                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user__in=invited_employees_list) | Q(user=user_manager.id),
+                                                      provider=provider_name)
+
+
+            elif (role == "MEMBER" and (permission == "READ" or permission == "WRITE")):
                 social = SocialAccount.objects.filter(Q(user=user.id) | Q(user=user_manager.id), provider=provider_name)
+
             else:
                 social = SocialAccount.objects.filter(Q(user=user.id), provider=provider_name)
 
         else:
-            social = SocialAccount.objects.filter(Q(user=user.id), provider=provider_name)
+            invited_employees = InviteEmploye.objects.filter(Q( permission = "WRITE" ) | Q( permission = "READ" ) , invited_by = user)
+
+            invited_employees_list = []
+
+            for user in invited_employees:
+                employee_id = user.selected_user.id
+                invited_employees_list.append(employee_id)
+
+
+            social = SocialAccount.objects.filter(Q(user=user.id) |Q(user__in=invited_employees_list), provider=provider_name)
         access_token = {}
         data = {}
 
@@ -1684,7 +1756,9 @@ class EditUserView(LoginRequiredMixin,UpdateView):
         invalid_form.context_data['user'] = self.request.user
         return invalid_form
 
+    def get_object(self, queryset=None):
 
+        return self.request.user
 
 
 class LikeApiView(APIView):
