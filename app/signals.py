@@ -4,11 +4,11 @@
 
 from django.urls import reverse
 from .restapis import *
-from .models import PostModel,SharePage,ImageModel
+from .models import PostModel,SharePage,Post_urn
 from celery import shared_task
 
 from allauth.socialaccount.models import SocialAccount, SocialToken ,SocialApp
-
+import datetime
 
 from django.dispatch import receiver
 from django.urls import reverse_lazy
@@ -19,7 +19,7 @@ from django.shortcuts import redirect, reverse
 from datetime import datetime
 from django.core.exceptions import PermissionDenied
 
-from datetime import datetime
+from datetime import datetime, timezone ,timedelta
 from django.utils import timezone
 
 from django.db.models.signals import m2m_changed, pre_delete
@@ -131,7 +131,6 @@ def publish_post_on_social_media(instance):
     # Put your code to publish the post on the social media platform here
     # For example, if the post platform is "linkedin," use your existing code to publish on LinkedIn
     # Remember to handle any exceptions that may occur during the publishing process
-    print(1)
     share_page = instance.prepost_page.all()
     images = instance.images.all()
     print(images)
@@ -246,3 +245,37 @@ def schedule_signals_task(instance):
 @shared_task
 def schedule_publish_task(instance):
     publish_post_on_social_media(instance)
+
+
+@shared_task
+def gather_post_insight(instance):
+    print("Executing gather post insights")
+    try:
+        since = datetime.now(timezone.utc).replace(minute=0,hour=0,second=0,microsecond=0)
+        until = datetime.now(timezone.utc)
+        post_urns = Post_urn.objects.filter(org=instance).values_list('urn', flat=True)
+        print(instance.provider)
+        if instance.provider == "facebook":
+            fb_post_insights(post_urns,instance,since,until)
+        elif instance.provider == "instagram":
+
+            since = datetime.now(timezone.utc) - timedelta(days=1)
+            until = datetime.now(timezone.utc)
+
+            instagram_account_insights(instance , since , until)
+        elif instance.provider == "linkedin":
+            linkedin_share_stats(instance, since, until)
+
+
+
+        else:
+            pass
+
+
+    except Exception as e:
+        print(e)
+
+
+
+
+

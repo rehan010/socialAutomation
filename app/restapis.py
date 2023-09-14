@@ -16,13 +16,15 @@ from allauth.socialaccount.models import SocialToken
 from django.shortcuts import redirect
 import requests
 from django.http import JsonResponse
-from urllib.parse import quote,urlparse
+from urllib.parse import quote, urlparse
 
 import json
 from django.conf import settings
 
 import string
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+
+
 @api_view(['GET'])
 def instagramapi(request):
     access_token = request.headers.get('Authorization')
@@ -32,25 +34,25 @@ def instagramapi(request):
         "Authorization": f"Bearer {access_token}"
     }
 
-    response = requests.get(url,headers=headers)
+    response = requests.get(url, headers=headers)
     account_id = response.json().get('data')[0].get("instagram_business_account")["id"]
 
-    accountinfo = getUserdata(account_id,access_token)
-    media = getmedia(account_id,access_token) # Getting Media from end point
-    return Response({"media":media,"account_info":accountinfo})
+    accountinfo = getUserdata(account_id, access_token)
+    media = getmedia(account_id, access_token)  # Getting Media from end point
+    return Response({"media": media, "account_info": accountinfo})
 
 
-def getmedia(accountid,access_token):
+def getmedia(accountid, access_token):
     url = f"https://graph.facebook.com/v17.0/{accountid}/media?fields=id,ig_id,media_product_type,media_type,media_url,thumbnail_url,timestamp, username,like_count,comments_count,comments,caption"
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
-    response = requests.get(url,headers=headers)
+    response = requests.get(url, headers=headers)
     # print(response.json())
 
     metric = {
 
-        'metric':'engagement,impressions,reach'
+        'metric': 'engagement,impressions,reach'
     }
 
     i = 0
@@ -61,14 +63,11 @@ def getmedia(accountid,access_token):
         mediaid = _.get("id")
         # print(mediaid)
         url = f"https://graph.facebook.com/{mediaid}/insights"
-        insightsresponse = requests.get(url,headers=headers,params=metric)
+        insightsresponse = requests.get(url, headers=headers, params=metric)
         # print(insightsresponse.json())
         insightsdata = insightsresponse.json()["data"]
         # print(insightsdata)
         # break
-
-
-
 
         data_wrt_media = {}
 
@@ -83,15 +82,13 @@ def getmedia(accountid,access_token):
         if _.get("comments"):
             data_wrt_media['comments'] = _.get("comments")['data'][0]['text']
 
-
-
         data[f"image{i}"] = data_wrt_media
-        i = i+1
-
+        i = i + 1
 
     return data
 
-def fb_social_action_data_organizer(elements,headers):
+
+def fb_social_action_data_organizer(elements, headers):
     data = []
     if elements:
         for element in elements:
@@ -110,7 +107,8 @@ def fb_social_action_data_organizer(elements,headers):
                 else:
                     display_image = ''
 
-                obj = {'name': name, "profile_image": display_image, "text": text,'user_id':actor, "comment_urn": comment_urn}
+                obj = {'name': name, "profile_image": display_image, "text": text, 'user_id': actor,
+                       "comment_urn": comment_urn}
                 urls = []
                 if element.get('attachment'):
                     attachment = element.get('attachment')
@@ -126,22 +124,19 @@ def fb_social_action_data_organizer(elements,headers):
                 obj['liked'] = element.get('user_likes')
 
                 if element.get('comments'):
-
                     comments = element.get('comments').get('data')
-                    obj['replies'] = fb_social_action_data_organizer(comments,headers)
+                    obj['replies'] = fb_social_action_data_organizer(comments, headers)
 
                 data.append(obj)
 
             else:
-                obj = {'name': "", "profile_image": "", "text": "", "comment_urn": "",'user_id':'',"urls":[]}
+                obj = {'name': "", "profile_image": "", "text": "", "comment_urn": "", 'user_id': '', "urls": []}
                 obj['replies'] = {}
                 data.append(obj)
     return data
 
 
-def fb_socialactions(post_urn, access_token,page_id):
-
-
+def fb_socialactions(post_urn, access_token, page_id):
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
@@ -154,9 +149,6 @@ def fb_socialactions(post_urn, access_token,page_id):
 
     try:
 
-
-
-
         url = f"https://graph.facebook.com/{post_urn}?fields=likes.summary(true),comments.summary(true),post_id"
 
         response = requests.get(url=url, headers=headers)
@@ -166,7 +158,7 @@ def fb_socialactions(post_urn, access_token,page_id):
         if response_json.get('post_id') == None:
             raise Exception("Response not Valid")
 
-        post = Post_urn.objects.get(urn = post_urn)
+        post = Post_urn.objects.get(urn=post_urn)
         org_id = post.org.org_id
         post.urn = org_id + "_" + response_json.get('post_id')
         post.save()
@@ -180,13 +172,9 @@ def fb_socialactions(post_urn, access_token,page_id):
 
         response_json = response.json()
 
+    t_likes = response_json.get("reactions", {}).get("summary", {}).get("total_count", {})
 
-
-
-
-    t_likes = response_json.get("reactions",{}).get("summary",{}).get("total_count",{})
-
-    t_comments = response_json.get("comments",{}).get("summary",{}).get("total_count",{})
+    t_comments = response_json.get("comments", {}).get("summary", {}).get("total_count", {})
 
     try:
         post = Post_urn.objects.get(urn=post_urn)
@@ -198,20 +186,20 @@ def fb_socialactions(post_urn, access_token,page_id):
 
     url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from,reactions,attachment,user_likes,comments{{message,created_time,from,reactions,attachment,user_likes,comments{{message, created_time,from, reactions, attachment,user_likes}}}}"
 
-#     comments{message,created_time,from}  field to get replies
+    #     comments{message,created_time,from}  field to get replies
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
-    response = requests.get(url=url,headers=headers)
+    response = requests.get(url=url, headers=headers)
     response_json2 = response.json()
 
     elements = response_json2.get("data")
 
     data = fb_social_action_data_organizer(elements, headers)
-    return t_likes, t_comments, data , profile_picture_url
+    return t_likes, t_comments, data, profile_picture_url
 
 
-def insta_social_actions_data_organizer(elements,headers):
+def insta_social_actions_data_organizer(elements, headers):
     data = []
     if elements:
         for element in elements:
@@ -220,7 +208,7 @@ def insta_social_actions_data_organizer(elements,headers):
             if element and len(elements) > 0:
                 name = element['from']['username']
 
-                actor = element.get('user',{}).get('id')
+                actor = element.get('user', {}).get('id')
 
                 if actor:
 
@@ -237,39 +225,31 @@ def insta_social_actions_data_organizer(elements,headers):
                 else:
                     display_image = ""
 
-
                 obj = {'name': name, "profile_image": display_image, "text": text, 'comment_urn': comment_urn}
 
                 if element.get('replies'):
                     replies = element.get('replies').get('data')
-                    obj['replies'] = insta_social_actions_data_organizer(replies,headers)
+                    obj['replies'] = insta_social_actions_data_organizer(replies, headers)
 
                 data.append(obj)
             else:
-                obj = {'name': "", "profile_image": "", "text": "", "comment_urn": "","replies" :""}
+                obj = {'name': "", "profile_image": "", "text": "", "comment_urn": "", "replies": ""}
                 data.append(obj)
     return data
 
-def insta_socialactions(post_urn,access_token,user_id):
+
+def insta_socialactions(post_urn, access_token, user_id):
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
 
-
     url = f"https://graph.facebook.com/{user_id}?fields=profile_picture_url"
 
-    response = requests.get(url =url, headers = headers)
-
+    response = requests.get(url=url, headers=headers)
 
     profile_picture_url = response.json()['profile_picture_url']
 
-
-
-
-
     url = f"https://graph.facebook.com/{post_urn}?fields=like_count,comments_count"
-
-
 
     response = requests.get(url=url, headers=headers)
 
@@ -284,31 +264,20 @@ def insta_socialactions(post_urn,access_token,user_id):
     form.post_comments = t_comments
     form.save()
 
-
     url = f"https://graph.facebook.com/v17.0/{post_urn}/comments/?fields=from,text,like_count,media,user,replies{{like_count,from,text,user}}"
 
-    response = requests.get(url=url,headers=headers)
+    response = requests.get(url=url, headers=headers)
 
     response_json_1 = response.json()
 
     elements = response_json_1.get("data")
 
-    data = insta_social_actions_data_organizer(elements,headers)
+    data = insta_social_actions_data_organizer(elements, headers)
 
-    return t_likes, t_comments, data , profile_picture_url
-
-
+    return t_likes, t_comments, data, profile_picture_url
 
 
-
-
-
-
-
-
-
-
-def getUserdata(accountid,access_token):
+def getUserdata(accountid, access_token):
     url = f"https://graph.facebook.com/v17.0/{accountid}?fields=username,follows_count,followers_count,profile_picture_url"
     headers = {
         "Authorization": f"Bearer {access_token}"
@@ -331,13 +300,10 @@ def handle_uploaded_file(file):
     return file_url
 
 
-
 @api_view(['POST'])
 def createpost(request):
-
     access_token = request.POST.get('access_token')
     account_id = request.POST.get("account_id")
-
 
     data = {
         'image_url': f'https://upload.wikimedia.org/wikipedia/commons/4/41/Sunflower_from_Silesia2.jpg',
@@ -350,26 +316,23 @@ def createpost(request):
         "Authorization": f"Bearer {access_token}"
     }
 
-    response = requests.post(url,headers=headers,json=data)
+    response = requests.post(url, headers=headers, json=data)
 
     mediaid = response.json()['id']
     # print(response.json())
 
-
     url = f"https://graph.facebook.com/v17.0/{account_id}/media_publish"
 
     data = {
-        'creation_id':mediaid
+        'creation_id': mediaid
     }
 
-    response = requests.post(url,headers=headers,data=data)
+    response = requests.post(url, headers=headers, data=data)
 
     # print(response.json())
 
-
-
-
     return redirect("instagram_redirect")
+
 
 # Facebook Apis
 
@@ -388,40 +351,35 @@ def facebookapi(request):
         "Authorization": f"Bearer {access_token}"
     }
 
-    response = requests.get(url,headers=headers)
+    response = requests.get(url, headers=headers)
 
     # print(response.json())
-    media = getfacebookmedia(page_id,access_token)
+    media = getfacebookmedia(page_id, access_token)
     context = {
         "image": response.json().get("picture").get("data").get("url"),
-        "name":response.json().get("name"),
-        "followers":response.json().get("followers_count"),
+        "name": response.json().get("name"),
+        "followers": response.json().get("followers_count"),
         "likes": response.json().get("fan_count")
     }
 
-    return Response({"account_info":context,"media":media})
+    return Response({"account_info": context, "media": media})
 
 
-def getfacebookmedia(page_id,access_token):
-
+def getfacebookmedia(page_id, access_token):
     url = f"https://graph.facebook.com/{page_id}/?fields=published_posts{{full_picture,message,reactions{{type}},comments{{message, comments{{message}}, comment_count}}}}"
 
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
 
-    response = requests.get(url,headers=headers)
+    response = requests.get(url, headers=headers)
 
     data = response.json()['published_posts']['data']
-
 
     context = {}
 
     i = 0
     for _ in data:
-
-
-
         dict = {}
 
         dict['full_image'] = _.get("full_picture")
@@ -430,20 +388,16 @@ def getfacebookmedia(page_id,access_token):
         # Showing only one comment and one reply for now
         comments = {}
         comments['comment'] = _.get("comments").get("data")[0].get("message") if _.get("comments") else None
-        dict['comment_count'] = (_.get("comments").get("data")[0].get("comment_count")+1) if comments['comment'] else 0
-        comments['reply'] = _.get("comments").get("data")[0].get("comments").get("data")[0].get("message") if comments.get("comment") and _.get("comments").get("data")[0].get("comments") else None
+        dict['comment_count'] = (_.get("comments").get("data")[0].get("comment_count") + 1) if comments[
+            'comment'] else 0
+        comments['reply'] = _.get("comments").get("data")[0].get("comments").get("data")[0].get(
+            "message") if comments.get("comment") and _.get("comments").get("data")[0].get("comments") else None
 
         dict['comments'] = comments
 
-
-
         context[i] = dict
         # print(context[i])
-        i = i+1
-
-
-
-
+        i = i + 1
 
     return context
 
@@ -469,18 +423,15 @@ def createfacebookpost(request):
     return redirect("facebook_redirect")
 
 
-
-def facebook_page_data(accesstoken,userid):
-
+def facebook_page_data(accesstoken, userid):
     url = "https://graph.facebook.com/v17.0/me/accounts?fields=access_token,id,name,picture{url}"
 
     headers = {
         "Authorization": f"Bearer {accesstoken}"
     }
 
-    response = requests.get(url,headers=headers)
+    response = requests.get(url, headers=headers)
     response = response.json().get('data')
-
 
     for page in response:
         picture = page.pop('picture')
@@ -526,7 +477,8 @@ def get_linkedin_user_data(accesstoken):
             response = response.json()
             if 'elements' in response and isinstance(response['elements'], list) and len(response['elements']) > 0:
                 element = response['elements'][0]
-                if 'handle~' in element and isinstance(element['handle~'], dict) and 'emailAddress' in element['handle~']:
+                if 'handle~' in element and isinstance(element['handle~'], dict) and 'emailAddress' in element[
+                    'handle~']:
                     data['email'] = element['handle~']['emailAddress']
                 else:
                     data['email'] = ''
@@ -538,15 +490,14 @@ def get_linkedin_user_data(accesstoken):
         return data
 
 
-def get_instagram_user_data(accesstoken,userid):
-
+def get_instagram_user_data(accesstoken, userid):
     url = "https://graph.facebook.com/v17.0/me/accounts?fields=instagram_business_account"
 
     headers = {
         "Authorization": f"Bearer {accesstoken}"
     }
 
-    response = requests.get(url,headers=headers)
+    response = requests.get(url, headers=headers)
     accounts = []
 
     for _ in response.json().get('data'):
@@ -555,19 +506,19 @@ def get_instagram_user_data(accesstoken,userid):
 
             try:
                 url = f"https://graph.facebook.com/v17.0/{id}?fields=name,profile_picture_url,username"
-                response = requests.get(url,headers=headers)
+                response = requests.get(url, headers=headers)
                 response = response.json()
                 response['user'] = userid
                 accounts.append(response)
 
             except Exception as e:
-                    # print(e)
-                    e
+                # print(e)
+                e
 
     return accounts
 
 
-def fb_video_post(data,images,post_model,sharepage):
+def fb_video_post(data, images, post_model, sharepage):
     # post = {
     #     "url": images[0].image_url,
     #     "caption": post_model.post
@@ -602,14 +553,13 @@ def fb_video_post(data,images,post_model,sharepage):
     post.save()
 
 
-def instagram_post_single_media(page_id,access_token,media,post,page):
-
+def instagram_post_single_media(page_id, access_token, media, post, page):
     # print("Excuting Single Instagram Post Function")
     url = f"https://graph.facebook.com/v17.0/{page_id}/media/"
     # print(url)
     data = {
         "caption": post.post
-         }
+    }
 
     headers = {
         "Authorization": f"Bearer {access_token}"
@@ -633,7 +583,7 @@ def instagram_post_single_media(page_id,access_token,media,post,page):
             time.sleep(10)
             check_url = f"https://graph.facebook.com/v17.0/{mediaid}?fields=status_code,status,id"
 
-            response = requests.request("GET",url=check_url,headers=headers)
+            response = requests.request("GET", url=check_url, headers=headers)
             status = response.json().get("status_code")
             # print(status)
             if status == "FINISHED":
@@ -644,14 +594,11 @@ def instagram_post_single_media(page_id,access_token,media,post,page):
             else:
                 pass
 
-
     url = f"https://graph.facebook.com/v17.0/{page_id}/media_publish"
 
     data = {
         'creation_id': mediaid
     }
-
-
 
     response = requests.post(url, headers=headers, data=data)
     response = response.json()
@@ -663,7 +610,6 @@ def instagram_post_single_media(page_id,access_token,media,post,page):
     # print("Post Successfull Created")
     post.published_at = timezone.now()
     post.save()
-
 
 
 def linkdein(access_token_string):
@@ -699,10 +645,7 @@ def linkdein(access_token_string):
     response = response.json()
 
 
-
-
 def save_image_from_url(image_url):
-
     response = requests.get(image_url)
     image = Image.open(BytesIO(response.content))
     image = image.convert('RGB')
@@ -712,22 +655,23 @@ def save_image_from_url(image_url):
 
     content_file = ContentFile(image_buffer.getvalue())
 
-
     return content_file
+
+
 def get_file_extension(content_type):
     mime_to_extension = {
         'image/jpeg': 'jpg',  # JPEG image
-        'image/png': 'png',   # PNG image
-        'image/gif': 'gif',   # GIF image
-        'video/mp4': 'mp4',   # MP4 video
+        'image/png': 'png',  # PNG image
+        'image/gif': 'gif',  # GIF image
+        'video/mp4': 'mp4',  # MP4 video
 
     }
 
     return mime_to_extension.get(content_type, 'unknown')
 
-def getmediaid(image,data,post):
 
-    url =f"https://graph.facebook.com/{data['page_id']}/photos?published=false&temporary=true"
+def getmediaid(image, data, post):
+    url = f"https://graph.facebook.com/{data['page_id']}/photos?published=false&temporary=true"
 
     headers = {
         "Authorization": f"Bearer {data['page_access_token']}"
@@ -743,7 +687,8 @@ def getmediaid(image,data,post):
 
     return response.json()
 
-def create_fb_post(page_id,access_token,media,post,sharepage):
+
+def create_fb_post(page_id, access_token, media, post, sharepage):
     data = {
         'page_id': page_id,
         'page_access_token': access_token
@@ -763,11 +708,7 @@ def create_fb_post(page_id,access_token,media,post,sharepage):
         facebook_post_multiimage(data, [], post, sharepage)
 
 
-
-
-
-def facebook_post_multiimage(data,images,post,sharepage):
-
+def facebook_post_multiimage(data, images, post, sharepage):
     url = f"https://graph.facebook.com/{data['page_id']}/feed"
     data_post = {
         "message": post.post
@@ -778,18 +719,18 @@ def facebook_post_multiimage(data,images,post,sharepage):
     # i = 0
     if len(images) != 0:
         for _ in range(len(images)):
-            response_id = getmediaid(images[_], data,post)["id"]
+            response_id = getmediaid(images[_], data, post)["id"]
             images[_].image_posted = response_id
             images[_].save()
             data_post[f"attached_media[{_}]"] = f'{{"media_fbid": "{response_id}"}}'
 
     # print("Data ",data_post)
 
-    response = requests.post(url,headers=headers,data=data_post)
+    response = requests.post(url, headers=headers, data=data_post)
     response = response.json()
     post_id = response["id"]
     # print(post_id)
-    post_urn = Post_urn.objects.create(org = sharepage,urn = post_id)
+    post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
     post_urn.save()
     # print("Post Successfull Created")
 
@@ -797,20 +738,18 @@ def facebook_post_multiimage(data,images,post,sharepage):
     post.published_at = timezone.now()
     post.save()
 
-def create_insta_post(page_id,access_token,media,post,page):
 
+def create_insta_post(page_id, access_token, media, post, page):
     if media:
-        if len(media)>1:
-            instagram_multi_media(page_id,access_token,media,post,page)
+        if len(media) > 1:
+            instagram_multi_media(page_id, access_token, media, post, page)
         else:
-            instagram_post_single_media(page_id,access_token,media,post,page)
+            instagram_post_single_media(page_id, access_token, media, post, page)
     else:
         pass
 
 
-def facebook_post_video(data,video,post,sharepage):
-
-
+def facebook_post_video(data, video, post, sharepage):
     page_id = data['page_id']
 
     url = f"https://graph.facebook.com/{page_id}/videos"
@@ -834,15 +773,14 @@ def facebook_post_video(data,video,post,sharepage):
     post.save()
 
 
-
-def get_instagram_image_id(image,page_id,access_token):
+def get_instagram_image_id(image, page_id, access_token):
     url = f"https://graph.facebook.com/v17.0/{page_id}/media?is_carousel_item=true"
 
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
     data_post = {
-        "image_url":image.image_url
+        "image_url": image.image_url
     }
     # print(data_post)
 
@@ -850,11 +788,12 @@ def get_instagram_image_id(image,page_id,access_token):
     #     "image_url":"https://messangel.caansoft.com/uploads/social_prefrences/image/1691750723366-homepage-seen-computer-screen_CvuwFmi.jpg"
     # }
 
-    response = requests.post(url,headers=headers,data=data_post)
+    response = requests.post(url, headers=headers, data=data_post)
     # print(response.json())
     return response.json()
 
-def get_instagram_video_id(video,page_id,access_token):
+
+def get_instagram_video_id(video, page_id, access_token):
     url = f"https://graph.facebook.com/v17.0/{page_id}/media?is_carousel_item=true"
 
     headers = {
@@ -862,8 +801,8 @@ def get_instagram_video_id(video,page_id,access_token):
     }
 
     data_post = {
-        'video_url':{video.image_url},
-        'media_type':'VIDEO',
+        'video_url': {video.image_url},
+        'media_type': 'VIDEO',
     }
     # print(data_post)
     # data_post = {
@@ -876,7 +815,7 @@ def get_instagram_video_id(video,page_id,access_token):
     return response.json()
 
 
-def get_instagram_media_id(data_post,headers,page_id):
+def get_instagram_media_id(data_post, headers, page_id):
     # print("Getting Media id")
     url = f"https://graph.facebook.com/v17.0/{page_id}/media?media_type=CAROUSEL"
 
@@ -888,23 +827,22 @@ def get_instagram_media_id(data_post,headers,page_id):
         # print(response.json())
         # print("Sleeping For 30s till data arrive")
         time.sleep(30)
-        response = get_instagram_media_id(data_post,headers,page_id)
+        response = get_instagram_media_id(data_post, headers, page_id)
 
     return response
 
 
-def instagram_multi_media(page_id,access_token,media,post,page):
+def instagram_multi_media(page_id, access_token, media, post, page):
     is_video = False
     childern_list = []
     for image in media:
         childern_id = None
         if image.image.name.endswith('.mp4'):
-            childern_id = get_instagram_video_id(image,page_id,access_token).get('id')
-            is_video =True
+            childern_id = get_instagram_video_id(image, page_id, access_token).get('id')
+            is_video = True
         else:
             childern_id = get_instagram_image_id(image, page_id, access_token).get('id')
         childern_list.append(childern_id)
-
 
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -916,7 +854,7 @@ def instagram_multi_media(page_id,access_token,media,post,page):
     })
     # print(data_post)
 
-    media_id = get_instagram_media_id(data_post,headers,page_id).json().get('id')
+    media_id = get_instagram_media_id(data_post, headers, page_id).json().get('id')
     # print(media_id)
     if is_video:
         while True:
@@ -936,14 +874,13 @@ def instagram_multi_media(page_id,access_token,media,post,page):
             else:
                 pass
 
-
     url_2 = f"https://graph.facebook.com/v17.0/{page_id}/media_publish"
 
     data_post_2 = {
         "creation_id": media_id
     }
 
-    response_2 = requests.post(url_2,headers=headers,data=data_post_2)
+    response_2 = requests.post(url_2, headers=headers, data=data_post_2)
     response_2 = response_2.json()
     # print(response_2)
 
@@ -956,14 +893,10 @@ def instagram_multi_media(page_id,access_token,media,post,page):
     post.save()
 
 
-
-
-
-
-def create_l_multimedia(images, org_id, access_token_string,clean_file,
-                        get_video_urn,image_m,upload_video,post_video_linkedin,
-                        org,get_img_urn,upload_img,post_single_image_linkedin,
-                        post,post_linkedin):
+def create_l_multimedia(images, org_id, access_token_string, clean_file,
+                        get_video_urn, image_m, upload_video, post_video_linkedin,
+                        org, get_img_urn, upload_img, post_single_image_linkedin,
+                        post, post_linkedin):
     if images:
         result = clean_file(images)
         video_file = result[0]
@@ -975,8 +908,9 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
                 response_json = response.json()
                 image_urn = response_json['value']['asset']
                 upload_url = \
-                response_json['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'][
-                    'uploadUrl']
+                    response_json['value']['uploadMechanism'][
+                        'com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'][
+                        'uploadUrl']
                 for a in image_m.images.all():
                     a.image_urn = image_urn
                     a.save()
@@ -997,7 +931,7 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
                         # print("Video Posted successfully.")
 
                     # else:
-                        # print("Post Failed" + response.status_code)
+                    # print("Post Failed" + response.status_code)
 
             else:
                 pass
@@ -1080,7 +1014,8 @@ def create_l_multimedia(images, org_id, access_token_string,clean_file,
             pass
             # print("API request failed with status code:", response.status_code)
 
-def post_nested_comment_linkedin(social,access_token,post_urn,reply,comment_urn):
+
+def post_nested_comment_linkedin(social, access_token, post_urn, reply, comment_urn):
     user = social.uid
     encoded_urn = quote(comment_urn, safe='')
     url = "https://api.linkedin.com/rest/socialActions/" + encoded_urn + "/comments"
@@ -1111,8 +1046,8 @@ def post_nested_comment_linkedin(social,access_token,post_urn,reply,comment_urn)
 
     return response
 
-def post_nested_comment_media_linkedin(social,access_token,post_urn,reply,comment_urn,media,org_id):
 
+def post_nested_comment_media_linkedin(social, access_token, post_urn, reply, comment_urn, media, org_id):
     access_token_string = access_token
     response = get_img_urn(org_id, access_token_string)
     if response.status_code == 200:
@@ -1219,7 +1154,8 @@ def get_nested_comments(access_token, comment_urn):
                     else:
                         display_image = ''
                     name = response['localizedName']
-                    obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn, "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
+                    obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn,
+                           "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
                     replies.append(obj)
                 else:
                     url = "https://api.linkedin.com/v2/people/(id:" + value + ")?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))"
@@ -1236,12 +1172,15 @@ def get_nested_comments(access_token, comment_urn):
                     response = requests.request("GET", url, headers=headers, data=payload)
                     response = response.json()
                     if 'profilePicture' in response:
-                        display_image = response['profilePicture']['displayImage~']['elements'][0]['identifiers'][0]['identifier']
+                        display_image = response['profilePicture']['displayImage~']['elements'][0]['identifiers'][0][
+                            'identifier']
                     else:
                         display_image = ''
-                    name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized']['en_US']
+                    name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized'][
+                        'en_US']
 
-                    obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn, "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
+                    obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn,
+                           "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
                     replies.append(obj)
         else:
             # print("No Replies on Comments")
@@ -1253,7 +1192,8 @@ def get_nested_comments(access_token, comment_urn):
         pass
     return replies
 
-def create_comment_media_linkedin(org_id,access_token, post_urn, comment, social, media):
+
+def create_comment_media_linkedin(org_id, access_token, post_urn, comment, social, media):
     user = social.uid
     encoded_urn = quote(post_urn, safe='')
     access_token_string = access_token
@@ -1307,15 +1247,15 @@ def create_comment_media_linkedin(org_id,access_token, post_urn, comment, social
         # print("Comment created successfully.")
         # print(response)
     # else:
-        # print("Failed to create comment.")
-        # print(response.json())
+    # print("Failed to create comment.")
+    # print(response.json())
     return response
 
-def image_comment(org_id,access_token, post_urn, comment, social, media):
+
+def image_comment(org_id, access_token, post_urn, comment, social, media):
     access_token_string = access_token
     user = social.uid
     encoded_urn = quote(post_urn, safe='')
-
 
     url = "https://api.linkedin.com/rest/assets?action=registerUpload"
 
@@ -1323,31 +1263,32 @@ def image_comment(org_id,access_token, post_urn, comment, social, media):
         "registerUploadRequest": {
             "owner": "urn:li:organization:" + org_id,
             "recipes": [
-              "urn:li:digitalmediaRecipe:feedshare-image"
+                "urn:li:digitalmediaRecipe:feedshare-image"
             ],
             "serviceRelationships": [
-              {
-                "identifier": "urn:li:userGeneratedContent",
-                "relationshipType": "OWNER"
-              }
+                {
+                    "identifier": "urn:li:userGeneratedContent",
+                    "relationshipType": "OWNER"
+                }
             ],
             "supportedUploadMechanism": [
-              "SYNCHRONOUS_UPLOAD"
+                "SYNCHRONOUS_UPLOAD"
             ]
         }
     })
     headers = {
-            'X-Restli-Protocol-Version': '2.0.0',
-            'Linkedin-Version': '202304',
-            'Authorization': 'Bearer ' + access_token,
-            'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4570:u=70:x=1:i=1692093475:t=1692172409:v=2:sig=AQHvqY4B7PQyhaJ3i0Jha9CnZNHz3aPN"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
-        }
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Authorization': 'Bearer ' + access_token,
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4570:u=70:x=1:i=1692093475:t=1692172409:v=2:sig=AQHvqY4B7PQyhaJ3i0Jha9CnZNHz3aPN"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
+    }
 
     response = requests.request("POST", url, headers=headers, data=payload)
     data = response.json()
     # print(data)
     asset = data["value"]["asset"]
-    upload_url = data["value"]["uploadMechanism"]["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"]["uploadUrl"]
+    upload_url = data["value"]["uploadMechanism"]["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"][
+        "uploadUrl"]
 
     url = upload_url
     # Set the path to the imaganasrehman/Pyce file on your local machine
@@ -1357,9 +1298,7 @@ def image_comment(org_id,access_token, post_urn, comment, social, media):
     image_model.save()
     image_file = image_model.image
 
-
     image_path = os.path.join(settings.BASE_DIR, "media/" + str(image_file))
-
 
     input_path = image_path
     output_path = input_path
@@ -1393,13 +1332,13 @@ def image_comment(org_id,access_token, post_urn, comment, social, media):
             "text": comment
         },
         "content": [
-          {
-             "entity": {
-                "image": 'urn:li:image:' + asset_id
-             },
-             "type": "IMAGE",
-             "url": image_path
-          }
+            {
+                "entity": {
+                    "image": 'urn:li:image:' + asset_id
+                },
+                "type": "IMAGE",
+                "url": image_path
+            }
         ]
     })
     headers = {
@@ -1420,7 +1359,8 @@ def image_comment(org_id,access_token, post_urn, comment, social, media):
     #     print(response.json())
     return response
 
-def get_reaction_linkedin_post(social,post_urn,access_token_string):
+
+def get_reaction_linkedin_post(social, post_urn, access_token_string):
     encoded_urn = quote(post_urn, safe='')
     url = "https://api.linkedin.com/rest/reactions/(actor:urn%3Ali%3Aperson%3A" + social.uid + ",entity:" + encoded_urn + ")"
 
@@ -1429,7 +1369,7 @@ def get_reaction_linkedin_post(social,post_urn,access_token_string):
         'Linkedin-Version': '202304',
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + access_token_string,
-        }
+    }
 
     response = requests.request("GET", url, headers=headers)
     if response.status_code == 200:
@@ -1440,10 +1380,7 @@ def get_reaction_linkedin_post(social,post_urn,access_token_string):
         return liked
 
 
-
-
 def create_comment(access_token, post_urn, comment, social):
-
     user = social.uid
     encoded_urn = quote(post_urn, safe='')
     headers = {
@@ -1473,7 +1410,8 @@ def create_comment(access_token, post_urn, comment, social):
     #     print(response.json())
     return response
 
-def ugcpost_socialactions(urn, access_token_string,linkedin_post):
+
+def ugcpost_socialactions(urn, access_token_string, linkedin_post):
     access_token = access_token_string
     encoded_urn = quote(urn, safe='')
     url = "https://api.linkedin.com/v2/socialActions/" + encoded_urn
@@ -1550,7 +1488,8 @@ def ugcpost_socialactions(urn, access_token_string,linkedin_post):
                     else:
                         display_image = ''
                     name = response['localizedName']
-                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls ,"comment_urn": comment_urn,'liked':liked, "comment_id": comment_id, "actor": actor}
+                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
+                           "comment_urn": comment_urn, 'liked': liked, "comment_id": comment_id, "actor": actor}
                     obj['replies'] = replies
 
                     data.append(obj)
@@ -1569,17 +1508,20 @@ def ugcpost_socialactions(urn, access_token_string,linkedin_post):
                     response = requests.request("GET", url, headers=headers, data=payload)
                     response = response.json()
                     if 'profilePicture' in response:
-                        display_image = response['profilePicture']['displayImage~']['elements'][0]['identifiers'][0]['identifier']
+                        display_image = response['profilePicture']['displayImage~']['elements'][0]['identifiers'][0][
+                            'identifier']
                     else:
                         display_image = ''
-                    name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized']['en_US']
+                    name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized'][
+                        'en_US']
 
-
-                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,"comment_urn": comment_urn,'liked':liked, "comment_id": comment_id, "actor": actor}
+                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
+                           "comment_urn": comment_urn, 'liked': liked, "comment_id": comment_id, "actor": actor}
                     obj['replies'] = replies
                     data.append(obj)
             else:
-                obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", 'liked': False, "comment_id": "", "actor": ""}
+                obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", 'liked': False,
+                       "comment_id": "", "actor": ""}
                 replies = None
                 obj['replies'] = replies
                 data.append(obj)
@@ -1671,7 +1613,8 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                     else:
                         display_image = ''
                     name = response['localizedName']
-                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,"comment_urn": comment_urn,"liked":liked, "comment_id": comment_id, "actor" : actor}
+                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
+                           "comment_urn": comment_urn, "liked": liked, "comment_id": comment_id, "actor": actor}
                     obj['replies'] = replies
                     data.append(obj)
                 else:
@@ -1694,13 +1637,16 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                             'identifier']
                     else:
                         display_image = ''
-                    name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized']['en_US']
+                    name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized'][
+                        'en_US']
 
-                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,"comment_urn": comment_urn,"liked":liked, "comment_id": comment_id, "actor" : actor}
+                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
+                           "comment_urn": comment_urn, "liked": liked, "comment_id": comment_id, "actor": actor}
                     obj['replies'] = replies
                     data.append(obj)
             else:
-                obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", "liked": False, "comment_id": "", "actor": ""}
+                obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", "liked": False,
+                       "comment_id": "", "actor": ""}
                 replies = None
                 obj['replies'] = replies
                 data.append(obj)
@@ -1712,8 +1658,6 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
         data.append(obj)
 
     return t_likes, t_comments, data
-
-
 
 
 def linkedin_org_stats(access_token_string, id, data_list):
@@ -1788,21 +1732,19 @@ def delete_post_like_linkedin(post_urn, social, access_token):
     url = "https://api.linkedin.com/rest/reactions/(actor:urn%3Ali%3Aperson%3A" + social.uid + ",entity:" + encoded_post + ")"
 
     payload = json.dumps({
-      "root": post_urn,
-      "reactionType": "LIKE"
+        "root": post_urn,
+        "reactionType": "LIKE"
     })
     headers = {
-      'X-Restli-Protocol-Version': '2.0.0',
-      'Linkedin-Version': '202304',
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + access_token,
-      'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4595:u=82:x=1:i=1693371139:t=1693391046:v=2:sig=AQGaLrcwXLeVna6tI9hnBQby5nDr4N94"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4595:u=82:x=1:i=1693369485:t=1693391046:v=2:sig=AQF779dHfhe2gSoMR5lLPKLbyBryCShS"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=VB60:s=V:r=V:a=V:p=V:g=3435:u=1:x=1:i=1693371035:t=1693457435:v=2:sig=AQHlAZ6D4gwH0OvAOk7C_y4O8r7mArwS"'
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + access_token,
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4595:u=82:x=1:i=1693371139:t=1693391046:v=2:sig=AQGaLrcwXLeVna6tI9hnBQby5nDr4N94"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4595:u=82:x=1:i=1693369485:t=1693391046:v=2:sig=AQF779dHfhe2gSoMR5lLPKLbyBryCShS"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=VB60:s=V:r=V:a=V:p=V:g=3435:u=1:x=1:i=1693371035:t=1693457435:v=2:sig=AQHlAZ6D4gwH0OvAOk7C_y4O8r7mArwS"'
     }
 
     response = requests.request("DELETE", url, headers=headers, data=payload)
     return response.json()
-
-
 
 
 def post_like_linkedin(post_urn, social, access_token):
@@ -1823,8 +1765,8 @@ def post_like_linkedin(post_urn, social, access_token):
 
     return response.json()
 
-def linkedin_share_stats_overall(org_id, access_token):
 
+def linkedin_share_stats_overall(org_id, access_token):
     url = "https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id
     payload = {}
     headers = {
@@ -1850,36 +1792,51 @@ def linkedin_share_stats_overall(org_id, access_token):
 
     return like_count, comment_count
 
-def linkedin_share_stats(org_id, access_token, start):
 
-        url = "https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id + "&timeIntervals=(timeRange:(start:" + str(start) + "),timeGranularityType:DAY)"
+def linkedin_share_stats(org, start,end):
+    print("in linkden")
+    org_id = org.org_id
+    access_token = org.access_token
+    url = "https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id + "&timeIntervals=(timeRange:(start:" + str(
+        int(start.timestamp()*1000)) + "),timeGranularityType:DAY)"
 
-        payload = {}
-        headers = {
-            'X-Restli-Protocol-Version': '2.0.0',
-            'Linkedin-Version': '202304',
-            'Authorization': 'Bearer ' + access_token,
-        }
+    payload = {}
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Authorization': 'Bearer ' + access_token,
+    }
 
-        response = requests.request("GET", url, headers=headers, data=payload)
-        data = response.json()
-        if 'elements' in data and len(data['elements']) > 0:
-            like_count = 0
-            comment_count = 0
+    response = requests.request("GET", url, headers=headers, data=payload)
+    data = response.json()
+    print(data)
+    if 'elements' in data and len(data['elements']) > 0:
+        like_count = 0
+        comment_count = 0
+        followers_count = 0
+        for element in data['elements']:
+            like_count += element['totalShareStatistics']['likeCount']
+            comment_count += element['totalShareStatistics']['commentCount']
 
-            for element in data['elements']:
-                like_count += element['totalShareStatistics']['likeCount']
-                comment_count += element['totalShareStatistics']['commentCount']
+        followers_count = linkedin_followers_today(org_id,access_token,start)
+        print(followers_count)
+    else:
+        like_count = 0
+        comment_count = 0
+        followers_count = 0
 
-        else:
-            like_count = 0
-            comment_count = 0
+    stats, created = SocialStats.objects.get_or_create(org=org, date=datetime.date.today())
+    stats.t_likes = like_count
+    stats.t_comments = comment_count
+    stats.t_followers = followers_count
+    stats.save()
 
-        return like_count, comment_count
+    return like_count, comment_count
 
 
 def linkedin_followers_today(org_id, access_token, start):
-    url = "https://api.linkedin.com/rest/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A"+ org_id +"&timeIntervals=(timeRange:(start:"+str(start)+"),timeGranularityType:DAY)"
+    url = "https://api.linkedin.com/rest/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id + "&timeIntervals=(timeRange:(start:" + str(
+        int(start.timestamp()*1000)) + "),timeGranularityType:DAY)"
 
     payload = {}
     headers = {
@@ -1897,8 +1854,9 @@ def linkedin_followers_today(org_id, access_token, start):
 
     return followers
 
+
 def linkedin_followers(org_id, access_token):
-    url = "https://api.linkedin.com/rest/networkSizes/urn%3Ali%3Aorganization%3A"+org_id+"?edgeType=CompanyFollowedByMember"
+    url = "https://api.linkedin.com/rest/networkSizes/urn%3Ali%3Aorganization%3A" + org_id + "?edgeType=CompanyFollowedByMember"
     payload = {}
     headers = {
         'X-Restli-Protocol-Version': '2.0.0',
@@ -1936,15 +1894,15 @@ def delete_comment_like_linkedin(comment_urn, social, access_token):
     url = "https://api.linkedin.com/rest/reactions/(actor:urn%3Ali%3Aperson%3A" + social.uid + ",entity:" + encoded_post + ")"
 
     payload = json.dumps({
-      "root": comment_urn,
-      "reactionType": "LIKE"
+        "root": comment_urn,
+        "reactionType": "LIKE"
     })
     headers = {
-      'X-Restli-Protocol-Version': '2.0.0',
-      'Linkedin-Version': '202304',
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + access_token,
-      'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4595:u=82:x=1:i=1693371139:t=1693391046:v=2:sig=AQGaLrcwXLeVna6tI9hnBQby5nDr4N94"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4595:u=82:x=1:i=1693369485:t=1693391046:v=2:sig=AQF779dHfhe2gSoMR5lLPKLbyBryCShS"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=VB60:s=V:r=V:a=V:p=V:g=3435:u=1:x=1:i=1693371035:t=1693457435:v=2:sig=AQHlAZ6D4gwH0OvAOk7C_y4O8r7mArwS"'
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + access_token,
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4595:u=82:x=1:i=1693371139:t=1693391046:v=2:sig=AQGaLrcwXLeVna6tI9hnBQby5nDr4N94"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4595:u=82:x=1:i=1693369485:t=1693391046:v=2:sig=AQF779dHfhe2gSoMR5lLPKLbyBryCShS"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=VB60:s=V:r=V:a=V:p=V:g=3435:u=1:x=1:i=1693371035:t=1693457435:v=2:sig=AQHlAZ6D4gwH0OvAOk7C_y4O8r7mArwS"'
     }
 
     response = requests.request("DELETE", url, headers=headers, data=payload)
@@ -1954,15 +1912,14 @@ def delete_comment_like_linkedin(comment_urn, social, access_token):
 def linkedin_retrieve_access_token(post_id):
     posts = PostModel.objects.get(id=post_id)
     user = posts.user
-    if len(SocialAccount.objects.filter(user=user.id,provider='linkedin_oauth2')) > 0:
+    if len(SocialAccount.objects.filter(user=user.id, provider='linkedin_oauth2')) > 0:
         social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
         if social:
             ids = SharePage.objects.filter(user=social.pk)
             access_token = SocialToken.objects.filter(account_id=social)
             access_token_string = ', '.join(str(obj) for obj in access_token)
 
-
-            return  posts, access_token_string, ids, social
+            return posts, access_token_string, ids, social
     else:
         posts = ''
         access_token_string = ''
@@ -1971,16 +1928,15 @@ def linkedin_retrieve_access_token(post_id):
         return posts, access_token_string, ids, social
 
 
-def linkedin_get_user_organization(accesstoken,userid):
-
+def linkedin_get_user_organization(accesstoken, userid):
     url = "https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee"
 
     payload = {}
     headers = {
-      'X-Restli-Protocol-Version': '2.0.0',
-      'Linkedin-Version': '202304',
-      'Authorization': 'Bearer ' + accesstoken,
-      'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4514:u=51:x=1:i=1687765789:t=1687848629:v=2:sig=AQHjIm1wsBkgK_2TJaHoboqQvmgXp9Aw"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Linkedin-Version': '202304',
+        'Authorization': 'Bearer ' + accesstoken,
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4514:u=51:x=1:i=1687765789:t=1687848629:v=2:sig=AQHjIm1wsBkgK_2TJaHoboqQvmgXp9Aw"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
     }
 
     response = requests.request("GET", url, headers=headers, data=payload)
@@ -2025,7 +1981,8 @@ def linkedin_get_user_organization(accesstoken,userid):
     data = my_list
     return data
 
-def linkedin_page_detail(accesstoken,userid):
+
+def linkedin_page_detail(accesstoken, userid):
     url = "https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee"
 
     payload = {}
@@ -2063,7 +2020,8 @@ def linkedin_page_detail(accesstoken,userid):
 
         names_with_ids[id] = name
         if 'logoV2' in response:
-            my_object['profile_picture_url'] = response['logoV2']['original~']['elements'][0]['identifiers'][0]['identifier']
+            my_object['profile_picture_url'] = response['logoV2']['original~']['elements'][0]['identifiers'][0][
+                'identifier']
         else:
             my_object['profile_picture_url'] = ''
         my_object['name'] = name
@@ -2075,8 +2033,8 @@ def linkedin_page_detail(accesstoken,userid):
 
 from PIL import Image
 
-def reduce_pixel_count(input_path, output_path, max_pixels):
 
+def reduce_pixel_count(input_path, output_path, max_pixels):
     try:
         # Open the image file
         with Image.open(input_path) as image:
@@ -2103,8 +2061,7 @@ def reduce_pixel_count(input_path, output_path, max_pixels):
         e
 
 
-
-def get_img_urn(org_id,access_token_string):
+def get_img_urn(org_id, access_token_string):
     url = "https://api.linkedin.com/rest/images?action=initializeUpload"
 
     payload = json.dumps({
@@ -2125,8 +2082,8 @@ def get_img_urn(org_id,access_token_string):
     # print(response.json())
     return response
 
-def get_video_urn(org_id,access_token_string):
 
+def get_video_urn(org_id, access_token_string):
     url = "https://api.linkedin.com/rest/assets?action=registerUpload"
 
     payload = json.dumps({
@@ -2180,7 +2137,8 @@ def upload_img(upload_url, image_file, access_token_string):
         response = requests.request("PUT", url, headers=headers, data=file)
         return response
 
-def upload_video(upload_url,video_file):
+
+def upload_video(upload_url, video_file):
     url = upload_url
     video_path = os.path.join(settings.BASE_DIR, "media/" + str(video_file))
     # video_path = "/Users/anasrehman/PycharmProjects/social_automation/social_auto/media/videos/" + str(video_file)
@@ -2198,7 +2156,6 @@ def upload_video(upload_url,video_file):
 
 
 def post_video_linkedin(image_urn, access_token_string, org_id, post):
-
     url = "https://api.linkedin.com/v2/ugcPosts"
     payload = json.dumps({
         "author": "urn:li:organization:" + org_id,
@@ -2238,8 +2195,7 @@ def post_video_linkedin(image_urn, access_token_string, org_id, post):
     return response
 
 
-
-def post_linkedin(image_list,post,org_id,access_token):
+def post_linkedin(image_list, post, org_id, access_token):
     url = "https://api.linkedin.com/rest/posts"
 
     # print(post)
@@ -2274,9 +2230,7 @@ def post_linkedin(image_list,post,org_id,access_token):
     return response
 
 
-
-
-def post_single_image_linkedin(access_token_string,org_id,post,image_list):
+def post_single_image_linkedin(access_token_string, org_id, post, image_list):
     url = 'https://api.linkedin.com/rest/posts'
     headers = {
         'X-Restli-Protocol-Version': '2.0.0',
@@ -2306,6 +2260,7 @@ def post_single_image_linkedin(access_token_string,org_id,post,image_list):
     response = requests.request('POST', url, headers=headers, json=data)
     return response
 
+
 def save_files(image):
     file = image
     if file:
@@ -2322,6 +2277,7 @@ def save_files(image):
             image_model.save()
 
     return image_model
+
 
 def save_file1(image):
     file = image.image
@@ -2385,6 +2341,7 @@ def linkdein(access_token_string):
     response = requests.request("GET", url, headers=headers, data=payload)
     response = response.json()
 
+
 def get_image_url(file):
     url = "https://messangel.caansoft.com/uploadfile"
 
@@ -2400,6 +2357,7 @@ def get_image_url(file):
     response = requests.request("POST", url, headers=headers, data=payload, files=files)
     response = response.json()
     return response
+
 
 def get_video_url(file):
     url = "https://messangel.caansoft.com/uploadfile"
@@ -2420,36 +2378,33 @@ def get_video_url(file):
 
 
 def text_post_linkedin(post, access_token_string, org_id):
-        url = "https://api.linkedin.com/rest/posts"
+    url = "https://api.linkedin.com/rest/posts"
 
-        payload = json.dumps({
-            "author": "urn:li:organization:" + org_id,
-            "commentary": post.post,
-            "visibility": "PUBLIC",
-            "distribution": {
-                "feedDistribution": "MAIN_FEED",
-                "targetEntities": [],
-                "thirdPartyDistributionChannels": []
-            },
-            "lifecycleState": "PUBLISHED",
-            "isReshareDisabledByAuthor": False
-        })
-        headers = {
-            'Content-Type': 'application/json',
-            'LinkedIn-Version': '202304',
-            'X-Restli-Protocol-Version': '2.0.0',
-            'Authorization': 'Bearer ' + access_token_string,
-            'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=55:x=1:i=1689314606:t=1689334414:v=2:sig=AQHSFW1fjeXULNO8CiDc8_rZkoMXJMK3"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
-        }
+    payload = json.dumps({
+        "author": "urn:li:organization:" + org_id,
+        "commentary": post.post,
+        "visibility": "PUBLIC",
+        "distribution": {
+            "feedDistribution": "MAIN_FEED",
+            "targetEntities": [],
+            "thirdPartyDistributionChannels": []
+        },
+        "lifecycleState": "PUBLISHED",
+        "isReshareDisabledByAuthor": False
+    })
+    headers = {
+        'Content-Type': 'application/json',
+        'LinkedIn-Version': '202304',
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Authorization': 'Bearer ' + access_token_string,
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=55:x=1:i=1689314606:t=1689334414:v=2:sig=AQHSFW1fjeXULNO8CiDc8_rZkoMXJMK3"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
+    }
 
-        response = requests.request("POST", url, headers=headers, data=payload)
-        return response
-
-
+    response = requests.request("POST", url, headers=headers, data=payload)
+    return response
 
 
-def meta_comments(urn,text,media,access_token):
-
+def meta_comments(urn, text, media, access_token):
     url = f"https://graph.facebook.com/v17.0/{urn}/comments"
 
     headers = {
@@ -2464,28 +2419,23 @@ def meta_comments(urn,text,media,access_token):
     files = []
     if media and media != '':
         extension = get_file_extension(media.content_type)
-        if extension in ['jpg','png']:
+        if extension in ['jpg', 'png']:
             data['attachment_url'] = get_image_url(media).get('files')[0].get('path')
         elif extension in ['gif']:
             pass
         elif extension in ['mp4']:
-            video_path = os.path.join(settings.BASE_DIR,"media/" + "videos/send.mp4")
+            video_path = os.path.join(settings.BASE_DIR, "media/" + "videos/send.mp4")
             files = [
                 ('source', ('send.mp4',
                             open(video_path,
                                  'rb'), 'application/octet-stream'))
             ]
 
-
-
-
     response = requests.post(url=url, headers=headers, data=data, files=files)
     return response.json()
 
 
-def meta_nested_comment(urn,text,media,access_token,provider_name):
-
-
+def meta_nested_comment(urn, text, media, access_token, provider_name):
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
@@ -2496,7 +2446,7 @@ def meta_nested_comment(urn,text,media,access_token,provider_name):
 
     if provider_name == "facebook":
         url = f"https://graph.facebook.com/{urn}/comments"
-        if media and media!= '':
+        if media and media != '':
             extension = get_file_extension(media.content_type)
             if extension in ['jpg', 'png']:
                 data['attachment_url'] = get_image_url(media).get('files')[0].get('path')
@@ -2516,8 +2466,7 @@ def meta_nested_comment(urn,text,media,access_token,provider_name):
     elif provider_name == "instagram":
         url = f"https://graph.facebook.com/{urn}/replies"
 
-
-    response = requests.post(url=url,headers=headers,data=data,files=files)
+    response = requests.post(url=url, headers=headers, data=data, files=files)
 
     response_json = response.json()
 
@@ -2531,9 +2480,9 @@ def linkedin_validator(request):
     if provider:
         for image in images:
             if image.name.endswith('.mp4'):
-                video +=1
+                video += 1
             else:
-                img +=1
+                img += 1
 
             if video >= 1 and img >= 1 and errors.get('Invalid Number') == None:
                 errors["Invalid Number"] = "Linkedin cannot contain both image and video"
@@ -2564,9 +2513,9 @@ def facebook_validator(request):
     if provider:
         for image in images:
             if image.name.endswith('.mp4'):
-                video +=1
+                video += 1
             else:
-                img +=1
+                img += 1
 
             if video >= 1 and img >= 1 and errors.get('Invalid Number') == None:
                 errors["Invalid Number"] = "Facebook cannot contain both image and video"
@@ -2579,22 +2528,19 @@ def facebook_validator(request):
     return errors
 
 
-
-def fb_object_like(urn,access_token):
-
+def fb_object_like(urn, access_token):
     url = f"https://graph.facebook.com/v17.0/{urn}/likes"
 
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
 
-    response = requests.post(url=url,headers=headers)
+    response = requests.post(url=url, headers=headers)
 
     return response.json()
 
 
-def fb_object_unlike(urn,access_token):
-
+def fb_object_unlike(urn, access_token):
     url = f"https://graph.facebook.com/v17.0/{urn}/likes"
 
     headers = {
@@ -2612,7 +2558,7 @@ def fb_page_detail(access_token):
         "Authorization": f"Bearer {access_token}"
     }
 
-    response = requests.get(url,headers=headers)
+    response = requests.get(url, headers=headers)
     data = {}
     if response.status_code == 200:
         response = response.json()
@@ -2623,13 +2569,12 @@ def fb_page_detail(access_token):
         return data
 
     else:
-        data = {'name': '' , 'email':"" , 'branches': ''}
+        data = {'name': '', 'email': "", 'branches': ''}
         data['error'] = 'failed to fetch data. Unexpected Error has occurred'
         return data
 
 
-def instagram_details(access_token,instagram_id):
-
+def instagram_details(access_token, instagram_id):
     # "https://graph.facebook.com/v17.0/{id}?fields=name,profile_picture_url,username"
     url = f"https://graph.facebook.com/v17.0/{instagram_id}?fields=name,biography,username"
 
@@ -2637,7 +2582,7 @@ def instagram_details(access_token,instagram_id):
         "Authorization": f"Bearer {access_token}"
     }
 
-    response = requests.get(url = url,headers =headers)
+    response = requests.get(url=url, headers=headers)
     data = {}
 
     if response.status_code == 200:
@@ -2653,192 +2598,73 @@ def instagram_details(access_token,instagram_id):
     return data
 
 
-
-def fb_page_insights(access_token,page_id):
-
-    url = f"https://graph.facebook.com/v17.0/{page_id}/insights"
-
-    params = {
-        'metric': 'page_fans,page_actions_post_reactions_total,page_post_engagements',
-        'period':'day',
-        'since': int(datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp()),
-        'until': int((datetime.datetime.now() + datetime.timedelta(days=1)).timestamp())
-    }
-
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-
-    try:
-        response = requests.get(url=url,headers=headers,params=params)
-        total_reaction, total_comment, newpagelike = 0, 0 , 0
-        if response.status_code == 200:
-            response = response.json()['data']
-            if len(response) > 0:
-                reactions_values = response[1]['values'][0]['value']
-                newpagelike = response[0]['values'][0]['value']
-                total_reaction = 0
-                for reaction in reactions_values:
-                    total_reaction += reactions_values[reaction]
-
-                url = f"https://graph.facebook.com/v17.0/{page_id}/feed?fields=comments.summary(true).filter(stream).order(reverse_chronological),reactions.summary(true)"
-
-                response = requests.get(url=url, headers=headers)
-                total_comment = 0
-                if response.status_code == 200:
-                    response = response.json()['data']
-                    if len(response) > 0:
-                        for obj in response:
-
-                            comment_list = obj['comments']['data']
-                            for comments in comment_list:
-                                created_time = comments['created_time']
-                                converted_createdtime = datetime.datetime.strptime(created_time,
-                                                                                   '%Y-%m-%dT%H:%M:%S+0000').date()
-
-                                if converted_createdtime == datetime.datetime.now(timezone.utc).date():
-                                    total_comment += 1
-                                elif converted_createdtime > datetime.datetime.now(
-                                        timezone.utc).date() or converted_createdtime < datetime.datetime.now(
-                                        timezone.utc).date():
-                                    break
-                    else:
-                        total_comment = 0
-            else:
-                total_reaction = 0
-        else:
-            raise Exception("failed to fetch")
-
-        return total_reaction, total_comment, newpagelike
-
-    except Exception as e:
-        return total_reaction, total_comment, newpagelike
-
-
-
-# def fb_media_count(access_token,page_id,since, until= int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
-#                           media_count=0, fields=''):
-#     url = f"https://graph.facebook.com/v17.0/{page_id}/feed?since={since}&until={until}"
-#
-#     headers = {
-#         "Authorization": f"Bearer {access_token}"
-#     }
-#
-#     try:
-#         response = requests.get(url=url, headers=headers)
-#
-#         if response.status_code == 200:
-#             responses = response.json()['data']
-#
-#             pagination = response.json()['paging']
-#
-#             media_count += len(responses)
-#
-#             next = pagination.get('next')
-#
-#             if next:
-#                 url_components = urlparse(next)
-#                 query_params = url_components.query.split('&')
-#                 fields = "&".join(query_params[2:])
-#
-#                 fb_media_count(access_token, page_id, since, until, media_count, fields)
-#
-#         else:
-#             raise Exception("failed to fetch")
-#
-#     except Exception as e:
-#         e
-#
-#     return media_count
-
-
-def instagram_page_insigths(access_token, instagram_id):
+def instagram_account_insights(urn, since, until):
+    print(int(since.timestamp()))
+    print(int(until.timestamp()))
+    # instagram give likes and comments of a day
+    access_token = urn.access_token
+    instagram_id = urn.org_id
     url = f"https://graph.facebook.com/v17.0/{instagram_id}/insights"
-
+    url2 = f"https://graph.facebook.com/v17.0/{instagram_id}?fields=followers_count"
+    # / insights?metric = likes, comments & period = day & metric_type = total_value
     params = {
-        'metric': 'likes,comments,follows_and_unfollows',
+        'metric': 'likes,comments',
         'period': 'day',
         'metric_type': 'total_value',
-        # 'since': int((datetime.datetime.now() - datetime.timedelta(days=30)).timestamp()),
-        # 'since': int(datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp()),
-        # 'untill': int(datetime.datetime.now().timestamp())
+        'since': f'{int(since.timestamp())}',
+        'until': f"{int(until.timestamp())}"
     }
 
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
-    total_likes = 0
-    total_comments = 0
     try:
         response = requests.get(url=url, headers=headers, params=params)
+        response2 = requests.get(url = url2,headers = headers)
+
+
+
         total_likes = 0
         total_comments = 0
+        followers_count = 0
         if response.status_code == 200:
-         response = response.json().get('data')
+            response = response.json().get('data')
+            total_likes += response[0]['total_value']['value']
+            total_comments += response[1]['total_value']['value']
 
-         total_likes = response[0]['total_value']['value']
-         total_comments = response[1]['total_value']['value']
 
-            # since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30)
-            # since = int(datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
-            #
-            # try:
-            #     media_count = instagram_count_media(access_token, instagram_id, since)
-            #     response['media_count'] = media_count
-            #
-            #
-            # except Exception as e:
-            #     raise Exception(e)
+            if response2.status_code == 200:
+                response2 = response2.json()
+                followers_count = response2['followers_count']
 
+            stats , created = SocialStats.objects.get_or_create(org=urn,date = datetime.date.today())
+            stats.t_likes = total_likes
+            stats.t_comments = total_comments
+
+            previous_date = datetime.date.today() - datetime.timedelta(days=1)
+            previous_entry = SocialStats.objects.filter(org=urn, date=previous_date)
+
+            if previous_entry.exists():
+                stats.t_followers = abs(previous_entry.first().t_followers - followers_count)
+
+            else:
+                stats.t_followers = followers_count
+
+            stats.save()
+
+            stats.save()
         else:
             raise Exception("failed to fetch")
 
-        return total_likes , total_comments
 
     except Exception as e:
-        return total_likes , total_comments
+        pass
 
 
-
-def instagram_count_media(access_token, instagram_id, since, until= int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
-                          media_count=0, fields=''):
-    url = f"https://graph.facebook.com/v17.0/{instagram_id}/media?fields=timestamp&since={since}&until={until}" + fields
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-
-    try:
-        response = requests.get(url=url, headers=headers)
-
-        if response.status_code == 200:
-            responses = response.json()['data']
-
-            pagination = response.json()['paging']
-
-            media_count += len(responses)
-
-            next = pagination.get('next')
-
-            if next:
-                url_components = urlparse(next)
-                query_params = url_components.query.split('&')
-                fields = "&".join(query_params[2:])
-
-                instagram_count_media(access_token, instagram_id, since, until, media_count, fields)
-
-        else:
-            raise Exception("failed to fetch")
-
-    except Exception as e:
-        e
-
-    return media_count
+def fb_post_insights(urn_list, urn, since=None, until=None):
 
 
-
-def fb_post_insights(urn_list,urn,since = None,until = None):
-
-    access_token = urn.org.access_token
+    access_token = urn.access_token
     base_url = 'https://graph.facebook.com/v17.0/'
 
     headers = {
@@ -2849,301 +2675,100 @@ def fb_post_insights(urn_list,urn,since = None,until = None):
     batch_request2 = []
     for post_id in urn_list:
         request1 = {
-        'method': 'GET',
-        'relative_url': f'{post_id}/insights?metric=post_reactions_by_type_total', #period life time
-        # 'relative_url': f'{post_id}/reactions?since={since}&until={until}',
+            'method': 'GET',
+            'relative_url': f'{post_id}/reactions?since={int(since.timestamp())}&until={int(until.timestamp())}',
         }
         request2 = {
             'method': 'GET',
-            'relative_url': f'{post_id}?fields=comments.summary(true)'
+            'relative_url': f'{post_id}/comments?fields=id,created_time,message&filter=stream&since={int(since.timestamp())}&until={int(until.timestamp())}'
         }
 
-    batch_request1.append(request1)
-    batch_request2.append((request2))
+        batch_request1.append(request1)
+        batch_request2.append(request2)
 
     batch_request1 = json.dumps(batch_request1)
-
-    response1 = requests.post(base_url,headers=headers,params={'batch':batch_request1,'include_headers':'false'})
-
+    batch_request2 = json.dumps(batch_request2)
+    response1 = requests.post(base_url, headers=headers, params={'batch': batch_request1, 'include_headers': 'false'})
+    response2 = requests.post(base_url, headers=headers, params={'batch': batch_request2, 'include_headers': 'false'})
     reaction_response = response1.json()
+    comment_response = response2.json()
     total_reactions = 0
     for reaction in reaction_response:
-        response = json.load(reaction.get('body'))
+        response = json.loads(reaction.get('body'))
 
-        if response.get('data'):
-            values = response.get('data')['values'][0]['value']
+        total_reactions += facebook_count_reactions(response)
 
-            for value in values:
-                total_reactions += values[value]
-
-        # total_reactions += facebook_count_reactions(response)
-
-
-    response2 = requests.post(base_url,headers=headers,params={'batch':batch_request2,'include_headers':'false'})
-
-
-    comment_response = response2.json()
     total_comments = 0
-
     for comment in comment_response:
-        pass
+        response = json.loads(comment.get('body'))
+
+        total_comments += facebook_count_comments(response)
+
+    # Request to get followerCounts
+    id = urn.org_id
+    url = f"https://graph.facebook.com/v17.0/{id}?fields=followers_count"
+
+    response3 = requests.get(url = url,headers= headers)
+    follower_count = 0
+    if response3.status_code == 200:
+        response3 = response3.json()
+        follower_count = response3['followers_count']
 
 
+    stats, created = SocialStats.objects.get_or_create(org=urn, date=datetime.date.today())
+
+    stats.t_likes = total_reactions
+    stats.t_comments = total_comments
+    # stats.t_followers = follower_count
+    previous_date = datetime.date.today() - datetime.timedelta(days=1)
+    previous_entry = SocialStats.objects.filter(org = urn,date=previous_date)
+
+    if previous_entry.exists():
+        stats.t_followers = abs(previous_entry.first().t_followers - follower_count)
+
+    else:
+        stats.t_followers = follower_count
+
+    stats.save()
 
 
-
-    total_comments = comment_response['comments']['summary']['total_count']
-
-
-    return total_reactions , total_comments
-
-
-
-
-
-
-
-def facebook_count_reactions(response, response_request = None,total_reactions = 0,send_request = False):
-
-    if send_request == True:
+def facebook_count_comments(response, response_request=None, total_comments=0, send_request=False):
+    if send_request:
         response = requests.get(response_request)
         response = response.json()
 
+    total_comments += len(response.get('data'))
+
+    if response.get('next'):
+        response_request = response.get('next')
+        facebook_count_comments(response, response_request, total_comments, True)
+
+    return total_comments
+
+
+def facebook_count_reactions(response, response_request=None, total_reactions=0, send_request=False):
+    if send_request:
+        response = requests.get(response_request)
+        response = response.json()
 
     total_reactions += len(response.get('data'))
 
     if response.get('next'):
         response_request = response.get('next')
-        facebook_count_reactions(response,response_request,total_reactions,True)
+        facebook_count_reactions(response, response_request, total_reactions, True)
 
     return total_reactions
 
 
-
-
-
-
-
-
-
-def instagram_post_insights(urn_list,urn):
-
-    # lifetime post media insigths
-
-    access_token = urn.org.access_token
-    base_url = 'https://graph.facebook.com/v17.0/'
-
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        'Content-Type': 'application/json'
-    }
-    batch_request1 = []
-    for post_id in urn_list:
-        request1 = {
-            'method': 'GET',
-            'relative_url': f'{post_id}//insights?metric=likes,comments',
-        }
-
-
-    batch_request1.append(request1)
-
-
-    batch_request1 = json.dumps(batch_request1)
-
-    response1 = requests.post(base_url, headers=headers, params={'batch': batch_request1, 'include_headers': 'false'})
-
-    reaction_response = response1.json()
-    total_likes = 0
-    total_comments = 0
-    for reaction in reaction_response:
-        response = json.load(reaction.get('body'))
-        data = response['data']
-        total_likes += data[0]['values'][0]['value']
-        total_comments += data[1]['values'][0]['value']
-
-
-
-
-
-# def instagram_count_media(access_token, instagram_id, since, until= int(datetime.datetime.now(datetime.timezone.utc).timestamp()),
-#                           media_count=0, fields=''):
-#     url = f"https://graph.facebook.com/v17.0/{instagram_id}/media?fields=timestamp&since={since}&until={until}" + fields
-#     headers = {
-#         "Authorization": f"Bearer {access_token}"
-#     }
 #
-#     try:
-#         response = requests.get(url=url, headers=headers)
-#
-#         if response.status_code == 200:
-#             responses = response.json()['data']
-#
-#             pagination = response.json()['paging']
-#
-#             media_count += len(responses)
-#
-#             next = pagination.get('next')
-#
-#             if next:
-#                 url_components = urlparse(next)
-#                 query_params = url_components.query.split('&')
-#                 fields = "&".join(query_params[2:])
-#
-#                 instagram_count_media(access_token, instagram_id, since, until, media_count, fields)
-#
-#         else:
-#             raise Exception("failed to fetch")
-#
-#     except Exception as e:
-#         e
-#
-#     return media_count
-#
-#
-#
-# def fb_post_insights(urn_list,urn,since = None,until = None):
-#
-#     access_token = urn.org.access_token
-#     base_url = 'https://graph.facebook.com/v17.0/'
-#
-#     headers = {
-#         "Authorization": f"Bearer {access_token}",
-#         'Content-Type': 'application/json'
-#     }
-#     batch_request1 = []
-#     batch_request2 = []
-#     for post_id in urn_list:
-#         request1 = {
-#         'method': 'GET',
-#         'relative_url': f'{post_id}/insights?metric=post_reactions_by_type_total', #period life time
-#         # 'relative_url': f'{post_id}/reactions?since={since}&until={until}',
-#         }
-#         request2 = {
-#             'method': 'GET',
-#             'relative_url': f'{post_id}?fields=comments.summary(true)'
-#         }
-#
-#     batch_request1.append(request1)
-#     batch_request2.append((request2))
-#
-#     batch_request1 = json.dumps(batch_request1)
-#
-#     response1 = requests.post(base_url,headers=headers,params={'batch':batch_request1,'include_headers':'false'})
-#
-#     reaction_response = response1.json()
-#     total_reactions = 0
-#     for reaction in reaction_response:
-#         response = json.load(reaction.get('body'))
-#
-#         if response.get('data'):
-#             values = response.get('data')['values'][0]['value']
-#
-#             for value in values:
-#                 total_reactions += values[value]
-#
-#         # total_reactions += facebook_count_reactions(response)
-#
-#
-#     response2 = requests.post(base_url,headers=headers,params={'batch':batch_request2,'include_headers':'false'})
-#
-#
-#     comment_response = response2.json()
-#     total_comments = 0
-#
-#     for comment in comment_response:
-#         pass
-#
-#
-#
-#
-#
-#     total_comments = comment_response['comments']['summary']['total_count']
-#
-#
-#     return total_reactions , total_comments
-#
-#
-#
-#
-#
-#
-#
-# def facebook_count_reactions(response, response_request = None,total_reactions = 0,send_request = False):
-#
-#     if send_request == True:
-#         response = requests.get(response_request)
-#         response = response.json()
-#
-#
-#     total_reactions += len(response.get('data'))
-#
-#     if response.get('next'):
-#         response_request = response.get('next')
-#         facebook_count_reactions(response,response_request,total_reactions,True)
-#
-#     return total_reactions
-#
-#
-#
-#
-#
-#
-#
-#
-#
-# def instagram_post_insights(urn_list,urn):
-#
-#     # lifetime post media insigths
-#
-#     access_token = urn.org.access_token
-#     base_url = 'https://graph.facebook.com/v17.0/'
-#
-#     headers = {
-#         "Authorization": f"Bearer {access_token}",
-#         'Content-Type': 'application/json'
-#     }
-#     batch_request1 = []
-#     for post_id in urn_list:
-#         request1 = {
-#             'method': 'GET',
-#             'relative_url': f'{post_id}//insights?metric=likes,comments',
-#         }
-#
-#
-#     batch_request1.append(request1)
-#
-#
-#     batch_request1 = json.dumps(batch_request1)
-#
-#     response1 = requests.post(base_url, headers=headers, params={'batch': batch_request1, 'include_headers': 'false'})
-#
-#     reaction_response = response1.json()
-#     total_likes = 0
-#     total_comments = 0
-#     for reaction in reaction_response:
-#         response = json.load(reaction.get('body'))
-#         data = response['data']
-#         total_likes += data[0]['values'][0]['value']
-#         total_comments += data[1]['values'][0]['value']
-#
-#
-#
-#     return total_likes, total_comments
-#
-#
-#
-#
-#
-#
-def delete_meta_posts_comment(access_token,id):
-
+def delete_meta_posts_comment(access_token, id):
     url = f"https://graph.facebook.com/v17.0/{id}"
 
     headers = {
-            "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {access_token}",
     }
 
-    response = requests.delete(url,headers=headers)
+    response = requests.delete(url, headers=headers)
 
     if response.status_code == 200:
         return 'success'
@@ -3151,9 +2776,7 @@ def delete_meta_posts_comment(access_token,id):
         return 'failed'
 
 
-
-
-def delete_linkedin_posts(access_token,id):
+def delete_linkedin_posts(access_token, id):
     encoded_urn = quote(id, safe='')
     url = "https://api.linkedin.com/rest/posts/" + encoded_urn
 
@@ -3174,7 +2797,7 @@ def delete_linkedin_posts(access_token,id):
 def delete_linkedin_comments(access_token, post_urn, comment_id, actor):
     encoded_urn = quote(post_urn, safe='')
     encoded_actor = quote(actor, safe='')
-    url = 'https://api.linkedin.com/rest/socialActions/' + encoded_urn + '/comments/' + comment_id +'?actor=' + encoded_actor
+    url = 'https://api.linkedin.com/rest/socialActions/' + encoded_urn + '/comments/' + comment_id + '?actor=' + encoded_actor
 
     headers = {
         'X-Restli-Protocol-Version': '2.0.0',
@@ -3188,5 +2811,3 @@ def delete_linkedin_comments(access_token, post_urn, comment_id, actor):
         return 'success'
     else:
         return 'failed'
-
-

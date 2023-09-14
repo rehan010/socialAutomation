@@ -1,19 +1,38 @@
-
 from Automatation.celery import app
-from .models import PostModel
-from .signals import schedule_signals_task
+from allauth.socialaccount.models import SocialAccount
+from .models import PostModel, SharePage
+from .signals import schedule_signals_task, gather_post_insight
 from django.db.models import Q
+
 
 @app.task
 def task_one():
     # print(" task one called and worker is running good")
-    post = PostModel.objects.filter(Q(status='PROCESSING')|Q(status='SCHEDULED'))
+    post = PostModel.objects.filter(Q(status='PROCESSING') | Q(status='SCHEDULED'))
     for _ in post:
         schedule_signals_task(_)
 
     return "success"
 
+
 # @app.task
 # def task_two(data, args, *kwargs):
 #     print(f" task two called with the argument {data} and worker is running good")
 #     return "success"
+
+
+@app.task
+def task_two():
+    # Getting all the social account user with provider facebook and linkedin
+    # getting share_pages of the users whose pages are connected
+    print("Executing Task two")
+    try:
+        users_with_social_accounts = SocialAccount.objects.filter(
+            Q(provider="facebook") | Q(provider='linkedin_oauth2')).values_list('user', flat=True).distinct()
+        share_pages = SharePage.objects.filter(user__in=users_with_social_accounts)
+        for pages in share_pages:
+            gather_post_insight(pages)
+    except Exception as e:
+        return e
+
+    return "success"

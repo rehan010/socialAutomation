@@ -2,20 +2,19 @@
 # from django.contrib.auth import get_user_model
 from django.db import models
 
-
 from django.utils import timezone
-
 
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 
-class CustomUserManager(BaseUserManager):
 
+class CustomUserManager(BaseUserManager):
     use_in_migrations = True
     """
     Custom user model manager where email is the unique identifiers
     for authentication instead of usernames.
     """
+
     def create_user(self, email, password, **extra_fields):
         """
         Create and save a User with the given email and password.
@@ -45,8 +44,6 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-
-
 # Create your models here.
 class User(AbstractUser):
     # Add your custom fields here
@@ -56,16 +53,14 @@ class User(AbstractUser):
     company = models.TextField(blank=True, null=True)
     manager = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     is_invited = models.BooleanField(default=False)
-    profile_image = models.ImageField(upload_to='media',blank=True)
-
-
+    profile_image = models.ImageField(upload_to='media', blank=True)
 
     objects = CustomUserManager()
+
     class Meta:
         db_table = 'user'
         verbose_name = 'Smart User'
         verbose_name_plural = 'Smart Users'
-
 
 
 class BaseModel(models.Model):
@@ -89,41 +84,38 @@ class BaseModel(models.Model):
 
 
 class InviteEmploye(BaseModel):
-
     STATUS_CHOICES = [('PENDING', 'PENDING'), ('ACCEPTED', 'ACCEPTED'), ('REJECTED', 'REJECTED')]
     ROLE_CHOICES = [('ADMIN', 'ADMIN'), ('MEMBER', 'MEMBER')]
     PERMISSIONS = [('HIDE', 'HIDE'), ('READ', 'READ'), ('WRITE', 'WRITE')]
     token = models.CharField(max_length=255, blank=True)
     invited_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     email = models.EmailField(("email address"), blank=True)
-    status = models.CharField(choices=STATUS_CHOICES,default='PENDING', blank=True)
-    selected_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="selected_user")
+    status = models.CharField(choices=STATUS_CHOICES, default='PENDING', blank=True)
+    selected_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
+                                      related_name="selected_user")
     role = models.CharField(choices=ROLE_CHOICES, default='MEMBER')
     permission = models.CharField(choices=PERMISSIONS, default='HIDE')
     manager_corp = models.BooleanField(default=False)
-
 
     class Meta:
         db_table = 'invite'
         verbose_name = 'Invite Employe'
         verbose_name_plural = 'Invite Employes'
 
-
     def __str__(self):
         return self.email + '--' + self.status
-
 
 
 class PointFileModel(BaseModel):
     name = models.CharField(max_length=255, blank=True)
     point_file = models.FileField(upload_to='point_file')
-    user = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
 
 class LatLongModel(BaseModel):
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    file = models.ForeignKey(PointFileModel, on_delete=models.CASCADE,null=True,blank=True)
+    file = models.ForeignKey(PointFileModel, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"Latitude: {self.latitude}, Longitude: {self.longitude}"
@@ -132,15 +124,17 @@ class LatLongModel(BaseModel):
 class ImageModel(models.Model):
     image = models.FileField(upload_to='videos/')
     image_urn = models.CharField(max_length=255, blank=True)
-    image_posted = models.CharField(max_length=500,blank=True,null=True)
-    image_url = models.CharField(max_length=1000,blank=True,null=True)
+    image_posted = models.CharField(max_length=500, blank=True, null=True)
+    image_url = models.CharField(max_length=1000, blank=True, null=True)
 
     def is_mp4_file(self):
         file_extension = self.image.name.split('.')[-1].lower()
         return file_extension == 'mp4'
 
+
 class PostModel(BaseModel):
-    POST_TYPE = [('DRAFT', 'DRAFT'), ('PUBLISHED', 'PUBLISHED'), ('SCHEDULED', 'SCHEDULED'), ('PROCESSING', 'PROCESSING')]
+    POST_TYPE = [('DRAFT', 'DRAFT'), ('PUBLISHED', 'PUBLISHED'), ('SCHEDULED', 'SCHEDULED'),
+                 ('PROCESSING', 'PROCESSING')]
     post = models.TextField(blank=True)
     images = models.ManyToManyField('ImageModel')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -152,13 +146,9 @@ class PostModel(BaseModel):
     status = models.CharField(default='DRAFT', max_length=100, choices=POST_TYPE)
     published_at = models.DateTimeField(null=True, blank=True)
 
-
-
     def __str__(self):
         post_urn_list = ", ".join(str(org) for org in self.post_urn.all())
         return f"{self.post} - Post To: {post_urn_list}"
-
-
 
 
 class SharePage(models.Model):
@@ -170,6 +160,7 @@ class SharePage(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Post_urn(models.Model):
     org = models.ForeignKey(SharePage, on_delete=models.CASCADE)
@@ -183,7 +174,9 @@ class Post_urn(models.Model):
         return self.org.name + "--" + self.urn
 
 
-
-
-
-
+class SocialStats(BaseModel):
+    org = models.ForeignKey(SharePage, on_delete=models.CASCADE)
+    t_likes = models.IntegerField(default=0)
+    t_comments = models.IntegerField(default=0)
+    t_followers = models.IntegerField(default=0)
+    date = models.DateTimeField()

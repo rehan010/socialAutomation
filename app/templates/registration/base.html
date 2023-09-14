@@ -36,7 +36,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
 
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
     <link rel="icon" type="image/png" href="../assets/img/favicon.png">
 
@@ -448,6 +448,21 @@ toggleButton.addEventListener('click', () => {
   sidebar.classList.toggle('close');
 });
 
+function getFormattedDate(daysBefore = 0){
+    let currentDate = new Date();
+    const oneDay = daysBefore * 24 * 60 * 60 * 1000; // One day in milliseconds
+    currentDate = new Date(currentDate - oneDay);
+    const year = currentDate.getFullYear();
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Adding 1 to month because months are zero-indexed
+    const day = currentDate.getDate().toString().padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
+    return formattedDate;
+
+}
+
+
+
 
 
 
@@ -471,11 +486,17 @@ toggleButton.addEventListener('click', () => {
   <script src="{% static 'assets/js/soft-ui-dashboard-tailwind.js' %}" async></script>
 <script src="{% static 'assets/js/chart-1.js' %}" async></script>
 <script src="{% static 'assets/js/chart-2.js' %}" async></script>
+<script src="{% static 'assets/js/chart-3.js' %}" async></script>
+<script src="{% static 'assets/js/chart-4.js' %}" async></script>
+<script src="{% static 'assets/js/chart-5.js' %}" async></script>
 
 <script src="{% static 'assets/js/dropdown.js' %}" async></script>
 <script src="{% static 'assets/js/perfect-scrollbar.js' %}" async></script>
 <script type="text/javascript" src="{% static 'assets/js/htmx.min.js' %}" defer></script>
 <script src="{% static 'assets/js/tooltips.js' %}" ></script>
 <!--<script src="https://cdn.jsdelivr.net/npm/tw-elements@1.0.0/dist/tw-elements.min.js"></script>-->
+
+<!-- must be include as static files -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 </html>
