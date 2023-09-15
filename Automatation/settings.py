@@ -259,7 +259,11 @@ DATABASES = {
 }
 AUTH_USER_MODEL = 'app.user'
 
-
+REST_FRAMEWORK = {
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LinkHeaderPagination',
+    'DEFAULT_PAGINATION_CLASS': 'drf_link_header_pagination.LinkHeaderPagination',
+    'PAGE_SIZE': 2,  # Number of items per page
+}
 #
 # # Celery Configuration
 # CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'

@@ -27,18 +27,25 @@
         <br>
         <div class="flex items-center justify-center relative">
             <ul class="col-span-3 flex grid grid-flow-col justify-center space-x-4">
-
-                <li><a href="#" data-tab="tab1"
-                       class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2 bg-blue-100 shadow text-indigo-900">Facebook</a>
+                <li>
+                    <a href="" data-tab="tab1" data-platform="fb"
+                       class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2 bg-blue-100 shadow text-indigo-900"
+                       onclick="updatePlatform(event,'fb')">Facebook</a>
                 </li>
-                <li><a href="#" data-tab="tab2"
-                       class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200  px-4 py-2 rounded-full">Linkedin</a>
+                <li>
+                    <a href="" data-tab="tab2" data-platform="ln"
+                       class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full"
+                       onclick="updatePlatform(event,'ln')">Linkedin</a>
                 </li>
-                <li><a href="#" data-tab="tab3"
-                       class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200  px-4 py-2 rounded-full">Instagram</a>
+                <li>
+                    <a href="" data-tab="tab3" data-platform="insta"
+                       class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full"
+                       onclick="updatePlatform(event,'insta')">Instagram</a>
                 </li>
-                <li><a href="#" data-tab="tab4"
-                       class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200  px-4 py-2 rounded-full">Google</a>
+                <li>
+                    <a href="" data-tab="tab4" data-platform="google"
+                       class="text-gray-500 hover:text-gray-700 font-medium bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full"
+                       onclick="updatePlatform(event,'google')">Google</a>
                 </li>
             </ul>
             <div class="absolute right-0 flex justify-end pl-auto mr-3">
@@ -56,12 +63,11 @@
         <hr>
         <br>
 
-
         <div class="tab-content">
             <div id="tab1" class="tab">
                 <div class="flex-auto p-6 px-0 pb-2">
                     <div class="overflow-x-auto">
-                        <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                        <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500" id="fb_posts">
                             <thead class="align-bottom">
                             <tr>
                                 <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
@@ -90,6 +96,13 @@
                             </tr>
                             </thead>
                             <tbody>
+                            <form method="get">
+                                <div class="flex items-center">
+                                    <input
+                                        type="text" name="search" value="{{ search_query }}" placeholder="Search..." class="border rounded-l text-xs py-2 px-3 w-64"><button type="submit" class="px-3 py-2 text-xs font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-lg cursor-pointer leading-pro  ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline">
+                                        Search</button>
+                                </div>
+                            </form>
                             {% for p in facebook_post %}
                             <tr>
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
@@ -201,7 +214,7 @@
                                             {% for page_name in p.post_urn.all %}
                                             {%if page_name.org.provider == 'facebook' %}
                                             <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-                                                <h6 class="mb-0 text-sm leading-normal">{{page_name.org}}</h6>
+                                                <h6 class="mb-0 text-sm font-bold leading-normal">{{page_name.org}}</h6>
 
                                             </a>
                                             {%endif%}
@@ -211,8 +224,7 @@
                                         {% elif p.status == 'DRAFT' %}
                                         <div class="flex flex-col justify-center">
                                             <a href="{%url 'post_draft' p.pk %}">
-                                                <h6 class="mb-0 text-sm leading-normal">PUBLISH THIS DRAFT</h6>
-
+                                                <h6 class="bg-gradient-to-tl from-red-700 to-yellow-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISH THIS DRAFT</h6>
                                             </a>
                                         </div>
                                         {% else %}
@@ -231,7 +243,23 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <div class="pagination flex items-center justify-between p-4">
+                            <div >
+                                {% if facebook_post.has_previous %}
+                                    <a href="?platform=fb&page=1" data-page="1" class="pagination-link mr-4" onclick="updatePage(event,'fb')">&laquo; First</a>
+                                    <a href="?platform=fb&page={{ facebook_post.previous_page_number }}" data-page="{{ facebook_post.previous_page_number }}" class="pagination-link mr-2" onclick="updatePage(event,'fb')">Previous</a>
+                                {% endif %}
+                            </div>
 
+                            <span class="current-page">Page {{ facebook_post.number }} of {{ facebook_post.paginator.num_pages }}</span>
+
+                            <div ">
+                                {% if facebook_post.has_next %}
+                                    <a href="?platform=fb&page={{ facebook_post.next_page_number }}"  data-page="{{ facebook_post.next_page_number }}" class="pagination-link ml-2" onclick="updatePage(event,'fb')">Next</a>
+                                    <a href="?platform=fb&page={{ facebook_post.paginator.num_pages }}" data-page="{{ facebook_post.paginator.num_pages }}" class="pagination-link ml-4" onclick="updatePage(event,'fb')">Last &raquo;</a>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -269,6 +297,13 @@
                             <!--                            </tr>-->
                         </thead>
                         <tbody>
+                        <form method="get">
+                                <div class="flex items-center">
+                                    <input
+                                        type="text" name="search" value="{{ search_query }}" placeholder="Search..." class="border rounded-l text-xs py-2 px-3 w-64"><button type="submit" class="px-3 py-2 text-xs font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-lg cursor-pointer leading-pro  ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline">
+                                        Search</button>
+                                </div>
+                        </form>
                         {% for p in linkedin_post %}
                         <tr>
                             <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
@@ -372,7 +407,7 @@
                                         {% for page_name in p.post_urn.all %}
                                         {%if page_name.org.provider == 'linkedin'%}
                                         <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.org}}</h6>
+                                            <h6 class="mb-0 text-sm font-bold leading-normal">{{page_name.org}}</h6>
 
                                         </a>
                                         {%endif%}
@@ -382,8 +417,7 @@
                                     {% elif p.status == 'DRAFT' %}
                                     <div class="flex flex-col justify-center">
                                         <a href="{%url 'post_draft' p.pk %}">
-                                            <h6 class="mb-0 text-sm leading-normal">PUBLISH THIS DRAFT</h6>
-
+                                            <h6 class="bg-gradient-to-tl from-red-700 to-yellow-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISH THIS DRAFT</h6>
                                         </a>
                                     </div>
                                     {% else %}
@@ -402,6 +436,23 @@
                         {% endfor %}
                         </tbody>
                     </table>
+                    <div class="pagination flex items-center justify-between p-4">
+                            <div class="flex items-center">
+                                {% if linkedin_post.has_previous %}
+                                    <a href="?platform=ln&page=1" class="pagination-link mr-4" data-page="1" onclick="updatePage(event,'ln')">&laquo; First</a>
+                                    <a href="?platform=ln&page={{ linkedin_post.previous_page_number }}" data-page="{{ linkedin_post.previous_page_number }}" class="pagination-link mr-2" onclick="updatePage(event,'ln')">Previous</a>
+                                {% endif %}
+                            </div>
+
+                            <span class="current-page">Page {{ linkedin_post.number }} of {{ linkedin_post.paginator.num_pages }}</span>
+
+                            <div class="flex items-center">
+                                {% if linkedin_post.has_next %}
+                                    <a href="?platform=ln&page={{ linkedin_post.next_page_number }}" data-page="{{ linkedin_post.next_page_number }}" class="pagination-link ml-2" onclick="updatePage(event,'ln')">Next</a>
+                                    <a href="?platform=ln&page={{ linkedin_post.paginator.num_pages }}" data-page="{{ linkedin_post.paginator.num_pages }}" class="pagination-link ml-4" onclick="updatePage(event,'ln')">Last &raquo;</a>
+                                {% endif %}
+                            </div>
+                    </div>
                 </div>
             </div>
 
@@ -441,6 +492,13 @@
 
                         </thead>
                         <tbody>
+                        <form method="get">
+                                <div class="flex items-center">
+                                    <input
+                                        type="text" name="search" value="{{ search_query }}" placeholder="Search..." class="border rounded-l text-xs py-2 px-3 w-64"><button type="submit" class="px-3 py-2 text-xs font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-lg cursor-pointer leading-pro  ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline">
+                                        Search</button>
+                                </div>
+                        </form>
                         {% for p in instagram_post %}
                         <tr>
                             <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
@@ -546,7 +604,7 @@
                                         {% for page_name in p.post_urn.all %}
                                         {%if page_name.org.provider == 'instagram'%}
                                         <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.org}}</h6>
+                                            <h6 class="mb-0 text-sm font-bold leading-normal">{{page_name.org}}</h6>
 
                                         </a>
                                         {%endif%}
@@ -556,8 +614,7 @@
                                     {% elif p.status == 'DRAFT' %}
                                     <div class="flex flex-col justify-center">
                                         <a href="{%url 'post_draft' p.pk %}">
-                                            <h6 class="mb-0 text-sm leading-normal">PUBLISH THIS DRAFT</h6>
-
+                                            <h6 class="bg-gradient-to-tl from-red-700 to-yellow-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISH THIS DRAFT</h6>
                                         </a>
                                     </div>
                                     {% else %}
@@ -576,6 +633,23 @@
                         {% endfor %}
                         </tbody>
                     </table>
+                    <div class="pagination flex items-center justify-between p-4">
+                            <div class="flex items-center">
+                                {% if instagram_post.has_previous %}
+                                    <a href="?platform=insta&page=1" class="pagination-link mr-4" data-page="1" onclick="updatePage(event,'insta')">&laquo; First</a>
+                                    <a href="?platform=insta&page={{ instagram_post.previous_page_number }}" data-page="{{ instagram_post.previous_page_number }}" class="pagination-link mr-2" onclick="updatePage(event,'insta')">Previous</a>
+                                {% endif %}
+                            </div>
+
+                            <span class="current-page">Page {{ instagram_post.number }} of {{ instagram_post.paginator.num_pages }}</span>
+
+                            <div class="flex items-center">
+                                {% if instagram_post.has_next %}
+                                    <a href="?platform=insta&page={{ instagram_post.next_page_number }}" data-page="{{ instagram_post.next_page_number }}" class="pagination-link ml-2" onclick="updatePage(event,'insta')">Next</a>
+                                    <a href="?platform=insta&page={{ instagram_post.paginator.num_pages }}" data-page="{{ instagram_post.paginator.num_pages }}" class="pagination-link ml-4" onclick="updatePage(event,'insta')">Last &raquo;</a>
+                                {% endif %}
+                            </div>
+                    </div>
                 </div>
             </div>
             <!-- Content for Tab 3 goes here -->
@@ -614,6 +688,13 @@
 
                         </thead>
                         <tbody>
+                        <form method="get">
+                                <div class="flex items-center">
+                                    <input
+                                        type="text" name="search" value="{{ search_query }}" placeholder="Search..." class="border rounded-l text-xs py-2 px-3 w-64"><button type="submit" class="px-3 py-2 text-xs font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-lg cursor-pointer leading-pro  ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline">
+                                        Search</button>
+                                </div>
+                        </form>
                         {% for p in google_post %}
                         <tr>
                             <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
@@ -719,7 +800,7 @@
                                         {% for page_name in p.post_urn.all %}
                                         {%if page_name.org.provider == 'facebook' %}
                                         <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.org}}</h6>
+                                            <h6 class="mb-0 text-sm font-bold leading-normal">{{page_name.org}}</h6>
 
                                         </a>
                                         {%endif%}
@@ -729,8 +810,7 @@
                                     {% elif p.status == 'DRAFT' %}
                                     <div class="flex flex-col justify-center">
                                         <a href="{%url 'post_draft' p.pk %}">
-                                            <h6 class="mb-0 text-sm leading-normal">PUBLISH THIS DRAFT</h6>
-
+                                            <h6 class="bg-gradient-to-tl from-red-700 to-yellow-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISH THIS DRAFT</h6>
                                         </a>
                                     </div>
                                     {% else %}
@@ -749,6 +829,23 @@
                         {% endfor %}
                         </tbody>
                     </table>
+                    <div class="pagination flex items-center justify-between p-4">
+                        <div class="flex items-center">
+                            {% if google_post.has_previous %}
+                                <a href="?platform=google&page=1" class="pagination-link mr-4" data-page="1" onclick="updatePage(event,'google')">&laquo; First</a>
+                                <a href="?platform=google&page={{ google_post.previous_page_number }}" data-page="{{ google_post.previous_page_number }" class="pagination-link mr-2" onclick="updatePage(event,'google')">Previous</a>
+                            {% endif %}
+                        </div>
+
+                        <span class="current-page">Page {{ google_post.number }} of {{ google_post.paginator.num_pages }}</span>
+
+                        <div class="flex items-center">
+                            {% if google_post.has_next %}
+                                <a href="?platform=google&page={{ google_post.next_page_number }}" data-page="{{ google_post.next_page_number }}" class="pagination-link ml-2" onclick="updatePage(event,'google')">Next</a>
+                                <a href="?platform=google&page={{ google_post.paginator.num_pages }}" data-page="{{ google_post.paginator.num_pages }}"  class="pagination-link ml-4" onclick="updatePage(event,'google')">Last &raquo;</a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- Content for Tab 3 goes here -->
@@ -760,14 +857,14 @@
 <script src="{% static 'customjs/images.js' %}"></script>
 <script>
 
-   document.addEventListener("DOMContentLoaded", function() {
-<!--  const tabLinks = document.querySelectorAll(".flex.justify-center.py-4");-->
+document.addEventListener("DOMContentLoaded", function() {
+
   const tabLinks = document.querySelectorAll(".text-gray-500.font-medium.py-2");
   const tabs = document.querySelectorAll(".tab");
 
   tabLinks.forEach(function(tabLink) {
     tabLink.addEventListener("click", function(e) {
-      e.preventDefault();
+
 
       const targetTab = document.querySelector("#" + this.getAttribute("data-tab"));
 
@@ -775,18 +872,110 @@
         tab.classList.add("hidden");
       });
       tabLinks.forEach(function(link) {
-<!--        link.classList.remove("bg-blue-500", "text-white");-->
+
         link.classList.remove("bg-blue-100","shadow","text-indigo-900");
       });
 
       targetTab.classList.remove("hidden");
-<!--      this.classList.remove("bg-white", "text-blue-500");-->
+
       this.classList.add("bg-blue-100","rounded-full","shadow","text-indigo-900");
+
     });
+
   });
 });
+
+function setDefaultQueryParams() {
+      const platform= 'fb';
+      const page= '1';
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('platform', platform);
+      currentUrl.searchParams.set('page', '1');
+      window.history.replaceState({}, '', currentUrl.toString());
+  }
+
+
+  document.addEventListener('DOMContentLoaded', setDefaultQueryParams);
+
+
+function updatePlatform(event,platform) {
+    event.preventDefault();
+    const currentUrl = window.location.href;
+    const url = new URL(currentUrl);
+
+
+    url.searchParams.set('platform', platform);
+
+
+
+    window.history.replaceState({}, '', url);
+}
+
+
+function updatePage(event, platform) {
+    event.preventDefault(); // Prevent the default link behavior
+
+    // Access the data-page attribute from the clicked element
+    const page = event.target.dataset.page;
+
+    const currentUrl = window.location.href;
+    const url = new URL(currentUrl);
+
+    url.searchParams.set('platform', platform);
+    url.searchParams.set('page', page);
+
+    window.location.href = url.toString();
+
+    const pk = {{ user.pk }};
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", `/posts/${pk}?platform=${platform}&page=${page}`, true);
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            const response = xhr.responseText;
+            // Handle the response if needed
+        }
+    };
+
+    xhr.send();
+}
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('input[name="search"]');
+        const searchForm = document.querySelector('form');
+        const pk = {{ user.pk }};
+
+        searchForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const searchQuery = searchInput.value;
+            console.log(searchQuery);
+            const action = `/posts/${pk}?search=${searchQuery}`;
+            // Update the form's action attribute and submit the form.
+            searchForm.action = action;
+            searchForm.submit();
+        });
+
+        searchInput.addEventListener('input', function() {
+            // Automatically update the form's action attribute with the current input value.
+            const searchQuery = searchInput.value;
+            if (searchQuery != '') {
+                 const action = `/posts/${pk}?search=${searchQuery}`;
+                 searchForm.action = action;
+            }else{
+                const action = `/posts/${pk}`;
+                searchForm.action = action;
+                searchInput.value = '';
+            }
+
+        });
+    });
+
+
+
+
 
 
 
 </script>
+
 {% endblock %}

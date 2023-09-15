@@ -7,7 +7,7 @@ from django.http import response
 from .signals import *
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
-from django.views.generic import TemplateView, FormView,CreateView,DeleteView,UpdateView
+from django.views.generic import TemplateView, FormView,CreateView,DeleteView,UpdateView,ListView
 from .forms import *
 import requests
 from .restapis import *
@@ -16,13 +16,17 @@ from rest_framework.generics import ListAPIView,DestroyAPIView, RetrieveUpdateAP
 from rest_framework.views import APIView
 from django.db.models import Q ,Sum
 from .serializer import *
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from rest_framework.pagination import PageNumberPagination
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.safestring import mark_safe
 # from django.contrib.auth.models import User
 from .models import User
-from allauth.socialaccount.models import EmailAddress,SocialAccount,SocialToken
+from allauth.socialaccount.models import EmailAddress, SocialAccount, SocialToken
 from django.shortcuts import get_object_or_404
 from rest_framework import filters
+from django.core import serializers
+from drf_link_header_pagination import LinkHeaderPagination
 
 from google.oauth2 import id_token
 from google.auth.transport import requests as auth_requests
@@ -37,6 +41,8 @@ from django.contrib import messages
 from django.contrib.auth import logout
 from allauth.socialaccount.views import ConnectionsView
 from django.utils.html import escape
+from rest_framework import generics
+from django.http import JsonResponse
 
 
 
@@ -360,42 +366,56 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
             total_likes_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
                                                               date=today).aggregate(Sum('t_likes'))['t_likes__sum']
+            if total_likes_facebook is None:
+                total_likes_facebook = 0
+
 
             total_likes_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
-                                                                   date=today).aggregate(Sum('t_likes'))['t_likes__sum']
-
+                                                                  date=today).aggregate(Sum('t_likes'))['t_likes__sum']
+            if total_likes_instagram is None:
+                total_likes_instagram = 0
             total_likes_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
                                                               date=today).aggregate(Sum('t_likes'))['t_likes__sum']
-
+            if total_likes_linkedin is None:
+                total_likes_linkedin = 0
             total_likes_google = SocialStats.objects.filter(org__in=google_share_pages,
                                                                 date=today).aggregate(Sum('t_likes'))['t_likes__sum']
-
+            if total_likes_google is None:
+                total_likes_google = 0
 
 
             total_comments_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
                                                                  date=today).aggregate(Sum('t_comments'))['t_comments__sum']
-
+            if total_comments_facebook is None:
+                total_comments_facebook = 0
             total_comments_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
                                                                   date=today).aggregate(Sum('t_comments'))['t_comments__sum']
-
+            if total_comments_instagram is None:
+                total_comments_instagram = 0
             total_comments_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
                                                                  date=today).aggregate(Sum('t_comments'))['t_comments__sum']
-
+            if total_comments_linkedin is None:
+                total_comments_linkedin = 0
             total_comments_google = SocialStats.objects.filter(org__in=google_share_pages,
                                                                date=today).aggregate(Sum('t_comments'))['t_comments__sum']
-
+            if total_comments_google is None:
+                total_comments_google = 0
             total_followers_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
                                                                   date=today).aggregate(Sum('t_followers'))['t_followers__sum']
-
+            if total_followers_facebook is None:
+                total_followers_facebook = 0
             total_followers_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
                                                                    date=today).aggregate(Sum('t_followers'))['t_followers__sum']
-
+            if total_followers_instagram is None:
+                total_followers_instagram = 0
             total_followers_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
                                                                   date=today).aggregate(Sum('t_followers'))['t_followers__sum']
-
+            if total_followers_linkedin is None:
+                total_followers_linkedin = 0
             total_followers_google = SocialStats.objects.filter(org__in=google_share_pages,
                                                                 date=today).aggregate(Sum('t_followers'))['t_followers__sum']
-
+            if total_followers_google is None:
+                total_followers_google = 0
 
 
 
@@ -1550,6 +1570,88 @@ class PostDraftView(UpdateView):
 
         return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
 
+def get_paginated_post_list(post_queryset, items_per_page, page_number):
+
+    paginator = Paginator(post_queryset, items_per_page)
+    page_obj = paginator.get_page(page_number)
+
+
+    return page_obj
+
+
+class PostsGetView2(LoginRequiredMixin, TemplateView):
+    template_name = 'social/my_posts2.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_manager = self.request.user.manager
+
+        if user_manager != None:
+            role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
+            user_permission = role.permission
+            if user_permission == 'HIDE':
+                posts = PostModel.objects.filter(user=self.request.user, is_deleted=False)
+            else:
+                posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager),
+                                                 is_deleted=False)
+
+        else:
+            invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
+            invites = []
+            for user in invited:
+                invited_users_id = user.selected_user.id
+                invites.append(invited_users_id)
+            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted=False)
+
+
+        items_per_page = 2
+        search = self.request.GET.get('search', '')
+        platform = self.request.GET.get('platform', 'fb')
+        platform = 'fb'
+        page = self.request.GET.get('page', '1')
+
+        # if platform =='ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
+        #     linkedin_post = posts.filter(prepost_page__provider="linkedin").distinct()
+        #     if search is not None and search != '':
+        #         linkedin_post = linkedin_post.filter(
+        #             Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+        #             Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+        #     paginated = get_paginated_post_list(linkedin_post, items_per_page, page)
+
+        if platform == 'fb' and len(posts.filter(prepost_page__provider="facebook")) > 0:
+            facebook_post = posts.filter(prepost_page__provider="facebook").distinct()
+            if search is not None and search != '':
+                facebook_post = facebook_post.filter(
+                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+            paginated = get_paginated_post_list(facebook_post, items_per_page, page)
+
+        # elif platform == 'insta' and len(posts.filter(prepost_page__provider="instagram")) > 0:
+        #     instagram_post = posts.filter(prepost_page__provider="instagram").distinct()
+        #     if search is not None and search != '':
+        #         instagram_post = instagram_post.filter(
+        #             Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+        #             Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+        #     paginated = get_paginated_post_list(instagram_post, items_per_page, page)
+        #
+        # elif platform == 'google' and len(posts.filter(prepost_page__provider="Google Books")) > 0:
+        #     google_post = posts.filter(prepost_page__provider="Google Books").distinct()
+        #     if search is not None and search != '':
+        #         google_post = google_post.filter(
+        #             Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+        #             Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+        #     paginated = get_paginated_post_list(google_post, items_per_page, page)
+
+        else:
+            paginated = ''
+
+        context = {
+            'platform': platform,
+            'paginated': paginated,
+            # 'posts': PostModel.objects.filter(user_id=self.request.user.id),
+        }
+        return context
+
 
 class PostsGetView(LoginRequiredMixin, TemplateView):
     template_name = 'social/my_posts.html'
@@ -1574,38 +1676,157 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
                 invites.append(invited_users_id)
             posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted=False)
 
-        if len(posts.filter(prepost_page__provider="linkedin")) > 0:
+        items_per_page = 2
+        search = self.request.GET.get('search', '')
+        platform = self.request.GET.get('platform', 'fb')
+        # platform = 'fb'
+        page = self.request.GET.get('page', '1')
+
+
+
+        if platform =='ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
             linkedin_post = posts.filter(prepost_page__provider="linkedin").distinct()
+            if search is not None and search != '':
+                linkedin_post = linkedin_post.filter(
+                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+            linkedin_post_paginated = get_paginated_post_list(linkedin_post, items_per_page, page)
         else:
-            linkedin_post = ''
-        if len(posts.filter(prepost_page__provider="facebook")) > 0:
+            linkedin_post_paginated = ''
+
+
+        if platform == 'fb' and len(posts.filter(prepost_page__provider="facebook")) > 0:
             facebook_post = posts.filter(prepost_page__provider="facebook").distinct()
+            if search is not None and search != '':
+                facebook_post = facebook_post.filter(
+                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+            facebook_post_paginated = get_paginated_post_list(facebook_post, items_per_page, page)
         else:
-            facebook_post = ''
-        if len(posts.filter(prepost_page__provider="instagram")) > 0:
+
+            facebook_post_paginated = ''
+
+
+        if platform == 'insta' and len(posts.filter(prepost_page__provider="instagram")) > 0:
             instagram_post = posts.filter(prepost_page__provider="instagram").distinct()
+            if search is not None and search != '':
+                instagram_post = instagram_post.filter(
+                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+            instagram_post_paginated = get_paginated_post_list(instagram_post, items_per_page, page)
         else:
-            instagram_post = ''
-        if len(posts.filter(prepost_page__provider="Google Books")) > 0:
+
+            instagram_post_paginated = ''
+
+        if platform == 'google' and len(posts.filter(prepost_page__provider="Google Books")) > 0:
             google_post = posts.filter(prepost_page__provider="Google Books").distinct()
+            if search is not None and search != '':
+                google_post = google_post.filter(
+                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+            google_post_paginated = get_paginated_post_list(google_post, items_per_page, page)
+
         else:
-            google_post = ''
+            google_post_paginated = ''
+
 
         context = {
-            'posts': PostModel.objects.filter(user_id=self.request.user.id),
-
-            'google_post': google_post,
-
-            'instagram_post': instagram_post,
-
-            'facebook_post': facebook_post,
-
-            'linkedin_post': linkedin_post,
-
+            'platform': platform,
+            # 'paginated': paginated,
+            'linkedin_post': linkedin_post_paginated,
+            'facebook_post': facebook_post_paginated,
+            'instagram_post': instagram_post_paginated,
+            'google_post': google_post_paginated,
+            # 'paginated': paginated,
+            # 'posts': PostModel.objects.filter(user_id=self.request.user.id),
         }
-
         return context
-from django.http import JsonResponse
+
+
+
+class PostApiView(ListAPIView):
+    serializer_class = PostSerializer
+    pagination_class = LinkHeaderPagination
+
+    def get_queryset(self):
+        user_manager = self.request.user.manager
+
+        if user_manager != None:
+            role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
+            user_permission = role.permission
+            if user_permission == 'HIDE':
+                posts = PostModel.objects.filter(user=self.request.user, is_deleted=False)
+            else:
+                posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager),
+                                                 is_deleted=False)
+
+        else:
+            invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
+            invites = []
+            for user in invited:
+                invited_users_id = user.selected_user.id
+                invites.append(invited_users_id)
+            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted=False)
+
+
+
+        search = self.request.GET.get('search', '')
+        platform = self.request.GET.get('platform', 'fb')
+        page = self.request.GET.get('page', '1')
+
+        if platform == 'ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
+            post = posts.filter(prepost_page__provider="linkedin").distinct()
+            if search is not None and search != '':
+                post = post.filter(
+                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+            # paginated = get_paginated_post_list(linkedin_post, items_per_page, page)
+
+        elif platform == 'fb' and len(posts.filter(prepost_page__provider="facebook")) > 0:
+            post = posts.filter(prepost_page__provider="facebook").distinct()
+            if search is not None and search != '':
+                post = post.filter(
+                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+            # paginated = get_paginated_post_list(facebook_post, items_per_page, page)
+
+        elif platform == 'insta' and len(posts.filter(prepost_page__provider="instagram")) > 0:
+            post = posts.filter(prepost_page__provider="instagram").distinct()
+            if search is not None and search != '':
+                post = post.filter(
+                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+            # paginated = get_paginated_post_list(instagram_post, items_per_page, page)
+
+        elif platform == 'google' and len(posts.filter(prepost_page__provider="Google Books")) > 0:
+            post = posts.filter(prepost_page__provider="Google Books").distinct()
+            if search is not None and search != '':
+                post = post.filter(
+                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+            # paginated = get_paginated_post_list(google_post, items_per_page, page)
+
+        else:
+            post = []
+
+        return post
+
+    # def get_page_number(self, request, paginator):
+    #     page_number = request.query_params.get(self.page_query_param, 1)
+    #     if page_number in self.last_page_strings:
+    #         page_number = paginator.num_pages
+    #     return page_number
+    #
+    # def get_paginated_response(self, post):
+    #     return Response(OrderedDict([
+    #         ('count', self.page.paginator.count),
+    #         ('next', self.get_next_link()),
+    #         ('previous', self.get_previous_link()),
+    #         ('results', data)
+    #     ]))
+
+
+
 
 class PostDeleteView(DestroyAPIView):
     queryset = PostModel.objects.all()
@@ -2277,5 +2498,59 @@ class LikeApiView(APIView):
 
 
 
+def page_data(page, per_page, total_records):
+    start_idx = ((page - 1) * per_page) + 1
+    end_idx = start_idx + per_page - 1 if start_idx + per_page - 1 <= total_records else total_records
+    return start_idx, end_idx
+
+def posts_view(request):
+    posts = []
+
+
+    return render(request, 'social/my_posts.html', {'posts': posts})
+
+
+def post_paginated_view(request):
+    post = PostModel.objects.all()
+    queryset = post.order_by('-created_at')
+    page = request.GET.get('page', 1)
+    paginator = Paginator(queryset, 25)
+
+    try:
+        topics = paginator.page(page)
+    except PageNotAnInteger:
+        topics = paginator.page(1)
+    except EmptyPage:
+        topics = paginator.page(paginator.num_pages)
+    start_idx, end_idx = page_data(int(page), paginator.per_page, paginator.count)
+    return render(request, 'social/my_posts.html',
+                  {'post': post, 'posts': topics, "start": start_idx, "end": end_idx})
+
+
+def posts_api(request):
+    posts = []
+    result = {"draw": 1, "recordsTotal": 0, "recordsFiltered": 20, "data": posts}
+    return json.dumps(result)
+
+class PostsView(generics.RetrieveAPIView):
+
+    def get(self, request, *args, **kwargs):
+        page_size = int(request.query_params['length'])
+        page = int(request.query_params['start'])
+        objects = PostModel.objects
+        search = request.query_params['search[value]']
+        if search is not None and search != '':
+            objects = objects.filter(Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+                                     Q(created_by__icontains=search))
+        posts = objects.order_by('-id').all()
+        paginated = posts[page:page_size + page]
+        data = []
+        for o in paginated:
+            data.append({"post": o.post, "images": o.images.image.all, "user": o.user,
+                         "status": o.status, "created_at": o.created_at, "published_at": o.published_at})
+        result = {"draw": request.query_params['draw'], "recordsTotal": posts.count(),
+                  "recordsFiltered": posts.count(),
+                  "data": data}
+        return Response(result)
 
 

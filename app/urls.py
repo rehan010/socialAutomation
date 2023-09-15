@@ -45,7 +45,8 @@ urlpatterns = [
     path('upload/file', PointFileCreateView.as_view(), name="upload_file"),
     path('upload/<int:pk>/delete/', PointFileDeleteView.as_view(), name='point_delete'),
     path('create/post/', PostCreateView.as_view(), name='create_post'),
-    path('posts/<int:pk>', PostsGetView.as_view(), name='my_posts'),
+    # path('posts/<int:pk>', PostsGetView.as_view(), name='my_posts'),
+    path('my_posts/<int:pk>', PostsGetView2.as_view(), name='my_posts2'),
     path('posts/detail/<int:post_id>/<int:page_id>', PostsDetailView.as_view(), name='my_detail_posts'),
     path('posts/like/<int:post_id>/<int:page_id>', LikeApiView.as_view(), name='like_apiview'),
     path('post_draft/<int:pk>', PostDraftView.as_view(), name='post_draft'),
@@ -54,6 +55,11 @@ urlpatterns = [
 
     path('social/social/connections/', ConnectionView.as_view(), name="socialaccount_connections"),
     path('social/social/profile/', SocialProfileView.as_view(), name="social_profile"),
+
+
+
+    path('api_posts/', PostApiView.as_view(), name='api_posts'),
+
 
     path('social/page/', PageDataView.as_view(), name="page_data")
 

@@ -243,7 +243,7 @@
                             </tbody>
                         </table>
                         <div class="pagination flex items-center justify-between p-4">
-                            <div class="flex items-center">
+                            <div >
                                 {% if paginated.has_previous %}
                                     <a href="?platform={{platform}}&page=1" data-page="1" class="pagination-link mr-4" onclick="updatePage(event,'{{platform}}')">&laquo; First</a>
                                     <a href="?platform={{platform}}&page={{ paginated.previous_page_number }}" data-page="{{ paginated.previous_page_number }}" class="pagination-link mr-2" onclick="updatePage(event,'{{platform}}')">Previous</a>
@@ -252,7 +252,7 @@
 
                             <span class="current-page">Page {{ paginated.number }} of {{ paginated.paginator.num_pages }}</span>
 
-                            <div class="flex items-center">
+                            <div >
                                 {% if paginated.has_next %}
                                     <a href="?platform={{platform}}&page={{ paginated.next_page_number }}"  data-page="{{ paginated.next_page_number }}" class="pagination-link ml-2" onclick="updatePage(event,'{{platform}}')">Next</a>
                                     <a href="?platform={{platform}}&page={{ paginated.paginator.num_pages }}" data-page="{{ paginated.paginator.num_pages }}" class="pagination-link ml-4" onclick="updatePage(event,'{{platform}}')">Last &raquo;</a>
@@ -361,8 +361,8 @@ function updatePage(event, platform) {
     });
 
     function createStatusTd(status) {
-        const td = document.createElement('td');
-        td.className = 'p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap';
+
+
 
         const span = document.createElement('span');
         span.className = 'bg-gradient-to-tl px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white';
@@ -384,12 +384,11 @@ function updatePage(event, platform) {
 
         span.textContent = status;
 
-        td.appendChild(span);
-        return td;
+        return span;
     }
     function createImageTd(imagesData) {
-        const td = document.createElement('td');
-        td.className = 'p-2 align-middle bg-transparent border-b whitespace-nowrap';
+
+
 
         const divMediaGroup = document.createElement('div');
         divMediaGroup.className = 'mt-2 avatar-group media-div';
@@ -433,8 +432,7 @@ function updatePage(event, platform) {
             });
         }
 
-        td.appendChild(divMediaGroup);
-        return td;
+        return divMediaGroup;
     }
 
     const fb = document.getElementById("fb");
@@ -450,10 +448,11 @@ function updatePage(event, platform) {
 
         PostData(platform,page)
     });
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
 
     function createProfileTd(userData) {
-        const td = document.createElement('td');
-        td.className = 'p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent';
 
         const divFlex = document.createElement('div');
         divFlex.className = 'flex px-2 py-1';
@@ -464,9 +463,9 @@ function updatePage(event, platform) {
         img.alt = userData.username; // Replace with the appropriate user data field for alt text
 
         if (userData.profile_image) {
-            img.src = userData.profile_image.url; // Replace with the appropriate user data field for image URL
+            img.src = userData.profile_image.url;
         } else {
-            img.src = '{% static "image/default.png" %}'; // Replace with the default image URL
+            img.src = '{% static "image/default.png" %}';
         }
 
         divImage.appendChild(img);
@@ -477,7 +476,7 @@ function updatePage(event, platform) {
 
         const h6 = document.createElement('h6');
         h6.className = 'mb-0 text-sm leading-normal font-semibold';
-        h6.textContent = userData.username; // Replace with the appropriate user data field for the username
+        h6.textContent = capitalizeFirstLetter(userData.username);
 
         const p = document.createElement('p');
         p.className = 'mb-0 text-xs leading-tight text-slate-400 pt-1';
@@ -486,9 +485,7 @@ function updatePage(event, platform) {
         divText.appendChild(h6);
         divText.appendChild(p);
         divFlex.appendChild(divText);
-
-        td.appendChild(divFlex);
-        return td;
+        return divFlex;
     }
 
     function convertTimestampToNaturalTime(createdTimestamp) {
@@ -568,8 +565,6 @@ function updatePage(event, platform) {
     }
 
     function createCreatedAtTd(createdTimestamp) {
-        const td = document.createElement('td');
-        td.className = 'p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent';
 
         const divFlex = document.createElement('div');
         divFlex.className = 'flex px-4 py-1';
@@ -587,9 +582,9 @@ function updatePage(event, platform) {
 
         divInner.appendChild(h6);
         divFlex.appendChild(divInner);
-        td.appendChild(divFlex);
 
-        return td;
+
+        return divFlex;
     }
 
 let nextButton = null;
@@ -631,20 +626,27 @@ let lastButton = null;
                                 existingPaginationDiv.removeChild(existingPaginationDiv.firstChild);
                             }
                             const rightLinksContainer = document.createElement('div');
-                            rightLinksContainer.classList.add('flex', 'items-center');
-                            // Now you can use nextPageUrl and lastPageUrl to create pagination links in the same parent element
-                            if (nextPageUrl) {
-                                // Create "Next" link
-                                const nextLink = document.createElement('a');
-                                nextLink.classList.add('ml-2');
-                                nextLink.setAttribute('data-target',`${nextPageUrl}`);
-                                nextLink.onclick=()=>handleClick(event);
-                                nextLink.textContent = 'Next';
-                                nextLink.id = 'nextButton';
-                                rightLinksContainer.appendChild(nextLink);
-                                nextButton = nextLink;
+                            rightLinksContainer.classList.add('flex', 'items-center', 'justify-between', 'p-1');
+
+
+                            if (firstPageUrl) {
+
+                                const firstLink = document.createElement('a');
+                                firstLink.classList.add('mr-4');
+
+                                firstLink.setAttribute('data-target',`${firstPageUrl}`);
+                                firstLink.onclick=()=>handleClick(event);
+                                const laquo = document.createTextNode('\u00AB '); // &laquo;
+                                firstLink.appendChild(laquo);
+
+                                firstLink.textContent += ' First';
+
+                                firstLink.id = 'firstButton';
+                                rightLinksContainer.appendChild(firstLink);
+                                firstButton = firstLink;
 
                             }
+
                             if (prevPageUrl) {
 
                                 const prevLink = document.createElement('a');
@@ -658,19 +660,21 @@ let lastButton = null;
                                 prevButton = prevLink;
 
                             }
-                            if (firstPageUrl) {
 
-                                const firstLink = document.createElement('a');
-                                firstLink.classList.add('mr-4');
-
-                                firstLink.setAttribute('data-target',`${firstPageUrl}`);
-                                firstLink.onclick=()=>handleClick(event);
-                                firstLink.textContent = 'First';
-                                firstLink.id = 'firstButton';
-                                rightLinksContainer.appendChild(firstLink);
-                                firstButton = firstLink;
+                            if (nextPageUrl) {
+                                // Create "Next" link
+                                const nextLink = document.createElement('a');
+                                nextLink.classList.add('ml-2');
+                                nextLink.setAttribute('data-target',`${nextPageUrl}`);
+                                nextLink.onclick=()=>handleClick(event);
+                                nextLink.textContent = 'Next';
+                                nextLink.id = 'nextButton';
+                                rightLinksContainer.appendChild(nextLink);
+                                nextButton = nextLink;
 
                             }
+
+
 
                             if (lastPageUrl) {
                                 // Create "Last" link
@@ -679,7 +683,10 @@ let lastButton = null;
 
                                 lastLink.setAttribute('data-target',`${lastPageUrl}`);
                                 lastLink.onclick=()=>handleClick(event);
-                                lastLink.textContent = 'Last';
+                                lastLink.textContent = 'Last ';
+                                const raquo = document.createTextNode('\u00BB');
+                                lastLink.appendChild(raquo);
+
                                 lastLink.id = 'lastButton';
                                 rightLinksContainer.appendChild(lastLink);
                                 lastButton = lastLink;
@@ -733,10 +740,10 @@ let lastButton = null;
                                     url: result.user['profile_image']
                                 }
                             };
-                            const profileTd = createProfileTd(userData);
-
                             const cell1 = document.createElement('td');
-                            cell1.appendChild(profileTd); // Modify this to access the correct field
+                            cell1.className = 'p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent';
+                            const profileTd = createProfileTd(userData);
+                            cell1.appendChild(profileTd);
                             const cell2 = document.createElement('td');
                             cell2.className = 'p-2 align-middle bg-transparent border-b whitespace-nowrap';
                             const div1 = document.createElement('div');
@@ -766,24 +773,29 @@ let lastButton = null;
                                     }
                                 });
                             });
-
-                            const imageTd = createImageTd(imagesData);
                             const cell3 = document.createElement('td');
+                            cell3.className = 'p-2 align-middle bg-transparent border-b whitespace-nowrap';
+                            const imageTd = createImageTd(imagesData);
                             cell3.appendChild(imageTd);
 
                             const p = { status: result.status };
-                            const statusTd = createStatusTd(p.status);
                             const cell4 = document.createElement('td');
+                            cell4.className = 'p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap';
+                            const statusTd = createStatusTd(p.status);
                             cell4.appendChild(statusTd);
 
                             const createdTimestamp = result.created_at;
-                            const createdAtTd = createCreatedAtTd(createdTimestamp);
                             const cell5 = document.createElement('td');
+                            cell5.className = 'p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap';
+                            const createdAtTd = createCreatedAtTd(createdTimestamp);
                             cell5.appendChild(createdAtTd);
 
                             const publishedTimestamp = result.published_at;
-                            const publishedTd = createCreatedAtTd(publishedTimestamp);
                             const cell6 = document.createElement('td');
+                            cell6.className = 'p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap';
+
+                            const publishedTd = createCreatedAtTd(publishedTimestamp);
+
                             cell6.appendChild(publishedTd);
 
                             share_page =[];
@@ -814,8 +826,8 @@ let lastButton = null;
                             });
                             const post_pk = result.id;
 
-                            const td = document.createElement('td');
-                            td.className = 'p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center';
+                            const cell7 = document.createElement('td');
+                            cell7.className = 'p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap justify-center';
 
                             const divFlex = document.createElement('div');
                             divFlex.className = 'flex px-2 py-1';
@@ -873,11 +885,8 @@ let lastButton = null;
                                 });
                             }
                             divFlex.appendChild(divInner);
-                            td.appendChild(divFlex);
 
-                            // Append the created <td> element to your table
-                            const cell7 = document.createElement('td');
-                            cell7.appendChild(td);
+                            cell7.appendChild(divFlex);
 
 
 
