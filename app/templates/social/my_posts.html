@@ -244,7 +244,7 @@
                             </tbody>
                         </table>
                         <div class="pagination flex items-center justify-between p-4">
-                            <div >
+                            <div class="flex items-center">
                                 {% if facebook_post.has_previous %}
                                     <a href="?platform=fb&page=1" data-page="1" class="pagination-link mr-4" onclick="updatePage(event,'fb')">&laquo; First</a>
                                     <a href="?platform=fb&page={{ facebook_post.previous_page_number }}" data-page="{{ facebook_post.previous_page_number }}" class="pagination-link mr-2" onclick="updatePage(event,'fb')">Previous</a>
@@ -253,7 +253,7 @@
 
                             <span class="current-page">Page {{ facebook_post.number }} of {{ facebook_post.paginator.num_pages }}</span>
 
-                            <div ">
+                            <div class="flex items-center">
                                 {% if facebook_post.has_next %}
                                     <a href="?platform=fb&page={{ facebook_post.next_page_number }}"  data-page="{{ facebook_post.next_page_number }}" class="pagination-link ml-2" onclick="updatePage(event,'fb')">Next</a>
                                     <a href="?platform=fb&page={{ facebook_post.paginator.num_pages }}" data-page="{{ facebook_post.paginator.num_pages }}" class="pagination-link ml-4" onclick="updatePage(event,'fb')">Last &raquo;</a>

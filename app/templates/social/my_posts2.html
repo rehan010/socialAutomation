@@ -621,18 +621,42 @@ let lastButton = null;
                             const firstPageUrl = paginationLinks.first;
                             const existingPaginationDiv = document.querySelector('.pagination');
 
-                            // Remove the existing pagination links
+
                             while (existingPaginationDiv.firstChild) {
                                 existingPaginationDiv.removeChild(existingPaginationDiv.firstChild);
                             }
                             const rightLinksContainer = document.createElement('div');
-                            rightLinksContainer.classList.add('flex', 'items-center', 'justify-between', 'p-1');
+                            rightLinksContainer.classList.add('pagination','flex', 'items-center', 'justify-between', 'p-1');
 
+                            let current_page = 1;
+                            let total_page;
+                            if(lastPageUrl) {
+                                const url = lastPageUrl;
+                                const urlParams = new URLSearchParams(url.split('?')[1]);
+                                total_page = urlParams.get('page');
 
+                            }else{
+                                const url = prevPageUrl;
+                                const urlParams = new URLSearchParams(url.split('?')[1]);
+                                total_page = urlParams.get('page');
+                                total_page =parseInt(total_page) +1;
+                            }
+                            if(nextPageUrl && prevPageUrl){
+                                const url = prevPageUrl;
+                                const urlParams = new URLSearchParams(url.split('?')[1]);
+                                prev_page = urlParams.get('page');
+                                if(prev_page == null){
+                                    current_page = 2;
+                                }
+                            }
                             if (firstPageUrl) {
 
                                 const firstLink = document.createElement('a');
                                 firstLink.classList.add('mr-4');
+                                const url = firstPageUrl;
+                                const urlParams = new URLSearchParams(url.split('?')[1]);
+                                let page = urlParams.get('page');
+                                console.log(page);
 
                                 firstLink.setAttribute('data-target',`${firstPageUrl}`);
                                 firstLink.onclick=()=>handleClick(event);
@@ -652,6 +676,13 @@ let lastButton = null;
                                 const prevLink = document.createElement('a');
                                 prevLink.classList.add('mr-2');
                                 prevLink.a = prevPageUrl;
+
+                                const url = prevPageUrl;
+                                const urlParams = new URLSearchParams(url.split('?')[1]);
+                                let page = urlParams.get('page');
+                                console.log(page);
+
+
                                 prevLink.textContent = 'Prev';
                                 prevLink.setAttribute('data-target',`${prevPageUrl}`);
                                 prevLink.onclick=()=>handleClick(event);
@@ -659,12 +690,34 @@ let lastButton = null;
                                 rightLinksContainer.appendChild(prevLink);
                                 prevButton = prevLink;
 
+                                if (page == null){
+                                    current_page = current_page;
+                                }else{
+                                    current_page = parseInt(page) + 1;
+                                }
+
                             }
+
+                            const currentPageSpan = document.createElement('span');
+                            currentPageSpan.className = 'current-page';
+
+
+                            currentPageSpan.textContent = `Page ${current_page} of ${total_page}`;
+
+
+                            rightLinksContainer.appendChild(currentPageSpan);
+
 
                             if (nextPageUrl) {
                                 // Create "Next" link
                                 const nextLink = document.createElement('a');
                                 nextLink.classList.add('ml-2');
+                                const url = nextPageUrl;
+                                const urlParams = new URLSearchParams(url.split('?')[1]);
+                                let page = urlParams.get('page');
+                                console.log(page);
+
+
                                 nextLink.setAttribute('data-target',`${nextPageUrl}`);
                                 nextLink.onclick=()=>handleClick(event);
                                 nextLink.textContent = 'Next';
@@ -672,14 +725,24 @@ let lastButton = null;
                                 rightLinksContainer.appendChild(nextLink);
                                 nextButton = nextLink;
 
+                                if (page == null){
+                                    current_page = total_page;
+                                }else{
+                                    current_page = parseInt(page) - 1;
+                                }
+
                             }
-
-
 
                             if (lastPageUrl) {
                                 // Create "Last" link
                                 const lastLink = document.createElement('a');
                                 lastLink.classList.add('ml-4');
+
+                                const url = lastPageUrl;
+                                const urlParams = new URLSearchParams(url.split('?')[1]);
+                                let page = urlParams.get('page');
+                                console.log(page);
+
 
                                 lastLink.setAttribute('data-target',`${lastPageUrl}`);
                                 lastLink.onclick=()=>handleClick(event);
@@ -690,8 +753,9 @@ let lastButton = null;
                                 lastLink.id = 'lastButton';
                                 rightLinksContainer.appendChild(lastLink);
                                 lastButton = lastLink;
-
                             }
+
+
 
                             // Append the rightLinksContainer to the existing pagination div
                             existingPaginationDiv.appendChild(rightLinksContainer);
@@ -840,23 +904,20 @@ let lastButton = null;
                                 const a = document.createElement('a');
                                 post_urn.forEach(urnData => {
                                     const urn = urnData.page;
-                                    const pk = urn.pk
-                                    const provider = urn.org_provider
-                                    const name = urn.name
-                                    console.log(name);
-                                    const url = window.location.protocol + "//" + window.location.host + "/posts/detail/" + post_pk + "/"+ pk + "?page_name=" + provider;
-                                    if (provider === platformName){
+                                    const pk = urn.pk;
+                                    const provider = urn.org_provider;
+                                    const name = urn.name;
+                                    const url = window.location.protocol + "//" + window.location.host + "/posts/detail/" + post_pk + "/" + pk + "?page_name=" + provider;
+                                    if (provider === platformName) {
+                                        const a = document.createElement('a');
                                         a.href = url;
                                         const h6 = document.createElement('h6');
                                         h6.className = 'mb-0 text-sm font-bold leading-normal';
                                         h6.textContent = name;
                                         a.appendChild(h6);
                                         divInner.appendChild(a);
-
                                     }
                                 });
-
-
                             }
                             // Example: Create an <a> element for 'DRAFT' status with a link
                             else if (p.status === 'DRAFT') {
@@ -963,7 +1024,7 @@ let lastButton = null;
       const data = event.target;
       const data_target = data.getAttribute('data-target');
       const url = data_target;
-      console.log(url);
+
 
 
         const urlParams = new URLSearchParams(url.split('?')[1]);
