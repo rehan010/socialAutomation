@@ -141,9 +141,9 @@
                                         Video
                                         {% else %}
                                         <a href="javascript:;"
-                                           class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30"
+                                           class="photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30"
                                            data-target="tooltip_trigger" data-placement="bottom">
-                                            <img src="{{image.image.url}}" class="w-full rounded-full" alt="team1"/>
+                                            <img src="{{image.image.url}}" class="w-full h-full object-cover rounded-full" alt="team1"/>
                                         </a>
                                         <div data-target="tooltip"
                                              class="hidden px-2 py-1 text-white bg-black rounded-lg text-sm"
@@ -348,7 +348,7 @@ function updatePage(event, platform) {
         searchInput.addEventListener('input', function() {
             // Automatically update the form's action attribute with the current input value.
             const searchQuery = searchInput.value;
-            if (searchQuery != '') {
+            if (searchQuery !== '') {
                  const action = `/posts/${pk}?search=${searchQuery}`;
                  searchForm.action = action;
             }else{
@@ -392,24 +392,26 @@ function updatePage(event, platform) {
 
         const divMediaGroup = document.createElement('div');
         divMediaGroup.className = 'mt-2 avatar-group media-div';
+        divMediaGroup.style.display = 'flex';
+
 
         if (imagesData) {
             imagesData.forEach(imageData => {
                 const divInner = document.createElement('div');
 
-                if (imageData.is_mp4_file) {
-                    // If it's a video, add "Video" text
+                if (imageData.image.url.endsWith(".mp4")) {
                     divInner.textContent = 'Video';
                 } else {
+
                     const anchorLink = document.createElement('a');
                     anchorLink.href = 'javascript:;';
-                    anchorLink.className = 'photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30';
+                    anchorLink.className = 'photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30';
                     anchorLink.dataset.target = 'tooltip_trigger';
                     anchorLink.dataset.placement = 'bottom';
 
                     const img = document.createElement('img');
                     img.src = imageData.image.url;
-                    img.className = 'w-full rounded-full';
+                    img.className = 'w-full h-full object-cover rounded-full ';
                     img.alt = 'team1';
 
                     const tooltipDiv = document.createElement('div');
@@ -462,10 +464,10 @@ function updatePage(event, platform) {
         img.className = 'inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl';
         img.alt = userData.username; // Replace with the appropriate user data field for alt text
 
-        if (userData.profile_image) {
+        if (userData.profile_image.url !== null) {
             img.src = userData.profile_image.url;
         } else {
-            img.src = '{% static "image/default.png" %}';
+            img.src = "{% static 'image/default.png' %}";
         }
 
         divImage.appendChild(img);
@@ -489,7 +491,8 @@ function updatePage(event, platform) {
     }
 
     function convertTimestampToNaturalTime(createdTimestamp) {
-        // Parse the timestamp string into a Date object
+
+
         const parsedTimestamp = new Date(createdTimestamp);
 
         // Get the current date
@@ -565,7 +568,6 @@ function updatePage(event, platform) {
     }
 
     function createCreatedAtTd(createdTimestamp) {
-
         const divFlex = document.createElement('div');
         divFlex.className = 'flex px-4 py-1';
 
@@ -576,9 +578,11 @@ function updatePage(event, platform) {
         h6.className = 'mb-0 text-sm leading-normal';
 
         // Calculate natural time using a function (e.g., naturalTimeFunction)
+
+
         const naturalTime = convertTimestampToNaturalTime(createdTimestamp);
 
-        h6.textContent = naturalTime; // Replace with your natural time calculation
+        h6.textContent = naturalTime;
 
         divInner.appendChild(h6);
         divFlex.appendChild(divInner);
@@ -586,6 +590,25 @@ function updatePage(event, platform) {
 
         return divFlex;
     }
+    function createPublishedTd() {
+        const divFlex = document.createElement('div');
+        divFlex.className = 'flex px-4 py-1';
+
+        const divInner = document.createElement('div');
+        divInner.className = 'flex flex-col justify-center items-center w-full';
+
+        const h6 = document.createElement('h6');
+        h6.className = 'mb-0 text-sm leading-normal';
+
+        h6.textContent = 'None';
+
+        divInner.appendChild(h6);
+        divFlex.appendChild(divInner);
+
+
+        return divFlex;
+    }
+
 
 let nextButton = null;
 let prevButton = null;
@@ -612,158 +635,184 @@ let lastButton = null;
                             });
                             return links;
                         }
-                        if (data.length > 0){
+                        if (response.headers.get('Link') !== null ){
+                            if (data.length > 0){
 
-                            const paginationLinks = parseLinkHeader(responseHeaders.Link);
-                            const nextPageUrl = paginationLinks.next;
-                            const lastPageUrl = paginationLinks.last;
-                            const prevPageUrl = paginationLinks.prev;
-                            const firstPageUrl = paginationLinks.first;
-                            const existingPaginationDiv = document.querySelector('.pagination');
+                                const paginationLinks = parseLinkHeader(responseHeaders.Link);
+                                const nextPageUrl = paginationLinks.next;
+                                const lastPageUrl = paginationLinks.last;
+                                const prevPageUrl = paginationLinks.prev;
+                                const firstPageUrl = paginationLinks.first;
+                                const existingPaginationDiv = document.querySelector('.pagination');
 
 
-                            while (existingPaginationDiv.firstChild) {
-                                existingPaginationDiv.removeChild(existingPaginationDiv.firstChild);
-                            }
-                            const rightLinksContainer = document.createElement('div');
-                            rightLinksContainer.classList.add('pagination','flex', 'items-center', 'justify-between', 'p-1');
+                                while (existingPaginationDiv.firstChild) {
+                                    existingPaginationDiv.removeChild(existingPaginationDiv.firstChild);
+                                }
+                                const leftLinksContainer = document.createElement('div');
+                                leftLinksContainer.classList.add('flex', 'items-center');
 
-                            let current_page = 1;
-                            let total_page;
-                            if(lastPageUrl) {
-                                const url = lastPageUrl;
-                                const urlParams = new URLSearchParams(url.split('?')[1]);
-                                total_page = urlParams.get('page');
+                                let current_page = 1;
+                                let total_page;
+                                if(lastPageUrl) {
+                                    const url = lastPageUrl;
+                                    const urlParams = new URLSearchParams(url.split('?')[1]);
+                                    total_page = urlParams.get('page');
+
+                                }else{
+                                    const url = prevPageUrl;
+                                    const urlParams = new URLSearchParams(url.split('?')[1]);
+                                    total_page = urlParams.get('page');
+                                    total_page =parseInt(total_page) +1;
+                                }
+                                if(nextPageUrl && prevPageUrl){
+                                    const url = prevPageUrl;
+                                    const urlParams = new URLSearchParams(url.split('?')[1]);
+                                    prev_page = urlParams.get('page');
+                                    if(prev_page == null){
+                                        current_page = 2;
+                                    }
+                                }
+                                if (firstPageUrl) {
+
+                                    const firstLink = document.createElement('a');
+                                    firstLink.classList.add('mr-4','cursor-pointer');
+                                    const url = firstPageUrl;
+                                    const urlParams = new URLSearchParams(url.split('?')[1]);
+                                    let page = urlParams.get('page');
+                                    console.log(page);
+
+                                    firstLink.setAttribute('data-target',`${firstPageUrl}`);
+                                    firstLink.onclick=()=>handleClick(event);
+                                    const laquo = document.createTextNode('\u00AB '); // &laquo;
+                                    firstLink.appendChild(laquo);
+
+                                    firstLink.textContent += ' First';
+
+                                    firstLink.id = 'firstButton';
+                                    leftLinksContainer.appendChild(firstLink);
+                                    firstButton = firstLink;
+
+                                }
+
+                                if (prevPageUrl) {
+
+                                    const prevLink = document.createElement('a');
+                                    prevLink.classList.add('mr-2','cursor-pointer');
+                                    prevLink.a = prevPageUrl;
+
+                                    const url = prevPageUrl;
+                                    const urlParams = new URLSearchParams(url.split('?')[1]);
+                                    let page = urlParams.get('page');
+                                    console.log(page);
+
+
+                                    prevLink.textContent = 'Prev';
+                                    prevLink.setAttribute('data-target',`${prevPageUrl}`);
+                                    prevLink.onclick=()=>handleClick(event);
+                                    prevLink.id = 'prevButton';
+                                    leftLinksContainer.appendChild(prevLink);
+                                    prevButton = prevLink;
+
+                                    if (page == null){
+                                        current_page = current_page;
+                                    }else{
+                                        current_page = parseInt(page) + 1;
+                                    }
+
+                                }
+
+                                const currentPageSpan = document.createElement('span');
+                                currentPageSpan.className = 'current-page';
+
+
+                                currentPageSpan.textContent = `Page ${current_page} of ${total_page}`;
+
+
+
+
+                                const rightLinksContainer = document.createElement('div');
+                                rightLinksContainer.classList.add('flex', 'items-center');
+
+
+                                if (nextPageUrl) {
+                                    // Create "Next" link
+                                    const nextLink = document.createElement('a');
+                                    nextLink.classList.add('ml-2','cursor-pointer');
+                                    const url = nextPageUrl;
+                                    const urlParams = new URLSearchParams(url.split('?')[1]);
+                                    let page = urlParams.get('page');
+                                    console.log(page);
+
+
+                                    nextLink.setAttribute('data-target',`${nextPageUrl}`);
+                                    nextLink.onclick=()=>handleClick(event);
+                                    nextLink.textContent = 'Next';
+                                    nextLink.id = 'nextButton';
+                                    rightLinksContainer.appendChild(nextLink);
+                                    nextButton = nextLink;
+
+                                    if (page == null){
+                                        current_page = total_page;
+                                    }else{
+                                        current_page = parseInt(page) - 1;
+                                    }
+
+                                }
+
+                                if (lastPageUrl) {
+                                    // Create "Last" link
+                                    const lastLink = document.createElement('a');
+                                    lastLink.classList.add('ml-4','cursor-pointer');
+
+                                    const url = lastPageUrl;
+                                    const urlParams = new URLSearchParams(url.split('?')[1]);
+                                    let page = urlParams.get('page');
+                                    console.log(page);
+
+
+                                    lastLink.setAttribute('data-target',`${lastPageUrl}`);
+                                    lastLink.onclick=()=>handleClick(event);
+                                    lastLink.textContent = 'Last ';
+                                    const raquo = document.createTextNode('\u00BB');
+                                    lastLink.appendChild(raquo);
+
+                                    lastLink.id = 'lastButton';
+                                    rightLinksContainer.appendChild(lastLink);
+                                    lastButton = lastLink;
+                                }
+
+
+
+                                // Append the rightLinksContainer to the existing pagination div
+                                existingPaginationDiv.appendChild(leftLinksContainer);
+                                existingPaginationDiv.appendChild(currentPageSpan);
+                                existingPaginationDiv.appendChild(rightLinksContainer);
 
                             }else{
-                                const url = prevPageUrl;
-                                const urlParams = new URLSearchParams(url.split('?')[1]);
-                                total_page = urlParams.get('page');
-                                total_page =parseInt(total_page) +1;
-                            }
-                            if(nextPageUrl && prevPageUrl){
-                                const url = prevPageUrl;
-                                const urlParams = new URLSearchParams(url.split('?')[1]);
-                                prev_page = urlParams.get('page');
-                                if(prev_page == null){
-                                    current_page = 2;
+                                const existingPaginationDiv = document.querySelector('.pagination');
+                                while (existingPaginationDiv.firstChild) {
+                                    existingPaginationDiv.removeChild(existingPaginationDiv.firstChild);
                                 }
                             }
-                            if (firstPageUrl) {
-
-                                const firstLink = document.createElement('a');
-                                firstLink.classList.add('mr-4');
-                                const url = firstPageUrl;
-                                const urlParams = new URLSearchParams(url.split('?')[1]);
-                                let page = urlParams.get('page');
-                                console.log(page);
-
-                                firstLink.setAttribute('data-target',`${firstPageUrl}`);
-                                firstLink.onclick=()=>handleClick(event);
-                                const laquo = document.createTextNode('\u00AB '); // &laquo;
-                                firstLink.appendChild(laquo);
-
-                                firstLink.textContent += ' First';
-
-                                firstLink.id = 'firstButton';
-                                rightLinksContainer.appendChild(firstLink);
-                                firstButton = firstLink;
-
-                            }
-
-                            if (prevPageUrl) {
-
-                                const prevLink = document.createElement('a');
-                                prevLink.classList.add('mr-2');
-                                prevLink.a = prevPageUrl;
-
-                                const url = prevPageUrl;
-                                const urlParams = new URLSearchParams(url.split('?')[1]);
-                                let page = urlParams.get('page');
-                                console.log(page);
-
-
-                                prevLink.textContent = 'Prev';
-                                prevLink.setAttribute('data-target',`${prevPageUrl}`);
-                                prevLink.onclick=()=>handleClick(event);
-                                prevLink.id = 'prevButton';
-                                rightLinksContainer.appendChild(prevLink);
-                                prevButton = prevLink;
-
-                                if (page == null){
-                                    current_page = current_page;
-                                }else{
-                                    current_page = parseInt(page) + 1;
-                                }
-
-                            }
-
-                            const currentPageSpan = document.createElement('span');
-                            currentPageSpan.className = 'current-page';
-
-
-                            currentPageSpan.textContent = `Page ${current_page} of ${total_page}`;
-
-
-                            rightLinksContainer.appendChild(currentPageSpan);
-
-
-                            if (nextPageUrl) {
-                                // Create "Next" link
-                                const nextLink = document.createElement('a');
-                                nextLink.classList.add('ml-2');
-                                const url = nextPageUrl;
-                                const urlParams = new URLSearchParams(url.split('?')[1]);
-                                let page = urlParams.get('page');
-                                console.log(page);
-
-
-                                nextLink.setAttribute('data-target',`${nextPageUrl}`);
-                                nextLink.onclick=()=>handleClick(event);
-                                nextLink.textContent = 'Next';
-                                nextLink.id = 'nextButton';
-                                rightLinksContainer.appendChild(nextLink);
-                                nextButton = nextLink;
-
-                                if (page == null){
-                                    current_page = total_page;
-                                }else{
-                                    current_page = parseInt(page) - 1;
-                                }
-
-                            }
-
-                            if (lastPageUrl) {
-                                // Create "Last" link
-                                const lastLink = document.createElement('a');
-                                lastLink.classList.add('ml-4');
-
-                                const url = lastPageUrl;
-                                const urlParams = new URLSearchParams(url.split('?')[1]);
-                                let page = urlParams.get('page');
-                                console.log(page);
-
-
-                                lastLink.setAttribute('data-target',`${lastPageUrl}`);
-                                lastLink.onclick=()=>handleClick(event);
-                                lastLink.textContent = 'Last ';
-                                const raquo = document.createTextNode('\u00BB');
-                                lastLink.appendChild(raquo);
-
-                                lastLink.id = 'lastButton';
-                                rightLinksContainer.appendChild(lastLink);
-                                lastButton = lastLink;
-                            }
-
-
-
-                            // Append the rightLinksContainer to the existing pagination div
-                            existingPaginationDiv.appendChild(rightLinksContainer);
                         }else{
                             const existingPaginationDiv = document.querySelector('.pagination');
                             while (existingPaginationDiv.firstChild) {
                                 existingPaginationDiv.removeChild(existingPaginationDiv.firstChild);
                             }
+                            const currentPageSpan = document.createElement('span');
+                            const pagespace = document.createElement('span');
+                            const pagespace1 = document.createElement('span');
+                            currentPageSpan.className = 'current-page flex';
+                            pagespace.className = 'current-page flex';
+                            pagespace1.className = 'current-page flex';
+
+                            currentPageSpan.textContent = `Page 1 of 1`;
+                            pagespace.textContent = ``;
+                            pagespace1.textContent = ``;
+                            existingPaginationDiv.appendChild(pagespace);
+                            existingPaginationDiv.appendChild(currentPageSpan);
+                            existingPaginationDiv.appendChild(pagespace1);
                         }
 
 
@@ -790,6 +839,7 @@ let lastButton = null;
                             const row = document.createElement('tr');
 
                             // Create table cells and set their content
+
                             const first_name = result.user['first_name']
                             const last_name = result.user['last_name']
                             const username = result.user['username']
@@ -829,7 +879,6 @@ let lastButton = null;
                             result.images.forEach(image => {
                                 const imageUrl = image.image;
 
-                                // Create an object for each image and push it to the imagesData array
                                 imagesData.push({
                                     is_mp4_file: false, // Assuming it's not an mp4 file for now
                                     image: {
@@ -858,9 +907,15 @@ let lastButton = null;
                             const cell6 = document.createElement('td');
                             cell6.className = 'p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap';
 
-                            const publishedTd = createCreatedAtTd(publishedTimestamp);
+                            if ( publishedTimestamp === null){
+                                 const published_Td = createPublishedTd();
+                                 cell6.appendChild(published_Td);
+                            }else{
+                                 const publishedTd = createCreatedAtTd(publishedTimestamp);
+                                 cell6.appendChild(publishedTd);
+                            }
 
-                            cell6.appendChild(publishedTd);
+
 
                             share_page =[];
                             result.prepost_page.forEach(org => {
@@ -891,7 +946,7 @@ let lastButton = null;
                             const post_pk = result.id;
 
                             const cell7 = document.createElement('td');
-                            cell7.className = 'p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap justify-center';
+                            cell7.className = 'p-2 text-sm leading-normal  align-middle bg-transparent border-b whitespace-nowrap justify-center';
 
                             const divFlex = document.createElement('div');
                             divFlex.className = 'flex px-2 py-1';
@@ -962,6 +1017,25 @@ let lastButton = null;
 
                             // Append the row to the table body
                             tableBody.appendChild(row);
+
+                            const mediadivs = document.querySelectorAll('.media-div');
+                            if (mediadivs.length > 0){
+                                mediadivs.forEach( div => {
+
+                                    const anchors = div.querySelectorAll('.photos');
+                                    var i =0;
+                                    if (anchors.length>0){
+                                        for(var j=0; j<anchors.length;j++){
+                                            if(i!=0){
+                                                anchors[i].classList.add('-ml-4');
+                                            }
+                                            i++;
+                                        }
+                                    }
+                                })
+
+                            }
+
                         });
 
               } else {

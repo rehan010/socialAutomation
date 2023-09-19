@@ -1571,8 +1571,8 @@ class PostDraftView(UpdateView):
         return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
 
 def get_paginated_post_list(post_queryset, items_per_page, page_number):
-
-    paginator = Paginator(post_queryset, items_per_page)
+    post = post_queryset.order_by('-created_at')
+    paginator = Paginator(post, items_per_page)
     page_obj = paginator.get_page(page_number)
 
 
@@ -1748,6 +1748,7 @@ class PostApiView(ListAPIView):
     serializer_class = PostSerializer
     pagination_class = LinkHeaderPagination
 
+
     def get_queryset(self):
         user_manager = self.request.user.manager
 
@@ -1780,7 +1781,7 @@ class PostApiView(ListAPIView):
                 post = post.filter(
                     Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
                     Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            # paginated = get_paginated_post_list(linkedin_post, items_per_page, page)
+            post = post.order_by('-created_at')
 
         elif platform == 'fb' and len(posts.filter(prepost_page__provider="facebook")) > 0:
             post = posts.filter(prepost_page__provider="facebook").distinct()
@@ -1788,7 +1789,7 @@ class PostApiView(ListAPIView):
                 post = post.filter(
                     Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
                     Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            # paginated = get_paginated_post_list(facebook_post, items_per_page, page)
+            post = post.order_by('-created_at')
 
         elif platform == 'insta' and len(posts.filter(prepost_page__provider="instagram")) > 0:
             post = posts.filter(prepost_page__provider="instagram").distinct()
@@ -1796,7 +1797,7 @@ class PostApiView(ListAPIView):
                 post = post.filter(
                     Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
                     Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            # paginated = get_paginated_post_list(instagram_post, items_per_page, page)
+            post = post.order_by('-created_at')
 
         elif platform == 'google' and len(posts.filter(prepost_page__provider="Google Books")) > 0:
             post = posts.filter(prepost_page__provider="Google Books").distinct()
@@ -1804,7 +1805,8 @@ class PostApiView(ListAPIView):
                 post = post.filter(
                     Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
                     Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            # paginated = get_paginated_post_list(google_post, items_per_page, page)
+            post = post.order_by('-created_at')
+
 
         else:
             post = []
@@ -2496,61 +2498,5 @@ class LikeApiView(APIView):
             pass
         return JsonResponse(unlike_response)
 
-
-
-def page_data(page, per_page, total_records):
-    start_idx = ((page - 1) * per_page) + 1
-    end_idx = start_idx + per_page - 1 if start_idx + per_page - 1 <= total_records else total_records
-    return start_idx, end_idx
-
-def posts_view(request):
-    posts = []
-
-
-    return render(request, 'social/my_posts.html', {'posts': posts})
-
-
-def post_paginated_view(request):
-    post = PostModel.objects.all()
-    queryset = post.order_by('-created_at')
-    page = request.GET.get('page', 1)
-    paginator = Paginator(queryset, 25)
-
-    try:
-        topics = paginator.page(page)
-    except PageNotAnInteger:
-        topics = paginator.page(1)
-    except EmptyPage:
-        topics = paginator.page(paginator.num_pages)
-    start_idx, end_idx = page_data(int(page), paginator.per_page, paginator.count)
-    return render(request, 'social/my_posts.html',
-                  {'post': post, 'posts': topics, "start": start_idx, "end": end_idx})
-
-
-def posts_api(request):
-    posts = []
-    result = {"draw": 1, "recordsTotal": 0, "recordsFiltered": 20, "data": posts}
-    return json.dumps(result)
-
-class PostsView(generics.RetrieveAPIView):
-
-    def get(self, request, *args, **kwargs):
-        page_size = int(request.query_params['length'])
-        page = int(request.query_params['start'])
-        objects = PostModel.objects
-        search = request.query_params['search[value]']
-        if search is not None and search != '':
-            objects = objects.filter(Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-                                     Q(created_by__icontains=search))
-        posts = objects.order_by('-id').all()
-        paginated = posts[page:page_size + page]
-        data = []
-        for o in paginated:
-            data.append({"post": o.post, "images": o.images.image.all, "user": o.user,
-                         "status": o.status, "created_at": o.created_at, "published_at": o.published_at})
-        result = {"draw": request.query_params['draw'], "recordsTotal": posts.count(),
-                  "recordsFiltered": posts.count(),
-                  "data": data}
-        return Response(result)
 
 
