@@ -262,7 +262,7 @@ AUTH_USER_MODEL = 'app.user'
 REST_FRAMEWORK = {
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LinkHeaderPagination',
     'DEFAULT_PAGINATION_CLASS': 'drf_link_header_pagination.LinkHeaderPagination',
-    'PAGE_SIZE': 2,  # Number of items per page
+    'PAGE_SIZE': 6,  # Number of items per page
 }
 #
 # # Celery Configuration

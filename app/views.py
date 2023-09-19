@@ -1604,7 +1604,7 @@ class PostsGetView2(LoginRequiredMixin, TemplateView):
             posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted=False)
 
 
-        items_per_page = 2
+        items_per_page = 10
         search = self.request.GET.get('search', '')
         platform = self.request.GET.get('platform', 'fb')
         platform = 'fb'
@@ -2293,7 +2293,7 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
                 social = SocialAccount.objects.filter(Q(user=user.id), provider=provider_name)
 
         else:
-            invited_employees = InviteEmploye.objects.filter(Q( permission = "WRITE" ) | Q( permission = "READ" ) , invited_by = user)
+            invited_employees = InviteEmploye.objects.filter(Q( permission = "WRITE" ) | Q( permission = "READ" )  , invited_by = user)
 
             invited_employees_list = []
 

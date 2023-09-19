@@ -659,17 +659,23 @@ let lastButton = null;
                                     const urlParams = new URLSearchParams(url.split('?')[1]);
                                     total_page = urlParams.get('page');
 
+
                                 }else{
                                     const url = prevPageUrl;
                                     const urlParams = new URLSearchParams(url.split('?')[1]);
-                                    total_page = urlParams.get('page');
-                                    total_page =parseInt(total_page) +1;
+                                    previous_page = urlParams.get('page');
+                                    if(previous_page === null){
+                                        current_page = 2;
+                                        total_page = 2;
+                                    }else{
+                                        total_page = parseInt(previous_page) +1;
+                                    }
                                 }
                                 if(nextPageUrl && prevPageUrl){
                                     const url = prevPageUrl;
                                     const urlParams = new URLSearchParams(url.split('?')[1]);
                                     prev_page = urlParams.get('page');
-                                    if(prev_page == null){
+                                    if(prev_page === null){
                                         current_page = 2;
                                     }
                                 }
