@@ -237,8 +237,10 @@ class assign_manager(CreateView):
                     invite.save()
                     selected_user.is_invited = True
                     selected_user.save()
-                    reject_link = f"https://localhost:8000/reject_invitation?token={token}"
-                    invite_link = f"https://localhost:8000/accept_invitation?token={token}"
+                    # reject_link = f"https://localhost:8000/reject_invitation?token={token}"
+                    reject_link = f"https://cloudwind-smartpresence-staging.com/reject_invitation?token={token}"
+                    # invite_link = f"https://localhost:8000/accept_invitation?token={token}"
+                    invite_link = f"https://cloudwind-smartpresence-staging.com/accept_invitation?token={token}"
                     email = selected_user.email
                     # email = 'anasurrehman5@gmail.com'
 
@@ -255,7 +257,8 @@ class assign_manager(CreateView):
                     invite.save()
 
 
-                    invite_link = f"https://localhost:8000/accounts/register/invite?token={token}"
+                    # invite_link = f"https://localhost:8000/accounts/register/invite?token={token}"
+                    invite_link = f"https://cloudwind-smartpresence-staging.com/accounts/register/invite?token={token}"
                     # email = selected_user.email
                     email = email
 
