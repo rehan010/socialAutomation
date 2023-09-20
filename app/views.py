@@ -794,6 +794,11 @@ class RegisterViewInvite(FormView):
 
         return kwargs
 
+class Privacy_policy(LoginRequiredMixin, TemplateView):
+    template_name = 'registration/privacy_policy.html'
+    #
+    # def get_context_data(self, **kwargs):
+    #     return self
 
 class PointFileCreateView(LoginRequiredMixin, CreateView):
     model = PointFileModel
@@ -1610,14 +1615,6 @@ class PostsGetView2(LoginRequiredMixin, TemplateView):
         platform = 'fb'
         page = self.request.GET.get('page', '1')
 
-        # if platform =='ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
-        #     linkedin_post = posts.filter(prepost_page__provider="linkedin").distinct()
-        #     if search is not None and search != '':
-        #         linkedin_post = linkedin_post.filter(
-        #             Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-        #             Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-        #     paginated = get_paginated_post_list(linkedin_post, items_per_page, page)
-
         if platform == 'fb' and len(posts.filter(prepost_page__provider="facebook")) > 0:
             facebook_post = posts.filter(prepost_page__provider="facebook").distinct()
             if search is not None and search != '':
@@ -1626,29 +1623,12 @@ class PostsGetView2(LoginRequiredMixin, TemplateView):
                     Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
             paginated = get_paginated_post_list(facebook_post, items_per_page, page)
 
-        # elif platform == 'insta' and len(posts.filter(prepost_page__provider="instagram")) > 0:
-        #     instagram_post = posts.filter(prepost_page__provider="instagram").distinct()
-        #     if search is not None and search != '':
-        #         instagram_post = instagram_post.filter(
-        #             Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-        #             Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-        #     paginated = get_paginated_post_list(instagram_post, items_per_page, page)
-        #
-        # elif platform == 'google' and len(posts.filter(prepost_page__provider="Google Books")) > 0:
-        #     google_post = posts.filter(prepost_page__provider="Google Books").distinct()
-        #     if search is not None and search != '':
-        #         google_post = google_post.filter(
-        #             Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-        #             Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-        #     paginated = get_paginated_post_list(google_post, items_per_page, page)
-
         else:
             paginated = ''
 
         context = {
             'platform': platform,
             'paginated': paginated,
-            # 'posts': PostModel.objects.filter(user_id=self.request.user.id),
         }
         return context
 
@@ -2273,7 +2253,7 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
             permission = selected_user.permission
 
             if role == "ADMIN":
-                invited_employees = InviteEmploye.objects.filter(Q(permission="WRITE") | Q(permission="READ"),
+                invited_employees = InviteEmploye.objects.filter(Q(permission="WRITE") | Q(permission="READ"),status = 'ACCEPTED',
                                                                  invited_by=user)
 
                 invited_employees_list = []
@@ -2293,12 +2273,12 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
                 social = SocialAccount.objects.filter(Q(user=user.id), provider=provider_name)
 
         else:
-            invited_employees = InviteEmploye.objects.filter(Q( permission = "WRITE" ) | Q( permission = "READ" )  , invited_by = user)
+            invited_employees = InviteEmploye.objects.filter(Q( permission = "WRITE" ) | Q( permission = "READ" ), status = 'ACCEPTED'  , invited_by = user)
 
             invited_employees_list = []
 
-            for user in invited_employees:
-                employee_id = user.selected_user.id
+            for user1 in invited_employees:
+                employee_id = user1.selected_user.id
                 invited_employees_list.append(employee_id)
 
 

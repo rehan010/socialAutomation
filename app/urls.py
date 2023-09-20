@@ -43,6 +43,7 @@ urlpatterns = [
 
 
     path('upload/file', PointFileCreateView.as_view(), name="upload_file"),
+    path('privacy_policy/', Privacy_policy.as_view(), name="privacy_policy"),
     path('upload/<int:pk>/delete/', PointFileDeleteView.as_view(), name='point_delete'),
     path('create/post/', PostCreateView.as_view(), name='create_post'),
     path('posts/<int:pk>', PostsGetView2.as_view(), name='my_posts'),

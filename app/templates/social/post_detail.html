@@ -418,40 +418,56 @@
                     </div>
                     {% if user_role == 'MEMBER' and permission == 'WRITE' %}
                     <!-- Reply Text Area -->
-                    <div class="mt-4">
-                        <textarea class="w-full border rounded-lg p-2" name="reply"
-                                  placeholder="Write a reply..."></textarea>
-                        <!--                                        {% if provider_name == 'facebook' %}-->
-                        <!--                                        <div>-->
-                        <!--                                            <label for="file-upload" class="file-upload-label">-->
-                        <!--                                                <i class="fa-solid fa-paperclip"></i>-->
-                        <!--                                            </label>-->
-                        <!--                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">-->
-                        <!--                                        </div>-->
-                        <!--                                        {% endif %}-->
-
-
-                        <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
-                            Reply
+                    <button class="reply-button">Reply</button>
+                    <div class="reply-dialog hidden mt-4 ">
+                        <textarea class="reply-textarea w-full border rounded-lg p-2" name="reply" placeholder="Write a reply..."></textarea>
+                        <button class="submit-reply px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
+                            Submit Reply
                         </button>
                     </div>
+
+<!--                    <div id="reply_box" class="mt-4 hidden">-->
+<!--                        <textarea class="w-full border rounded-lg p-2" name="reply"-->
+<!--                                  placeholder="Write a reply..."></textarea>-->
+<!--                        &lt;!&ndash;                                        {% if provider_name == 'facebook' %}&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                        <div>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                            <label for="file-upload" class="file-upload-label">&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                                <i class="fa-solid fa-paperclip"></i>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                            </label>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                        </div>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                        {% endif %}&ndash;&gt;-->
+
+
+<!--                        <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">-->
+<!--                            Reply-->
+<!--                        </button>-->
+<!--                    </div>-->
                     {% elif post.user == request.user %}
-                    <div class="mt-4">
-                        <textarea class="w-full border rounded-lg p-2" name="reply"
-                                  placeholder="Write a reply..."></textarea>
-                        <!--                                        {% if provider_name == 'facebook' %}-->
-                        <!--                                        <div>-->
-                        <!--                                            <label for="file-upload" class="file-upload-label">-->
-                        <!--                                                <i class="fa-solid fa-paperclip"></i>-->
-                        <!--                                            </label>-->
-                        <!--                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">-->
-                        <!--                                        </div>-->
-                        <!--                                        {% endif %}-->
-
-                        <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
-                            Reply
+                     <button class="reply-button">Reply</button>
+                    <div class="reply-dialog hidden mt-4 ">
+                        <textarea class="reply-textarea w-full border rounded-lg p-2" name="reply" placeholder="Write a reply..."></textarea>
+                        <button class="submit-reply px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
+                            Submit Reply
                         </button>
                     </div>
+
+<!--                    <div class="mt-4 hidden">-->
+<!--                        <textarea class="w-full border rounded-lg p-2" name="reply"-->
+<!--                                  placeholder="Write a reply..."></textarea>-->
+<!--                        &lt;!&ndash;                                        {% if provider_name == 'facebook' %}&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                        <div>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                            <label for="file-upload" class="file-upload-label">&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                                <i class="fa-solid fa-paperclip"></i>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                            </label>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                        </div>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                                        {% endif %}&ndash;&gt;-->
+
+<!--                        <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">-->
+<!--                            Reply-->
+<!--                        </button>-->
+<!--                    </div>-->
                     {% endif %}
                 </div>
             </div>
@@ -493,6 +509,35 @@
             return null;
         }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const replyButtons = document.querySelectorAll(".reply-button");
+
+        replyButtons.forEach(function(replyButton) {
+            replyButton.addEventListener("click", function(event) {
+                event.preventDefault();
+                const replyDialog = this.nextElementSibling;
+
+                // Hide all other reply dialog boxes
+                const allReplyDialogs = document.querySelectorAll(".reply-dialog");
+                allReplyDialogs.forEach(function(dialog) {
+                    if (dialog !== replyDialog) {
+                        dialog.classList.add("hidden");
+                        dialog.querySelector("textarea").value = "";
+                    }
+                });
+
+                // Toggle the visibility of the clicked reply dialog
+                replyDialog.classList.toggle("hidden");
+            });
+        });
+
+        // Add event listeners for reply submission if needed
+    });
+
+
+
+
 
 
     const dropdownButtons = document.querySelectorAll(".delete-dropdownButton");

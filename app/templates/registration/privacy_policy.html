@@ -1,0 +1,178 @@
+
+{%extends 'registration/base.html'%}
+{%load static%}
+{%block bar%}
+{%endblock%}
+
+{% block custom_css %}
+
+{% endblock %}
+
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .lock-icon {
+            width: 24px;
+            height: 24px;
+            fill: #333;
+            margin-right: 8px;
+        }
+        h1 {
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+        p {
+            color: #666;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+        }
+        p {
+            color: #666;
+            line-height: 1.5;
+        }
+        h2 {
+            margin-top: 20px; /* Add a gap between h2 elements */
+        }
+        h2::before {
+            content: "\2022"; /* Unicode bullet character */
+            color: #666;
+            margin-right: 10px; /* Adjust spacing between bullet and text */
+        }
+
+        h1 {
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+        svg {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="font-bold">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            Privacy Policy
+        </h1>
+        <div class="policy-section">
+            <h2>Information We Collect</h2>
+            <div class="content hidden " >
+                <p>
+                    We may collect personal information such as names, email addresses, and other contact information when users voluntarily provide it through comments, direct messages, or other interactions on our social media profiles.
+                </p>
+            </div>
+        </div>
+        <div class="policy-section">
+            <h2>How We Use Your Information</h2>
+            <div class="content hidden" >
+                <p>
+                    We use the information we collect to respond to inquiries, improve our content and services, and communicate with users. We do not share personal information with third parties unless required by law.
+                </p>
+            </div>
+        </div>
+        <div class="policy-section">
+            <h2>Cookies and Analytics</h2>
+            <div class=" content hidden">
+                <p>
+                    We may use cookies and similar technologies to collect data about user interactions with our social media accounts. This data is used for analytics and to enhance the user experience.
+                </p>
+            </div>
+        </div>
+        <div class="policy-section">
+            <h2>Your Choices</h2>
+            <div class=" content hidden">
+                <p>
+                    Users can manage their preferences and settings for social media platforms to control the information shared and received. You can also contact us to update or delete your personal information.
+                </p>
+            </div>
+        </div>
+        <div class="policy-section">
+            <h2>Contact Us</h2>
+            <div class="content hidden">
+                <p>
+                    If you have any questions or concerns about our Privacy Policy or data practices, please contact us at [your contact information].
+                </p>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        const sections = document.querySelectorAll('.policy-section');
+
+        const info = document.getElementById('info');
+        const cookies = document.getElementById('cookies');
+        const use = document.getElementById('use');
+        const contact = document.getElementById('contact');
+        const choices = document.getElementById('choices');
+
+
+
+        sections.forEach((section) => {
+            const heading = section.querySelector('h2');
+            const hiddenContent = section.querySelector('.content');
+
+            let isHidden = true;
+
+            heading.addEventListener('click', () => {
+                if (isHidden) {
+                    hiddenContent.classList.remove('hidden');
+                    isHidden = false;
+                } else {
+                    hiddenContent.classList.add('hidden');
+                    isHidden = true;
+                }
+            });
+        });
+    </script>
+</body>
+
+{% endblock %}
