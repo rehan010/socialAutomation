@@ -448,8 +448,6 @@
 <script>
   const profileDropdownbutton = document.getElementById('profile_dropdown_button');
    const profileDropdown = document.getElementById('profile_dropdown');
-    console.log(profileDropdownbutton);
-    console.log(profileDropdown);
    profileDropdownbutton.addEventListener('click', () => {
     if(profileDropdown.style.display == 'block'){
         profileDropdown.style.display = 'none';
@@ -459,12 +457,12 @@
 });
 
 
-    const toggleButton = document.getElementById('toggleButton');
-const sidebar = document.getElementById('sidebar');
+<!--    const toggleButton = document.getElementById('toggleButton');-->
+<!--const sidebar = document.getElementById('sidebar');-->
 
-toggleButton.addEventListener('click', () => {
-  sidebar.classList.toggle('close');
-});
+<!--toggleButton.addEventListener('click', () => {-->
+<!--  sidebar.classList.toggle('close');-->
+<!--});-->
 
 function getFormattedDate(daysBefore = 0){
     let currentDate = new Date();
@@ -502,11 +500,6 @@ function getFormattedDate(daysBefore = 0){
 
 <!-- main script file  -->
   <script src="{% static 'assets/js/soft-ui-dashboard-tailwind.js' %}" async></script>
-<script src="{% static 'assets/js/chart-1.js' %}" async></script>
-<script src="{% static 'assets/js/chart-2.js' %}" async></script>
-<script src="{% static 'assets/js/chart-3.js' %}" async></script>
-<script src="{% static 'assets/js/chart-4.js' %}" async></script>
-<script src="{% static 'assets/js/chart-5.js' %}" async></script>
 
 <script src="{% static 'assets/js/dropdown.js' %}" async></script>
 <script src="{% static 'assets/js/perfect-scrollbar.js' %}" async></script>

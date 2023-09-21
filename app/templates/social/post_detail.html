@@ -569,8 +569,8 @@
       const searchParams = new URLSearchParams(window.location.search);
       const provider_name = searchParams.get('page_name');
       const csrfToken = getCSRFToken();
-      const like = event.target;
       const parentButton = event.currentTarget;
+      let like = parentButton.querySelector("path");
 
       const json = { 'urn': urn }
       const res = await fetch(
@@ -583,8 +583,9 @@
                body: JSON.stringify(json)
         });
       const data = await res.json();
+      parentButton.onclick = (event) => deleteLike(urn,event);
 
-        like.style.fill = 'red';
+        like.setAttribute("fill","red");
         if(urn === null || urn === ''){
             const liketextdiv = document.getElementById('likes-count');
             const likeCount = liketextdiv.innerText;
@@ -594,9 +595,6 @@
             liketextdiv.innerText = newlikeCount;
         }
 
-        console.log(data);
-
-        parentButton.onclick = (event) => deleteLike(urn,event);
     }
 
 
@@ -606,11 +604,8 @@
       const searchParams = new URLSearchParams(window.location.search);
       const provider_name = searchParams.get('page_name');
       const csrfToken = getCSRFToken();
-      const like = event.target;
       const parentButton = event.currentTarget;
-
-
-
+        let like = parentButton.querySelector("path");
       const json = { 'urn': urn }
       console.log(json);
       const res = await fetch(
@@ -623,7 +618,8 @@
                body: JSON.stringify(json)
         });
       const data = await res.json();
-        like.style.fill = 'none';
+        parentButton.onclick = (event) => postLike(urn ,event);
+        like.setAttribute("fill","none");
 
         if(urn === null || urn === ''){
             const liketextdiv = document.getElementById('likes-count');
@@ -634,7 +630,7 @@
             liketextdiv.innerText = newlikeCount;
         }
 
-        parentButton.onclick = (event) => postLike(urn ,event);
+
     }
 
 

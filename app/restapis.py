@@ -17,6 +17,7 @@ from django.shortcuts import redirect
 import requests
 from django.http import JsonResponse
 from urllib.parse import quote, urlparse
+from django.db.models import Q ,Sum
 
 import json
 from django.conf import settings
@@ -441,7 +442,7 @@ def facebook_page_data(accesstoken, userid):
     return response
 
 
-def get_linkedin_user_data(accesstoken):
+def get_linkedin_user_data(accesstoken,id):
     url = "https://api.linkedin.com/v2/me"
 
     payload = {}
@@ -453,19 +454,17 @@ def get_linkedin_user_data(accesstoken):
 
     response = requests.request("GET", url, headers=headers, data=payload)
     data = {}
+    details = {}
 
     if response.status_code == 200:
         response = response.json()
-
-        data['display_image'] = response['profilePicture']['displayImage']
         first_name = response['firstName']['localized']['en_US']
         last_name = response['lastName']['localized']['en_US']
-        data['description'] = response['localizedHeadline']
-        data['name'] = first_name + "" + last_name
-
+        job = response['localizedHeadline']
+        name = first_name + "" + last_name
+        data['Personal Information'] = [{"Name":name} , {"localizedHeadline": job}]
         url = "https://api.linkedin.com/v2/clientAwareMemberHandles?q=members&projection=(elements*(primary,type,handle~))"
 
-        payload = {}
         headers = {
             'X-Restli-Protocol-Version': '2.0.0',
             'Linkedin-Version': '202304',
@@ -479,15 +478,36 @@ def get_linkedin_user_data(accesstoken):
                 element = response['elements'][0]
                 if 'handle~' in element and isinstance(element['handle~'], dict) and 'emailAddress' in element[
                     'handle~']:
-                    data['email'] = element['handle~']['emailAddress']
-                else:
-                    data['email'] = ''
-            else:
-                data['email'] = ''
-        return data
+                    data['Contact Information'] = [{"Email":element['handle~']['emailAddress'] }]
+
+        url = "https://api.linkedin.com/v2/people/(id:" + id + ")?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))"
+
+        payload = {}
+        headers = {
+            'LinkedIn-Version': '202304',
+            'X-Restli-Protocol-Version': '2.0.0',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + accesstoken,
+            'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=53:x=1:i=1689164560:t=1689211004:v=2:sig=AQFTaVIUWiQvbWucAVvFtIY0AKWyBlpL"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=OB01:s=O:r=O:a=O:p=O:g=5300:u=1:x=1:i=1689164320:t=1689250720:v=2:sig=AQG5yzvdOIb42jeJLKgJispG3AzPSMcJ"'
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+        response = response.json()
+        if 'profilePicture' in response:
+            display_image = response['profilePicture']['displayImage~']['elements'][0]['identifiers'][0][
+                'identifier']
+            details['profile_picture'] = display_image
+
+        details['details'] = data
+
+        return details
     else:
-        data = {'name': '', 'job': "", 'display_image': '', 'email': ''}
+        data = {}
+
         return data
+
+
+
 
 
 def get_instagram_user_data(accesstoken, userid):
@@ -1982,53 +2002,45 @@ def linkedin_get_user_organization(accesstoken, userid):
     return data
 
 
-def linkedin_page_detail(accesstoken, userid):
-    url = "https://api.linkedin.com/v2/organizationalEntityAcls?q=roleAssignee"
+def linkedin_page_detail(accesstoken, id):
+
+    data = {}
+    detail = {}
+
+    url = "https://api.linkedin.com/v2/organizations/" + id + "?projection=(localizedName,logoV2(original~:playableStreams),organizationType,locations,website,foundedOn)"
 
     payload = {}
     headers = {
-        'X-Restli-Protocol-Version': '2.0.0',
         'Linkedin-Version': '202304',
+        'X-Restli-Protocol-Version': '2.0.0',
+        'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + accesstoken,
-        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4514:u=51:x=1:i=1687765789:t=1687848629:v=2:sig=AQHjIm1wsBkgK_2TJaHoboqQvmgXp9Aw"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689588794:t=1689613491:v=2:sig=AQEuUJEbIsk57LyEy9HwFJQrEu7ayH9n"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689587318:t=1689613491:v=2:sig=AQGp8c3I7u6ZkNJN7oSt0OLu8JRVv3WX"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=TB01:s=T:r=T:a=T:p=T:g=5807:u=1:x=1:i=1689586527:t=1689672927:v=2:sig=AQFFnf4QlGIIpq60wKa97GoDCwxO3u-D"'
     }
+
+
 
     response = requests.request("GET", url, headers=headers, data=payload)
     response = response.json()
-    targets = [element['organizationalTarget'] for element in response['elements']]
-    data = targets
-    ids = [item.split(':')[-1] for item in data]
-    names_with_ids = {}
-    my_list = []
-    for id in ids:
-        url = "https://api.linkedin.com/v2/organizations/" + id + "?projection=(localizedName,logoV2(original~:playableStreams))"
 
-        payload = {}
-        headers = {
-            'Linkedin-Version': '202304',
-            'X-Restli-Protocol-Version': '2.0.0',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + accesstoken,
-            'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689588794:t=1689613491:v=2:sig=AQEuUJEbIsk57LyEy9HwFJQrEu7ayH9n"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689587318:t=1689613491:v=2:sig=AQGp8c3I7u6ZkNJN7oSt0OLu8JRVv3WX"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=TB01:s=T:r=T:a=T:p=T:g=5807:u=1:x=1:i=1689586527:t=1689672927:v=2:sig=AQFFnf4QlGIIpq60wKa97GoDCwxO3u-D"'
-        }
 
-        response = requests.request("GET", url, headers=headers, data=payload)
-        response = response.json()
 
-        my_object = {}
-        name = response['localizedName']
+    name = response['localizedName']
 
-        names_with_ids[id] = name
-        if 'logoV2' in response:
-            my_object['profile_picture_url'] = response['logoV2']['original~']['elements'][0]['identifiers'][0][
-                'identifier']
-        else:
-            my_object['profile_picture_url'] = ''
-        my_object['name'] = name
-        my_object['user'] = userid  # referring to the user of the page
-        my_list.append(my_object)
-    data = my_list
-    return data
+    data['Personal Information'] = [{'Name':name},{"Organization Type":response['organizationType']}]
+
+    if len(response.get('locations')) > 0:
+         data['Location'] = []
+         data["Location"].append(response.get('locations')[0])
+
+    if 'logoV2' in response:
+        detail['profile_picture'] = response['logoV2']['original~']['elements'][0]['identifiers'][0][
+            'identifier']
+
+
+    detail['details'] = data
+
+    return detail
 
 
 from PIL import Image
@@ -2551,32 +2563,80 @@ def fb_object_unlike(urn, access_token):
     return response.json()
 
 
-def fb_page_detail(access_token):
-    url = "https://graph.facebook.com/v17.0/me?fields=name,email,about,location"
+def fb_user_detail(access_token):
+    url = "https://graph.facebook.com/v17.0/me?fields=name,email,location,about,gender,picture.type(large){url,height,width}"
 
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
 
     response = requests.get(url, headers=headers)
-    data = {}
+    details = dict()
+    data = dict()
+
     if response.status_code == 200:
         response = response.json()
-        data['name'] = response.get('name')
-        data['email'] = response.get('email')
-        data['location'] = response.get('location').get('name') if response.get('location') is not None else ""
-
-        return data
-
+        data['Personal Information'] = []
+        data['Personal Information'].append({'Name': response.get('name').capitalize()})if response.get('name') else None
+        data['Personal Information'].append({'Gender':response.get('gender',None).capitalize()})if response.get('gender') else None
+        data['Location'] = [{ 'Location':response.get('location')['name']}] if response.get('location') else []
+        profile_image = response.get('picture')['data']['url'] if response.get('picture') else None
+        data['Contact Information']= [{'Email': response.get('email')}] if response.get('email') else []
+        details["profile_picture"] = profile_image
     else:
-        data = {'name': '', 'email': "", 'branches': ''}
-        data['error'] = 'failed to fetch data. Unexpected Error has occurred'
-        return data
+        data['error'] = response.json()
+
+    details['details'] = data
+    return details
+
+
+def fb_page_detail(org_id, access_token):
+    url = f"https://graph.facebook.com/v17.0/{org_id}?fields=name,category,location,about,emails,display_subtext,website,phone,picture.type(large){{url}}"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    details = dict()
+    data = dict()
+    response = requests.get(url=url,headers = headers)
+
+    if response.status_code == 200:
+        response = response.json()
+
+        if response['category']:
+            data['Category'] = [{"Category":response.get("category")}]
+
+
+        data["Personal Information"] = [{"Name":response.get('name')}]
+
+        data['Contact Information'] = []
+        if response.get('location'):
+            address = ','.join(
+                [response['location'].get('street',''), response['location'].get('city',''), response['location'].get('country',''),
+                 response['location'].get('zip','')])
+
+
+            data['Contact Information'].append({"Address": address})  if address else None
+
+
+        data['Contact Information'].append({"Phone":response.get('phone')}) if response.get('phone') else None
+        data['Contact Information'].append({"Email":response.get('emails')[0]}) if response.get('emails') else None
+        profile_image = response.get('picture')['data']['url'] if response.get('picture') else None
+
+        data['Websites'] = [{'website':response.get('website', '')}] if response.get('website') else []
+
+        details['profile_picture'] = profile_image
+    else:
+        data['error'] = response.json()
+
+    details['details'] = data
+    return details
 
 
 def instagram_details(access_token, instagram_id):
     # "https://graph.facebook.com/v17.0/{id}?fields=name,profile_picture_url,username"
-    url = f"https://graph.facebook.com/v17.0/{instagram_id}?fields=name,biography,username"
+    url = f"https://graph.facebook.com/v17.0/{instagram_id}?fields=username,biography,name,profile_picture_url,website"
 
     headers = {
         "Authorization": f"Bearer {access_token}"
@@ -2584,18 +2644,19 @@ def instagram_details(access_token, instagram_id):
 
     response = requests.get(url=url, headers=headers)
     data = {}
-
+    details = {}
     if response.status_code == 200:
         response = response.json()
-        data['name'] = response.get('name')
-        data['username'] = response.get('username')
-        data['description'] = response.get('biography')
-        data['profile_picture'] = response.get('profile_picture_url')
-
+        data["Personal Information"] = [{"Name":response.get('name')} , {"username":response.get('username')} , {"Description": response.get('biography')}]
+        data["Contact Information"] = [{"Website": response.get('website')}]
+        profile_image = response.get('profile_picture_url') if response.get('profile_picture_url') else None
+        details['profile_picture'] = profile_image
     else:
         data['error'] = 'failed to fetch data. Unexpected Error has occurred'
 
-    return data
+    details['details'] = data
+
+    return details
 
 
 def instagram_account_insights(urn, since, until):
@@ -2642,11 +2703,10 @@ def instagram_account_insights(urn, since, until):
             stats.t_comments = total_comments
 
             previous_date = datetime.date.today() - datetime.timedelta(days=1)
-            previous_entry = SocialStats.objects.filter(org=urn, date=previous_date)
-
-            if previous_entry.exists():
-                stats.t_followers = abs(previous_entry.first().t_followers - followers_count)
-
+            previous_entry = SocialStats.objects.filter(org=urn, date__lte=previous_date).aggregate(Sum('t_followers'))[
+                't_followers__sum']
+            if previous_entry:
+                stats.t_followers = abs(previous_entry - followers_count)
             else:
                 stats.t_followers = followers_count
 
@@ -2719,13 +2779,10 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
 
     stats.t_likes = total_reactions
     stats.t_comments = total_comments
-    # stats.t_followers = follower_count
     previous_date = datetime.date.today() - datetime.timedelta(days=1)
-    previous_entry = SocialStats.objects.filter(org = urn,date=previous_date)
-
-    if previous_entry.exists():
-        stats.t_followers = abs(previous_entry.first().t_followers - follower_count)
-
+    previous_entry = SocialStats.objects.filter(org = urn,date__lte=previous_date).aggregate(Sum('t_followers'))['t_followers__sum']
+    if previous_entry:
+        stats.t_followers = abs(previous_entry - follower_count)
     else:
         stats.t_followers = follower_count
 

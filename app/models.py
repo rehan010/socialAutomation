@@ -180,3 +180,7 @@ class SocialStats(BaseModel):
     t_comments = models.IntegerField(default=0)
     t_followers = models.IntegerField(default=0)
     date = models.DateTimeField()
+
+
+    def __str__(self):
+        return self.org.name + "--" + self.date.__str__()

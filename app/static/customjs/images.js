@@ -1,7 +1,6 @@
 
 
 const mediadivs = document.querySelectorAll('.media-div');
-console.log(mediadivs);
 
 
 if (mediadivs.length > 0){

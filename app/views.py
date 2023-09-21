@@ -14,7 +14,7 @@ from .restapis import *
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from rest_framework.generics import ListAPIView,DestroyAPIView, RetrieveUpdateAPIView
 from rest_framework.views import APIView
-from django.db.models import Q ,Sum
+from django.db.models import Q ,Sum , Case, When, Value, BooleanField
 from .serializer import *
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework.pagination import PageNumberPagination
@@ -43,6 +43,8 @@ from allauth.socialaccount.views import ConnectionsView
 from django.utils.html import escape
 from rest_framework import generics
 from django.http import JsonResponse
+from rest_framework.exceptions import NotFound
+
 
 
 
@@ -2236,7 +2238,7 @@ class ConnectionView(ConnectionsView):
 
         return context
 
-class SocialProfileView(LoginRequiredMixin,TemplateView):
+class SocialProfileView2(LoginRequiredMixin,TemplateView):
     template_name = 'social/social_profile.html'
 
     def get_context_data(self, **kwargs):
@@ -2251,13 +2253,14 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
 
         if user_manager:
             selected_user = InviteEmploye.objects.get(selected_user=self.request.user,
-                                                      invited_by=self.request.user.manager)
+                                                      invited_by=self.request.user.manager, status ='ACCEPTED')
             role = selected_user.role
             permission = selected_user.permission
 
             if role == "ADMIN":
-                invited_employees = InviteEmploye.objects.filter(Q(permission="WRITE") | Q(permission="READ"),status = 'ACCEPTED',
-                                                                 invited_by=user)
+
+                invited_employees = InviteEmploye.objects.filter(Q(permission="WRITE") | Q(permission="READ"),
+                                                                 invited_by=user, status ='ACCEPTED')
 
                 invited_employees_list = []
 
@@ -2297,7 +2300,7 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
 
         if providertoGetdetails == "facebook":
             try:
-                data = fb_page_detail(user_access_token)
+                data = fb_user_detail(user_access_token)
                 if data.get('error') != None:
                     raise Exception(data['error'])
 
@@ -2348,6 +2351,278 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
 
         context = data
         return context
+
+
+
+class SocialProfileView(LoginRequiredMixin,TemplateView):
+    template_name = 'social/social_profile_2.html'
+
+
+
+    def get_context_data(self, **kwargs):
+        provider_name = self.request.GET.get('provider_name')
+        providertoGetdetails = self.request.GET.get('provider_name')
+        user = self.request.user
+
+        if provider_name == "instagram":
+            provider_name = "facebook"
+
+        user_manager = self.request.user.manager
+
+        if user_manager:
+            selected_user = InviteEmploye.objects.get(selected_user=self.request.user,
+                                                      invited_by=self.request.user.manager, status ='ACCEPTED').first()
+            role = selected_user.role
+            permission = selected_user.permission
+
+            if role == "ADMIN":
+                invited_employees_list = InviteEmploye.objects.filter(Q(permission="WRITE") | Q(permission="READ"),
+                                                                 invited_by=user, status ='ACCEPTED').values_list('selected_user__id', flat=True)
+
+
+
+                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user__in=invited_employees_list) | Q(user=user_manager.id),
+                                                      provider=provider_name)
+
+
+            elif (role == "MEMBER" and (permission == "READ" or permission == "WRITE")):
+                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user=user_manager.id), provider=provider_name)
+
+            else:
+                social = SocialAccount.objects.filter(Q(user=user.id), provider=provider_name)
+
+        else:
+            invited_employees_list = InviteEmploye.objects.filter(Q( permission = "WRITE" ) | Q( permission = "READ" ) , invited_by = user).values_list('selected_user__id', flat=True)
+
+
+
+
+            social = SocialAccount.objects.filter(Q(user=user.id) |Q(user__in=invited_employees_list), provider=provider_name)
+
+        # This is to sort the social account user with there role ADMIN first then Managers
+
+        condition = Case(
+                When(user=user.id, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
+
+        social = social.annotate(user_admin=condition)
+        social = social.order_by('-user_admin')
+
+
+
+        access_token = {}
+        data = dict()
+
+        for _ in social:
+                access_token[_.user.id] = SocialToken.objects.filter(account_id=_).first().token
+
+
+        user_access_token = access_token[user.id]
+
+        if providertoGetdetails == "facebook":
+            try:
+                data = fb_user_detail(user_access_token)
+                if data.get('error') != None:
+                    raise Exception(data['error'])
+
+                data['pages'] = {}
+                data ['user_roles'] = {}
+                for _ in social:
+                    responses = facebook_page_data(access_token.get(_.user.id), _.user.id)
+
+                    for response in responses:
+                        self.meta_save_share_page(_.user,response,providertoGetdetails)
+                        response.pop('access_token')
+                    data['pages'][_.user.username] = responses
+                    data['user_roles'][_.user.username] = [self.get_user_role(_.user) , _.user.id]
+
+                data['provider'] = "facebook"
+
+            except Exception as e:
+                data['error'] = e
+
+        elif providertoGetdetails == "instagram":
+            try:
+                data['pages'] = {}
+                data ['user_roles'] = {}
+                for _ in social:
+                    accounts = get_instagram_user_data(access_token[_.user.id], _.user.id)
+                    instagram__connected_social_account = SocialAccount.objects.get( user = user.id,provider = "instagram")
+
+                    for account in accounts:
+
+                        account['id'] = int(account['id'])
+                        self.meta_save_share_page(_.user,account, providertoGetdetails)
+                        if account.get('username') == instagram__connected_social_account.extra_data.get('username'):
+                               data.update(instagram_details(access_token[_.user.id], account['id']))
+                               if data.get("error") != None:
+                                    raise Exception(data['error'])
+                               data['user_roles'][_.user.username] = [self.get_user_role(_.user), account['id']]
+                        else:
+                            if data['pages'].get(_.user.username):
+                                data['pages'][_.user.username].append(account)
+                            else:
+                                data['pages'][_.user.username] = [account]
+
+
+                return data
+            except Exception as e:
+                pass
+
+
+        elif providertoGetdetails == "linkedin_oauth2":
+
+            try:
+                id = social.filter(user = user , provider = "linkedin_oauth2").first().uid
+                data = get_linkedin_user_data(user_access_token,id)
+                if data.get('error') != None:
+                    raise Exception(data['error'])
+
+                data['pages'] = {}
+                data['user_roles'] = {}
+                for _ in social:
+                    responses = linkedin_get_user_organization(access_token.get(_.user.id),_.user.id)
+
+                    for response in responses:
+                        self.meta_save_share_page(_.user, response, 'linkedin')
+                    data['pages'][_.user.username] = responses
+                    data['user_roles'][_.user.username] = [self.get_user_role(_.user), _.user.id]
+
+                data['provider'] = "linkedin"
+
+            except Exception as e:
+                data['error'] = e
+
+            return data
+
+
+
+        else:
+            pass
+
+
+
+        context = data
+        return context
+
+
+    def get_user_role(self,user):
+        user_manager = user.manager
+
+        if user_manager:
+            selected_user = InviteEmploye.objects.filter(selected_user=user,
+                                                        invited_by=user_manager, status='ACCEPTED').first()
+            role = selected_user.role
+            return role
+
+
+        else:
+           return "ADMIN"
+
+    def meta_save_share_page(self,user,object,provider):
+        id = object['id']
+        name = object['name']
+
+        share_page, created = SharePage.objects.get_or_create(user = user, org_id = id, name = name , provider = provider)
+
+        if created:
+
+            if provider == "facebook":
+                share_page.access_token = object['access_token']
+            elif provider == "instagram" :
+                access_token = SocialToken.objects.get(account__user = user , account__provider = "facebook").token
+                share_page.access_token = access_token
+            else:
+                access_token = SocialToken.objects.get(account__user=user, account__provider="linkedin_oauth2").token
+                share_page.access_token = access_token
+
+            share_page.save()
+
+
+class SocialProfileAPI(APIView):
+
+    def post(self, request):
+        provider_name = self.request.GET.get('page_name')
+        request_type = self.request.data.get('type')
+        id = self.request.data.get('id')
+
+        if provider_name == "facebook":
+            if request_type == "account":
+                try:
+                    access_token = SocialToken.objects.get(
+                        account__user__id=id, account__provider=provider_name
+                    ).token
+                    response = fb_user_detail(access_token)
+                    return JsonResponse(response)
+                except SocialToken.DoesNotExist:
+                    raise NotFound("SocialToken not found for the specified user.")
+            elif request_type == "page":
+                try:
+                    page = SharePage.objects.get(org_id=id)
+                    access_token = page.access_token
+                    org_id = page.org_id
+
+                    response = fb_page_detail(org_id, access_token)
+                    return JsonResponse(response)
+                except SharePage.DoesNotExist:
+                    raise NotFound("SharePage not found for the specified org_id.")
+            else:
+                return JsonResponse({"error": "Invalid request type."}, status=400)
+        elif provider_name == "instagram":
+            try:
+                account = SharePage.objects.get(org_id = id)
+                access_token = account.access_token
+                org_id = account.org_id
+                response = instagram_details(access_token,org_id)
+                return JsonResponse(response)
+            except SharePage.DoesNotExist:
+                raise NotFound("SharePage not found for the specified org_id.")
+
+        elif provider_name == "linkedin_oauth2":
+            if request_type == "account":
+                try:
+                    access_token = SocialToken.objects.get(
+                        account__user__id=id, account__provider=provider_name
+                    ).token
+                    id = SocialAccount.objects.filter(user__id = id,provider = provider_name).first().uid
+                    response = get_linkedin_user_data(access_token,id)
+                    return JsonResponse(response)
+                except SocialToken.DoesNotExist:
+                    raise NotFound("SocialToken not found for the specified user.")
+            elif request_type == "page":
+                try:
+
+                    page = SharePage.objects.get(org_id=id)
+                    access_token = page.access_token
+                    org_id = page.org_id
+
+                    response = linkedin_page_detail(access_token, org_id)
+                    return JsonResponse(response)
+                except SharePage.DoesNotExist:
+                    raise NotFound("SharePage not found for the specified org_id.")
+            else:
+                return JsonResponse({"error": "Invalid request type."}, status=400)
+
+        else:
+            return JsonResponse({"error": "Invalid provider name."}, status=400)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class EditUserView(LoginRequiredMixin,UpdateView):
     template_name = 'registration/edituser.html'

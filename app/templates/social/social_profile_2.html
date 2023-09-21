@@ -1,0 +1,309 @@
+{% extends "registration/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Account Connections" %}{% endblock %}
+
+{% block content %}
+<style>
+    .w-1/5{
+        width: 20%;
+
+    }
+
+    /* Scrollbar rail styles */
+.scroll-container::-webkit-scrollbar {
+  width: 11px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background-color: transparent; /* Change this to your desired background color */
+  border-radius: 6px;
+  transition: background-color 0.2s linear, width 0.2s ease-in-out;
+  -webkit-transition: background-color 0.2s linear, width 0.2s ease-in-out;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background-color: #aaa; /* Change this to your desired thumb color */
+  border-radius: 6px;
+  transition: background-color 0.2s linear, width 0.2s ease-in-out;
+  -webkit-transition: background-color 0.2s linear, width 0.2s ease-in-out;
+  width: 6px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: #999; /* Change this to your desired hover color */
+  width: 11px;
+}
+
+
+
+
+
+
+
+
+
+</style>
+
+
+<div class="relative flex min-w-0 mx-6 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border h-full" id="parent">
+
+            <ul class="flex flex-col gap-6 border-r-2 p-3 items-center w-1/5 overflow-y-scroll scroll-container">
+
+                <div class="image-container w-16 rounded-full p-2 mb-20">
+
+                    {% if request.GET.provider_name == 'facebook' %}
+                    <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" />
+                    {% elif request.GET.provider_name == 'instagram' %}
+                     <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" />
+                    {% elif request.GET.provider_name == 'linkedin_oauth2' %}
+                     <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" />
+                    {% elif request.GET.provider_name == 'google' %}
+                    <img src="{% static '\assets\img\Social-Logos\google_logo.png'%}" />
+                    {% endif %}
+
+                </div>
+
+                {% for name , pageslist in pages.items %}
+                <li class="w-full">
+
+                    <p class="font-bold text-gray-500 hover:text-gray-500 hover:bg-gray-100 rounded-lg mb-2 px-1 py-1 cursor-pointer tabs" onclick="onClickAccount(event,{{name}})">
+                        {{name|title}}
+                        {% for username, value in user_roles.items %}
+                            {% if username == name %}
+                                <span class="text-xs ml-auto font-medium lowercase px-2 border-2 rounded-xl">{{value.0}}</span>
+
+                                <input type="hidden" value="{{value.1}}" id="{{name}}">
+                            {% endif %}
+                        {% endfor %}
+                    </p>
+
+
+                    {% for p in pageslist %}
+                        <ul>
+                            <li class="text-gray-500 hover:text-gray-700 font-medium hover:bg-gray-200 w-full rounded-lg px-3 py-1 cursor-pointer  tabs" onclick="onClickPage(event,{{p.id}})">
+                                <a href="#"
+                                   class="hover:no-underline"
+                                   >{{p.name}}</a>
+
+                            </li>
+                        </ul>
+                    {% endfor %}
+                </li>
+                {% endfor %}
+
+                {% csrf_token %}
+            </ul>
+
+            <div id="basic-info" class="p-4 flex-1 page-detail">
+                <div class="mb-6 flex items-center justify-center">
+
+                     <div class="h-32 w-32 rounded-full overflow-hidden">
+                         {% if profile_picture %}
+                            <img src="{{profile_picture}}" class="w-full h-full object-cover">
+                         {% else %}
+                            <img src="{% static 'image/default.png' %}" class="w-full h-full object-cover" >
+                         {% endif %}
+                    </div>
+
+                </div>
+
+                {% for key,items in details.items %}
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold mb-6">{{key|title}}</h3>
+
+                        {%for item in items %}
+                            {% for field,value in item.items %}
+
+                            <p class="flex mb-4 gap-3">
+
+                                    <span class="font-bold">{{field}}</span> :
+                                    <span class="text-base">{{value}}</span>
+
+                            </p>
+                            {% endfor %}
+                        {% endfor %}
+                        <hr class="my-3">
+                    </div>
+                {% endfor %}
+            </div>
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function() {
+  const tabs = document.querySelectorAll(".tabs");
+  tabs.forEach(function(tab) {
+    tab.addEventListener("click", function(e) {
+      e.preventDefault();
+
+      // Remove the "text-blue-500" and "bg-blue-50" classes from all tabs
+      tabs.forEach(function(t) {
+        t.classList.remove("text-blue-500", "bg-blue-50");
+      });
+
+      // Add the "text-blue-500" and "bg-blue-50" classes to the clicked tab
+
+
+      tab.classList.add("text-blue-500", "bg-blue-50");
+
+    });
+  });
+
+  let firstTab = tabs[0]
+  firstTab.classList.add("text-blue-500", "bg-blue-50");
+});
+
+function getCSRFToken() {
+        const csrfTokenInput = document.querySelector('input[name=csrfmiddlewaretoken]');
+        if (csrfTokenInput) {
+            return csrfTokenInput.value;
+        } else {
+            return null;
+        }
+    }
+
+function showLoadingSpinner() {
+    const perviousDiv = document.querySelector('.page-detail');
+    perviousDiv.innerHTML = '<div class="loading-spinner">Loading...</div>';
+}
+
+function renderPageDetails(data) {
+    const Parent = document.getElementById("parent");
+    const newParentDiv = document.querySelector('.page-detail');
+    newParentDiv.innerHTML = ""; // Clear previous content
+
+
+
+    let imageURL = data['profile_picture'];
+    const ImageParentContainer = document.createElement('div');
+    ImageParentContainer.classList = "mb-6 flex items-center justify-center";
+
+    const ImageContainer = document.createElement('div');
+    ImageContainer.classList = "h-32 w-32 rounded-full overflow-hidden";
+
+    const Image = document.createElement('img');
+    Image.classList = "w-full h-full object-cover";
+    if(imageURL){
+    Image.src = imageURL;
+
+    }else{
+        Image.src = '{% static 'image/default.png' %}' ;
+
+    }
+
+    ImageContainer.append(Image);
+    ImageParentContainer.append(ImageContainer);
+    newParentDiv.append(ImageParentContainer);
+    Parent.append(newParentDiv);
+
+
+
+    details = data['details'];
+
+    for (let detail in details) {
+        if (details[detail].length > 0) {
+            const container = document.createElement('div');
+            container.classList = "mb-4";
+
+            const header = document.createElement('h3');
+            header.classList = "text-lg font-semibold mb-6";
+            header.textContent = detail;
+            container.append(header);
+
+            const list = details[detail];
+            for (let d in list) {
+                const dlist = Object.entries(list[d])[0];
+
+                const ptag = document.createElement('p');
+                ptag.classList = "flex mb-4 gap-3";
+
+                const spantag1 = document.createElement('span');
+                spantag1.classList = "font-bold";
+
+                spantag1.textContent = `${dlist[0]}:`;
+
+                const spantag2 = document.createElement('span');
+                spantag2.classList = "text-base";
+                spantag2.textContent = dlist[1];
+
+                ptag.append(spantag1);
+                ptag.append(spantag2);
+                container.append(ptag);
+            }
+
+            const hrtag = document.createElement('hr');
+            hrtag.classList = "my-3";
+            container.append(hrtag);
+            newParentDiv.append(container);
+        }
+    }
+
+    Parent.append(newParentDiv);
+}
+function onClickAccount(event,name){
+
+    const searchParams = new URLSearchParams(window.location.search);
+
+    const provider_name = searchParams.get('provider_name');
+    const csrfToken = getCSRFToken();
+
+
+    const id = name.value;
+    console.log(id);
+
+    const data = {
+        'type': 'account',
+         'id': id
+    }
+
+    showLoadingSpinner();
+    fetch(`/social/social/profile/api/?page_name=${provider_name}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(data => renderPageDetails(data) )
+    .catch(error => console.error('Fetch error:', error));
+
+
+}
+
+function onClickPage(event,id){
+
+    console.log(id);
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const provider_name = searchParams.get('provider_name');
+    const csrfToken = getCSRFToken();
+    const data = {
+        'type': 'page',
+         'id': id
+    }
+
+    showLoadingSpinner();
+    fetch(`/social/social/profile/api/?page_name=${provider_name}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(data => renderPageDetails(data))
+    .catch(error => console.error('Fetch error:', error));
+}
+
+</script>
+
+
+
+
+
+{% endblock %}

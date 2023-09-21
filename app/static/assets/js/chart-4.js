@@ -181,9 +181,9 @@ async function fetchCommentsGraph(start = getFormattedDate(2) , end = getFormatt
     }
     const fromDate = document.getElementById('from-date');
     const toDate = document.getElementById('to-date');
-
     fromDate.value = start;
     toDate.value = end;
+
 
 }
 fetchCommentsGraph();

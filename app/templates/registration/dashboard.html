@@ -1,6 +1,14 @@
 {%extends 'registration/base.html'%}
 {%load static%}
 {% block content %}
+<style>
+    input[type="date"]::-webkit-clear-button {
+    display: none;
+}
+input[type="date"]::-webkit-inner-spin-button {
+    display: none;
+}
+</style>
 
 <div class="w-full px-7 py-7 mx-auto">
     <!-- row 1 -->
@@ -220,7 +228,8 @@
                                             </svg>
                                         </div>
 <!--                                        <span>{{instagram_comments_today}}</span>-->
-                                        <span>0</span>
+<!--                                        <span>0</span>-->
+                                        <span>{{instagram_new_followers}}</span>
 
 
 
@@ -500,6 +509,22 @@
 
 <script>
 
+function getFormattedDate(daysBefore = 0){
+    let currentDate = new Date();
+    const oneDay = daysBefore * 24 * 60 * 60 * 1000; // One day in milliseconds
+    currentDate = new Date(currentDate - oneDay);
+    const year = currentDate.getFullYear();
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Adding 1 to month because months are zero-indexed
+    const day = currentDate.getDate().toString().padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
+    return formattedDate;
+
+}
+
+
+
+
 <!--var labels = {{labels | safe}};-->
 <!--var data_ln = {{data_ln | safe}};-->
 <!--var data_fb = {{data_fb | safe}};-->
@@ -523,12 +548,22 @@ function getCSRFToken() {
 function onDateChange(){
     const fromDate = document.getElementById('from-date').value;
     const toDate = document.getElementById('to-date').value;
-    fetchLikeGraph(fromDate,toDate);
-    fetchCommentsGraph(fromDate,toDate);
-    fetchPostGraph(fromDate,toDate);
-    fetchFollowersGraph(fromDate,toDate);
-}
 
+    if(fromDate !== '' && toDate !== ''){
+        fetchLikeGraph(fromDate,toDate);
+        fetchCommentsGraph(fromDate,toDate);
+        fetchPostGraph(fromDate,toDate);
+        fetchFollowersGraph(fromDate,toDate);
+
+    }
+
+
+}
+const toDate = document.getElementById('to-date');
+const fromDate = document.getElementById('from-date')
+let today = getFormattedDate();
+toDate.max = today;
+fromDate.max = today;
 
 
 
@@ -577,6 +612,13 @@ function onDateChange(){
 <!--</table>-->
 
 <!--{%endif%}-->
+
+<!--<script src="{% static 'assets/js/chart-1.js' %}" async></script>-->
+<script src="{% static 'assets/js/chart-2.js' %}" async></script>
+<script src="{% static 'assets/js/chart-3.js' %}" async></script>
+<script src="{% static 'assets/js/chart-4.js' %}" async></script>
+<script src="{% static 'assets/js/chart-5.js' %}" async></script>
+
 
 
 {%endblock%}
