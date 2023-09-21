@@ -60,7 +60,7 @@
 </style>
 
   <div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
-    <form method="post" enctype="multipart/form-data" class="w-100">
+    <form method="post" enctype="multipart/form-data" class="w-100" onsubmit="return validateForm()">
         {% csrf_token %}
 
       <div class="absolute top-0 right-0 mt-10 ml-10 mb-2 z-100" style="z-index:200;" id="errorMessageContainer">
@@ -109,9 +109,10 @@
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                     </svg>
                     <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">PNG and JPG (MAX. 800x400px)</p>
                 </div>
                 <input id="dropzone-file" name="images" type="file" class="hidden" multiple="multiple" onchange="previewImages(event)"/>
+                <br>
                 <p id="error-message" style="color: red; display: none;">Video is too large. Max size: 20MB</p>
             </label>
         </div>
@@ -119,6 +120,7 @@
 
 
         <!--                Platforms-->
+        <br>
         <div class="d-flex p-2" id="pageSelection">
             <div class="col-sm-3">
         <div class="relative inline-block">
@@ -469,7 +471,24 @@
         checkbox.checked = true;
       });
     });
-  
+
+  function validateForm() {
+        const postTextarea = document.getElementById("id_post");
+        const fileInput = document.getElementById("dropzone-file");
+
+        if (postTextarea.value.trim() === "" && fileInput.files.length === 0) {
+            // Both fields are empty, prevent form submission
+
+            const errorMessage = document.getElementById("error-message");
+            errorMessage.textContent = "Can't Post with caption and file both empty";
+            errorMessage.style.display = "block";
+            return false;
+
+        }else{
+            return true;
+            errorMessage.style.display = "none";
+        }
+  }
 
   function showDiv() {
 
@@ -498,7 +517,15 @@
                 fileInput.value = '';
                 errorMessage.style.display = 'block';
             } else {
-                errorMessage.style.display = 'none';
+                const fileName = file.name.toLowerCase();
+                if (fileName.endsWith('.gif') || fileName.endsWith('.svg')) {
+                    // Reset the file input value to clear the selected file
+                    fileInput.value = '';
+                    errorMessage.style.display = 'block';
+                    errorMessage.textContent = 'Only JPEG, and PNG files are allowed.';
+                }else {
+                    errorMessage.style.display = 'none';
+                }
             }
         }
 

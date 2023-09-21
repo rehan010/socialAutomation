@@ -175,6 +175,16 @@
                                     <span class="bg-gradient-to-tl from-purple-700 to-blue-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
 
                                 </td>
+                                {% elif p.status == 'FAILED' %}
+                                        {% if p.post_urn.org.provider == 'facebook' %}
+                                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                            <span class="bg-gradient-to-tl from-green-500 to-green-900 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISHED</span>
+                                        </td>
+                                        {% else %}
+                                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                            <span class="bg-gradient-to-tl from-red-700 to-red-600 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">FAILED</span>
+                                        </td>
+                                        {% endif %}
                                 {% else %}
                                 <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
                                     <span class="bg-gradient-to-tl from-green-500 to-green-900 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
@@ -226,6 +236,18 @@
                                                 <h6 class="bg-gradient-to-tl from-red-700 to-yellow-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISH THIS DRAFT</h6>
                                             </a>
                                         </div>
+                                        {% elif p.status == 'FAILED' and p.post_urn.org.name == 'facebook' %}
+                                        <div class="flex flex-col justify-center">
+                                            {% for page_name in p.post_urn.all %}
+                                            {%if page_name.org.provider == 'facebook' %}
+                                            <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
+                                                <h6 class="mb-0 text-sm font-bold leading-normal">{{page_name.org}}</h6>
+
+                                            </a>
+                                            {%endif%}
+                                            {%endfor%}
+
+                                        </div>
                                         {% else %}
                                         <div class="flex flex-col justify-center">
                                             {% for page_name in p.prepost_page.all %}
@@ -270,7 +292,7 @@
 <script src="{% static 'customjs/images.js' %}"></script>
 <script>
 
-ocument.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
 
   const tabLinks = document.querySelectorAll(".text-gray-500.font-medium.py-2");
   const tabs = document.querySelectorAll(".tab");
@@ -360,32 +382,41 @@ function updatePage(event, platform) {
         });
     });
 
-    function createStatusTd(status) {
+    function createStatusTd(status,provider) {
 
 
+        console.log(provider + " " + status);
 
         const span = document.createElement('span');
         span.className = 'bg-gradient-to-tl px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white';
 
-        switch (status) {
-            case 'PROCESSING':
-                span.className += ' from-blue-700 to-gray-400';
-                break;
-            case 'DRAFT':
-                span.className += ' from-red-700 to-yellow-400';
-                break;
-            case 'SCHEDULED':
-                span.className += ' from-purple-700 to-blue-800';
-                break;
-            default:
+            if (status === 'FAILED' && (provider === true)) {
                 span.className += ' from-green-500 to-green-900';
-                break;
-        }
-
-        span.textContent = status;
+                span.textContent = 'PUBLISHED';
+            } else {
+                switch (status) {
+                    case 'PROCESSING':
+                        span.className += ' from-blue-700 to-gray-400';
+                        break;
+                    case 'DRAFT':
+                        span.className += ' from-red-700 to-yellow-400';
+                        break;
+                    case 'SCHEDULED':
+                        span.className += ' from-purple-700 to-blue-800';
+                        break;
+                    case 'FAILED':
+                        span.className += ' from-red-700 to-red-600';
+                        break;
+                    default:
+                        span.className += ' from-green-500 to-green-900';
+                        break;
+                }
+                span.textContent = status;
+            }
 
         return span;
     }
+
     function createImageTd(imagesData) {
 
 
@@ -898,10 +929,45 @@ let lastButton = null;
                             const imageTd = createImageTd(imagesData);
                             cell3.appendChild(imageTd);
 
+                            post_urn =[];
+                            result.post_urn.forEach(urn => {
+                                const id = urn.id;
+                                const org_provider = urn.org.provider;
+                                const name = urn.org.name;
+                                post_urn.push({
+                                    page: {
+                                        pk : id,
+                                        org_provider : org_provider,
+                                        name : name,
+                                    }
+                                });
+                            });
+
+                            let provider;
+                            if (platformName === 'facebook'){
+                                const containsFacebook = post_urn.some(urn => urn.page.org_provider === 'facebook');
+                                provider = containsFacebook;
+                            }
+                            else if (platformName === 'google'){
+                                const containsGoogle = post_urn.some(urn => urn.page.org_provider === 'google');
+                                provider = containsGoogle;
+                            }
+                            else if (platformName === 'linkedin'){
+                                const containsLinkedin = post_urn.some(urn => urn.page.org_provider === 'linkedin');
+                                provider = containsLinkedin;
+                            }
+                            else if (platformName === 'instagram'){
+                                const containsInstagram = post_urn.some(urn => urn.page.org_provider === 'instagram');
+                                provider = containsInstagram;
+                            }else{
+                                provider = false;
+                            }
+
                             const p = { status: result.status };
+
                             const cell4 = document.createElement('td');
                             cell4.className = 'p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap';
-                            const statusTd = createStatusTd(p.status);
+                            const statusTd = createStatusTd(p.status,provider);
                             cell4.appendChild(statusTd);
 
                             const createdTimestamp = result.created_at;
@@ -937,19 +1003,7 @@ let lastButton = null;
                                     }
                                 });
                             });
-                            post_urn =[];
-                            result.post_urn.forEach(urn => {
-                                const id = urn.id;
-                                const org_provider = urn.org.provider;
-                                const name = urn.org.name;
-                                post_urn.push({
-                                    page: {
-                                        pk : id,
-                                        org_provider : org_provider,
-                                        name : name,
-                                    }
-                                });
-                            });
+
                             const post_pk = result.id;
 
                             const cell7 = document.createElement('td');
@@ -991,6 +1045,25 @@ let lastButton = null;
                                 h6.textContent = 'PUBLISH THIS DRAFT';
                                 a.appendChild(h6);
                                 divInner.appendChild(a);
+                            }
+                            else if (p.status === 'FAILED' && (provider === true)) {
+                                const a = document.createElement('a');
+                                post_urn.forEach(urnData => {
+                                    const urn = urnData.page;
+                                    const pk = urn.pk;
+                                    const provider = urn.org_provider;
+                                    const name = urn.name;
+                                    const url = window.location.protocol + "//" + window.location.host + "/posts/detail/" + post_pk + "/" + pk + "?page_name=" + provider;
+                                    if (provider === platformName) {
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        const h6 = document.createElement('h6');
+                                        h6.className = 'mb-0 text-sm font-bold leading-normal';
+                                        h6.textContent = name;
+                                        a.appendChild(h6);
+                                        divInner.appendChild(a);
+                                    }
+                                });
                             }
 
                             else {

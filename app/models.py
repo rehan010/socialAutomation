@@ -134,7 +134,7 @@ class ImageModel(models.Model):
 
 class PostModel(BaseModel):
     POST_TYPE = [('DRAFT', 'DRAFT'), ('PUBLISHED', 'PUBLISHED'), ('SCHEDULED', 'SCHEDULED'),
-                 ('PROCESSING', 'PROCESSING')]
+                 ('PROCESSING', 'PROCESSING'), ('FAILED', 'FAILED')]
     post = models.TextField(blank=True)
     images = models.ManyToManyField('ImageModel')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -152,11 +152,14 @@ class PostModel(BaseModel):
 
 
 class SharePage(models.Model):
+
+
     org_id = models.CharField(max_length=1000, blank=True)
     name = models.CharField(max_length=1000, blank=True)
     provider = models.CharField(max_length=255, blank=True)
     access_token = models.CharField(max_length=500, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
 
     def __str__(self):
         return self.name

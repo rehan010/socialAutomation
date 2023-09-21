@@ -71,6 +71,7 @@
     enctype="multipart/form-data"
     class="w-100"
     id="yourForm"
+    onsubmit="return validateForm()"
   >
 <!--    {% if messages %}-->
 <!--    <div class="mt-2 mb-2 absolute right-0 top-10">-->
@@ -160,7 +161,7 @@
             <span class="font-semibold">Click to upload</span> or drag and drop
           </p>
           <p class="text-xs text-gray-500 dark:text-gray-400">
-            SVG, PNG, JPG or GIF (MAX. 800x400px)
+             PNG, JPG or GIF (MAX. 800x400px)
           </p>
         </div>
         <input
@@ -171,15 +172,16 @@
           multiple="multiple"
           onchange="previewImages(event)"
         />
+        <br>
         <p id="error-message" style="color: red; display: none">
           Video is too large. Max size: 20MB
         </p>
       </label>
     </div>
-
     <div id="image-preview-container" class="flex flex-wrap"></div>
 
     <!--                Platforms-->
+    <br>
     <div class="d-flex p-2" id="pageSelection">
       <div class="col-sm-3">
         <div class="relative inline-block">
@@ -521,6 +523,22 @@
     });
   });
 
+    function validateForm() {
+        const postTextarea = document.getElementById("id_post");
+        const fileInput = document.getElementById("dropzone-file");
+
+        if (postTextarea.value.trim() === "" && fileInput.files.length === 0) {
+
+            const errorMessage = document.getElementById("error-message");
+            errorMessage.textContent = "Can't Post with caption and file both empty";
+            errorMessage.style.display = "block";
+            return false;
+
+        }else{
+            return true;
+            errorMessage.style.display = "none";
+        }
+    }
 
     function showDiv() {
 
@@ -553,8 +571,16 @@
                   // Reset the file input value to clear the selected file
                   fileInput.value = '';
                   errorMessage.style.display = 'block';
-              } else {
-                  errorMessage.style.display = 'none';
+              }else {
+                const fileName = file.name.toLowerCase();
+                if (fileName.endsWith('.gif') || fileName.endsWith('.svg')) {
+                    // Reset the file input value to clear the selected file
+                    fileInput.value = '';
+                    errorMessage.style.display = 'block';
+                    errorMessage.textContent = 'Only JPEG, and PNG files are allowed.';
+                }else {
+                    errorMessage.style.display = 'none';
+                }
               }
           }
 

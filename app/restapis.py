@@ -462,7 +462,7 @@ def get_linkedin_user_data(accesstoken,id):
         last_name = response['lastName']['localized']['en_US']
         job = response['localizedHeadline']
         name = first_name + "" + last_name
-        data['Personal Information'] = [{"Name":name} , {"localizedHeadline": job}]
+        data['Personal Information'] = [{"Name": name} , {"Job": job}]
         url = "https://api.linkedin.com/v2/clientAwareMemberHandles?q=members&projection=(elements*(primary,type,handle~))"
 
         headers = {
@@ -574,7 +574,7 @@ def fb_video_post(data, images, post_model, sharepage):
 
 
 def instagram_post_single_media(page_id, access_token, media, post, page):
-    # print("Excuting Single Instagram Post Function")
+
     url = f"https://graph.facebook.com/v17.0/{page_id}/media/"
     # print(url)
     data = {
@@ -621,15 +621,24 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
     }
 
     response = requests.post(url, headers=headers, data=data)
-    response = response.json()
-    post_id = response.get('id')
-    # print("Post id is ",post_id,response)
-    post_urn = Post_urn.objects.create(org=page, urn=post_id)
-    post_urn.save()
-    post.post_urn.add(post_urn)
-    # print("Post Successfull Created")
-    post.published_at = timezone.now()
-    post.save()
+    if response.status_code == 200:
+        print(response.status_code)
+        response = response.json()
+        post_id = response.get('id')
+        # print("Post id is ",post_id,response)
+        post_urn = Post_urn.objects.create(org=page, urn=post_id)
+        post_urn.save()
+        post.post_urn.add(post_urn)
+        # print("Post Successfull Created")
+        post.published_at = timezone.now()
+        if post.status == 'SCHEDULED' or post.status == 'DRAFT' or post.status == 'PROCESSING':
+            post.status = 'PUBLISHED'
+            post.publish_check = True
+        post.save()
+
+    else:
+        post.status = 'FAILED'
+        post.save()
 
 
 def linkdein(access_token_string):
@@ -747,16 +756,26 @@ def facebook_post_multiimage(data, images, post, sharepage):
     # print("Data ",data_post)
 
     response = requests.post(url, headers=headers, data=data_post)
-    response = response.json()
-    post_id = response["id"]
-    # print(post_id)
-    post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
-    post_urn.save()
-    # print("Post Successfull Created")
+    if response.status_code == 200:
+        print(response.status_code)
+        response = response.json()
+        post_id = response["id"]
+        # print(post_id)
+        post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
+        post_urn.save()
+        # print("Post Successfull Created")
 
-    post.post_urn.add(post_urn)
-    post.published_at = timezone.now()
-    post.save()
+        post.post_urn.add(post_urn)
+        post.published_at = timezone.now()
+
+        if post.status in ['SCHEDULED', 'DRAFT', 'PROCESSING']:
+            post.status = 'PUBLISHED'
+            post.publish_check = True
+
+        post.save()
+    else:
+        post.status = 'FAILED'
+        post.save()
 
 
 def create_insta_post(page_id, access_token, media, post, page):
@@ -782,15 +801,24 @@ def facebook_post_video(data, video, post, sharepage):
     if (len(video) != 0):
         data_post['file_url'] = video[0].image_url
     response = requests.post(url, headers=headers, data=data_post)
-    response = response.json()
-    post_id = response.get('id')
+    if response.status_code == 200:
+        print(response.status_code)
+        response = response.json()
+        post_id = response.get('id')
 
-    post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
-    post_urn.save()
+        post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
+        post_urn.save()
 
-    post.post_urn.add(post_urn)
-    post.published_at = timezone.now()
-    post.save()
+        post.post_urn.add(post_urn)
+        post.published_at = timezone.now()
+
+        if post.status == 'SCHEDULED' or post.status == 'DRAFT' or post.status == 'PROCESSING':
+            post.status = 'PUBLISHED'
+            post.publish_check = True
+        post.save()
+    else:
+        post.status = 'FAILED'
+        post.save()
 
 
 def get_instagram_image_id(image, page_id, access_token):
@@ -901,16 +929,24 @@ def instagram_multi_media(page_id, access_token, media, post, page):
     }
 
     response_2 = requests.post(url_2, headers=headers, data=data_post_2)
-    response_2 = response_2.json()
-    # print(response_2)
+    if response_2.status_code == 200:
+        print(response_2.status_code)
+        response_2 = response_2.json()
+        # print(response_2)
 
-    post_id = response_2.get('id')
-    post_urn = Post_urn.objects.create(org=page, urn=post_id)
-    post_urn.save()
+        post_id = response_2.get('id')
+        post_urn = Post_urn.objects.create(org=page, urn=post_id)
+        post_urn.save()
 
-    post.post_urn.add(post_urn)
-    post.published_at = timezone.now()
-    post.save()
+        post.post_urn.add(post_urn)
+        post.published_at = timezone.now()
+        if post.status == 'SCHEDULED' or post.status == 'DRAFT' or post.status == 'PROCESSING':
+            post.status = 'PUBLISHED'
+            post.publish_check = True
+        post.save()
+    else:
+        post.status = 'FAILED'
+        post.save()
 
 
 def create_l_multimedia(images, org_id, access_token_string, clean_file,
@@ -939,6 +975,7 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
                 if response.status_code == 201:
                     response = post_video_linkedin(image_urn, access_token_string, org_id, post)
                     if response.status_code == 201:
+                        print(response.status_code)
                         post_id_value = response.headers.get('x-restli-id')
                         post_urn, created = Post_urn.objects.get_or_create(org=org, urn=post_id_value)
                         if created:
@@ -947,9 +984,15 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
                             post_urn.save()
                         post.post_urn.add(post_urn)
                         post.published_at = timezone.now()
+                        if post.status == 'SCHEDULED' or post.status == 'DRAFT' or post.status == 'PROCESSING':
+                            post.status = 'PUBLISHED'
+                            post.publish_check = True
+
                         post.save()
                         # print("Video Posted successfully.")
-
+                    else:
+                        post.status = 'FAILED'
+                        post.save()
                     # else:
                     # print("Post Failed" + response.status_code)
 
@@ -989,6 +1032,7 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
                 response = post_single_image_linkedin(access_token_string, org_id, post, image_list)
                 # print("Response ", response.json())
                 if response.status_code == 201:
+                    print(response.status_code)
                     post_id_value = response.headers.get('x-restli-id')
                     post_urn, created = Post_urn.objects.get_or_create(org=org, urn=post_id_value)
                     if created:
@@ -997,15 +1041,20 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
                         post_urn.save()
                     post.post_urn.add(post_urn)
                     post.published_at = timezone.now()
+                    if post.status == 'SCHEDULED' or post.status == 'DRAFT' or post.status == 'PROCESSING':
+                        post.status = 'PUBLISHED'
+                        post.publish_check = True
+
+                    post.save()
+                    # print("Video Posted successfully.")
+                else:
+                    post.status = 'FAILED'
                     post.save()
 
-
-                else:
-                    pass
-                    # print("API request failed with status code:", response.status_code)
             else:
                 response = post_linkedin(image_list, post, org_id, access_token_string)
                 if response.status_code == 201:
+                    print(response.status_code)
                     post_id_value = response.headers.get('x-restli-id')
                     post_urn, created = Post_urn.objects.get_or_create(org=org, urn=post_id_value)
                     if created:
@@ -1014,10 +1063,15 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
                         post_urn.save()
                     post.post_urn.add(post_urn)
                     post.published_at = timezone.now()
+                    if post.status == 'SCHEDULED' or post.status == 'DRAFT' or post.status == 'PROCESSING':
+                        post.status = 'PUBLISHED'
+                        post.publish_check = True
+
                     post.save()
+                    # print("Video Posted successfully.")
                 else:
-                    pass
-                    # print("API request failed with status code:", response.status_code)
+                    post.status = 'FAILED'
+                    post.save()
     else:
         response = text_post_linkedin(post, access_token_string, org_id)
         if response.status_code == 201:
@@ -1029,11 +1083,15 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
                 post_urn.save()
             post.post_urn.add(post_urn)
             post.published_at = timezone.now()
-            post.save()
-        else:
-            pass
-            # print("API request failed with status code:", response.status_code)
+            if post.status == 'SCHEDULED' or post.status == 'DRAFT' or post.status == 'PROCESSING':
+                post.status = 'PUBLISHED'
+                post.publish_check = True
 
+            post.save()
+            # print("Video Posted successfully.")
+        else:
+            post.status = 'FAILED'
+            post.save()
 
 def post_nested_comment_linkedin(social, access_token, post_urn, reply, comment_urn):
     user = social.uid
@@ -2030,12 +2088,17 @@ def linkedin_page_detail(accesstoken, id):
     data['Personal Information'] = [{'Name':name},{"Organization Type":response['organizationType']}]
 
     if len(response.get('locations')) > 0:
-         data['Location'] = []
-         data["Location"].append(response.get('locations')[0])
+
+         full_address = response.get('locations')[0]['address']['line1'] +","+ response.get('locations')[0]['address']['line2'] +","+ response.get('locations')[0]['address']['city'] +","+ response.get('locations')[0]['address']['geographicArea'] +","+ response.get('locations')[0]['address']['country']
+
+
+         data['Contact Information'] = [{'Address': full_address},
+                                   {"Postal Code": response.get('locations')[0]['address']['postalCode']}]
 
     if 'logoV2' in response:
         detail['profile_picture'] = response['logoV2']['original~']['elements'][0]['identifiers'][0][
             'identifier']
+
 
 
     detail['details'] = data
@@ -2270,6 +2333,7 @@ def post_single_image_linkedin(access_token_string, org_id, post, image_list):
         "isReshareDisabledByAuthor": False
     }
     response = requests.request('POST', url, headers=headers, json=data)
+
     return response
 
 
@@ -2579,9 +2643,12 @@ def fb_user_detail(access_token):
         data['Personal Information'] = []
         data['Personal Information'].append({'Name': response.get('name').capitalize()})if response.get('name') else None
         data['Personal Information'].append({'Gender':response.get('gender',None).capitalize()})if response.get('gender') else None
-        data['Location'] = [{ 'Location':response.get('location')['name']}] if response.get('location') else []
+        if response.get('location'):
+            data['Location'] = [{ 'Location':response.get('location')['name']}]
+
         profile_image = response.get('picture')['data']['url'] if response.get('picture') else None
-        data['Contact Information']= [{'Email': response.get('email')}] if response.get('email') else []
+        if response.get('email') :
+            data['Contact Information']= [{'Email': response.get('email')}]
         details["profile_picture"] = profile_image
     else:
         data['error'] = response.json()

@@ -134,11 +134,8 @@ def publish_post_on_social_media(instance):
     share_page = instance.prepost_page.all()
     images = instance.images.all()
     print(images)
-    print(f"{len(images)} imageno")
-    if instance.status == 'SCHEDULED' or instance.status == 'DRAFT' or instance.status == 'PROCESSING':
-        instance.status = 'PUBLISHED'
-        instance.publish_check = True
-        instance.save()
+
+
     for page in share_page:
         if page.provider == "linkedin":
             socialaccount = SocialAccount.objects.get(user=page.user.id, provider="linkedin_oauth2")
