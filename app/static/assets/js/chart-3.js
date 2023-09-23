@@ -3,23 +3,27 @@
 
 var ctx3 = document.getElementById("like-chart-line").getContext("2d");
 
-var gradientStroke1 = ctx3.createLinearGradient(0, 230, 0, 50);
 
-gradientStroke1.addColorStop(1, "rgba(203,12,159,0.2)");
-gradientStroke1.addColorStop(0.2, "rgba(72,72,176,0.0)");
-gradientStroke1.addColorStop(0, "rgba(203,12,159,0)"); //purple colors
+var gradientStroke1 = ctx4.createLinearGradient(0, 230, 0, 50);
 
-var gradientStroke2 = ctx3.createLinearGradient(0, 230, 0, 50);
+// Replace these placeholder colors with actual LinkedIn colors
+gradientStroke1.addColorStop(1, "rgba(0, 119, 181, 0.2)"); // LinkedIn blue
+gradientStroke1.addColorStop(0.2, "rgba(72, 72, 176, 0.0)"); // Transparent
+gradientStroke1.addColorStop(0, "rgba(0, 119, 181, 0)"); // Transparent
 
-gradientStroke2.addColorStop(1, "rgba(0, 0, 255, 0.2)");
-gradientStroke2.addColorStop(0.2, "rgba(72,72,176,0.0)");
-gradientStroke2.addColorStop(0, "rgba(20,23,39,0)"); //blue colors
+var gradientStroke2 = ctx4.createLinearGradient(0, 230, 0, 50);
 
-var gradientStroke3 = ctx3.createLinearGradient(0, 230, 0, 50);
 
-gradientStroke3.addColorStop(1, "rgba(255, 255, 0, 0.2)"); // Yellowish color with 20% opacity
-gradientStroke3.addColorStop(0.2, "rgba(72, 72, 176, 0.0)");
-gradientStroke3.addColorStop(0, "rgba(20, 23, 39, 0)"); // Transparent
+gradientStroke2.addColorStop(0, "rgba(59, 89, 152, 0.4)"); // Facebook Blue
+gradientStroke2.addColorStop(1, "rgba(0, 0, 0, 0)");
+gradientStroke2.addColorStop(0, "rgba(0, 119, 181, 0)");// Transparent
+
+var gradientStroke3 = ctx4.createLinearGradient(0, 230, 0, 50);
+
+gradientStroke3.addColorStop(1, "rgba(203,12,159,0.2)");
+gradientStroke3.addColorStop(0.2, "rgba(72,72,176,0.0)");
+gradientStroke3.addColorStop(0, "rgba(203,12,159,0)"); //purple colors
+
 
 var gradientStroke4 = ctx3.createLinearGradient(0, 230, 0, 50);
 
@@ -72,7 +76,7 @@ async function fetchLikeGraph(start = getFormattedDate(2) , end = getFormattedDa
             tension: 0,
             borderWidth: 0,
             pointRadius: 3,
-            borderColor: "#cb0c9f",
+            borderColor: "#0077B5",
             borderWidth: 3,
             backgroundColor: gradientStroke1,
             fill: true,
@@ -84,7 +88,7 @@ async function fetchLikeGraph(start = getFormattedDate(2) , end = getFormattedDa
             tension: 0,
             borderWidth: 0,
             pointRadius: 3,
-            borderColor: "#1E90FF",
+            borderColor: "#1877F2",
             borderWidth: 3,
             backgroundColor: gradientStroke2,
             fill: true,

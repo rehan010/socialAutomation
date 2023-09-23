@@ -593,6 +593,11 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
 
     # print("data is",data)
     response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 400:
+        post.status = 'FAILED'
+        post.save()
+        return
+
 
     mediaid = response.json().get('id')
     # print("media id is",mediaid,response.json())
@@ -785,7 +790,9 @@ def create_insta_post(page_id, access_token, media, post, page):
         else:
             instagram_post_single_media(page_id, access_token, media, post, page)
     else:
-        pass
+        post.status = 'FAILED'
+        post.save()
+        return
 
 
 def facebook_post_video(data, video, post, sharepage):
@@ -2088,12 +2095,18 @@ def linkedin_page_detail(accesstoken, id):
     data['Personal Information'] = [{'Name':name},{"Organization Type":response['organizationType']}]
 
     if len(response.get('locations')) > 0:
+         address_data = response.get('locations')[0]['address']
 
-         full_address = response.get('locations')[0]['address']['line1'] +","+ response.get('locations')[0]['address']['line2'] +","+ response.get('locations')[0]['address']['city'] +","+ response.get('locations')[0]['address']['geographicArea'] +","+ response.get('locations')[0]['address']['country']
+         line1 = address_data.get('line1', '')
+         line2 = address_data.get('line2', '')
+         city = address_data.get('city', '')
+         geographicArea = address_data.get('geographicArea', '')
+         country = address_data.get('country', '')
 
+            # Join the non-empty values with commas
+         full_address = ', '.join(filter(None, [line1, line2, city, geographicArea, country]))
 
-         data['Contact Information'] = [{'Address': full_address},
-                                   {"Postal Code": response.get('locations')[0]['address']['postalCode']}]
+         data['Contact Information'] = [{'Address': full_address},{"Postal Code": response.get('locations')[0]['address']['postalCode']}]
 
     if 'logoV2' in response:
         detail['profile_picture'] = response['logoV2']['original~']['elements'][0]['identifiers'][0][

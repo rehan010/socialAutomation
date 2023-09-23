@@ -13,7 +13,7 @@ new Chart(ctx, {
         borderWidth: 0,
         borderRadius: 4,
         borderSkipped: false,
-        backgroundColor: "#fff",
+        backgroundColor: "#0077B5",
         data: data_ln, // Use the data from your context
         maxBarThickness: 6,
       },
@@ -23,7 +23,7 @@ new Chart(ctx, {
         borderWidth: 0,
         borderRadius: 4,
         borderSkipped: false,
-        backgroundColor: "#1E90FF",
+        backgroundColor: "#1877F2",
         data: data_fb, // Use the data from your context
         maxBarThickness: 6,
       },

@@ -4,13 +4,24 @@
 {%load humanize %}
 {%block bar%}
 {%endblock%}
+{% load custom_filters %}
 
 {% block custom_css %}
 <style>
     .container{
     font-family:Open sans;!important
 }
-
+.success-dialog {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #00cc00;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  display: none;
+}
 
 
 </style>
@@ -22,6 +33,7 @@
 
 
 <div class="container mx-auto">
+  {% csrf_token %}
     <div class="tabs relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
         <br>
         <hr>
@@ -91,6 +103,9 @@
                                 <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                     pages
                                 </th>
+                                <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+
+                                </th>
                                 <!--                                                        <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">Details</th>-->
                             </tr>
                             </thead>
@@ -103,7 +118,7 @@
                                 </div>
                             </form>
                             {% for p in paginated %}
-                            <tr>
+                            <tr class="post" data-post-id="{{p.id}}">
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                                     <div class="flex px-2 py-1">
                                         <div>
@@ -176,15 +191,24 @@
 
                                 </td>
                                 {% elif p.status == 'FAILED' %}
-                                        {% if p.post_urn.org.provider == 'facebook' %}
-                                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+
+                                        {% if p|any == True %}
                                             <span class="bg-gradient-to-tl from-green-500 to-green-900 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISHED</span>
-                                        </td>
                                         {% else %}
-                                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
                                             <span class="bg-gradient-to-tl from-red-700 to-red-600 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">FAILED</span>
-                                        </td>
                                         {% endif %}
+                                    </td>
+
+                                {% elif p.status == 'PUBLISHED' %}
+                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
+                                            {% if p|any == True %}
+                                                <span class="bg-gradient-to-tl from-green-500 to-green-900 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISHED</span>
+                                            {% else %}
+                                                <span class="bg-gradient-to-tl from-red-700 to-red-600 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">FAILED</span>
+                                            {% endif %}
+                                    </td>
+
                                 {% else %}
                                 <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap">
                                     <span class="bg-gradient-to-tl from-green-500 to-green-900 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{p.status}}</span>
@@ -218,7 +242,7 @@
                                 </td>
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
                                     <div class="flex px-2 py-1">
-                                        {% if p.status == 'PUBLISHED' %}
+                                        {% if p.status == 'PUBLISHED' and p|any == True %}
                                         <div class="flex flex-col justify-center">
                                             {% for page_name in p.post_urn.all %}
                                             {%if page_name.org.provider == 'facebook' %}
@@ -236,7 +260,7 @@
                                                 <h6 class="bg-gradient-to-tl from-red-700 to-yellow-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISH THIS DRAFT</h6>
                                             </a>
                                         </div>
-                                        {% elif p.status == 'FAILED' and p.post_urn.org.name == 'facebook' %}
+                                        {% elif p.status == 'FAILED' and p|any == True %}
                                         <div class="flex flex-col justify-center">
                                             {% for page_name in p.post_urn.all %}
                                             {%if page_name.org.provider == 'facebook' %}
@@ -244,6 +268,15 @@
                                                 <h6 class="mb-0 text-sm font-bold leading-normal">{{page_name.org}}</h6>
 
                                             </a>
+                                            {%endif%}
+                                            {%endfor%}
+
+                                        </div>
+                                        {% elif p|any == False %}
+                                        <div class="flex flex-col justify-center">
+                                            {% for page_name in p.prepost_page.all %}
+                                            {%if page_name.provider == 'facebook' %}
+                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
                                             {%endif%}
                                             {%endfor%}
 
@@ -258,6 +291,18 @@
 
                                         </div>
                                         {% endif %}
+                                    </div>
+                                </td>
+                                <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <div class="mx-4 relative cursor-pointer">
+                                        <i class="fas fa-trash-alt text-slate-700 delete-dropdownButton"></i>
+                                        <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350  before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
+                                            <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                                                <button onclick="delete_post(this)" class="openDialogButton modal-button cursor-pointer  " data-target="{{ p.id }}">
+                                                     <i class="fa-solid fa-trash mx-2"></i> Delete Post
+                                                </button>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>
@@ -393,6 +438,10 @@ function updatePage(event, platform) {
             if (status === 'FAILED' && (provider === true)) {
                 span.className += ' from-green-500 to-green-900';
                 span.textContent = 'PUBLISHED';
+            }
+            else if (status === 'PUBLISHED' && (provider === false)) {
+                span.className += ' from-red-700 to-red-600';
+                span.textContent = 'FAILED';
             } else {
                 switch (status) {
                     case 'PROCESSING':
@@ -872,8 +921,9 @@ let lastButton = null;
 
                         data.forEach(result=> {
 
-
                             const row = document.createElement('tr');
+                            row.className = "post";
+                            row.setAttribute('data-post-id', result.id);
 
                             // Create table cells and set their content
 
@@ -1084,7 +1134,121 @@ let lastButton = null;
 
                             cell7.appendChild(divFlex);
 
+                           if ( platformName === 'instagram' && (provider === true)){
 
+                                // Create a div element to hold the button
+                                var divContainer = document.createElement("div");
+                                divContainer.className = "mx-4 relative cursor-pointer";
+
+                                // Create the icon element (fa-eye)
+                                var iconElement = document.createElement("i");
+                                iconElement.className = "fas fa-info text-slate-700 delete-dropdownButton";
+
+                                // Create the tooltip element
+                                var tooltip = document.createElement("span");
+                                tooltip.className = "tooltiptext";
+                                tooltip.style.visibility = "hidden"; // Initially hidden
+                                tooltip.style.width = "220px"; // Set the width as needed
+                                tooltip.style.backgroundColor = "#fff"; // White background
+                                tooltip.style.color = "#777"; // Gray text color
+                                tooltip.style.textAlign = "center";
+<!--                                tooltip.style.border = "1px solid #ccc"; // Add a border-->
+<!--                                tooltip.style.borderRadius = "2px"; // Slight border radius-->
+                                tooltip.style.padding = "2px"; // Padding for better appearance
+                                tooltip.style.position = "absolute";
+                                tooltip.style.zIndex = "1";
+                                tooltip.style.bottom = "125%";
+
+                                tooltip.style.right = "50%";
+                                tooltip.style.transform = "translateX(-50%)";
+                                tooltip.style.opacity = "0";
+                                tooltip.style.transition = "opacity 0.2s";
+                                tooltip.textContent = "Post cannot be deleted in Instagram API"; // Set the tooltip text content
+                                tooltip.style.fontFamily = "Arial, sans-serif"; // Arial font
+                                tooltip.style.fontSize = "15px";
+
+
+
+                                // Event listener to show tooltip on hover
+                                iconElement.addEventListener("mouseover", function () {
+                                  tooltip.style.visibility = "visible";
+                                  tooltip.style.opacity = "1";
+                                });
+
+                                // Event listener to hide tooltip on mouseout
+                                iconElement.addEventListener("mouseout", function () {
+                                  tooltip.style.visibility = "hidden";
+                                  tooltip.style.opacity = "0";
+                                });
+
+                                // Append the tooltip to the icon
+                                iconElement.appendChild(tooltip);
+
+                                // Append the icon element to the div
+                                divContainer.appendChild(iconElement);
+
+                                // Create a table cell to hold the div
+                                var cell8 = document.createElement("td");
+                                cell8.className = "p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent";
+                                cell8.appendChild(divContainer);
+
+
+                           }else{
+
+                                var divContainer = document.createElement("div");
+                                divContainer.className = "mx-4 relative cursor-pointer";
+
+                                const buttonId = `delete-button-${result.id}`;
+                                const ulId = `delete-dropdown-${result.id}`;
+
+                                var iconElement = document.createElement("i");
+                                iconElement.className = "fas fa-trash-alt text-slate-700 delete-dropdownButton";
+                                iconElement.setAttribute("id", buttonId);
+
+                                var ulElement = document.createElement("ul");
+                                ulElement.className = "absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5 origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown";
+                                ulElement.style.display = "none";
+                                ulElement.setAttribute("id", ulId);
+
+                                var liElement = document.createElement("li");
+                                liElement.className = "relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors";
+
+
+                                var innerButton = document.createElement("button");
+                                innerButton.className = "openDialogButton modal-button cursor-pointer";
+                                innerButton.setAttribute("onclick", "delete_post(this)");
+                                innerButton.setAttribute("data-target", result.id);
+
+
+                                var innerIconElement = document.createElement("i");
+                                innerIconElement.className = "fa-solid fa-trash mx-2";
+
+                                innerButton.appendChild(innerIconElement);
+                                innerButton.appendChild(document.createTextNode("Delete Post"));
+
+                                liElement.appendChild(innerButton);
+
+                                ulElement.appendChild(liElement);
+
+                                divContainer.appendChild(iconElement);
+                                divContainer.appendChild(ulElement);
+
+                                var cell8 = document.createElement("td");
+                                cell8.className = "p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent";
+                                cell8.appendChild(divContainer);
+
+                                iconElement.addEventListener('click', function () {
+                                    console.log("Clicked");
+                                    const ul = document.getElementById(ulId); // Get the corresponding ul by its unique ID
+                                    if (ul.style.display === "block") {
+                                        ul.style.display = "none";
+                                    } else {
+                                        ul.style.display = "block";
+                                    }
+                                });
+
+
+                           }
 
                             // Append table cells to the row
                             row.appendChild(cell1);
@@ -1094,6 +1258,7 @@ let lastButton = null;
                             row.appendChild(cell5);
                             row.appendChild(cell6);
                             row.appendChild(cell7);
+                            row.appendChild(cell8);
 
                             // Append the row to the table body
                             tableBody.appendChild(row);
@@ -1206,6 +1371,103 @@ let lastButton = null;
       window.history.replaceState({}, '', currentUrl.toString());
    }
 
+    const dropdownButtons = document.querySelectorAll(".delete-dropdownButton");
+
+    dropdownButtons.forEach((button) => {
+
+        const dropdown = button.nextElementSibling;
+        button.addEventListener('click',function(){
+            console.log("Clicked");
+            if(dropdown.style.display == "block"){
+                dropdown.style.display = "none"
+            }
+            else{
+                dropdown.style.display = "block"
+            }
+        })
+    });
+    function deleteDropdown() {
+      const dropdownButtons = document.querySelectorAll(".delete-dropdownButton");
+
+      dropdownButtons.forEach((button) => {
+
+
+        const dropdown = button.querySelector(".delete-dropdown");
+        console.log(dropdown);
+
+        button.addEventListener("click", function () {
+          console.log("Clicked");
+          const ulElement = this.nextElementSibling; // Access the ulElement
+            if (ulElement.style.display === "block") {
+                ulElement.style.display = "none";
+            } else {
+                ulElement.style.display = "block";
+            }
+        });
+      });
+    }
+
+
+
+    async function delete_post(button) {
+        var post = button.getAttribute('data-target');
+        const searchParams = new URLSearchParams(window.location.search);
+        const provider_name = searchParams.get('platform');
+        let page_name;
+        if (provider_name === 'fb'){
+            page_name = 'facebook';
+        }else if (provider_name === 'ln'){
+            page_name = 'linkedin';
+        }else if (provider_name === 'insta'){
+            page_name = 'instagram';
+        }else{
+            page_name = 'google';
+        }
+
+
+        const post_id = post;
+        console.log(post_id);
+        const postElement = document.querySelector(".post");
+        const id = postElement.getAttribute('data-post-id');
+
+        const csrfToken = getCSRFToken();
+
+        const json = { 'post_id': post_id  ,'page_name':page_name }
+
+        const res = await fetch(
+          `/delete-post/${post_id}`,{
+              method:'Delete',
+               headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+               body: JSON.stringify(json)
+        });
+        if (res.ok) {
+        // Remove the deleted post row from the page
+        const postRow = document.querySelector(`tr[data-post-id="${post_id}"]`);
+        if (postRow) {
+          postRow.remove();
+        }
+
+        // Show a success dialog
+        const successDialog = document.createElement('div');
+        successDialog.className = 'success-dialog';
+        successDialog.textContent = 'Post is Deleted';
+        document.body.appendChild(successDialog);
+
+        // Hide the success dialog after 3 seconds
+        setTimeout(() => {
+          successDialog.remove();
+        }, 3000);
+
+        console.log("Success");
+      } else {
+        const data = await res.json();
+        console.error(data);
+      }
+    }
+
 
     document.addEventListener('DOMContentLoaded', setDefaultQueryParams);
 
@@ -1213,3 +1475,4 @@ let lastButton = null;
 </script>
 
 {% endblock %}
+

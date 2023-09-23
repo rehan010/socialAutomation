@@ -46,6 +46,11 @@ from django.http import JsonResponse
 from rest_framework.exceptions import NotFound
 
 
+# Import your custom filter
+
+
+
+
 
 
 def get_id_token(access_token):
@@ -1627,6 +1632,10 @@ class PostsGetView2(LoginRequiredMixin, TemplateView):
                     Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
                     Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
             paginated = get_paginated_post_list(facebook_post, items_per_page, page)
+            # has_facebook_post = any(
+            #     any(post_urn.org.provider.name == 'facebook' for post_urn in post.post_urn.all())
+            #     for post in paginated
+            # )
 
         else:
             paginated = ''
@@ -1824,64 +1833,116 @@ class PostDeleteView(DestroyAPIView):
         comment_urn = self.request.data.get('urn')
         actor = self.request.data.get('actor')
         comment_id = self.request.data.get('comment_id')
+        post_id = self.request.data.get('post_id')
+        page_name = self.request.data.get('page_name')
+
         response = {}
         response['user'] = self.request.user.id
         post = self.get_object()
-        if self.request.GET.get('page_name') == "facebook":
+        if self.request.GET.get('page_name') == "facebook" or page_name == 'facebook':
             try:
                 post_urn = post.post_urn.all().filter(pk=page_id).first()
-                access_token = post_urn.org.access_token
-                urn = post_urn.urn
+                if post_urn is None:
+                    post_urn1 = post.post_urn.all().filter(org__provider='facebook')
+                    if len(post_urn1) > 0:
+                        for urn1 in post_urn1:
+                            access_token = urn1.org.access_token
+                            urn = urn1.urn
+                            page = urn1.org.id
+                            response['message'] = delete_meta_posts_comment(access_token, urn)
+                            response['request'] = "post"
 
-                if comment_urn:
-                    response['message'] = delete_meta_posts_comment(access_token, comment_urn)
-                    response['request'] = "comment"
+                            if response['message'] == 'success':
+                                post.post_urn.remove(urn1)
+                                post.prepost_page.remove(page)
+                                if len(post.post_urn.all()) == 0:
+                                    post.delete()
+                    else:
+                        prepost = post.prepost_page.all().filter(provider='facebook')
+                        for page in prepost:
+                            post.prepost_page.remove(page)
+                            if len(post.prepost_page.all()) == 0:
+                                post.delete()
                 else:
-                    response['message'] = delete_meta_posts_comment(access_token, urn)
-                    response['request'] = "post"
 
-                    if response['message'] == 'success':
-                        post.post_urn.remove(post_urn)
-                        if len(post.post_urn.all()) == 0:
-                            post.delete()
+                    access_token = post_urn.org.access_token
+                    urn = post_urn.urn
 
+                    if comment_urn:
+                        response['message'] = delete_meta_posts_comment(access_token, comment_urn)
+                        response['request'] = "comment"
+                    else:
+                        response['message'] = delete_meta_posts_comment(access_token, urn)
+                        response['request'] = "post"
 
+                        if response['message'] == 'success':
+                            post.post_urn.remove(post_urn)
+                            if len(post.post_urn.all()) == 0:
+                                post.delete()
 
             except Exception as e:
                 return 'failed'
 
-        elif self.request.GET.get('page_name') == "instagram":
+        elif self.request.GET.get('page_name') == "instagram" or page_name == 'instagram':
             try:
 
 
                 page_post = post.post_urn.all().filter(pk=page_id).first()
-                access_token = page_post.org.access_token
-                urn = page_post.urn
+                if page_post is None:
+                    prepost = post.prepost_page.all().filter(provider='instagram')
+                    for page in prepost:
+                        post.prepost_page.remove(page)
+                        if len(post.prepost_page.all()) == 0:
+                            post.delete()
+                else:
+                    access_token = page_post.org.access_token
+                    urn = page_post.urn
 
-                if comment_urn:
-                    response['message'] = delete_meta_posts_comment(access_token, comment_urn)
-                    response['request'] = 'comment'
+                    if comment_urn:
+                        response['message'] = delete_meta_posts_comment(access_token, comment_urn)
+                        response['request'] = 'comment'
 
             except Exception as e:
                 return 'failed'
 
-        elif self.request.GET.get('page_name') == "linkedin":
+        elif self.request.GET.get('page_name') == "linkedin" or page_name == 'linkedin':
             try:
                 page_post = post.post_urn.all().filter(pk=page_id).first()
-                post_urn = page_post.urn
-                access_token = page_post.org.access_token
+                if page_post is None:
+                    post_urn1 = post.post_urn.all().filter(org__provider='linkedin')
+                    if len(post_urn1) > 0:
+                        for urn1 in post_urn1:
+                            post_urn = urn1.urn
+                            access_token = urn1.org.access_token
 
-                if comment_urn:
-                    response['message'] = delete_linkedin_comments(access_token, post_urn, comment_id, actor)
-                    response['request'] = 'comment'
+                            response['message'] = delete_linkedin_posts(access_token, post_urn)
+                            response['request'] = 'post'
+
+                            if response['message'] == 'success':
+                                post.post_urn.remove(urn1)
+                                if len(post.post_urn.all()) == 0:
+                                    post.delete()
+                    else:
+                        prepost = post.prepost_page.all().filter(provider='linkedin')
+                        for page in prepost:
+                            post.prepost_page.remove(page)
+                            if len(post.prepost_page.all()) == 0:
+                                post.delete()
                 else:
-                    response['message'] = delete_linkedin_posts(access_token, post_urn)
-                    response['request'] = 'post'
+                    post_urn = page_post.urn
+                    access_token = page_post.org.access_token
 
-                    if response['message'] == 'success':
-                        post.post_urn.remove(page_post)
-                        if len(post.post_urn.all()) == 0:
-                            post.delete()
+                    if comment_urn:
+                        response['message'] = delete_linkedin_comments(access_token, post_urn, comment_id, actor)
+                        response['request'] = 'comment'
+                    else:
+                        response['message'] = delete_linkedin_posts(access_token, post_urn)
+                        response['request'] = 'post'
+
+                        if response['message'] == 'success':
+                            post.post_urn.remove(page_post)
+                            if len(post.post_urn.all()) == 0:
+                                post.delete()
 
             except Exception as e:
                 return 'failed'
@@ -2460,6 +2521,7 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
                                if data.get("error") != None:
                                     raise Exception(data['error'])
                                data['user_roles'][_.user.username] = [self.get_user_role(_.user), account['id']]
+                               data['pages'][_.user.username] = []
                         else:
                             if data['pages'].get(_.user.username):
                                 data['pages'][_.user.username].append(account)
