@@ -11,17 +11,7 @@
     .container{
     font-family:Open sans;!important
 }
-.success-dialog {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #00cc00;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  display: none;
-}
+
 .tooltiptext {
     visibility: hidden;
     opacity: 0;
@@ -176,9 +166,9 @@
                                         Video
                                         {% else %}
                                         <a href="javascript:;"
-                                           class="photos relative z-20 inline-flex items-center justify-center w-8 h-8 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30"
+                                           class="photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30"
                                            data-target="tooltip_trigger" data-placement="bottom">
-                                            <img src="{{image.image.url}}" class="w-full rounded-full" alt="team1"/>
+                                            <img src="{{image.image.url}}" class="w-full h-full object-cover rounded-full" alt="team1"/>
                                         </a>
                                         <div data-target="tooltip"
                                              class="hidden px-2 py-1 text-white bg-black rounded-lg text-sm"
@@ -1195,136 +1185,302 @@ let lastButton = null;
 
                             cell7.appendChild(divFlex);
                             const permission = "{{ permission }}";
+
                             const user_role = "{{ user_role }}";
                             const login_user = "{{ request.user }}";
+                            console.log(login_user);
+                            console.log(result.user.username);
+
+                            if (platformName === 'instagram'){
+                                if(provider === false){
+                                    var divContainer = document.createElement("div");
+                                    divContainer.className = "mx-4 relative cursor-pointer";
+
+                                    const buttonId = `delete-button-${result.id}`;
+                                    const ulId = `delete-dropdown-${result.id}`;
+
+                                    var iconElement = document.createElement("i");
+                                    iconElement.className = "fas fa-trash-alt text-slate-700 delete-dropdownButton";
+                                    iconElement.setAttribute("id", buttonId);
+
+                                    var ulElement = document.createElement("ul");
+                                    ulElement.className = "absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5 origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown";
+                                    ulElement.style.display = "none";
+                                    ulElement.setAttribute("id", ulId);
+
+                                    var liElement = document.createElement("li");
+                                    liElement.className = "relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors";
 
 
-                           if ( (platformName === 'instagram' && (provider === true)) || (user_role === 'MEMBER' && permission !== 'WRITE') || (result.user.username !== login_user)){
-
-                                // Create a div element to hold the button
-                                var divContainer = document.createElement("div");
-                                divContainer.className = "mx-4 relative cursor-pointer";
-
-                                // Create the icon element (fa-eye)
-                                var iconElement = document.createElement("i");
-                                iconElement.className = "fas fa-info text-slate-700 delete-dropdownButton";
-
-                                // Create the tooltip element
-                                var tooltip = document.createElement("span");
-                                tooltip.className = "tooltiptext";
-                                tooltip.style.visibility = "hidden"; // Initially hidden
-                                tooltip.style.width = "220px"; // Set the width as needed
-                                tooltip.style.backgroundColor = "#fff"; // White background
-                                tooltip.style.color = "#777"; // Gray text color
-                                tooltip.style.textAlign = "center";
-                                tooltip.style.padding = "2px"; // Padding for better appearance
-                                tooltip.style.position = "absolute";
-                                tooltip.style.zIndex = "1";
-                                tooltip.style.bottom = "125%";
-
-                                tooltip.style.right = "50%";
-                                tooltip.style.transform = "translateX(-50%)";
-                                tooltip.style.opacity = "0";
-                                tooltip.style.transition = "opacity 0.2s";
-                                if (platformName === 'instagram'){
-                                    tooltip.textContent = "Post cannot be deleted in Instagram API"; // Set the tooltip text content
-                                }else{
-                                    tooltip.textContent = "Don't have permission to delete post"; // Set the tooltip text content
-
-                                }
-                                tooltip.style.fontFamily = "Arial, sans-serif"; // Arial font
-                                tooltip.style.fontSize = "15px";
+                                    var innerButton = document.createElement("button");
+                                    innerButton.className = "openDialogButton modal-button cursor-pointer";
+                                    innerButton.setAttribute("onclick", "delete_post(this)");
+                                    innerButton.setAttribute("data-target", result.id);
 
 
+                                    var innerIconElement = document.createElement("i");
+                                    innerIconElement.className = "fa-solid fa-trash mx-2";
 
-                                // Event listener to show tooltip on hover
-                                iconElement.addEventListener("mouseover", function () {
-                                  tooltip.style.visibility = "visible";
-                                  tooltip.style.opacity = "1";
-                                });
+                                    innerButton.appendChild(innerIconElement);
+                                    innerButton.appendChild(document.createTextNode("Delete Post"));
 
-                                // Event listener to hide tooltip on mouseout
-                                iconElement.addEventListener("mouseout", function () {
-                                  tooltip.style.visibility = "hidden";
-                                  tooltip.style.opacity = "0";
-                                });
+                                    liElement.appendChild(innerButton);
 
-                                // Append the tooltip to the icon
-                                iconElement.appendChild(tooltip);
+                                    ulElement.appendChild(liElement);
 
-                                // Append the icon element to the div
-                                divContainer.appendChild(iconElement);
+                                    divContainer.appendChild(iconElement);
+                                    divContainer.appendChild(ulElement);
 
-                                // Create a table cell to hold the div
-                                var cell8 = document.createElement("td");
-                                cell8.className = "p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent";
-                                cell8.appendChild(divContainer);
+                                    var cell8 = document.createElement("td");
+                                    cell8.className = "p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent";
+                                    cell8.appendChild(divContainer);
 
+                                    iconElement.addEventListener('click', function () {
+                                        console.log("Clicked");
+                                        const ul = document.getElementById(ulId); // Get the corresponding ul by its unique ID
+                                        if (ul.style.display === "block") {
+                                            ul.style.display = "none";
+                                        } else {
+                                            ul.style.display = "block";
+                                        }
+                                    });
 
-                           }else if(user_role === 'MEMBER' && permission !== 'WRITE'){
+                               }else{
+                                    // Create a div element to hold the button
+                                    var divContainer = document.createElement("div");
+                                    divContainer.className = "mx-4 relative cursor-pointer";
 
+                                    // Create the icon element (fa-eye)
+                                    var iconElement = document.createElement("i");
+                                    iconElement.className = "fas fa-info text-slate-700 delete-dropdownButton";
 
+                                    // Create the tooltip element
+                                    var tooltip = document.createElement("span");
+                                    tooltip.className = "tooltiptext";
+                                    tooltip.style.visibility = "hidden"; // Initially hidden
+                                    tooltip.style.width = "220px"; // Set the width as needed
+                                    tooltip.style.backgroundColor = "#fff"; // White background
+                                    tooltip.style.color = "#777"; // Gray text color
+                                    tooltip.style.textAlign = "center";
+                                    tooltip.style.padding = "2px"; // Padding for better appearance
+                                    tooltip.style.position = "absolute";
+                                    tooltip.style.zIndex = "1";
+                                    tooltip.style.bottom = "125%";
 
+                                    tooltip.style.right = "50%";
+                                    tooltip.style.transform = "translateX(-50%)";
+                                    tooltip.style.opacity = "0";
+                                    tooltip.style.transition = "opacity 0.2s";
+                                    if (platformName === 'instagram'){
+                                        tooltip.textContent = "Post cannot be deleted in Instagram API"; // Set the tooltip text content
+                                    }else{
+                                        tooltip.textContent = "Don't have permission to delete post"; // Set the tooltip text content
 
-                           }else if(user_role === 'MEMBER' && permission !== 'WRITE'){
-
-                           }
-                           else{
-
-                                var divContainer = document.createElement("div");
-                                divContainer.className = "mx-4 relative cursor-pointer";
-
-                                const buttonId = `delete-button-${result.id}`;
-                                const ulId = `delete-dropdown-${result.id}`;
-
-                                var iconElement = document.createElement("i");
-                                iconElement.className = "fas fa-trash-alt text-slate-700 delete-dropdownButton";
-                                iconElement.setAttribute("id", buttonId);
-
-                                var ulElement = document.createElement("ul");
-                                ulElement.className = "absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5 origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown";
-                                ulElement.style.display = "none";
-                                ulElement.setAttribute("id", ulId);
-
-                                var liElement = document.createElement("li");
-                                liElement.className = "relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors";
-
-
-                                var innerButton = document.createElement("button");
-                                innerButton.className = "openDialogButton modal-button cursor-pointer";
-                                innerButton.setAttribute("onclick", "delete_post(this)");
-                                innerButton.setAttribute("data-target", result.id);
-
-
-                                var innerIconElement = document.createElement("i");
-                                innerIconElement.className = "fa-solid fa-trash mx-2";
-
-                                innerButton.appendChild(innerIconElement);
-                                innerButton.appendChild(document.createTextNode("Delete Post"));
-
-                                liElement.appendChild(innerButton);
-
-                                ulElement.appendChild(liElement);
-
-                                divContainer.appendChild(iconElement);
-                                divContainer.appendChild(ulElement);
-
-                                var cell8 = document.createElement("td");
-                                cell8.className = "p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent";
-                                cell8.appendChild(divContainer);
-
-                                iconElement.addEventListener('click', function () {
-                                    console.log("Clicked");
-                                    const ul = document.getElementById(ulId); // Get the corresponding ul by its unique ID
-                                    if (ul.style.display === "block") {
-                                        ul.style.display = "none";
-                                    } else {
-                                        ul.style.display = "block";
                                     }
-                                });
+                                    tooltip.style.fontFamily = "Arial, sans-serif"; // Arial font
+                                    tooltip.style.fontSize = "15px";
 
 
-                           }
+
+                                    // Event listener to show tooltip on hover
+                                    iconElement.addEventListener("mouseover", function () {
+                                      tooltip.style.visibility = "visible";
+                                      tooltip.style.opacity = "1";
+                                    });
+
+                                    // Event listener to hide tooltip on mouseout
+                                    iconElement.addEventListener("mouseout", function () {
+                                      tooltip.style.visibility = "hidden";
+                                      tooltip.style.opacity = "0";
+                                    });
+
+                                    // Append the tooltip to the icon
+                                    iconElement.appendChild(tooltip);
+
+                                    // Append the icon element to the div
+                                    divContainer.appendChild(iconElement);
+
+                                    // Create a table cell to hold the div
+                                    var cell8 = document.createElement("td");
+                                    cell8.className = "p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent";
+                                    cell8.appendChild(divContainer);
+
+                               }
+                            }else{
+
+                               if (user_role === 'MEMBER' && permission === 'WRITE'){
+                                        var divContainer = document.createElement("div");
+                                    divContainer.className = "mx-4 relative cursor-pointer";
+
+                                    const buttonId = `delete-button-${result.id}`;
+                                    const ulId = `delete-dropdown-${result.id}`;
+
+                                    var iconElement = document.createElement("i");
+                                    iconElement.className = "fas fa-trash-alt text-slate-700 delete-dropdownButton";
+                                    iconElement.setAttribute("id", buttonId);
+
+                                    var ulElement = document.createElement("ul");
+                                    ulElement.className = "absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5 origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown";
+                                    ulElement.style.display = "none";
+                                    ulElement.setAttribute("id", ulId);
+
+                                    var liElement = document.createElement("li");
+                                    liElement.className = "relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors";
+
+
+                                    var innerButton = document.createElement("button");
+                                    innerButton.className = "openDialogButton modal-button cursor-pointer";
+                                    innerButton.setAttribute("onclick", "delete_post(this)");
+                                    innerButton.setAttribute("data-target", result.id);
+
+
+                                    var innerIconElement = document.createElement("i");
+                                    innerIconElement.className = "fa-solid fa-trash mx-2";
+
+                                    innerButton.appendChild(innerIconElement);
+                                    innerButton.appendChild(document.createTextNode("Delete Post"));
+
+                                    liElement.appendChild(innerButton);
+
+                                    ulElement.appendChild(liElement);
+
+                                    divContainer.appendChild(iconElement);
+                                    divContainer.appendChild(ulElement);
+
+                                    var cell8 = document.createElement("td");
+                                    cell8.className = "p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent";
+                                    cell8.appendChild(divContainer);
+
+                                    iconElement.addEventListener('click', function () {
+                                        console.log("Clicked");
+                                        const ul = document.getElementById(ulId); // Get the corresponding ul by its unique ID
+                                        if (ul.style.display === "block") {
+                                            ul.style.display = "none";
+                                        } else {
+                                            ul.style.display = "block";
+                                        }
+                                    });
+
+
+                               }else if(result.user.username === login_user){
+
+                                    var divContainer = document.createElement("div");
+                                    divContainer.className = "mx-4 relative cursor-pointer";
+
+                                    const buttonId = `delete-button-${result.id}`;
+                                    const ulId = `delete-dropdown-${result.id}`;
+
+                                    var iconElement = document.createElement("i");
+                                    iconElement.className = "fas fa-trash-alt text-slate-700 delete-dropdownButton";
+                                    iconElement.setAttribute("id", buttonId);
+
+                                    var ulElement = document.createElement("ul");
+                                    ulElement.className = "absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5 origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown";
+                                    ulElement.style.display = "none";
+                                    ulElement.setAttribute("id", ulId);
+
+                                    var liElement = document.createElement("li");
+                                    liElement.className = "relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors";
+
+
+                                    var innerButton = document.createElement("button");
+                                    innerButton.className = "openDialogButton modal-button cursor-pointer";
+                                    innerButton.setAttribute("onclick", "delete_post(this)");
+                                    innerButton.setAttribute("data-target", result.id);
+
+
+                                    var innerIconElement = document.createElement("i");
+                                    innerIconElement.className = "fa-solid fa-trash mx-2";
+
+                                    innerButton.appendChild(innerIconElement);
+                                    innerButton.appendChild(document.createTextNode("Delete Post"));
+
+                                    liElement.appendChild(innerButton);
+
+                                    ulElement.appendChild(liElement);
+
+                                    divContainer.appendChild(iconElement);
+                                    divContainer.appendChild(ulElement);
+
+                                    var cell8 = document.createElement("td");
+                                    cell8.className = "p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent";
+                                    cell8.appendChild(divContainer);
+
+                                    iconElement.addEventListener('click', function () {
+                                        console.log("Clicked");
+                                        const ul = document.getElementById(ulId); // Get the corresponding ul by its unique ID
+                                        if (ul.style.display === "block") {
+                                            ul.style.display = "none";
+                                        } else {
+                                            ul.style.display = "block";
+                                        }
+                                    });
+
+                               }else{
+
+                                    // Create a div element to hold the button
+                                    var divContainer = document.createElement("div");
+                                    divContainer.className = "mx-4 relative cursor-pointer";
+
+                                    // Create the icon element (fa-eye)
+                                    var iconElement = document.createElement("i");
+                                    iconElement.className = "fas fa-info text-slate-700 delete-dropdownButton";
+
+                                    // Create the tooltip element
+                                    var tooltip = document.createElement("span");
+                                    tooltip.className = "tooltiptext";
+                                    tooltip.style.visibility = "hidden"; // Initially hidden
+                                    tooltip.style.width = "220px"; // Set the width as needed
+                                    tooltip.style.backgroundColor = "#fff"; // White background
+                                    tooltip.style.color = "#777"; // Gray text color
+                                    tooltip.style.textAlign = "center";
+                                    tooltip.style.padding = "2px"; // Padding for better appearance
+                                    tooltip.style.position = "absolute";
+                                    tooltip.style.zIndex = "1";
+                                    tooltip.style.bottom = "125%";
+
+                                    tooltip.style.right = "50%";
+                                    tooltip.style.transform = "translateX(-50%)";
+                                    tooltip.style.opacity = "0";
+                                    tooltip.style.transition = "opacity 0.2s";
+                                    if (platformName === 'instagram'){
+                                        tooltip.textContent = "Post cannot be deleted in Instagram API"; // Set the tooltip text content
+                                    }else{
+                                        tooltip.textContent = "Don't have permission to delete post"; // Set the tooltip text content
+
+                                    }
+                                    tooltip.style.fontFamily = "Arial, sans-serif"; // Arial font
+                                    tooltip.style.fontSize = "15px";
+
+
+
+                                    // Event listener to show tooltip on hover
+                                    iconElement.addEventListener("mouseover", function () {
+                                      tooltip.style.visibility = "visible";
+                                      tooltip.style.opacity = "1";
+                                    });
+
+                                    // Event listener to hide tooltip on mouseout
+                                    iconElement.addEventListener("mouseout", function () {
+                                      tooltip.style.visibility = "hidden";
+                                      tooltip.style.opacity = "0";
+                                    });
+
+                                    // Append the tooltip to the icon
+                                    iconElement.appendChild(tooltip);
+
+                                    // Append the icon element to the div
+                                    divContainer.appendChild(iconElement);
+
+                                    // Create a table cell to hold the div
+                                    var cell8 = document.createElement("td");
+                                    cell8.className = "p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent";
+                                    cell8.appendChild(divContainer);
+
+
+
+                               }
+                            }
 
                             // Append table cells to the row
                             row.appendChild(cell1);
@@ -1525,18 +1681,6 @@ let lastButton = null;
         if (postRow) {
           postRow.remove();
         }
-
-        // Show a success dialog
-        const successDialog = document.createElement('div');
-        successDialog.className = 'success-dialog';
-        successDialog.textContent = 'Post is Deleted';
-        document.body.appendChild(successDialog);
-
-        // Hide the success dialog after 3 seconds
-        setTimeout(() => {
-          successDialog.remove();
-        }, 3000);
-
         console.log("Success");
       } else {
         const data = await res.json();
