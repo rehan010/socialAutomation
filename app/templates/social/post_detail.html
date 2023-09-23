@@ -570,30 +570,34 @@
       const provider_name = searchParams.get('page_name');
       const csrfToken = getCSRFToken();
       const parentButton = event.currentTarget;
+      parentButton.disabled = true;
       let like = parentButton.querySelector("path");
-
+      let requestAborted = false;
       const json = { 'urn': urn }
-      const res = await fetch(
+      try{
+          const res = await fetch(
           `/posts/like/${post_id}/${page_id}?page_name=${provider_name}`,{
               method:'Post',
                headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
                 },
-               body: JSON.stringify(json)
+               body: JSON.stringify(json),
         });
-      const data = await res.json();
-      parentButton.onclick = (event) => deleteLike(urn,event);
+        const data = await res.json();
+        parentButton.disabled = false;
+        parentButton.onclick = (event) => deleteLike(urn,event);
 
         like.setAttribute("fill","red");
-        if(urn === null || urn === ''){
-            const liketextdiv = document.getElementById('likes-count');
-            const likeCount = liketextdiv.innerText;
-            var likeCountArray = likeCount.split(" ");
-            likeCountArray[0] = (parseInt(likeCountArray[0]) + 1).toString();
-            var newlikeCount = likeCountArray.join(" ");
-            liketextdiv.innerText = newlikeCount;
+        if((urn === null || urn === '') && data['like_count']){
+            const liketextDiv = document.getElementById('likes-count');
+            liketextDiv.innerText = data['like_count'];
         }
+      }catch(error){
+            console.error('Error:', error);
+
+      }
+
 
     }
 
@@ -605,9 +609,11 @@
       const provider_name = searchParams.get('page_name');
       const csrfToken = getCSRFToken();
       const parentButton = event.currentTarget;
+      parentButton.disabled = true;
+
         let like = parentButton.querySelector("path");
       const json = { 'urn': urn }
-      console.log(json);
+
       const res = await fetch(
           `/posts/like/${post_id}/${page_id}?page_name=${provider_name}`,{
               method:'Delete',
@@ -620,14 +626,10 @@
       const data = await res.json();
         parentButton.onclick = (event) => postLike(urn ,event);
         like.setAttribute("fill","none");
-
-        if(urn === null || urn === ''){
-            const liketextdiv = document.getElementById('likes-count');
-            const likeCount = liketextdiv.innerText;
-            var likeCountArray = likeCount.split(" ");
-            likeCountArray[0] = (parseInt(likeCountArray[0]) - 1).toString();
-            var newlikeCount = likeCountArray.join(" ");
-            liketextdiv.innerText = newlikeCount;
+        parentButton.disabled = false;
+        if((urn === null || urn === '') && data['like_count']){
+            const liketextDiv = document.getElementById('likes-count');
+            liketextDiv.innerText = data['like_count'];
         }
 
 

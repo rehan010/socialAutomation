@@ -31,6 +31,7 @@ from drf_link_header_pagination import LinkHeaderPagination
 from google.oauth2 import id_token
 from google.auth.transport import requests as auth_requests
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ObjectDoesNotExist
 
 from django.shortcuts import render
 from allauth.socialaccount.models import SocialToken
@@ -2299,119 +2300,6 @@ class ConnectionView(ConnectionsView):
 
         return context
 
-class SocialProfileView2(LoginRequiredMixin,TemplateView):
-    template_name = 'social/social_profile.html'
-
-    def get_context_data(self, **kwargs):
-        provider_name = self.request.GET.get('provider_name')
-        providertoGetdetails = self.request.GET.get('provider_name')
-        user = self.request.user
-
-        if provider_name == "instagram":
-            provider_name = "facebook"
-
-        user_manager = self.request.user.manager
-
-        if user_manager:
-            selected_user = InviteEmploye.objects.get(selected_user=self.request.user,
-                                                      invited_by=self.request.user.manager, status ='ACCEPTED')
-            role = selected_user.role
-            permission = selected_user.permission
-
-            if role == "ADMIN":
-
-                invited_employees = InviteEmploye.objects.filter(Q(permission="WRITE") | Q(permission="READ"),
-                                                                 invited_by=user, status ='ACCEPTED')
-
-                invited_employees_list = []
-
-                for user in invited_employees:
-                    employee_id = user.selected_user.id
-                    invited_employees_list.append(employee_id)
-
-                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user__in=invited_employees_list) | Q(user=user_manager.id),
-                                                      provider=provider_name)
-
-
-            elif (role == "MEMBER" and (permission == "READ" or permission == "WRITE")):
-                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user=user_manager.id), provider=provider_name)
-
-            else:
-                social = SocialAccount.objects.filter(Q(user=user.id), provider=provider_name)
-
-        else:
-            invited_employees = InviteEmploye.objects.filter(Q( permission = "WRITE" ) | Q( permission = "READ" ), status = 'ACCEPTED'  , invited_by = user)
-
-            invited_employees_list = []
-
-            for user1 in invited_employees:
-                employee_id = user1.selected_user.id
-                invited_employees_list.append(employee_id)
-
-
-            social = SocialAccount.objects.filter(Q(user=user.id) |Q(user__in=invited_employees_list), provider=provider_name)
-        access_token = {}
-        data = {}
-
-        for _ in social:
-                access_token[_.user.id] = SocialToken.objects.filter(account_id=_).first().token
-
-
-        user_access_token = access_token[user.id]
-
-        if providertoGetdetails == "facebook":
-            try:
-                data = fb_user_detail(user_access_token)
-                if data.get('error') != None:
-                    raise Exception(data['error'])
-
-                data['pages'] = {}
-                for _ in social:
-                    response = facebook_page_data(access_token.get(_.user.id),_.user.id)
-                    data['pages'][_.user.id] = response
-                data['provider'] = "facebook"
-            except Exception as e:
-                data['error'] = e
-
-        elif providertoGetdetails == "instagram":
-            try:
-                accounts = get_instagram_user_data(user_access_token,user.id)
-                instagram__connected_social_account = SocialAccount.objects.get( user = user.id,provider = "instagram")
-                data['pages'] = {}
-                for account in accounts:
-                    if account.get('username') == instagram__connected_social_account.extra_data.get('username'):
-                       data.update(instagram_details(user_access_token, account['id']))
-                       if data.get("error") != None:
-                            raise Exception(data['error'])
-
-                data['pages'][user.id] = accounts
-
-                access_token.pop(user.id)
-
-                for user_id in access_token:
-                    accounts = get_instagram_user_data(access_token[user_id],user_id)
-                    data['pages'][user_id] = accounts
-
-            except Exception as e:
-                data['error'] = e
-        elif providertoGetdetails == "linkedin_oauth2":
-
-                try:
-                    data = get_linkedin_user_data(user_access_token)
-                    if data.get('error') != None:
-                        raise Exception(data['error'])
-
-                    data['pages'] = {}
-                    for _ in social:
-                        result = linkedin_page_detail(access_token.get(_.user.id), _.user.id)
-                        data['pages'][_.user.id] = result
-                    data['provider'] = "linkedin"
-                except Exception as e:
-                    data['error'] = e
-
-
-        context = data
-        return context
 
 
 
@@ -2432,7 +2320,7 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
 
         if user_manager:
             selected_user = InviteEmploye.objects.get(selected_user=self.request.user,
-                                                      invited_by=self.request.user.manager, status ='ACCEPTED').first()
+                                                      invited_by=self.request.user.manager, status ='ACCEPTED')
             role = selected_user.role
             permission = selected_user.permission
 
@@ -2508,13 +2396,11 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
             try:
                 data['pages'] = {}
                 data ['user_roles'] = {}
+
                 for _ in social:
                     accounts = get_instagram_user_data(access_token[_.user.id], _.user.id)
-                    instagram__connected_social_account = SocialAccount.objects.get( user = user.id,provider = "instagram")
-
+                    instagram__connected_social_account = SocialAccount.objects.get(user=_.user.id, provider="instagram")
                     for account in accounts:
-
-                        account['id'] = int(account['id'])
                         self.meta_save_share_page(_.user,account, providertoGetdetails)
                         if account.get('username') == instagram__connected_social_account.extra_data.get('username'):
                                data.update(instagram_details(access_token[_.user.id], account['id']))
@@ -2609,7 +2495,7 @@ class SocialProfileAPI(APIView):
         provider_name = self.request.GET.get('page_name')
         request_type = self.request.data.get('type')
         id = self.request.data.get('id')
-
+        page_id = self.request.data.get('page_id')
         if provider_name == "facebook":
             if request_type == "account":
                 try:
@@ -2622,7 +2508,7 @@ class SocialProfileAPI(APIView):
                     raise NotFound("SocialToken not found for the specified user.")
             elif request_type == "page":
                 try:
-                    page = SharePage.objects.get(org_id=id)
+                    page = SharePage.objects.get(org_id=page_id,user__id = id)
                     access_token = page.access_token
                     org_id = page.org_id
 
@@ -2633,14 +2519,30 @@ class SocialProfileAPI(APIView):
             else:
                 return JsonResponse({"error": "Invalid request type."}, status=400)
         elif provider_name == "instagram":
-            try:
-                account = SharePage.objects.get(org_id = id)
-                access_token = account.access_token
-                org_id = account.org_id
-                response = instagram_details(access_token,org_id)
-                return JsonResponse(response)
-            except SharePage.DoesNotExist:
-                raise NotFound("SharePage not found for the specified org_id.")
+            if request_type == "account":
+                try:
+                    account = SharePage.objects.filter(org_id=id).first()
+                    if not account:
+                        raise ObjectDoesNotExist("SharePage not found for the specified org_id.")
+                    access_token = account.access_token
+                    org_id = account.org_id
+                    response = instagram_details(access_token,org_id)
+                    return JsonResponse(response)
+                except ObjectDoesNotExist:
+                    raise NotFound("SharePage not found for the specified org_id.")
+            elif request_type == "page":
+                try:
+                    account = SharePage.objects.filter(org_id=page_id).first()
+                    if not account:
+                        raise ObjectDoesNotExist("SharePage not found for the specified org_id.")
+                    access_token = account.access_token
+                    org_id = account.org_id
+                    response = instagram_details(access_token,org_id)
+                    return JsonResponse(response)
+                except ObjectDoesNotExist:
+                    raise NotFound("SharePage not found for the specified org_id.")
+            else:
+                return JsonResponse({"error": "Invalid request type."}, status=400)
 
         elif provider_name == "linkedin_oauth2":
             if request_type == "account":
@@ -2656,7 +2558,7 @@ class SocialProfileAPI(APIView):
             elif request_type == "page":
                 try:
 
-                    page = SharePage.objects.get(org_id=id)
+                    page = SharePage.objects.get(org_id=page_id,user__id = id)
                     access_token = page.access_token
                     org_id = page.org_id
 
@@ -2735,7 +2637,7 @@ class LikeApiView(APIView):
         page_id = self.kwargs['page_id']
         post_id = self.kwargs['post_id']
         comment_urn = self.request.data.get('urn')
-        like_response = "Enter Valid Urn"
+        like_response = {"response":"error"}
         if self.request.GET.get('page_name') == "facebook":
             try:
                 provider_name = "facebook"
@@ -2745,11 +2647,14 @@ class LikeApiView(APIView):
                 urn = page_post.urn
 
                 if comment_urn:
-                    like_response = fb_object_like(comment_urn, access_token)
+                    response = fb_object_like(comment_urn, access_token)
+                    like_response['response'] = response[0]
                 else:
-                    like_response = fb_object_like(urn, access_token)
+                    response = fb_object_like(urn, access_token)
                     page_post.is_liked = True
                     page_post.save()
+                    like_response['response'] = response[0]
+                    like_response['like_count'] = response[1]
             except Exception as e:
                 return JsonResponse(e,safe=False)
         elif self.request.GET.get('page_name') == 'linkedin':
@@ -2764,11 +2669,13 @@ class LikeApiView(APIView):
                 access_token = urn.org.access_token
 
                 if comment_urn:
-                    like_response = comment_like_linkedin(comment_urn, social, access_token)
+                    like_response['response'] = comment_like_linkedin(comment_urn, social, access_token)
                 else:
-                    like_response = post_like_linkedin(post_urn, social, access_token)
+                    response = post_like_linkedin(post_urn, social, access_token)
                     urn.is_liked = True
                     urn.save()
+                    like_response['response'] = response[0]
+                    like_response['like_count'] = response[1]
             except Exception as e:
                 return JsonResponse(e, safe=False)
         else:
@@ -2779,7 +2686,7 @@ class LikeApiView(APIView):
         page_id = self.kwargs['page_id']
         post_id = self.kwargs['post_id']
         comment_urn = self.request.data.get('urn')
-        unlike_response = "Enter Valid Urn"
+        unlike_response = {"like_response":"error"}
         if self.request.GET.get('page_name') == "facebook":
             try:
                 provider_name = "facebook"
@@ -2789,11 +2696,14 @@ class LikeApiView(APIView):
                 urn = page_post.urn
 
                 if comment_urn:
-                    unlike_response = fb_object_unlike(comment_urn, access_token)
+                    response = fb_object_unlike(comment_urn, access_token)
+                    unlike_response['like_response'] = response[0]
                 else:
-                    unlike_response = fb_object_unlike(urn, access_token)
+                    response = fb_object_unlike(urn, access_token)
                     page_post.is_liked = False
                     page_post.save()
+                    unlike_response['like_response'] = response[0]
+                    unlike_response['like_count'] = response[1]
             except Exception as e:
                 return JsonResponse(e)
         elif self.request.GET.get('page_name') == 'linkedin':
@@ -2807,11 +2717,13 @@ class LikeApiView(APIView):
                 access_token = urn.org.access_token
 
                 if comment_urn:
-                    unlike_response = delete_comment_like_linkedin(comment_urn, social, access_token)
+                    unlike_response['like_response'] = delete_comment_like_linkedin(comment_urn, social, access_token)
                 else:
-                    unlike_response = delete_post_like_linkedin(post_urn, social, access_token)
+                    response = delete_post_like_linkedin(post_urn, social, access_token)
                     urn.is_liked = False
                     urn.save()
+                    unlike_response['like_response'] = response[0]
+                    unlike_response['like_count'] = response[1]
             except Exception as e:
                 return JsonResponse(e)
         else:

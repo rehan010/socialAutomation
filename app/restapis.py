@@ -126,7 +126,9 @@ def fb_social_action_data_organizer(elements, headers):
 
                 if element.get('comments'):
                     comments = element.get('comments').get('data')
+                    obj['next'] = element.get('comments')['paging'].get('next')
                     obj['replies'] = fb_social_action_data_organizer(comments, headers)
+
 
                 data.append(obj)
 
@@ -149,13 +151,9 @@ def fb_socialactions(post_urn, access_token, page_id):
     profile_picture_url = response.json()['picture']['data']['url']
 
     try:
-
         url = f"https://graph.facebook.com/{post_urn}?fields=likes.summary(true),comments.summary(true),post_id"
-
         response = requests.get(url=url, headers=headers)
-
         response_json = response.json()
-
         if response_json.get('post_id') == None:
             raise Exception("Response not Valid")
 
@@ -185,7 +183,7 @@ def fb_socialactions(post_urn, access_token, page_id):
     except Exception as e:
         e
 
-    url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from,reactions,attachment,user_likes,comments{{message,created_time,from,reactions,attachment,user_likes,comments{{message, created_time,from, reactions, attachment,user_likes}}}}"
+    url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from,reactions,attachment,user_likes,comments.limit(1){{message,created_time,from,reactions,attachment,user_likes,comments.limit(1){{message, created_time,from, reactions, attachment,user_likes}}}}&limit=5"
 
     #     comments{message,created_time,from}  field to get replies
     headers = {
@@ -195,9 +193,14 @@ def fb_socialactions(post_urn, access_token, page_id):
     response_json2 = response.json()
 
     elements = response_json2.get("data")
+    next = None
+    if len(elements) > 0:
+        next = response_json2['paging'].get('next')
 
     data = fb_social_action_data_organizer(elements, headers)
-    return t_likes, t_comments, data, profile_picture_url
+
+
+    return t_likes, t_comments, data, next, profile_picture_url
 
 
 def insta_social_actions_data_organizer(elements, headers):
@@ -230,6 +233,7 @@ def insta_social_actions_data_organizer(elements, headers):
 
                 if element.get('replies'):
                     replies = element.get('replies').get('data')
+                    obj['next'] = element.get('replies')['paging'].get('next')
                     obj['replies'] = insta_social_actions_data_organizer(replies, headers)
 
                 data.append(obj)
@@ -248,7 +252,7 @@ def insta_socialactions(post_urn, access_token, user_id):
 
     response = requests.get(url=url, headers=headers)
 
-    profile_picture_url = response.json()['profile_picture_url']
+    profile_picture_url = response.json().get('profile_picture_url')
 
     url = f"https://graph.facebook.com/{post_urn}?fields=like_count,comments_count"
 
@@ -265,18 +269,19 @@ def insta_socialactions(post_urn, access_token, user_id):
     form.post_comments = t_comments
     form.save()
 
-    url = f"https://graph.facebook.com/v17.0/{post_urn}/comments/?fields=from,text,like_count,media,user,replies{{like_count,from,text,user}}"
+    url = f"https://graph.facebook.com/v17.0/{post_urn}/comments/?fields=from,text,like_count,media,user,replies.limit(1){{like_count,from,text,user}}&limit=5"
 
     response = requests.get(url=url, headers=headers)
 
     response_json_1 = response.json()
 
     elements = response_json_1.get("data")
-
+    next = None
+    if len(elements) > 0:
+        next = response_json_1['paging'].get('next')
     data = insta_social_actions_data_organizer(elements, headers)
 
-    return t_likes, t_comments, data, profile_picture_url
-
+    return t_likes, t_comments, data, profile_picture_url, next
 
 def getUserdata(accountid, access_token):
     url = f"https://graph.facebook.com/v17.0/{accountid}?fields=username,follows_count,followers_count,profile_picture_url"
@@ -1828,8 +1833,32 @@ def delete_post_like_linkedin(post_urn, social, access_token):
         'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4595:u=82:x=1:i=1693371139:t=1693391046:v=2:sig=AQGaLrcwXLeVna6tI9hnBQby5nDr4N94"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4595:u=82:x=1:i=1693369485:t=1693391046:v=2:sig=AQF779dHfhe2gSoMR5lLPKLbyBryCShS"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=VB60:s=V:r=V:a=V:p=V:g=3435:u=1:x=1:i=1693371035:t=1693457435:v=2:sig=AQHlAZ6D4gwH0OvAOk7C_y4O8r7mArwS"'
     }
 
-    response = requests.request("DELETE", url, headers=headers, data=payload)
-    return response.json()
+    like_response = requests.request("DELETE", url, headers=headers, data=payload)
+
+
+    if like_response.status_code == 201:
+        like_response = like_response.json()
+    else:
+        like_response = "error"
+
+    encoded_urn = quote(post_urn, safe='')
+    url = "https://api.linkedin.com/rest/socialActions/" + encoded_urn
+
+    payload = {}
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'LinkedIn-Version': '202304',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Bearer ' + access_token,
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4514:u=51:x=1:i=1687620040:t=1687696419:v=2:sig=AQFLXWHSfe752c-owR1S3P8Q_frEVh6e"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4514:u=51:x=1:i=1687595585:t=1687608928:v=2:sig=AQH0H7FjSwSsdlmZsw6uhsFDCp1ROKX8"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
+    }
+
+    like_count = requests.request("GET", url, headers=headers, data=payload)
+    like_count = like_count.json()
+    t_likes = like_count['likesSummary']['aggregatedTotalLikes']
+
+
+    return like_response ,t_likes
 
 
 def post_like_linkedin(post_urn, social, access_token):
@@ -1846,9 +1875,31 @@ def post_like_linkedin(post_urn, social, access_token):
         'Authorization': 'Bearer ' + access_token,
     }
 
-    response = requests.request("POST", url, headers=headers, data=payload)
+    like_response = requests.request("POST", url, headers=headers, data=payload)
 
-    return response.json()
+    if like_response.status_code == 201:
+        like_response = like_response.json()
+    else:
+        like_response = "error"
+
+    encoded_urn = quote(post_urn, safe='')
+    url = "https://api.linkedin.com/rest/socialActions/" + encoded_urn
+
+    payload = {}
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'LinkedIn-Version': '202304',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Bearer ' + access_token,
+        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4514:u=51:x=1:i=1687620040:t=1687696419:v=2:sig=AQFLXWHSfe752c-owR1S3P8Q_frEVh6e"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4514:u=51:x=1:i=1687595585:t=1687608928:v=2:sig=AQH0H7FjSwSsdlmZsw6uhsFDCp1ROKX8"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
+    }
+
+    like_count = requests.request("GET", url, headers=headers, data=payload)
+    like_count = like_count.json()
+    t_likes = like_count['likesSummary']['aggregatedTotalLikes']
+
+
+    return like_response ,t_likes
 
 
 def linkedin_share_stats_overall(org_id, access_token):
@@ -1991,7 +2042,12 @@ def delete_comment_like_linkedin(comment_urn, social, access_token):
     }
 
     response = requests.request("DELETE", url, headers=headers, data=payload)
-    return response.json()
+
+    if response.status_code == 204:
+        return 'success'
+    else:
+        return 'error'
+
 
 
 def linkedin_retrieve_access_token(post_id):
@@ -2587,9 +2643,13 @@ def linkedin_validator(request):
 def instagram_validator(request):
     errors = {}
     provider = request.POST.get("instagram")
+    images = request.FILES.getlist('images')
     if provider:
-        if not request.POST.get("post"):
-            errors["Invalid Post for insta"] = "Instagram media can not be post without text"
+        # if not request.POST.get("post"):
+        #     errors["Invalid Post for insta"] = "Instagram media can not be post without text"
+        if len(images) < 1:
+            errors['Invalid Post for insta'] = "Instagram media can not be post without media"
+
     return errors
 
 
@@ -2623,10 +2683,26 @@ def fb_object_like(urn, access_token):
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
+    like_response = requests.post(url=url, headers=headers)
 
-    response = requests.post(url=url, headers=headers)
+    if like_response.status_code == 200:
+        like_response = like_response.json()
+    else:
+        like_response = "error"
 
-    return response.json()
+    url2 = f"https://graph.facebook.com/{urn}?fields=reactions.summary(true)"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    like_count_response = requests.get(url=url2, headers=headers)
+    like_count_response = like_count_response.json()["reactions"]["summary"]["total_count"]
+
+    return like_response , like_count_response
+
+
+
+
 
 
 def fb_object_unlike(urn, access_token):
@@ -2635,9 +2711,24 @@ def fb_object_unlike(urn, access_token):
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
-    response = requests.delete(url=url, headers=headers)
+    like_response = requests.delete(url=url, headers=headers)
 
-    return response.json()
+    if like_response.status_code == 200:
+        like_response = like_response.json()
+    else:
+        like_response = "error"
+
+    url2 = f"https://graph.facebook.com/{urn}?fields=reactions.summary(true)"
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    like_count_response = requests.get(url=url2, headers=headers)
+    like_count_response = like_count_response.json()["reactions"]["summary"]["total_count"]
+
+    return like_response , like_count_response
+
+
 
 
 def fb_user_detail(access_token):
@@ -2727,8 +2818,11 @@ def instagram_details(access_token, instagram_id):
     details = {}
     if response.status_code == 200:
         response = response.json()
-        data["Personal Information"] = [{"Name":response.get('name')} , {"username":response.get('username')} , {"Description": response.get('biography')}]
-        data["Contact Information"] = [{"Website": response.get('website')}]
+        data["Personal Information"] = [{"Name":response.get('name')} , {"username":response.get('username')}]
+        data["Personal Information"].append({"Description": response.get('biography')}) if response.get('biography') else None
+
+        if response.get("website"):
+            data["Contact Information"] = [{"Website": response.get('website')}]
         profile_image = response.get('profile_picture_url') if response.get('profile_picture_url') else None
         details['profile_picture'] = profile_image
     else:

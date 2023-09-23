@@ -55,7 +55,7 @@ urlpatterns = [
     path('delete-post/<int:pk>/', PostDeleteView.as_view(), name='delete_post'),
 
     path('social/social/connections/', ConnectionView.as_view(), name="socialaccount_connections"),
-    # path('social/social/profile2/', SocialProfileView.as_view(), name="social_profile2"),
+
     path('social/social/profile/', SocialProfileView.as_view(), name="social_profile"),
     path('social/social/profile/api/', SocialProfileAPI.as_view(), name="social_profile_api"),
 
