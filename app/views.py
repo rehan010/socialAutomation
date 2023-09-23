@@ -945,10 +945,10 @@ class PostCreateView(CreateView):
 
                 info = context.get('facebook').pop(i)
 
-                ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
+                ispageexist = SharePage.objects.filter(org_id=info.get('id'),user__id = info['user']).exists()
 
                 if ispageexist:
-                    sharepage = SharePage.objects.get(org_id=info.get('id'))
+                    sharepage = SharePage.objects.get(org_id=info.get('id'),user__id = info['user'])
                     share_pages.append(sharepage)
 
                 else:
@@ -968,10 +968,11 @@ class PostCreateView(CreateView):
 
 
                 info = context.get('instagram').pop(i)
-                ispageexist = SharePage.objects.filter(org_id=info.get('id')).exists()
+                ispageexist = SharePage.objects.filter(org_id=info.get('id'), user__id=info['user']).exists()
+
                 # Store Shared Page
                 if ispageexist:
-                    sharepage = SharePage.objects.get(org_id=info.get('id'))
+                    sharepage = SharePage.objects.get(org_id=info.get('id'),user__id=info['user'])
                     share_pages.append(sharepage)
 
                 else:
