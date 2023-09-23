@@ -22,7 +22,27 @@
   border-radius: 5px;
   display: none;
 }
-
+.tooltiptext {
+    visibility: hidden;
+    opacity: 0;
+    width: 220px;
+    background-color: #fff;
+    color: #777;
+    text-align: center;
+    padding: 2px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    right: 50%;
+    transform: translateX(-50%);
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    transition: opacity 0.2s;
+}
+.tooltiptext:hover {
+    visibility: visible;
+    opacity: 1;
+}
 
 </style>
 
@@ -293,6 +313,7 @@
                                         {% endif %}
                                     </div>
                                 </td>
+                                {% if user_role == 'MEMBER' and permission == 'WRITE' %}
                                 <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
                                     <div class="mx-4 relative cursor-pointer">
                                         <i class="fas fa-trash-alt text-slate-700 delete-dropdownButton"></i>
@@ -305,6 +326,29 @@
                                         </ul>
                                     </div>
                                 </td>
+                                {% elif p.user == request.user %}
+                                <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <div class="mx-4 relative cursor-pointer">
+                                        <i class="fas fa-trash-alt text-slate-700 delete-dropdownButton"></i>
+                                        <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350  before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
+                                            <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                                                <button onclick="delete_post(this)" class="openDialogButton modal-button cursor-pointer  " data-target="{{ p.id }}">
+                                                     <i class="fa-solid fa-trash mx-2"></i> Delete Post
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                                {% else %}
+                                <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <div class="mx-4 relative cursor-pointer">
+                                        <i class="fas fa-info text-slate-700 tooltipButton">
+                                            <span class="tooltiptext" >Don't have permission to delete post
+                                            </span>
+                                        </i>
+                                    </div>
+                                </td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                             </tbody>
@@ -670,6 +714,22 @@ function updatePage(event, platform) {
 
         return divFlex;
     }
+
+
+        const tooltipButton = document.querySelectorAll('.tooltipButton');
+        tooltipButton.forEach((button) => { // Add parentheses around "button"
+            const tooltip = button.querySelector('.tooltiptext');
+            button.addEventListener("mouseover", function () {
+                tooltip.style.visibility = "visible";
+                tooltip.style.opacity = "1";
+            });
+
+            // Event listener to hide tooltip on mouseout
+            button.addEventListener("mouseout", function () {
+                tooltip.style.visibility = "hidden";
+                tooltip.style.opacity = "0";
+            });
+        });
     function createPublishedTd() {
         const divFlex = document.createElement('div');
         divFlex.className = 'flex px-4 py-1';
@@ -698,6 +758,7 @@ let lastButton = null;
 
     async function PostData(platform,page) {
           try {
+
               const response = await fetch(`/api_posts/?page=${page}&platform=${platform}`);
               if (response.ok) {
                         const data = await response.json();
@@ -1133,8 +1194,12 @@ let lastButton = null;
                             divFlex.appendChild(divInner);
 
                             cell7.appendChild(divFlex);
+                            const permission = "{{ permission }}";
+                            const user_role = "{{ user_role }}";
+                            const login_user = "{{ request.user }}";
 
-                           if ( platformName === 'instagram' && (provider === true)){
+
+                           if ( (platformName === 'instagram' && (provider === true)) || (user_role === 'MEMBER' && permission !== 'WRITE') || (result.user.username !== login_user)){
 
                                 // Create a div element to hold the button
                                 var divContainer = document.createElement("div");
@@ -1152,8 +1217,6 @@ let lastButton = null;
                                 tooltip.style.backgroundColor = "#fff"; // White background
                                 tooltip.style.color = "#777"; // Gray text color
                                 tooltip.style.textAlign = "center";
-<!--                                tooltip.style.border = "1px solid #ccc"; // Add a border-->
-<!--                                tooltip.style.borderRadius = "2px"; // Slight border radius-->
                                 tooltip.style.padding = "2px"; // Padding for better appearance
                                 tooltip.style.position = "absolute";
                                 tooltip.style.zIndex = "1";
@@ -1163,7 +1226,12 @@ let lastButton = null;
                                 tooltip.style.transform = "translateX(-50%)";
                                 tooltip.style.opacity = "0";
                                 tooltip.style.transition = "opacity 0.2s";
-                                tooltip.textContent = "Post cannot be deleted in Instagram API"; // Set the tooltip text content
+                                if (platformName === 'instagram'){
+                                    tooltip.textContent = "Post cannot be deleted in Instagram API"; // Set the tooltip text content
+                                }else{
+                                    tooltip.textContent = "Don't have permission to delete post"; // Set the tooltip text content
+
+                                }
                                 tooltip.style.fontFamily = "Arial, sans-serif"; // Arial font
                                 tooltip.style.fontSize = "15px";
 
@@ -1193,7 +1261,15 @@ let lastButton = null;
                                 cell8.appendChild(divContainer);
 
 
-                           }else{
+                           }else if(user_role === 'MEMBER' && permission !== 'WRITE'){
+
+
+
+
+                           }else if(user_role === 'MEMBER' && permission !== 'WRITE'){
+
+                           }
+                           else{
 
                                 var divContainer = document.createElement("div");
                                 divContainer.className = "mx-4 relative cursor-pointer";
