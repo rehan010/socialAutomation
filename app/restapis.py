@@ -632,7 +632,6 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
 
     response = requests.post(url, headers=headers, data=data)
     if response.status_code == 200:
-        print(response.status_code)
         response = response.json()
         post_id = response.get('id')
         # print("Post id is ",post_id,response)
@@ -814,7 +813,7 @@ def facebook_post_video(data, video, post, sharepage):
         data_post['file_url'] = video[0].image_url
     response = requests.post(url, headers=headers, data=data_post)
     if response.status_code == 200:
-        print(response.status_code)
+        # print(response.status_code)
         response = response.json()
         post_id = response.get('id')
 
@@ -871,7 +870,7 @@ def get_instagram_video_id(video, page_id, access_token):
     # }
 
     response = requests.post(url, headers=headers, data=data_post)
-    print(response.json())
+    # print(response.json())
     return response.json()
 
 
@@ -942,7 +941,7 @@ def instagram_multi_media(page_id, access_token, media, post, page):
 
     response_2 = requests.post(url_2, headers=headers, data=data_post_2)
     if response_2.status_code == 200:
-        print(response_2.status_code)
+        # print(response_2.status_code)
         response_2 = response_2.json()
         # print(response_2)
 
@@ -987,7 +986,7 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
                 if response.status_code == 201:
                     response = post_video_linkedin(image_urn, access_token_string, org_id, post)
                     if response.status_code == 201:
-                        print(response.status_code)
+                        # print(response.status_code)
                         post_id_value = response.headers.get('x-restli-id')
                         post_urn, created = Post_urn.objects.get_or_create(org=org, urn=post_id_value)
                         if created:
@@ -1930,7 +1929,7 @@ def linkedin_share_stats_overall(org_id, access_token):
 
 
 def linkedin_share_stats(org, start,end):
-    print("in linkden")
+    # print("in linkden")
     org_id = org.org_id
     access_token = org.access_token
     url = "https://api.linkedin.com/rest/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A" + org_id + "&timeIntervals=(timeRange:(start:" + str(
@@ -1945,7 +1944,7 @@ def linkedin_share_stats(org, start,end):
 
     response = requests.request("GET", url, headers=headers, data=payload)
     data = response.json()
-    print(data)
+    # print(data)
     if 'elements' in data and len(data['elements']) > 0:
         like_count = 0
         comment_count = 0
@@ -1955,7 +1954,7 @@ def linkedin_share_stats(org, start,end):
             comment_count += element['totalShareStatistics']['commentCount']
 
         followers_count = linkedin_followers_today(org_id,access_token,start)
-        print(followers_count)
+        # print(followers_count)
     else:
         like_count = 0
         comment_count = 0
@@ -2834,8 +2833,7 @@ def instagram_details(access_token, instagram_id):
 
 
 def instagram_account_insights(urn, since, until):
-    print(int(since.timestamp()))
-    print(int(until.timestamp()))
+
     # instagram give likes and comments of a day
     access_token = urn.access_token
     instagram_id = urn.org_id

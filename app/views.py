@@ -2396,18 +2396,23 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
             try:
                 data['pages'] = {}
                 data ['user_roles'] = {}
-
                 for _ in social:
                     accounts = get_instagram_user_data(access_token[_.user.id], _.user.id)
                     instagram__connected_social_account = SocialAccount.objects.get(user=_.user.id, provider="instagram")
+
                     for account in accounts:
                         self.meta_save_share_page(_.user,account, providertoGetdetails)
                         if account.get('username') == instagram__connected_social_account.extra_data.get('username'):
-                               data.update(instagram_details(access_token[_.user.id], account['id']))
+                               if _.user.id == user.id:
+                                    data.update(instagram_details(access_token[_.user.id], account['id']))
                                if data.get("error") != None:
                                     raise Exception(data['error'])
                                data['user_roles'][_.user.username] = [self.get_user_role(_.user), account['id']]
-                               data['pages'][_.user.username] = []
+
+                               if data['pages'].get(_.user.username):
+                                  pass
+                               else:
+                                   data['pages'][_.user.username] = []
                         else:
                             if data['pages'].get(_.user.username):
                                 data['pages'][_.user.username].append(account)
