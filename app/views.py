@@ -45,6 +45,7 @@ from django.utils.html import escape
 from rest_framework import generics
 from django.http import JsonResponse
 from rest_framework.exceptions import NotFound
+from django.conf import settings
 
 
 # Import your custom filter
@@ -159,7 +160,7 @@ class UserView(LoginRequiredMixin,TemplateView):
         user_manager = self.request.user.manager
         if user_manager != None:
             context['invites_admin'] = InviteEmploye.objects.filter(Q(invited_by=self.request.user) | Q(invited_by=user_manager))
-        context['invites'] = InviteEmploye.objects.filter(invited_by=self.request.user)
+        context['invites'] = InviteEmploye.objects.filter(~Q(is_deleted=True), invited_by=self.request.user)
 
         return context
 
@@ -173,7 +174,7 @@ class UserSearchView(ListAPIView):
             queryset = super().get_queryset()
             search_query = self.request.query_params.get('q')
             if search_query:
-                user_queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query), ~Q(manager=self.request.user), ~Q(id=self.request.user.id), Q(is_invited=False))
+                user_queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query), ~Q(manager=self.request.user), ~Q(id=self.request.user.id), Q(is_invited=False), Q(company=(self.request.user.company.all()).first()))
                 # if len(InviteEmploye.objects.filter(Q(status='REJECTED'))) > 0:
                 #     invite_queryset = InviteEmploye.objects.filter(
                 #         Q(status='REJECTED')
@@ -220,6 +221,51 @@ class change_role(CreateView):
             return JsonResponse({'error': 'Selected user not found.'}, status=400)
 
 
+class delete_invite(CreateView):
+    model = InviteEmploye
+
+    def post(self, request, *kwargs):
+        if self.request.method == 'POST':
+            data = json.loads(request.body)
+            invite_id = data.get('user')
+            invite = InviteEmploye.objects.get(pk=invite_id)
+            current_time = timezone.now()
+
+            # if invite.expiration_date < current_time:
+            #     invite.is_expired = True
+            #
+
+            if invite.selected_user:
+                selected_user = User.objects.get(pk=invite.selected_user.id)
+                for company in selected_user.company.all():
+                    selected_user.company.remove(company)
+                selected_user.manager = None
+                selected_user.is_deleted = True
+                selected_user.is_active = False
+                selected_user.is_invited = False
+                selected_user.save()
+                invite.delete()
+
+                email = selected_user.email
+                # email = 'anasurrehman5@gmail.com'
+
+                # Render the email template with the dynamic content
+                context = {'recipient_name': selected_user.username}
+                email_subject = "User's Permission Revoked"
+                email_body = render_to_string('registration/delete_emails.html', context)
+
+                # Send the email using Django's email functionality
+                send_mail(email_subject, email_body, 'social_presence@gmail.com', [email])
+            else:
+                invite.delete()
+
+            return JsonResponse({'message': 'Invitation of' + ' ' + invite.email + ' ' + 'deleted'})
+
+        else:
+
+            return JsonResponse({'error': 'Invite not found.'}, status=400)
+
+
 class assign_manager(CreateView):
     model = InviteEmploye
 
@@ -238,10 +284,11 @@ class assign_manager(CreateView):
                 permission = "WRITE"
             try:
                 token = generate_random_token()
+                expiration_date = timezone.now() + settings.TOKEN_EXPIRY
 
                 if email is None:
                     selected_user = User.objects.get(pk=user_id)
-                    invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=selected_user.email, selected_user=selected_user, role=role, permission=permission, manager_corp=manager_corp)
+                    invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=selected_user.email, selected_user=selected_user, role=role, permission=permission, manager_corp=manager_corp, expiration_date=expiration_date)
                     invite.save()
                     selected_user.is_invited = True
                     selected_user.save()
@@ -261,7 +308,7 @@ class assign_manager(CreateView):
                     # Send the email using Django's email functionality
                     send_mail(email_subject, email_body, 'social_presence@gmail.com', [email])
                 else:
-                    invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=email, role=role, permission=permission , manager_corp=manager_corp)
+                    invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=email, role=role, permission=permission , manager_corp=manager_corp, expiration_date=expiration_date)
                     invite.save()
 
 
@@ -287,28 +334,49 @@ class assign_manager(CreateView):
             return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 
+
 def accept_invitation_view(request):
     token = request.GET['token']
     invite = InviteEmploye.objects.get(token=token)
     user = User.objects.get(pk=invite.selected_user.id)
-    if invite:
-        user.manager = request.user
-        user.company = request.user.company
-        user.save()
-        invite.status = 'ACCEPTED'
-        invite.save()
-    login(request, user)
+    current_time = timezone.now()
 
-    return render(request, 'registration/invitation_complete.html')
+    try:
+        invite = InviteEmploye.objects.get(token=token)
+        if invite.expiration_date < current_time:
+            invite.is_expired = True
+            invite.delete()
+            if request.user.is_authenticated:
+                logout(request)
+            return render(request, 'registration/invitation_failed.html')
+        elif invite.is_deleted:
+            if request.user.is_authenticated:
+                logout(request)
+            return render(request, 'registration/invitation_failed.html')
+        else:
+            invite.status = 'ACCEPTED'
+            invite.save()
+        login(request, user)
+
+        return render(request, 'registration/invitation_complete.html')
+
+
+    except InviteEmploye.DoesNotExist:
+        # Token not found
+        # Handle accordingly
+        pass
 
 
 def reject_invitation_view(request):
     token = request.GET['token']
     invite = InviteEmploye.objects.get(token=token)
-    user = User.objects.get(pk=invite.selected_user.id)
+
     if invite:
         invite.status = 'REJECTED'
         invite.save()
+    if invite.selected_user:
+        user = User.objects.get(pk=invite.selected_user.id)
+        user.company = None
         user.is_invited = False
         user.save()
 
@@ -742,7 +810,34 @@ class RegisterView(FormView):
     form_class = CustomUserCreationForm
 
     def form_valid(self, form):
-        user = form.save()
+        user = form.save(commit=False)
+        company_name = form.cleaned_data.get('company_name')
+        email = form.cleaned_data.get('email')
+        user_email = User.objects.filter(email=email)
+
+        user_company = Company.objects.filter(name=company_name)
+        if user_company.exists():
+            form.add_error('company_name', 'A Company with this name already exists.')
+
+            return self.form_invalid(form)
+
+        if user_email.exists():
+            form.add_error('email', 'A user with this email already exists.')
+            return self.form_invalid(form)
+
+        else:
+            user.save()
+        # Check if the company name is provided
+        if company_name:
+            # Create a new company if it doesn't exist
+            company, created = Company.objects.get_or_create(name=company_name)
+            user.company.add(company)
+        else:
+            # If no company name is provided, create a new company with the user's username
+            company, created = Company.objects.get_or_create(name=user.username)
+            user.company.add(company)
+
+        user.save()
         login(self.request, user)
         return redirect(reverse("dashboard"))
 
@@ -752,39 +847,67 @@ class RegisterViewInvite(FormView):
     form_class = CustomUserInvitationForm
 
     def get(self, request, *args, **kwargs):
-        if self.request.user.is_authenticated:
-            logout(request)
-        return super().get(request, *args, **kwargs)
+        token = self.request.GET['token']
+        invite = InviteEmploye.objects.get(token=token)
+        current_time = timezone.now()
 
+        if invite.expiration_date < current_time:
+            invite.delete()
+
+            return render(request, 'registration/invitation_failed.html')
+
+        elif invite.is_deleted:
+            invite.delete()
+
+            return render(request, 'registration/invitation_failed.html')
+
+        else:
+
+            if self.request.user.is_authenticated:
+                logout(request)
+            return super().get(request, *args, **kwargs)
+
+    # def form_invalid(self, form):
+    #
+    #     submitted_company_data = self.request.POST.get('company')
+    #     company_name = Company.objects.get(pk=submitted_company_data)
+    #
+    #     # Re-populate the form with the submitted data
+    #     form = CustomUserInvitationForm(self.request.POST, company=company_name)
+    #
+    #     return self.render_to_response(self.get_context_data(form=form))
 
     def form_valid(self, form):
 
-
+        user = form.save(commit=False)
         token = self.request.GET['token']
         email = self.request.POST.get('email')
         email_invite = InviteEmploye.objects.filter(selected_user__email=email)
         email_user = User.objects.filter(email=email)
-
         if email_invite.exists():
-            messages.error(self.request, 'A user with this email already exists.')
+            form.add_error(self.request, 'A user with this email already exists.')
             return self.form_invalid(form)
         if email_user.exists():
-            messages.error(self.request, 'A user with this email already exists.')
+            form.add_error(self.request, 'A user with this email already exists.')
             return self.form_invalid(form)
+
+        company_name = form.cleaned_data.get('company').first()
+        c_name = Company.objects.get(name=company_name)
+
+        user.save()
 
         invite = InviteEmploye.objects.filter(token=token, email=email)
 
         if invite:
             invite = InviteEmploye.objects.get(token=token, email=email)
-            user = form.save()
             user.manager = invite.invited_by
-            user.company = invite.invited_by.company
+            user.company.add(c_name)
             user.save()
             invite.selected_user = user
             invite.status = 'ACCEPTED'
             invite.save()
         else:
-            messages.error(self.request, 'Invitation was sent to different email address')
+            form.add_error(self.request, 'Invitation was sent to different email address')
             return self.form_invalid(form)
 
 
@@ -799,7 +922,7 @@ class RegisterViewInvite(FormView):
         invite = InviteEmploye.objects.get(token=token)
         if invite:
             # Retrieve the 'company' query parameter from the URL and pass it to the form
-            kwargs['initial'] = {'company': invite.invited_by.company}
+            kwargs['initial'] = {'company': (invite.invited_by.company.all()).first()}
         else:
             kwargs['initial'] = {'company': 'Type in your own company'}
 
@@ -1311,11 +1434,6 @@ class PostGraphApiView(APIView):
                 invited_users_id = user.selected_user.id
                 invites.append(invited_users_id)
             total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites),status='PUBLISHED', is_deleted=False)
-
-
-
-
-
 
 
         result_fb = []

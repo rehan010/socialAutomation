@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import datetime
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -104,6 +105,7 @@ AUTHENTICATION_BACKENDS = [
 
     # `allauth` specific authentication methods, such as login by e-mail
     'allauth.account.auth_backends.AuthenticationBackend',
+
     # 'allauth.socialaccount.providers.facebook.FacebookOAuth2Provider',
     # ...
 ]
@@ -278,6 +280,8 @@ CELERY_RESULT_SERIALIZER = 'json'
 SOCIALACCOUNT_STORE_TOKENS = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SITE_ID = 1
+
+TOKEN_EXPIRY = datetime.timedelta(days=3)
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

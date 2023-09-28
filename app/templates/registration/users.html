@@ -112,11 +112,11 @@
                   <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
                     <thead class="align-bottom">
                       <tr>
-                        <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Name</th>
-                        <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Email</th>
-                        <th class="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Invited By</th>
-                        <th class="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Organization</th>
-                        <th class="px-6 py-3  font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Role</th>
+                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Name</th>
+                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Email</th>
+                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Invited By</th>
+                        <th class="px-6 py-3 pl-2 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Organization</th>
+                        <th class="px-6 py-3  font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Role</th>
                         <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Permissions</th>
                         <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Created On</th>
                         <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Edit</th>
@@ -130,26 +130,23 @@
                     <tr>
                         <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                           <div class="flex px-2 py-1">
-                            <div>
                                 {% if user.selected_user.profile_image %}
-                                <img src="{{ user.selected_user.profile_image.url }}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" >
+                                <img src="{{ user.selected_user.profile_image.url }}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" >
                                 {% else %}
-                                     <img src="{% static 'image/default.png' %}" class="inline-flex items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                     <img src="{% static 'image/default.png' %}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
                                 {% endif %}
-                            </div>
-                              <div class="flex flex-col justify-center">
+                             <div class="flex flex-col justify-center">
                                   {% if user.selected_user.first_name == '' %}
                                   <h6 class="mb-0 text-sm leading-normal">{{user.selected_user.username | title}}
                                         </h6>
                                   {% else %}
-                                  <h6 class="mb-0 text-sm leading-normal">{{user.selected_user.first_name}}
+                                  <h6 class="mb-0 text-sm leading-normal">{{user.selected_user.first_name | title}}
                                         {{user.selected_user.last_name}}</h6>
                                   {% endif %}
-
-                              </div>
+                             </div>
                           </div>
                         </td>
-                          <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                           <div class="flex px-2 py-1">
                               <div class="flex flex-col justify-center">
                                     <p class="mb-0 text-xs leading-tight text-slate-400">{{user.email}}</p>
@@ -164,13 +161,19 @@
                                         {{user.invited_by.email}}
                             </p>
                             <p class="mb-0 text-xs leading-tight text-slate-400">
-                                        {{user.invited_by.company}}</p>
+                                {% for company in user.invited_by.company.all %}
+                                        {{company.name}}</p>
+                                {% endfor %}
                         </td>
                         <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                             {% if user.selected_user %}
-                          <p class="mb-0 text-xs font-semibold text-center leading-tight">{{user.selected_user.company}}</p>
+                            {% for company in user.selected_user.company.all %}
+                            <p class="mb-0 text-xs font-semibold text-center leading-tight">{{company.name}}</p>
+                            {% endfor %}
                             {% else %}
-                          <p class="mb-0 text-xs leading-tight text-center text-slate-400">{{user.invited_by.company}}</p>
+                            {% for company in user.invited_by.company.all %}
+                          <p class="mb-0 text-xs leading-tight text-center text-slate-400">{{company.name}}</p>
+                            {% endfor %}
                             {% endif %}
                         </td>
                         <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
@@ -188,9 +191,9 @@
                             {% endif %}
                         </td>
 
-                          <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                        <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                               {% if user.status == 'ACCEPTED' %}
-                          <span class="text-xs font-semibold leading-tight text-slate-400">{{user.selected_user.date_joined}}</span>
+                              <span class="text-xs font-semibold leading-tight text-slate-400">{{user.selected_user.date_joined}}</span>
                               {% elif user.status == 'PENDING' %}
                               <span class="text-xs font-semibold leading-tight text-slate-400">PENDING</span>
                               {% else %}
@@ -241,52 +244,43 @@
                                          </div>
                                      </div>
                                     {% else %}
-                                    <button class=" ml-auto cursor-pointer fas fa-pencil-alt text-slate-700"></button>
+                                    <button class=" ml-auto ">-</button>
                                     {% endif %}
                         </td>
-                        <td class=" hidden p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
+                        <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
 
-                                        <button class="openDialogButton modal-button cursor-pointer fas fa-trash-alt text-slate-700" data-target="dialog{{ user.id }}"></button>     <div id="dialog{{ user.id }}" class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster hidden" style="background: rgba(0,0,0,.7);">
-                                         <div class="modal-container border border-teal-500 shadow-lg bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
-                                            <div class="modal-content py-2 text-left px-6">
-                                                <!--Title-->
-                                                <div class="flex justify-between items-center pb-3">
-                                                    <p class="text-2xl font-bold">Edit Role</p>
-                                                    <div class="modal-close cursor-pointer z-50">
-                                                    </div>
-                                                </div>
-                                                <!--Body-->
-                                                <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
-                                                    <div class="flex justify-center">
-                                                        <input type="hidden" id="changerole" name="changerole" value=""/>
-                                                        <input type="hidden" id="changeperm" name="changeperm" value="">
-                                                        <input type="hidden" id="manager_corp" name="manager_corp" value="">
-                                                        <select class="roleSelect1 w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
-                                                            <option value="ADMIN" {% if user.role == 'ADMIN' %} selected {% endif %} >ADMIN</option>
-                                                            <option value="MEMBER" {% if user.role == 'MEMBER' %} selected {% endif %} >MEMBER</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="flex justify-center">
-                                                        <select class="permissionSelect1 hidden w-full mb-3 border border-gray-900 rounded-lg p-3 text-sm focus:outline-none focus:border-gray-500">
-                                                                <option value="READ" {% if user.permission == 'READ' %} selected {% endif %} >READ</option>
-                                                                <option value="WRITE" {% if user.permission == 'WRITE' %} selected {% endif %} >WRITE</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="managerCheckboxEdit flex justify-left ">
-                                                        <label>
-                                                            <input class="managesCorporateAccountEdit" type="checkbox"  name="managesCorporateAccountEdit" {% if user.manager_corp == True %} checked="checked" {% endif %}> Corporate Account
-                                                        </label>
-                                                    </div>
-                                                    <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
-                                                    <!--Footer-->
-                                                    <div class="flex justify-between">
-                                                        <button type="submit" class="saveRoleDialog focus:outline-none px-4 p-2 mb-2 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-2" data-target="dialog{{ user.id }}">Confirm</button>
-                                                        <button type="button" class="closeDialogButton focus:outline-none modal-close px-4 p-2 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black" data-target="dialog{{ user.id }}">Cancel</button>
-                                                    </div>
+                            <button class="openDeleteButton modal-button cursor-pointer fas fa-trash-alt text-slate-700" data-target1="{{ user.id }}"></button>
+                            <div id="{{ user.id }}"
+                                 class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster hidden"
+                                 style="background: rgba(0,0,0,.7);">
+                                <div class="modal-container border border-teal-500 shadow-lg bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                                    <div class="modal-content py-2 text-left px-6">
+                                        <!--Title-->
+                                        <div class="flex justify-between items-center pb-3">
+                                            <p class="text-xl font-bold">Delete Invite</p>
+                                            <div class="modal-close cursor-pointer z-50">
                                             </div>
-                                         </div>
-                                     </div>
-
+                                        </div>
+                                        <!--Body-->
+                                        <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
+                                        <div class="flex justify-center">
+                                            <h4 class="flex justify-center text-center">Are you sure you want to delete this User
+                                                Invite?</h4>
+                                        </div>
+                                        <br>
+                                        <div class="flex justify-between">
+                                            <button type="submit"
+                                                    class="submitDelete text-sm focus:outline-none px-2 py-1 mb-2 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-2"
+                                                    data-target1="{{ user.id }}">Confirm
+                                            </button>
+                                            <button type="button"
+                                                    class="closeDeleteButton text-sm focus:outline-none modal-close px-2 py-1 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black"
+                                                    data-target1="{{ user.id }}">Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                       </tr>
 
@@ -780,6 +774,76 @@
             }
         });
     });
+
+    const submitDelete = document.querySelectorAll('.submitDelete');
+
+    submitDelete.forEach(button => {
+        button.addEventListener('click', () => {
+
+            const csrfToken = getCSRFToken();
+            const target = button.getAttribute('data-target1');
+
+            const user = target.replace("dialog", "");
+
+
+            const url = '/delete_invite/';
+            const data = {
+                user: user,
+                csrfmiddlewaretoken: csrfToken,
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                location.reload();
+                const target = button.getAttribute('data-target1');
+                const dialog = document.getElementById(target);
+                if (dialog) {
+                    dialog.style.display = 'none';
+                }})
+            .catch(error => {
+                console.error("Error sending api request ", error);
+            });
+
+        });
+
+    });
+
+
+    const openDeleteButtons = document.querySelectorAll('.openDeleteButton');
+    const closeDeleteButtons = document.querySelectorAll('.closeDeleteButton');
+
+    openDeleteButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const target = button.getAttribute('data-target1');
+            const dialog = document.getElementById(target);
+
+            if (dialog) {
+                dialog.style.display = 'flex';
+
+            }
+
+        });
+    });
+
+    closeDeleteButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const target = button.getAttribute('data-target1');
+            const dialog = document.getElementById(target);
+            if (dialog) {
+                dialog.style.display='none';
+            }
+        });
+    });
+
 
 
 

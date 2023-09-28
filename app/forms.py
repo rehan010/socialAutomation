@@ -6,19 +6,31 @@ from django.contrib.auth import login, password_validation, update_session_auth_
 
 
 class CustomUserCreationForm(UserCreationForm):
+    company_name = forms.CharField(max_length=255, required=False,
+                                   widget=forms.TextInput(attrs={'class': 'form-control'}))
+
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = UserCreationForm.Meta.fields + ("email", "company")
+        fields = UserCreationForm.Meta.fields + ("email",)
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
             'password2': forms.PasswordInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'company': forms.TextInput(attrs={'class': 'form-control'}),
+            'company': forms.SelectMultiple(attrs={'class': 'form-control'}),
         }
 
 
 class CustomUserInvitationForm(UserCreationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.fields['company'].required = False  # Make the company field not required
+
+    company = forms.ModelMultipleChoiceField(
+        queryset=Company.objects.all(),
+        widget=forms.CheckboxSelectMultiple,  # Use checkboxes for multiple selection
+        required=False  # Make the field not required
+    )
     class Meta(UserCreationForm.Meta):
         model = User
         fields = UserCreationForm.Meta.fields + ("email", "company")
@@ -27,8 +39,9 @@ class CustomUserInvitationForm(UserCreationForm):
             'password1': forms.PasswordInput(attrs={'class': 'form-control'}),
             'password2': forms.PasswordInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'company': forms.TextInput(attrs={'class': 'form-control'}),
+
         }
+
 
 class CustomUserUpdateForm(UserChangeForm):
 

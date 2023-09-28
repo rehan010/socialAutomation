@@ -3,7 +3,7 @@
 from django.db import models
 
 from django.utils import timezone
-
+from django.db.models import functions
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 
@@ -50,11 +50,21 @@ class User(AbstractUser):
     # Example:
     age = models.IntegerField(blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    company = models.TextField(blank=True, null=True)
+    company = models.ManyToManyField('Company')
     manager = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     is_invited = models.BooleanField(default=False)
     profile_image = models.ImageField(upload_to='media', blank=True)
+    is_deleted = models.BooleanField(null=False, default=False)
 
+
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_company_case_insensitive',
+                fields=[functions.Lower('company')],
+            )
+        ]
     objects = CustomUserManager()
 
     class Meta:
@@ -96,6 +106,10 @@ class InviteEmploye(BaseModel):
     role = models.CharField(choices=ROLE_CHOICES, default='MEMBER')
     permission = models.CharField(choices=PERMISSIONS, default='HIDE')
     manager_corp = models.BooleanField(default=False)
+    expiration_date = models.DateTimeField(null=True, blank=True)
+    is_expired = models.BooleanField(default=False)
+
+
 
     class Meta:
         db_table = 'invite'
@@ -119,6 +133,12 @@ class LatLongModel(BaseModel):
 
     def __str__(self):
         return f"Latitude: {self.latitude}, Longitude: {self.longitude}"
+
+class Company(models.Model):
+    name = models.TextField(blank=True, null=True, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class ImageModel(models.Model):

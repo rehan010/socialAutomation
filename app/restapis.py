@@ -720,6 +720,7 @@ def getmediaid(image, data, post):
     }
 
     response = requests.post(url, headers=headers, data=data)
+    print(response)
 
     # image.save()
 
@@ -766,7 +767,7 @@ def facebook_post_multiimage(data, images, post, sharepage):
 
     response = requests.post(url, headers=headers, data=data_post)
     if response.status_code == 200:
-        print(response.status_code)
+
         response = response.json()
         post_id = response["id"]
         # print(post_id)
@@ -1043,7 +1044,7 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
                 response = post_single_image_linkedin(access_token_string, org_id, post, image_list)
                 # print("Response ", response.json())
                 if response.status_code == 201:
-                    print(response.status_code)
+
                     post_id_value = response.headers.get('x-restli-id')
                     post_urn, created = Post_urn.objects.get_or_create(org=org, urn=post_id_value)
                     if created:
@@ -1065,7 +1066,7 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
             else:
                 response = post_linkedin(image_list, post, org_id, access_token_string)
                 if response.status_code == 201:
-                    print(response.status_code)
+
                     post_id_value = response.headers.get('x-restli-id')
                     post_urn, created = Post_urn.objects.get_or_create(org=org, urn=post_id_value)
                     if created:

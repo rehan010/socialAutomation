@@ -591,22 +591,22 @@
        function deleteObject(pk) {
        const csrfToken = getCookie('csrftoken');
 
-    $.ajax({
-        type: 'DELETE',
-        url: `/delete-post/${pk}/`,
-        beforeSend: function(xhr) {
-            // Set the CSRF token in the request header
-            xhr.setRequestHeader('X-CSRFToken', csrfToken);
-        },
-        success: function(response) {
-<!--            alert(response.message);  // Display the success message returned from the server-->
-            // Do additional actions if needed after successful deletion
-        },
-        error: function(xhr, status, error) {
-<!--            alert('Error deleting object: ' + xhr.responseText);-->
-        }
-    });
-}
+        $.ajax({
+            type: 'DELETE',
+            url: `/delete-post/${pk}/`,
+            beforeSend: function(xhr) {
+                // Set the CSRF token in the request header
+                xhr.setRequestHeader('X-CSRFToken', csrfToken);
+            },
+            success: function(response) {
+    <!--            alert(response.message);  // Display the success message returned from the server-->
+                // Do additional actions if needed after successful deletion
+            },
+            error: function(xhr, status, error) {
+    <!--            alert('Error deleting object: ' + xhr.responseText);-->
+            }
+        });
+    }
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

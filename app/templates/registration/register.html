@@ -31,10 +31,19 @@
 
                 <div class="flex flex-col mb-3 relative">
                     <label for="{{ field.id_for_label }}" class="mb-2 ml-1 font-bold text-xs text-slate-700">{{ field.label_tag }}</label>
+                    {% if field.name == 'company' %}
+                    <select id="{{ field.id_for_label }}" name="{{ field.html_name }}[]" class="focus:shadow-soft-primary-outline text-sm leading-5.6 ease-soft block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 transition-all focus:border-fuchsia-300 focus:outline-none focus:transition-shadow" multiple>
+                        {% for choice in field.field.choices %}
+                            <option value="{{ choice.0 }}" {% if choice.0 in field.value %}selected{% endif %}>{{ choice.1 }}</option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
                     <input type="{{ field.field.widget.input_type }}" id="{{ field.id_for_label }}"
                            name="{{ field.html_name }}" value="{{ field.value|default_if_none:'' }}"
                            class="focus:shadow-soft-primary-outline text-sm leading-5.6 ease-soft block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 transition-all focus:border-fuchsia-300 focus:outline-none focus:transition-shadow"
-                    {% if field.field.required %}required{% endif %}>
+                        {% if field.field.required %}required{% endif %}>
+                    {% endif %}
+
                     {% if "password" in field.label_tag %}
                         <label for="{{ field.html_name }}" class="absolute top-8 right-3 cursor-pointer">
                             <i class="fa-regular fa-eye-slash"></i>

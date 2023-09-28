@@ -1,0 +1,59 @@
+{% load static %}
+{% load humanize %}
+{% block bar %}
+{% endblock %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitation Failed</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            height: 100vh; /* Set a fixed height for the body to center the content */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            background-color: #f7f7f7;
+        }
+
+        .card {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            text-align: center;
+            max-width: 600px;
+            font-size: 30px;
+        }
+
+        .check-icon {
+            color: #FF0000; /* Red color */
+            font-size: 64px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="flex flex-col 2-full ">
+    <div class="bg-gray-200 flex py-2 px-4 flex  align-top justify-between  items-center w-full rounded-xl ">
+        <a href="" class="text-black text-xl font-bold mr-6">Smart Presence</a>
+        <a href="{% url 'login' %}" class="text-black ml-6">Login</a>
+    </div>
+
+
+    <div>
+        <div class="card">
+            <h2>We are sorry, your invite is canceled</h2>
+            <i class="check-icon">&#10008;</i>
+        </div>
+    </div>
+</div>
+</body>
+
+
+{% endblock %}

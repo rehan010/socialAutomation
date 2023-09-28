@@ -4,26 +4,23 @@
 var ctx3 = document.getElementById("like-chart-line").getContext("2d");
 
 
-var gradientStroke1 = ctx4.createLinearGradient(0, 230, 0, 50);
+var gradientStroke1 = ctx2.createLinearGradient(0, 230, 0, 50);
 
-// Replace these placeholder colors with actual LinkedIn colors
-gradientStroke1.addColorStop(1, "rgba(0, 119, 181, 0.2)"); // LinkedIn blue
-gradientStroke1.addColorStop(0.2, "rgba(72, 72, 176, 0.0)"); // Transparent
-gradientStroke1.addColorStop(0, "rgba(0, 119, 181, 0)"); // Transparent
+gradientStroke1.addColorStop(1, "rgb(70,130,180)");
+gradientStroke1.addColorStop(0.2, "rgba(72,72,176,0.0)");
+gradientStroke1.addColorStop(0, "rgb(100,149,237)"); //purple colors
 
-var gradientStroke2 = ctx4.createLinearGradient(0, 230, 0, 50);
+var gradientStroke2 = ctx2.createLinearGradient(0, 230, 0, 50);
 
+gradientStroke2.addColorStop(1, "rgb(135,206,250)");
+gradientStroke2.addColorStop(0.2, "rgb(0,191,255)");
+gradientStroke2.addColorStop(0, "rgba(20,23,0,0)"); //blue colors
 
-gradientStroke2.addColorStop(0, "rgba(59, 89, 152, 0.4)"); // Facebook Blue
-gradientStroke2.addColorStop(1, "rgba(0, 0, 0, 0)");
-gradientStroke2.addColorStop(0, "rgba(0, 119, 181, 0)");// Transparent
+var gradientStroke3 = ctx2.createLinearGradient(0, 230, 0, 50);
 
-var gradientStroke3 = ctx4.createLinearGradient(0, 230, 0, 50);
-
-gradientStroke3.addColorStop(1, "rgba(203,12,159,0.2)");
-gradientStroke3.addColorStop(0.2, "rgba(72,72,176,0.0)");
-gradientStroke3.addColorStop(0, "rgba(203,12,159,0)"); //purple colors
-
+gradientStroke3.addColorStop(1, "rgb(219,112,147)");
+gradientStroke3.addColorStop(0.2, "rgb(221,160,221)");
+gradientStroke3.addColorStop(0, "rgb(199,21,133)");
 
 var gradientStroke4 = ctx3.createLinearGradient(0, 230, 0, 50);
 
@@ -73,50 +70,63 @@ async function fetchLikeGraph(start = getFormattedDate(2) , end = getFormattedDa
         datasets: [
           {
             label: "Linkedin",
-            tension: 0,
-            borderWidth: 0,
-            pointRadius: 3,
-            borderColor: "#0077B5",
+            data: linkedInLikesCounts,
+
+            tension: 0.4,
             borderWidth: 3,
+            pointRadius: 4,
+            borderColor: "#1B5583",
             backgroundColor: gradientStroke1,
             fill: true,
-            data: linkedInLikesCounts,
             maxBarThickness: 6,
+            pointBackgroundColor: "#6F8FAF",
+            pointBorderColor: "#4682B4	",
           },
           {
             label: "Facebook",
-            tension: 0,
-            borderWidth: 0,
-            pointRadius: 3,
+            data: facebookLikesCounts,
+
             borderColor: "#1877F2",
             borderWidth: 3,
-            backgroundColor: gradientStroke2,
-            fill: true,
-            data: facebookLikesCounts,
             maxBarThickness: 6,
+            lineTension: 0.3,
+            backgroundColor: "#F0F8FF",
+            fill: true,
+            pointRadius: 4,
+            pointBackgroundColor: "#0096FF",
+            pointBorderColor: "#1877F2",
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: "#1877F2",
+            pointHitRadius: 50,
+            pointBorderWidth: 2,
           },
           {
             label: "Instagram",
-            tension: 0,
-            borderWidth: 0,
-            pointRadius: 3,
-            borderColor: "#C6011F",
-            borderWidth: 3,
-            backgroundColor: gradientStroke3,
-            fill: true,
             data: instagramLikesCounts,
+
+            borderWidth: 3,
             maxBarThickness: 6,
+            lineTension: 0.3,
+            backgroundColor: "#C13584",
+            borderColor: "#FF8C00",
+            fill: true,
+            pointRadius: 4,
+            pointBackgroundColor: "#C13584",
+            pointBorderColor: "#E1306C",
+            pointHoverBackgroundColor: "#E1306C",
           },
           {
             label: "Google",
+            data: googleLikeCounts,
+
             tension: 0,
             borderWidth: 0,
             pointRadius: 3,
             borderColor: "#F4B400",
-            borderWidth: 3,
+            borderWidth: 4,
             backgroundColor: gradientStroke3,
             fill: true,
-            data: googleLikeCounts,
+
             maxBarThickness: 6,
           },
         ],

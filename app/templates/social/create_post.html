@@ -171,6 +171,7 @@
           class="hidden"
           multiple="multiple"
           onchange="previewImages(event)"
+          accept="image/png,image/jpeg,image/jpg,video/mp4"
         />
         <br>
         <p id="error-message" style="color: red; display: none">
@@ -550,10 +551,29 @@
       const myDiv = document.getElementById("date-div");
       myDiv.classList.add("hidden");
     }
+
+    var selectedFiles = [];
+
+    function updateFileList(fileInput) {
+        // Create a new FileList based on the selectedFiles array
+        var newFileList = new DataTransfer();
+
+        for (var i = 0; i < selectedFiles.length; i++) {
+            newFileList.items.add(selectedFiles[i]);
+        }
+
+        // Assign the new FileList to your input element
+        fileInput.files = newFileList.files;
+    }
+
+
       function previewImages(event) {
           var files = event.target.files;
+          const errorMessage = document.getElementById('error-message');
+          errorMessage.style.display = 'none';
           var container = document.getElementById("image-preview-container");
 
+          selectedFiles = [];
           while (container.firstChild) {
                 container.removeChild(container.firstChild);
             }
@@ -562,39 +582,24 @@
           const maxFileSizeMB = 20;
           const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
           const fileInput = event.target;
-          const errorMessage = document.getElementById('error-message');
+          console.log(fileInput);
 
-          if (fileInput.files.length > 0) {
-              const file = fileInput.files[0];
 
-              if (file.size > maxFileSizeBytes) {
-                  // Reset the file input value to clear the selected file
-                  fileInput.value = '';
-                  errorMessage.style.display = 'block';
-              }else {
-                const fileName = file.name.toLowerCase();
-                if (fileName.endsWith('.gif') || fileName.endsWith('.svg')) {
-                    // Reset the file input value to clear the selected file
-                    fileInput.value = '';
-                    errorMessage.style.display = 'block';
-                    errorMessage.textContent = 'Only JPEG, and PNG files are allowed.';
-                }else {
-                    errorMessage.style.display = 'none';
-                }
-              }
-          }
 
-          // Display the uploaded images
+
+
+
+
           for (var i = 0; i < files.length; i++) {
-              var file = files[i];
-              var reader = new FileReader();
+            var file = files[i];
+            var reader = new FileReader();
 
-              reader.onload = (function (file) {
-                  return function (e) {
-                      var imageContainer = document.createElement("div");
-                      imageContainer.classList.add("relative", "inline-block", "mr-2", "mb-2");
+            reader.onload = (function (file) {
+                return function (e) {
+                    var imageContainer = document.createElement("div");
+                    imageContainer.classList.add("relative", "inline-block", "mr-2", "mb-2");
 
-                      if(e.target.result.slice(0,15).includes("mp4")){
+                    if (e.target.result.slice(0, 15).includes("mp4")) {
                         var video = document.createElement("video");
                         video.classList.add("w-44", "h-auto");
 
@@ -607,15 +612,20 @@
 
                         removeIcon.addEventListener("click", function () {
                             imageContainer.remove();
+                            // Remove the file from the selectedFiles array
+                            var fileIndex = selectedFiles.indexOf(file);
+                            if (fileIndex !== -1) {
+                                selectedFiles.splice(fileIndex, 1);
+                                // Update the FileList
+                                updateFileList(fileInput);
+                            }
                         });
 
                         video.appendChild(source);
                         imageContainer.appendChild(video);
                         imageContainer.appendChild(removeIcon);
                         container.appendChild(imageContainer);
-
-                      }
-                      else{
+                    } else {
                         var image = document.createElement("img");
                         image.src = e.target.result;
                         image.classList.add("w-44", "h-auto");
@@ -626,19 +636,26 @@
 
                         removeIcon.addEventListener("click", function () {
                             imageContainer.remove();
+                            // Remove the file from the selectedFiles array
+                            var fileIndex = selectedFiles.indexOf(file);
+                            if (fileIndex !== -1) {
+                                selectedFiles.splice(fileIndex, 1);
+                                // Update the FileList
+                                updateFileList(fileInput);
+                            }
                         });
 
                         imageContainer.appendChild(image);
                         imageContainer.appendChild(removeIcon);
                         container.appendChild(imageContainer);
+                    }
 
-                      }
+                    // Add the file to the selectedFiles array
+                    selectedFiles.push(file);
+                };
+            })(file);
 
-
-                  };
-              })(file);
-
-              reader.readAsDataURL(file);
+            reader.readAsDataURL(file);
           }
       }
       document.addEventListener("DOMContentLoaded", function() {
@@ -736,7 +753,7 @@
       function createDropdown(pages,platformButton){
           const loader = platformButton.getElementsByClassName('animate-spin')[0];
           const platformIcon = loader.nextElementSibling;
-          console.log(pages)
+
 
           loader.classList.add('hidden');
           platformIcon.classList.remove('hidden');
@@ -851,8 +868,13 @@
         }, 5000); // 5000 milliseconds (5 seconds)
     }
 
-// Call the function when the page loads
+
 window.addEventListener('load', removeMessages);
+
+
+
+
+
 
       
 </script>
