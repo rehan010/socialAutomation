@@ -13,3 +13,4 @@ private.key
 key.pem
 cert.pem
 ngrok.yml
+celerybeat-schedule.dat
