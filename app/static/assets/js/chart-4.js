@@ -201,7 +201,7 @@ async function fetchCommentsGraph(start = getFormattedDate(2) , end = getFormatt
 
 
 }
-fetchCommentsGraph();
+
 
 
 

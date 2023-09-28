@@ -133,7 +133,6 @@ def publish_post_on_social_media(instance):
     # Remember to handle any exceptions that may occur during the publishing process
     share_page = instance.prepost_page.all()
     images = instance.images.all()
-    print(images)
 
 
     for page in share_page:
@@ -207,36 +206,35 @@ def schedule_signals_task(instance):
     try:
         post = PostModel.objects.get(id=instance.id)
         for image in instance.images.all():
+
             try:
                 save_file1(image)
             except Exception as e:
-
-                print(f"An error occurred: {str(e)}")
-
+                # print(f"An error occurred: {str(e)}")
                 instance.status = 'FAILED'
-            else:
-                  if instance:
-                    if instance.status == 'DRAFT':
-                        # raise PermissionDenied("This post is in draft status. Cannot proceed.")
-                        # return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
-                        pass
-                    elif instance.status == 'PROCESSING':
-                            publish_post_on_social_media(instance)
 
-                    elif instance.status == 'SCHEDULED':
-                        current_datetime = timezone.now()
-                        given_datetime_str = instance.schedule_datetime
-                        # given_datetime = timezone.make_aware(given_datetime_str)
+        if instance:
+            if instance.status == 'DRAFT':
+                # raise PermissionDenied("This post is in draft status. Cannot proceed.")
+                # return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
+                pass
+            elif instance.status == 'PROCESSING':
+                    publish_post_on_social_media(instance)
 
-                        # time_remaining = instance.schedule_datetime - timezone.now()
-                        # Schedule the task to publish the post on the scheduled date
-                        # print(current_datetime )
-                        # print(given_datetime_str)
-                        if given_datetime_str < current_datetime:
-                            schedule_publish_task(instance)
-                        else:
-                            pass
-                        return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
+            elif instance.status == 'SCHEDULED':
+                current_datetime = timezone.now()
+                given_datetime_str = instance.schedule_datetime
+                # given_datetime = timezone.make_aware(given_datetime_str)
+
+                # time_remaining = instance.schedule_datetime - timezone.now()
+                # Schedule the task to publish the post on the scheduled date
+                # print(current_datetime )
+                # print(given_datetime_str)
+                if given_datetime_str < current_datetime:
+                    schedule_publish_task(instance)
+                else:
+                    pass
+                return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
     except PostModel.DoesNotExist:
         pass
         # Handle the case if the post object is not found
@@ -251,12 +249,10 @@ def schedule_publish_task(instance):
 
 @shared_task
 def gather_post_insight(instance):
-    print("Executing gather post insights")
     try:
         since = datetime.now(timezone.utc).replace(minute=0,hour=0,second=0,microsecond=0)
         until = datetime.now(timezone.utc)
         post_urns = Post_urn.objects.filter(org=instance).values_list('urn', flat=True)
-        print(instance.provider)
         if instance.provider == "facebook":
             fb_post_insights(post_urns,instance,since,until)
         elif instance.provider == "instagram":
@@ -275,7 +271,7 @@ def gather_post_insight(instance):
 
 
     except Exception as e:
-        print(e)
+        pass
 
 
 

@@ -21,13 +21,15 @@ from rest_framework.pagination import PageNumberPagination
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.safestring import mark_safe
 # from django.contrib.auth.models import User
+from django.core.cache import cache
+
 from .models import User
 from allauth.socialaccount.models import EmailAddress, SocialAccount, SocialToken
 from django.shortcuts import get_object_or_404
 from rest_framework import filters
 from django.core import serializers
 from drf_link_header_pagination import LinkHeaderPagination
-
+from .tasks import task_three
 from google.oauth2 import id_token
 from google.auth.transport import requests as auth_requests
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -46,6 +48,9 @@ from rest_framework import generics
 from django.http import JsonResponse
 from rest_framework.exceptions import NotFound
 from django.conf import settings
+
+from celery.result import AsyncResult
+
 
 
 # Import your custom filter
@@ -418,14 +423,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 
             else:
-                invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
-                invites = []
-                for user in invited:
-                    invited_users_id = user.selected_user.id
-                    invites.append(invited_users_id)
-                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), status='PUBLISHED', is_deleted = False)
+                invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list('selected_user', flat=True).distinct()
 
-                sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invites))
+                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invited), status='PUBLISHED', is_deleted = False)
+
+                sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invited))
 
 
 
@@ -720,6 +722,175 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 
         return context
+
+class DashBoardCardView(APIView):
+
+    def post(self, request):
+        lock_key = self.lock_key_generator(self.request.user)
+
+        user_manager = self.request.user.manager
+        users = []
+        if user_manager != None:
+            role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
+            user_role = role.role
+            user_permission = role.permission
+            if user_permission == 'READ' or user_permission == "WRITE":
+
+                invited_users = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list('selected_user', flat=True).distinct()
+                for in_user in invited_users:
+                    users.append(in_user.id)
+            else:
+                pass
+        else:
+            invited_users = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list('selected_user', flat=True).distinct()
+            for in_user in invited_users:
+                users.append(in_user)
+        users.append(self.request.user.id)
+
+
+        task = task_three.apply_async(args=[users,lock_key])
+
+        return Response({'task_id': task.id})
+
+
+
+    def get(self, request):
+
+        task_id = self.request.GET.get('task_id')
+        task = AsyncResult(task_id)
+        if task.ready():
+            if task.successful():
+                user_manager = self.request.user.manager
+                today = date.today()
+                if user_manager != None:
+                    role = InviteEmploye.objects.get(selected_user=self.request.user,
+                                                     invited_by=self.request.user.manager)
+                    user_role = role.role
+                    user_permission = role.permission
+                    if user_permission == 'HIDE':
+
+                        total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED',
+                                                               is_deleted=False)
+                        sharepages = SharePage.objects.filter(user=self.request.user)
+
+                    else:
+                        total_posts = PostModel.objects.filter(
+                            Q(user=self.request.user) | Q(user=self.request.user.manager), status='PUBLISHED')
+                        sharepages = SharePage.objects.filter(
+                            Q(user=self.request.user) | Q(user=self.request.user.manager))
+
+
+                else:
+                    invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list(
+                        'selected_user', flat=True).distinct()
+
+                    total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invited),
+                                                           status='PUBLISHED', is_deleted=False)
+
+                    sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invited))
+
+                total_posts_count_today = total_posts.filter(
+                    Q(post_urn__org__provider='linkedin') | Q(post_urn__org__provider='facebook') | Q(
+                        post_urn__org__provider='instagram'), created_at__date__range=(today, today)).count()
+
+                post_count_ln = total_posts.filter(post_urn__org__provider='linkedin',
+                                                   created_at__date__range=(today, today)).count()
+                post_count_fb = total_posts.filter(post_urn__org__provider='facebook',
+                                                   created_at__date__range=(today, today)).count()
+                post_count_insta = total_posts.filter(post_urn__org__provider='instagram',
+                                                      created_at__date__range=(today, today)).count()
+
+                fb_share_pages = sharepages.filter(provider="facebook").distinct()
+                insta_share_pages = sharepages.filter(provider="instagram").distinct()
+                ln_share_pages = sharepages.filter(provider="linkedin").distinct()
+                google_share_pages = sharepages.filter(provider="google").distinct()
+
+                total_likes_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
+                                                                  date=today).aggregate(Sum('t_likes'))['t_likes__sum']
+                if total_likes_facebook is None:
+                    total_likes_facebook = 0
+
+                total_likes_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
+                                                                   date=today).aggregate(Sum('t_likes'))['t_likes__sum']
+                if total_likes_instagram is None:
+                    total_likes_instagram = 0
+                total_likes_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
+                                                                  date=today).aggregate(Sum('t_likes'))['t_likes__sum']
+                if total_likes_linkedin is None:
+                    total_likes_linkedin = 0
+                total_likes_google = SocialStats.objects.filter(org__in=google_share_pages,
+                                                                date=today).aggregate(Sum('t_likes'))['t_likes__sum']
+                if total_likes_google is None:
+                    total_likes_google = 0
+
+                total_comments_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
+                                                                     date=today).aggregate(Sum('t_comments'))[
+                    't_comments__sum']
+                if total_comments_facebook is None:
+                    total_comments_facebook = 0
+                total_comments_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
+                                                                      date=today).aggregate(Sum('t_comments'))[
+                    't_comments__sum']
+                if total_comments_instagram is None:
+                    total_comments_instagram = 0
+                total_comments_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
+                                                                     date=today).aggregate(Sum('t_comments'))[
+                    't_comments__sum']
+                if total_comments_linkedin is None:
+                    total_comments_linkedin = 0
+                total_comments_google = SocialStats.objects.filter(org__in=google_share_pages,
+                                                                   date=today).aggregate(Sum('t_comments'))[
+                    't_comments__sum']
+                if total_comments_google is None:
+                    total_comments_google = 0
+                total_followers_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
+                                                                      date=today).aggregate(Sum('t_followers'))[
+                    't_followers__sum']
+                if total_followers_facebook is None:
+                    total_followers_facebook = 0
+                total_followers_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
+                                                                       date=today).aggregate(Sum('t_followers'))[
+                    't_followers__sum']
+                if total_followers_instagram is None:
+                    total_followers_instagram = 0
+                total_followers_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
+                                                                      date=today).aggregate(Sum('t_followers'))[
+                    't_followers__sum']
+                if total_followers_linkedin is None:
+                    total_followers_linkedin = 0
+                total_followers_google = SocialStats.objects.filter(org__in=google_share_pages,
+                                                                    date=today).aggregate(Sum('t_followers'))[
+                    't_followers__sum']
+                if total_followers_google is None:
+                    total_followers_google = 0
+
+                context = dict()
+                context['linkedin_likes_today'] = total_likes_linkedin
+                context['facebook_likes_today'] = total_likes_facebook
+                context['instagram_likes_today'] = total_likes_instagram
+                context['google_likes_today'] = total_likes_google
+                context['facebook_comments_today'] = total_comments_facebook
+                context['instagram_comments_today'] = total_comments_instagram
+                context['linkedin_comments_today'] = total_comments_linkedin
+                context['google_comments_today'] = 0
+                context['total_posts'] = total_posts_count_today
+                context['linkedin_post_today'] = post_count_ln
+                context['google_post_today'] = 0
+                context['facebook_post_today'] = post_count_fb
+                context['instagram_post_today'] = post_count_insta
+                context['facebook_new_followers'] = total_followers_facebook
+                context['instagram_new_followers'] = total_followers_instagram
+                context['google_new_followers'] = total_followers_google
+                context['linkedin_new_followers'] = total_followers_linkedin
+                return Response({'status': 'SUCCESS', 'result': context})
+            else:
+                return Response({'status': 'FAILURE', 'result': 'Task failed'})
+        else:
+            return Response({'status': 'PENDING', 'result': None})
+
+
+    def lock_key_generator(self,user):
+        return f"task_lock:{user.id}"
 
 
 class PasswordResetView(auth_views.PasswordResetView):
@@ -1949,13 +2120,11 @@ class PostDeleteView(DestroyAPIView):
     serializer_class = PostImageSerializer
     def delete(self, request, *args, **kwargs):
         page_id = self.request.GET.get('page_id')
-
         comment_urn = self.request.data.get('urn')
         actor = self.request.data.get('actor')
         comment_id = self.request.data.get('comment_id')
         post_id = self.request.data.get('post_id')
         page_name = self.request.data.get('page_name')
-
         response = {}
         response['user'] = self.request.user.id
         post = self.get_object()
@@ -2001,7 +2170,7 @@ class PostDeleteView(DestroyAPIView):
                                 post.delete()
 
             except Exception as e:
-                return 'failed'
+                return JsonResponse('failed',e)
 
         elif self.request.GET.get('page_name') == "instagram" or page_name == 'instagram':
             try:
@@ -2116,11 +2285,14 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                         no_likes = result[0]
                         no_comments = result[1]
                         data = result[2]
+                        next = result[3]
+
                     else:
                         result = linkedin_post_socialactions(urn, access_token_string, linkedin_post)
                         no_likes = result[0]
                         no_comments = result[1]
                         data = result[2]
+                        next = result[3]
 
 
             context = {
@@ -2128,6 +2300,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'no_likes': no_likes,
                 'no_comments': no_comments,
                 'data': data,
+                'next': next,
                 'posts': PostModel.objects.filter(user_id=self.request.user.id),
                 'post': linkedin_post,
                 'posted_on': posted_on,
@@ -2154,6 +2327,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 no_comments = result[1]
                 data = result[2]
                 picture_url = result[3]
+                next = result[4]
 
             context = {
                 'ids': urn,
@@ -2161,6 +2335,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'is_liked': is_liked,
                 'no_comments': no_comments,
                 'data': data,
+                'next': next,
                 'picture_url':picture_url,
                 'posts': PostModel.objects.filter(user_id=self.request.user.id),
                 'post': facebook_post,
@@ -2188,6 +2363,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 no_comments = result[1]
                 data = result[2]
                 picture_url = result[3]
+                next = result[4]
 
 
             context = {
@@ -2195,6 +2371,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'no_likes': no_likes,
                 'no_comments': no_comments,
                 'data': data,
+                'next':next,
                  'picture_url':picture_url,
                 'posts': PostModel.objects.filter(user_id=self.request.user.id),
                 'post': instagram_post,
@@ -2399,6 +2576,195 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
         return redirect(reverse("my_detail_posts", kwargs={'post_id': post_id, 'page_id': page_id}))
 
+class CommentPostApi(APIView):
+
+    def post(self,request,**kwargs):
+        comment = self.request.data.get('text')
+        post_id = self.kwargs['post_id']
+        page_id = self.kwargs['page_id']
+        provider_name = self.request.GET.get('page_name')
+        data = dict()
+        if not comment:
+            return JsonResponse({'message': 'Comment text is required.'}, status=400)
+
+        try:
+            post = PostModel.objects.get(
+                post_urn__org__provider=provider_name,
+                id=post_id,
+                post_urn__pk=page_id
+            )
+            post_urn = post.post_urn.all().filter(pk=page_id).first()
+            access_token = post_urn.org.access_token
+            user = post_urn.org.user
+            post_urn = post_urn.urn
+            result = "error"
+            if provider_name == "linkedin":
+                social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
+                result = create_comment(access_token, post_urn, comment, social)
+            elif provider_name == 'facebook':
+                media = None
+                result = meta_comments(post_urn, comment, media, access_token,provider_name)
+            elif provider_name == 'instagram':
+                media = None
+                result = meta_comments(post_urn, comment, media, access_token,provider_name)
+
+            if result == "error":
+                raise "Falied To Post Reply"
+
+            return JsonResponse({'comment_response': result})
+
+
+        except PostModel.DoesNotExist:
+
+            raise NotFound('Post not found for the specified parameters.')
+
+
+        except SocialAccount.DoesNotExist:
+
+            raise NotFound('Social Account not found for the specified user.')
+
+
+        except Exception as e:
+
+            return JsonResponse({'message': str(e)}, status=500)
+
+
+class ReplyPostApi(APIView):
+
+    def post(self,request,**kwargs):
+        comment = self.request.data.get('text')
+        comment_urn = self.request.data.get('urn')
+        post_id = self.kwargs['post_id']
+        page_id = self.kwargs['page_id']
+        provider_name = self.request.GET.get('page_name')
+        data = dict()
+        if not comment:
+            return JsonResponse({'message': 'Comment text is required.'}, status=400)
+
+        try:
+            post = PostModel.objects.get(
+                post_urn__org__provider=provider_name,
+                id=post_id,
+                post_urn__pk=page_id
+            )
+            post_urn = post.post_urn.all().filter(pk=page_id).first()
+            access_token = post_urn.org.access_token
+            user = post_urn.org.user
+            post_urn = post_urn.urn
+            result = "error"
+            if provider_name == "linkedin":
+                social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
+                result = result = post_nested_comment_linkedin(social, access_token, post_urn, comment, comment_urn)
+            elif provider_name == 'facebook':
+                media = None
+                result = meta_nested_comment(comment_urn,comment,media,access_token, provider_name)
+            elif provider_name == 'instagram':
+                media = None
+                result = meta_nested_comment(comment_urn,comment,media,access_token, provider_name)
+
+            if result == "error":
+                raise "Falied To Post Comment"
+
+            return JsonResponse({'comment_response': result})
+
+
+        except PostModel.DoesNotExist:
+
+            raise NotFound('Post not found for the specified parameters.')
+
+
+        except SocialAccount.DoesNotExist:
+
+            raise NotFound('Social Account not found for the specified user.')
+
+
+        except Exception as e:
+
+            return JsonResponse({'message': str(e)}, status=500)
+
+class ReplyPagination(APIView):
+
+    def get(self,request,**kwargs):
+        pagination = self.request.GET.get("pagination_link")
+        post_id = self.kwargs['post_id']
+        page_id = self.kwargs['page_id']
+        provider_name = self.request.GET.get('page_name')
+        data = dict()
+
+
+        try:
+
+            access_token = Post_urn.objects.filter(id = page_id).first().org.access_token
+            result = "error"
+            if provider_name == "linkedin":
+                # social = SocialAccount.objects.get(user=user.id, provider='linkedin_oauth2')
+                result = linkdein_pagination(pagination,access_token,"reply")
+            elif provider_name == 'facebook':
+
+                result = meta_reply_pagination(pagination, access_token, provider_name)
+            elif provider_name == 'instagram':
+                result = result = meta_reply_pagination(pagination, access_token, provider_name)
+
+            if result == "error":
+                raise "Failed to fetch replies"
+
+            return JsonResponse(result,safe=False)
+
+
+        except PostModel.DoesNotExist:
+
+            raise NotFound('Post not found for the specified parameters.')
+
+
+        except SocialAccount.DoesNotExist:
+
+            raise NotFound('Social Account not found for the specified user.')
+
+
+        except Exception as e:
+
+            return JsonResponse({'message': str(e)}, status=400)
+class CommentPagination(APIView):
+
+    def get(self,request,**kwargs):
+        pagination = self.request.GET.get("pagination_link")
+        post_id = self.kwargs['post_id']
+        page_id = self.kwargs['page_id']
+        provider_name = self.request.GET.get('page_name')
+        data = dict()
+
+
+        try:
+
+            access_token = Post_urn.objects.filter(id = page_id).first().org.access_token
+            result = "error"
+            if provider_name == "linkedin":
+
+               result = linkdein_pagination(pagination,access_token,"comment")
+            elif provider_name == 'facebook':
+
+                result = meta_reply_pagination(pagination, access_token, provider_name)
+            elif provider_name == 'instagram':
+                result = meta_reply_pagination(pagination, access_token, provider_name)
+
+            if result == "error":
+                raise "Failed to fetch replies"
+
+            return JsonResponse(result,safe=False)
+
+
+        except SharePage.DoesNotExist:
+
+            raise NotFound('Post not found for the specified parameters.')
+
+
+        except Exception as e:
+
+            return JsonResponse({'message': str(e)}, status=400)
+
+
+
+
 
 class ConnectionView(ConnectionsView):
 
@@ -2450,14 +2816,14 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
 
 
                 social = SocialAccount.objects.filter(Q(user=user.id) | Q(user__in=invited_employees_list) | Q(user=user_manager.id),
-                                                      provider=provider_name)
+                                                      provider=provider_name,user__is_deleted = False)
 
 
             elif (role == "MEMBER" and (permission == "READ" or permission == "WRITE")):
-                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user=user_manager.id), provider=provider_name)
+                social = SocialAccount.objects.filter(Q(user=user.id) | Q(user=user_manager.id), provider=provider_name,user__is_deleted = False)
 
             else:
-                social = SocialAccount.objects.filter(Q(user=user.id), provider=provider_name)
+                social = SocialAccount.objects.filter(Q(user=user.id), provider=provider_name,user__is_deleted = False)
 
         else:
             invited_employees_list = InviteEmploye.objects.filter(Q( permission = "WRITE" ) | Q( permission = "READ" ) , invited_by = user).values_list('selected_user__id', flat=True)
@@ -2465,7 +2831,7 @@ class SocialProfileView(LoginRequiredMixin,TemplateView):
 
 
 
-            social = SocialAccount.objects.filter(Q(user=user.id) |Q(user__in=invited_employees_list), provider=provider_name)
+            social = SocialAccount.objects.filter(Q(user=user.id) |Q(user__in=invited_employees_list), provider=provider_name,user__is_deleted = False)
 
         # This is to sort the social account user with there role ADMIN first then Managers
 

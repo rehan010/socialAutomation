@@ -27,6 +27,22 @@
     }
 
 
+    .spinner {
+    display: block;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid #3498db;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+
 
     </style>
 <!--    <div class="absolute top-0 right-0 mt-10 ml-10 mb-2">-->
@@ -112,8 +128,8 @@
         <!-- Likes and Comment Count -->
         <div class="flex justify-between items-center text-gray-600 mb-2">
             <div class="flex items-center">
-                <input type="hidden" id="post" value="{{post_id}}">
-                <input type="hidden" id="page" value="{{page_id}}">
+<!--                <input type="hidden" id="post" value="{{post_id}}">-->
+<!--                <input type="hidden" id="page" value="{{page_id}}">-->
 
                 {% if user_role == 'MEMBER' and permission == 'WRITE' %}
                 {% if is_liked %}
@@ -181,7 +197,6 @@
                                     <a onclick="delete_post_comments(this)" data-comment-urn="{{ comment.comment_urn }}" data-actor="{{ comment.actor }}" data-comment-id="{{ comment.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
                                         <i class="fa-solid fa-trash mx-2"></i> Delete Post
                                     </a>
-
                                 </li>
                             </ul>
                         </div>
@@ -196,25 +211,17 @@
         <br>
         {% if user_role == 'MEMBER' and permission == 'WRITE' %}
         <!-- New Comment Card -->
-        <div class="w-full border rounded-lg p-3 mb-4">
-            <textarea class="w-full border rounded-lg bg-gray-100 p-2" name="comment"
-                      placeholder="Write a comment..."></textarea>
-            <!--                    {% if provider_name == 'facebook' %}-->
-            <!--                        <div>-->
-            <!--                            <label for="file-upload" class="file-upload-label">-->
-            <!--                                <i class="fa-solid fa-paperclip"></i>-->
-            <!--                            </label>-->
-            <!--                            <input type="file" name="comment_media" id="file-upload" class="file-upload hidden">-->
-            <!--                        </div>-->
-            <!--                    {% endif %}-->
-            <button class="mt-2 px-4 py-2 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
-                Post Comment
-            </button>
-        </div>
-        {% elif post.user == request.user %}
-        <div class="w-full border rounded-lg p-3 mb-4">
-            <textarea class="w-full border rounded-lg bg-gray-100 p-2" name="comment"
-                      placeholder="Write a comment..."></textarea>
+        <div class="w-full border flex gap-2 items-start rounded-lg p-3 mb-4">
+
+            {% if picture_url %}
+                <img src="{{ picture_url }}" class="h-13 w-12 object-cover" />
+            {% else %}
+                <img class="h-13 w-12 object-cover" src="{% static 'image/default.png' %}" alt="user"/>
+            {% endif %}
+
+            <div class="flex-1">
+                <textarea class="w-full border rounded-lg bg-gray-100 p-2 outline-none overflow-hidden commentTextarea" name="comment"
+                      placeholder="Write a comment..." rows="1"></textarea>
             <!--                    {% if provider_name == 'facebook' %}-->
             <!--                        <div>-->
             <!--                            <label for="file-upload" class="file-upload-label">-->
@@ -224,257 +231,339 @@
             <!--                        </div>-->
             <!--                    {% endif %}-->
 
-            <button class="mt-2 px-4 py-2 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
-                Post Comment
-            </button>
+                <button class="mt-2 px-4 py-2 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2" type="button" onclick="postComment(event)">
+                    Post
+                </button>
+            </div>
+        </div>
+        {% elif post.user == request.user %}
+        <div class="w-full border flex gap-2 items-start rounded-lg p-3 mb-4">
+            {% if picture_url %}
+                <img src="{{ picture_url }}" class="h-13 w-12 rounded-full object-cover" />
+            {% else %}
+                <img class="h-13 w-12 rounded-full object-cover" src="{% static 'image/default.png' %}" alt="user"/>
+            {% endif %}
+            <div class="flex-1">
+                <textarea class="w-full border rounded-lg bg-gray-100 p-2 outline-none overflow-hidden commentTextarea" name="comment"
+                      placeholder="Write a comment..." rows="1"></textarea>
+            <!--                    {% if provider_name == 'facebook' %}-->
+            <!--                        <div>-->
+            <!--                            <label for="file-upload" class="file-upload-label">-->
+            <!--                                <i class="fa-solid fa-paperclip"></i>-->
+            <!--                            </label>-->
+            <!--                            <input type="file" name="comment_media" id="file-upload" class="file-upload hidden">-->
+            <!--                        </div>-->
+            <!--                    {% endif %}-->
+
+                <button class="mt-2 px-4 py-2 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2" type="button" onclick="postComment(event)">
+                    Post
+                </button>
+            </div>
+
         </div>
         {% endif %}
         {% if post.comment_check %}
-        {% for comment in data %}
-        <input type="hidden" name="comment_urn" value="{{ comment.comment_urn }}">
-        <input type="hidden" name="user_id" value="{{comment.user_id}}">
-        <div class="w-full  rounded-lg p-3">
-            <div class="flex items-start bg-gray-50 space-x-4">
-                {% if comment.profile_image %}
-                <img class="h-10 w-10 rounded-full object-cover" src="{{ comment.profile_image }}"
+        <div class="comment_container">
+            {% for comment in data %}
+
+
+
+            <div class="w-full rounded-lg p-3">
+                <input type="hidden" name="comment_urn" value="{{ comment.comment_urn }}">
+                <input type="hidden" name="user_id" value="{{comment.user_id}}">
+                <div class="w-full flex gap-2 items-start">
+                    {% if comment.profile_image %}
+                        <img class="h-12 w-12 rounded-full object-cover" src="{{ comment.profile_image }}"
                      alt="{{ comment.name }}"/>
-                {% else %}
-                <img class="h-10 w-10 rounded-full object-cover" src="{% static 'image/default.png' %}"
-                     alt="{{ comment.name }}"/>
-                {% endif %}
-                <!-- Comment Card -->
-                <div class="w-full border rounded-lg p-3">
-                    <!-- Comment content -->
-                    <p class="font-bold">{{ comment.name }}:</p>
-                    <p class="text-gray-700">{{ comment.text }}</p>
-                    {% if user_role == 'MEMBER' and permission == 'WRITE' %}
-                    <div class="w-full flex justify-end">
-                        {% if comment.liked %}
-                        <button onclick="deleteLike('{{ comment.comment_urn }}',event)" type="button"
-                                class="like-button relative focus:outline-red">
-                            <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
-                                 xmlns="http://www.w3.org/2000/svg"
-                                 fill="red" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                        </button>
-                        {% else %}
-                        <button onclick="postLike('{{ comment.comment_urn }}',event)" type="button"
-                                class="like-button relative focus:outline-red">
-                            <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
-                                 xmlns="http://www.w3.org/2000/svg"
-                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                        </button>
-                        {% endif %}
-                        <div class="mx-4 relative cursor-pointer">
-                            <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
-                            <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
-                                <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
-                                    <a onclick="delete_post_comments(this)" data-comment-urn="{{ comment.comment_urn }}" data-actor="{{ comment.actor }}" data-comment-id="{{ comment.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
-                                        <i class="fa-solid fa-trash mx-2"></i> Delete Comment
-                                    </a>
-
-                                </li>
-
-                            </ul>
-                        </div>
-                    </div>
-                    {% elif post.user == request.user %}
-                    <div class="w-full flex justify-end">
-                        {% if comment.liked %}
-                        <button onclick="deleteLike('{{ comment.comment_urn }}',event)" type="button"
-                                class="like-button relative focus:outline-red">
-                            <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
-                                 xmlns="http://www.w3.org/2000/svg"
-                                 fill="red" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                        </button>
-                        {% else %}
-                        <button onclick="postLike('{{ comment.comment_urn }}',event)" type="button"
-                                class="like-button relative focus:outline-red">
-                            <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
-                                 xmlns="http://www.w3.org/2000/svg"
-                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                        </button>
-                        {% endif %}
-                        <div class="mx-4 relative cursor-pointer">
-                            <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
-                            <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
-                                <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
-                                    <a onclick="delete_post_comments(this)" data-comment-urn="{{ comment.comment_urn }}" data-actor="{{ comment.actor }}" data-comment-id="{{ comment.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
-                                        <i class="fa-solid fa-trash mx-2"></i> Delete Comment
-                                    </a>
-
-                                </li>
-
-                            </ul>
-                        </div>
-                    </div>
+                    {% else %}
+                        <img class="h-12 w-12 rounded-full object-cover" src="{% static 'image/default.png' %}"
+                         alt="{{ comment.name }}"/>
                     {% endif %}
-                    <div class="mt-4 space-y-4">
-                        {% if comment.replies|length > 0%}
-                        {% for reply in comment.replies %}
-                        {% if reply %}
-                            <div class="flex items-start space-x-4 bg-gray-100">
-                                {% if reply.profile_image %}
-                                <img class="h-10 w-10 rounded-full object-cover" src="{{ reply.profile_image }}" alt=""/>
-                                {% else %}
-                                <img class="h-10 w-10 rounded-full object-cover" src="{% static 'image/default.png' %}"
-                                     alt="{{ comment.name }}"/>
-                                {% endif %}
-                                {% if reply.text %}
-                                <div class="flex-1 rounded-lg p-3">
-                                    <!-- Reply content -->
-                                    <p class="font-bold">{{ reply.name }}:</p>
-                                    <p class="text-gray-700">{{ reply.text }}</p>
-                                    {% if user_role == 'MEMBER' and permission == 'WRITE' %}
-                                    <div class="w-full flex justify-end">
-                                        {% if reply.liked %}
-                                        <button onclick="deleteLike('{{ reply.comment_urn }}',event)" type="button"
-                                                class="like-button relative focus:outline-red">
-                                            <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
-                                                 xmlns="http://www.w3.org/2000/svg"
-                                                 fill="red" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                            </svg>
-                                        </button>
-                                        {% else %}
-                                        <button onclick="postLike('{{ reply.comment_urn }}',event)" type="button"
-                                                class="like-button relative focus:outline-red">
-                                            <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
-                                                 xmlns="http://www.w3.org/2000/svg"
-                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                            </svg>
-                                        </button>
-                                        {% endif %}
-                                        <div class="mx-4 relative cursor-pointer">
-                                            <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
-                                            <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
-                                                <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
-                                                    <a onclick="delete_post_comments(this)" data-comment-urn="{{ reply.comment_urn }}" data-actor="{{ reply.actor }}" data-comment-id="{{ reply.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
-                                                        <i class="fa-solid fa-trash mx-2"></i> Delete Reply
-                                                    </a>
+                    <div class="flex flex-1 items-start bg-gray-50 space-x-4">
 
-                                                </li>
+                        <!-- Comment Card -->
+                        <div class="w-full border rounded-lg px-2 py-2">
+                            <!-- Comment content -->
+                            <div class="flex items-center justify-between">
+                                <p class="font-bold">{{ comment.name }}:</p>
+                                {% if post.user == request.user %}
+                                <div class="mx-4 relative cursor-pointer">
+                                    <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
+                                    <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
+                                        <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                                            <a onclick="delete_post_comments(this)" data-comment-urn="{{ comment.comment_urn }}" data-actor="{{ comment.actor }}" data-comment-id="{{ comment.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
+                                                <i class="fa-solid fa-trash mx-2"></i> Delete Comment
+                                            </a>
 
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    {% elif post.user == request.user %}
-                                    <div class="w-full flex justify-end">
-                                        {% if reply.liked %}
-                                        <button onclick="deleteLike('{{ reply.comment_urn }}',event)" type="button"
-                                                class="like-button relative focus:outline-red">
-                                            <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
-                                                 xmlns="http://www.w3.org/2000/svg"
-                                                 fill="red" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                            </svg>
-                                        </button>
-                                        {% else %}
-                                        <button onclick="postLike('{{ reply.comment_urn }}',event)" type="button"
-                                                class="like-button relative focus:outline-red">
-                                            <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
-                                                 xmlns="http://www.w3.org/2000/svg"
-                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                            </svg>
-                                        </button>
-                                        {% endif %}
-                                        <div class="mx-4 relative cursor-pointer">
-                                            <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
-                                            <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
-                                                <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
-                                                    <a onclick="delete_post_comments(this)" data-comment-urn="{{ reply.comment_urn }}" data-actor="{{ reply.actor }}" data-comment-id="{{ reply.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
-                                                        <i class="fa-solid fa-trash mx-2"></i> Delete Reply
-                                                    </a>
+                                        </li>
 
-                                                </li>
-
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    {% endif %}
+                                    </ul>
                                 </div>
                                 {% endif %}
                             </div>
+                            <p class="text-gray-700">{{ comment.text }}</p>
+                            {% if comment.urls %}
+                                    <div class="mt-2">
+                                        {% for img in comment.urls %}
+                                            <img src="{{ img }}" alt="Image">
+                                        {% endfor %}
+                                    </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full pl-14">
+                {% if user_role == 'MEMBER' and permission == 'WRITE' %}
+                        <div class="w-full">
+
+
+                            {% if comment.liked %}
+                            <button onclick="deleteLike('{{ comment.comment_urn }}',event)" type="button"
+                                    class="like-button relative focus:outline-red">
+                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                            {% else %}
+                            <button onclick="postLike('{{ comment.comment_urn }}',event)" type="button"
+                                    class="like-button relative focus:outline-red">
+                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                            {% endif %}
+                            |
+                            <button class="reply-button">Reply</button>
+
+                        </div>
+
+                        {% elif post.user == request.user %}
+                        <div class="w-full">
+
+
+                            {% if comment.liked %}
+                            <button onclick="deleteLike('{{ comment.comment_urn }}',event)" type="button"
+                                    class="like-button relative focus:outline-red">
+                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                            {% else %}
+                            <button onclick="postLike('{{ comment.comment_urn }}',event)" type="button"
+                                    class="like-button relative focus:outline-red">
+                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                            {% endif %}
+                            | <button class="reply-button">Reply</button>
+
+                        </div>
+
+                        {% endif %}
+                        {% if comment.replies|length > 0%}
+                        <div class="mt-4 space-y-4 reply-container">
+
+                            {% for reply in comment.replies %}
+                            {% if reply %}
+                            <div class="w-full rounded-lg p-3">
+                                <div class="w-full flex gap-2">
+                                    {% if reply.profile_image %}
+                                        <img class="h-10 w-10 rounded-full object-cover" src="{{ reply.profile_image }}" alt=""/>
+                                    {% else %}
+                                        <img class="h-10 w-10 rounded-full object-cover" src="{% static 'image/default.png' %}"
+                                             alt="{{ comment.name }}"/>
+                                    {% endif %}
+
+                                    <div class="flex-1 flex items-start space-x-4 bg-gray-50">
+
+                                            <div class="w-full border rounded-lg px-2 py-2">
+                                                <div class="flex items-center justify-between">
+                                                    <p class="font-bold">{{ reply.name }}:</p>
+                                                    {% if post.user == request.user %}
+                                                        <div class="mx-4 relative cursor-pointer">
+                                                            <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
+                                                            <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
+                                                                <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
+                                                                    <a onclick="delete_post_comments(this)" data-comment-urn="{{ reply.comment_urn }}" data-actor="{{ reply.actor }}" data-comment-id="{{ reply.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
+                                                                        <i class="fa-solid fa-trash mx-2"></i> Delete Reply
+                                                                    </a>
+
+                                                                </li>
+
+                                                            </ul>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                                <p class="text-gray-700">{{ reply.text }}</p>
+
+                                                {% if reply.urls %}
+                                                <div class="mt-2">
+                                                    {% for img in reply.urls %}
+                                                        <img src="{{ img }}" alt="Image">
+                                                    {% endfor %}
+                                                 </div>
+                                                    {% endif %}
+                                            </div>
+
+                                    </div>
+                                </div>
+                                <div class="w-full pl-14">
+                                    {% if user_role == 'MEMBER' and permission == 'WRITE' %}
+                                        <div class="w-full">
+                                            {% if reply.liked %}
+                                            <button onclick="deleteLike('{{ reply.comment_urn }}',event)" type="button"
+                                                    class="like-button relative focus:outline-red">
+                                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                                     xmlns="http://www.w3.org/2000/svg"
+                                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                                </svg>
+                                            </button>
+                                            {% else %}
+                                            <button onclick="postLike('{{ reply.comment_urn }}',event)" type="button"
+                                                    class="like-button relative focus:outline-red">
+                                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                                     xmlns="http://www.w3.org/2000/svg"
+                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                                </svg>
+                                            </button>
+                                            {% endif %}
+
+                                        </div>
+                                    {% elif post.user == request.user %}
+                                        <div class="w-full">
+                                            {% if reply.liked %}
+                                            <button onclick="deleteLike('{{ reply.comment_urn }}',event)" type="button"
+                                                    class="like-button relative focus:outline-red">
+                                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                                     xmlns="http://www.w3.org/2000/svg"
+                                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                                </svg>
+                                            </button>
+                                            {% else %}
+                                            <button onclick="postLike('{{ reply.comment_urn }}',event)" type="button"
+                                                    class="like-button relative focus:outline-red">
+                                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                                     xmlns="http://www.w3.org/2000/svg"
+                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                                </svg>
+                                            </button>
+                                            {% endif %}
+
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
                         {% endif %}
                         {% endfor %}
+
+                        </div>
+                        {% if comment.next %}
+                        <div class="text-sm p-2">
+                            <a class="text-gray-500 hover:text-gray-600 font-bold cursor-pointer px-2 pl-2" data-attribute = "{{comment.next}}" onclick="GetReplies(event)" >Load Previous Replies</a>
+                        </div>
                         {% endif %}
-                    </div>
-                    {% if user_role == 'MEMBER' and permission == 'WRITE' %}
-                    <!-- Reply Text Area -->
-                    <button class="reply-button">Reply</button>
-                    <div class="reply-dialog hidden mt-4 ">
-                        <textarea class="reply-textarea w-full border rounded-lg p-2" name="reply" placeholder="Write a reply..."></textarea>
-                        <button class="submit-reply px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
-                            Submit Reply
-                        </button>
-                    </div>
 
-<!--                    <div id="reply_box" class="mt-4 hidden">-->
-<!--                        <textarea class="w-full border rounded-lg p-2" name="reply"-->
-<!--                                  placeholder="Write a reply..."></textarea>-->
-<!--                        &lt;!&ndash;                                        {% if provider_name == 'facebook' %}&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                        <div>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                            <label for="file-upload" class="file-upload-label">&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                                <i class="fa-solid fa-paperclip"></i>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                            </label>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                        </div>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                        {% endif %}&ndash;&gt;-->
+                        {% endif %}
+                        {% if user_role == 'MEMBER' and permission == 'WRITE' %}
+                        <!-- Reply Text Area -->
+                        <div class="reply-dialog hidden mt-4 w-full border flex gap-2 items-start rounded-lg p-3 mb-4">
+                            {% if picture_url %}
+                                <img src="{{ picture_url }}" class="h-12 w-12 rounded-full object-cover" />
+                            {% else %}
+                                <img class="h-12 w-12 rounded-full object-cover" src="{% static 'image/default.png' %}" alt="user"/>
+                            {% endif %}
+                            <div class="flex-1">
+                                <textarea class="w-full border rounded-lg bg-gray-100 p-2 outline-none overflow-hidden commentTextarea" name="reply" placeholder="Write a reply..." rows="1"></textarea>
+                                <button class="submit-reply px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2" onclick="postReply(event,'{{comment.comment_urn}}')" type="button">
+                                    Submit Reply
+                                </button>
+                            </div>
+                        </div>
+    <!--                    <div id="reply_box" class="mt-4 hidden">-->
+    <!--                        <textarea class="w-full border rounded-lg p-2" name="reply"-->
+    <!--                                  placeholder="Write a reply..."></textarea>-->
+    <!--                        &lt;!&ndash;                                        {% if provider_name == 'facebook' %}&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                        <div>&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                            <label for="file-upload" class="file-upload-label">&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                                <i class="fa-solid fa-paperclip"></i>&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                            </label>&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                        </div>&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                        {% endif %}&ndash;&gt;-->
 
 
-<!--                        <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">-->
-<!--                            Reply-->
-<!--                        </button>-->
-<!--                    </div>-->
-                    {% elif post.user == request.user %}
-                     <button class="reply-button">Reply</button>
-                    <div class="reply-dialog hidden mt-4 ">
-                        <textarea class="reply-textarea w-full border rounded-lg p-2" name="reply" placeholder="Write a reply..."></textarea>
-                        <button class="submit-reply px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">
-                            Submit Reply
-                        </button>
-                    </div>
+    <!--                        <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">-->
+    <!--                            Reply-->
+    <!--                        </button>-->
+    <!--                    </div>-->
+                        {% elif post.user == request.user %}
 
-<!--                    <div class="mt-4 hidden">-->
-<!--                        <textarea class="w-full border rounded-lg p-2" name="reply"-->
-<!--                                  placeholder="Write a reply..."></textarea>-->
-<!--                        &lt;!&ndash;                                        {% if provider_name == 'facebook' %}&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                        <div>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                            <label for="file-upload" class="file-upload-label">&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                                <i class="fa-solid fa-paperclip"></i>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                            </label>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                        </div>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                        {% endif %}&ndash;&gt;-->
+                        <div class="reply-dialog hidden mt-4 w-full border flex gap-2 items-start rounded-lg p-3 mb-4">
+                            {% if picture_url %}
+                                <img src="{{ picture_url }}" class="h-12 w-12 rounded-full object-cover" />
+                            {% else %}
+                                <img class="h-12 w-12 rounded-full object-cover" src="{% static 'image/default.png' %}" alt="user"/>
+                            {% endif %}
+                            <div class="flex-1">
+                                <textarea class="w-full border rounded-lg bg-gray-100 p-2 outline-none overflow-hidden commentTextarea" name="reply" placeholder="Write a reply..." rows="1"></textarea>
+                                <button class="submit-reply px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2" onclick="postReply(event,'{{comment.comment_urn}}')" type="button">
+                                    Submit Reply
+                                </button>
+                            </div>
 
-<!--                        <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">-->
-<!--                            Reply-->
-<!--                        </button>-->
-<!--                    </div>-->
-                    {% endif %}
+                        </div>
+
+
+    <!--                    <div class="mt-4 hidden">-->
+    <!--                        <textarea class="w-full border rounded-lg p-2" name="reply"-->
+    <!--                                  placeholder="Write a reply..."></textarea>-->
+    <!--                        &lt;!&ndash;                                        {% if provider_name == 'facebook' %}&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                        <div>&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                            <label for="file-upload" class="file-upload-label">&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                                <i class="fa-solid fa-paperclip"></i>&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                            </label>&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                            <input type="file" name="reply_media_{{ reply_media_counter |add:'1' }}" id="file-upload-reply" class="file-upload hidden">&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                        </div>&ndash;&gt;-->
+    <!--                        &lt;!&ndash;                                        {% endif %}&ndash;&gt;-->
+
+    <!--                        <button class="px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2">-->
+    <!--                            Reply-->
+    <!--                        </button>-->
+    <!--                    </div>-->
+                {% endif %}
                 </div>
-            </div>
-        </div>
-        <br>
-        {% endfor %}
 
+            </div>
+            <br>
+            {% endfor %}
+        </div>
+        {% if next %}
+            <div class="text-sm p-2">
+                <a class="text-gray-500 hover:text-gray-600 font-bold cursor-pointer px-2 pl-2" data-attribute = "{{next}}" onclick="GetComments(event)" >View More Comments</a>
+            </div>
+        {% endif %}
         {% else %}
         <p>Comments are disabled for this post.</p>
         {% endif %}
@@ -485,6 +574,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 <script>
+
     // Manually initialize the carousel
     const myCarousel = new bootstrap.Carousel(document.getElementById('carouselExampleIndicators'), {
         interval: false, // Set to false to disable autoplay
@@ -500,6 +590,18 @@
         }
     });
 
+        textareas = document.querySelectorAll(".commentTextarea");
+        if(textareas){
+            textareas.forEach((textarea) => {
+                textarea.addEventListener('input', autoResize, false);
+            });
+
+        }
+
+        function autoResize() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        }
 
     function getCSRFToken() {
         const csrfTokenInput = document.querySelector('input[name=csrfmiddlewaretoken]');
@@ -511,12 +613,15 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+
         const replyButtons = document.querySelectorAll(".reply-button");
 
         replyButtons.forEach(function(replyButton) {
             replyButton.addEventListener("click", function(event) {
                 event.preventDefault();
-                const replyDialog = this.nextElementSibling;
+                const replyButtonParent = this.parentElement.parentElement;
+                const replyDialog = replyButtonParent.querySelector(".reply-dialog");
+
 
                 // Hide all other reply dialog boxes
                 const allReplyDialogs = document.querySelectorAll(".reply-dialog");
@@ -548,7 +653,7 @@
 
 
         button.addEventListener('click',function(){
-            console.log("Clicked");
+
             if(dropdown.style.display == "block"){
                 dropdown.style.display = "none"
             }
@@ -675,6 +780,629 @@
 
         }
     }
+
+  function renderComment(data){
+
+        const ParentContainer = document.querySelector('.comment_container');
+        const CommentContainer1 = document.createElement('div');
+        CommentContainer1.classList = "w-full rounded-lg p-3";
+        const CommentContainer = document.createElement('div');
+        CommentContainer.classList = "w-full flex gap-2 items-start";
+        var ProfileImage = "{{picture_url}}";
+        console.log(ProfileImage);
+
+        const imageTag = document.createElement('img');
+        if (data['profile_image'] && data['profile_image'] !== "") {
+
+            imageTag.src = data['profile_image'];
+        }else if(ProfileImage !== "None" && ProfileImage){
+            let encodedProfileImage = decodeURIComponent(ProfileImage.replace(/&amp;/g, '&'));
+            imageTag.src = encodedProfileImage;
+        }
+        else {
+            imageTag.src = "{% static 'image/default.png' %}";
+        }
+        imageTag.classList = "h-12 w-12 rounded-full object-cover";
+
+        const CommentCard = document.createElement('div');
+        CommentCard.classList = "flex flex-1 items-start bg-gray-50 space-x-4";
+
+        const CommentCardContent = document.createElement('div');
+        CommentCardContent.classList = "w-full border rounded-lg px-2 py-2";
+
+        const CommentContent = document.createElement('div');
+        CommentContent.classList = "flex items-center justify-between";
+
+        const nameTag = document.createElement('p');
+        nameTag.classList = "font-bold";
+        nameTag.textContent = data['name'];
+        CommentContent.append(nameTag)
+
+
+
+
+
+
+        var currentUser = "{{request.user}}"
+        var postUser = "{{post.user}}"
+
+        if(currentUser === postUser){
+            const dropdown = document.createElement('div');
+            dropdown.classList = "mx-4 relative cursor-pointer";
+            const icon = document.createElement('i');
+            icon.classList = "fas fa-ellipsis-h delete-dropdownButton";
+            const dropdownlist = document.createElement('ul');
+            dropdownlist.classList = "absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown";
+            dropdownlist.style.display = "none";
+            const listItem = document.createElement('li');
+            listItem.classList = "relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors";
+            const anchorTag = document.createElement('a');
+            anchorTag.onclick = ()=>delete_post_comments(anchorTag);
+            anchorTag.classList = "ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline";
+            anchorTag.textContent = "Delete Comment"
+            const deleteIcon =  document.createElement('i');
+            deleteIcon.classList = "fa-solid fa-trash mx-2";
+
+            icon.addEventListener('click',function(){
+
+                if(dropdownlist.style.display == "block"){
+                    dropdownlist.style.display = "none"
+                }
+                else{
+                    dropdownlist.style.display = "block"
+                }
+            })
+            anchorTag.setAttribute("data-comment-urn",data['comment_urn']);
+            anchorTag.setAttribute("data-actor",data['user_id']);
+
+            anchorTag.setAttribute("data-comment-id",data['comment_id']);
+            anchorTag.onclick = ()=> delete_post_comments(anchorTag)
+            anchorTag.append(deleteIcon);
+            listItem.append(anchorTag);
+            dropdownlist.append(listItem);
+            dropdown.append(icon);
+            dropdown.append(dropdownlist);
+            CommentContent.append(dropdown);
+
+        }
+        CommentCardContent.append(CommentContent);
+        const CommentTextContent = document.createElement('p');
+        CommentTextContent.classList = "text-gray-700";
+        CommentTextContent.textContent = data["text"];
+        CommentCardContent.append(CommentTextContent);
+        if(data.urls){
+        const ImageContainer = document.createElement('div');
+        ImageContainer.classList = "mt-2";
+
+        for(let img in data.urls){
+            console.log(data.urls[img]);
+           const image = document.createElement('img');
+           image.src = data.urls[img]
+           ImageContainer.append(image);
+
+        }
+
+        CommentCardContent.append(ImageContainer);
+
+        }
+        CommentCard.append(CommentCardContent);
+        CommentContainer.append(imageTag);
+        CommentContainer.append(CommentCard);
+        CommentContainer1.append(CommentContainer);
+
+<!--        Reply and Like -->
+        const ReplyLikeDiv = document.createElement('div');
+        ReplyLikeDiv.classList = "w-full pl-14";
+        var permission = "{{permission}}";
+        var userRole = "{{user_role}}";
+        let ReplyDialogBox;
+        if( (permission === "WRITE" && userRole === "MEMBER") || currentUser === postUser ){
+            const LikeReplyButtonDiv = document.createElement('div');
+            LikeReplyButtonDiv.classList = "w-full";
+            const LikeButton = document.createElement('button');
+            LikeButton.classList = "like-button relative focus:outline-red";
+            LikeButton.type = "button";
+            LikeButton.onclick = (event) => postLike(data["comment_urn"],event);
+            const LikeIcon = `<svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>`;
+
+            LikeButton.innerHTML = LikeIcon;
+            const ReplyButton = document.createElement('button');
+            ReplyButton.classList = "reply-button";
+            ReplyButton.textContent = "Reply";
+            const seperator = document.createTextNode(" | ");
+
+
+            LikeReplyButtonDiv.append(LikeButton);
+            LikeReplyButtonDiv.append(seperator);
+            LikeReplyButtonDiv.append(ReplyButton);
+            ReplyLikeDiv.append(LikeReplyButtonDiv);
+
+            ReplyDialogBox = document.createElement('div');
+            ReplyDialogBox.classList = "reply-dialog hidden mt-4 w-full border flex gap-2 items-start rounded-lg p-3 mb-4";
+            const ReplyImageTag = document.createElement('img');
+            console.log(ProfileImage);
+            if(ProfileImage !== "None"){
+                let encodedProfileImage = decodeURIComponent(ProfileImage.replace(/&amp;/g, '&'));
+                ReplyImageTag.src = encodedProfileImage;
+            }else{
+                ReplyImageTag.src = "{% static 'image/default.png' %}";
+            }
+            ReplyImageTag.classList = "h-12 w-12 rounded-full object-cover";
+            const ReplyTextAreaContainer  = document.createElement('div');
+            ReplyTextAreaContainer.classList = "flex-1";
+
+            const ReplyTextArea = document.createElement('textarea');
+            ReplyTextArea.classList = "w-full border rounded-lg bg-gray-100 p-2 outline-none overflow-hidden commentTextarea" ;
+            ReplyTextArea.name = 'reply';
+            ReplyTextArea.placeholder = "Write a reply...";
+            ReplyTextArea.rows = "1";
+            ReplyTextArea.addEventListener('input', autoResize, false);
+
+
+            const ReplySummitButton = document.createElement('button');
+            ReplySummitButton.onclick = (event) => postReply(event,data["comment_urn"]);
+            ReplySummitButton.classList = "submit-reply px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded mr-2";
+            ReplySummitButton.textContent = "Sumbit Reply";
+
+
+
+            ReplyButton.addEventListener("click", function(event) {
+                event.preventDefault();
+                // Hide all other reply dialog boxes
+                const allReplyDialogs = document.querySelectorAll(".reply-dialog");
+                allReplyDialogs.forEach(function(dialog) {
+                    if (dialog !== ReplyDialogBox) {
+                        dialog.classList.add("hidden");
+                        dialog.querySelector("textarea").value = "";
+                    }
+                });
+
+                // Toggle the visibility of the clicked reply dialog
+                ReplyDialogBox.classList.toggle("hidden");
+            });
+
+
+
+            ReplyDialogBox.append(ReplyImageTag);
+            ReplyTextAreaContainer.append(ReplyTextArea);
+            ReplyTextAreaContainer.append(ReplySummitButton);
+            ReplyDialogBox.append(ReplyTextAreaContainer);
+            ReplyLikeDiv.append(ReplyDialogBox);
+        }
+
+        if(data['replies']){
+
+            let replyContainer = document.createElement('div');
+            replyContainer.classList = "mt-4 space-y-4 reply-container";
+            for( r in data['replies']){
+                console.log(data['replies'][r]);
+                replyContainer = renderReply(data['replies'][r],replyContainer,"nested");
+                console.log(1);
+            }
+            ReplyLikeDiv.insertBefore(replyContainer,ReplyDialogBox);
+
+        }
+        console.log(data);
+        console.log(data['next']);
+        if(data['next']){
+            console.log(1);
+            const nextLinkDiv = document.createElement('div');
+            nextLinkDiv.classList = "text-sm p-2";
+            const nextLink = document.createElement('a');
+            nextLink.classList = "text-gray-500 hover:text-gray-600 font-bold cursor-pointer px-2 pl-2";
+            nextLink.setAttribute('data-attribute',data['next']);
+            nextLink.addEventListener('click', (event) => GetReplies(event));
+            nextLink.textContent = "Load More Replies";
+            nextLinkDiv.append(nextLink);
+            ReplyLikeDiv.insertBefore(nextLinkDiv,ReplyDialogBox);
+
+        }
+
+
+
+        CommentContainer1.append(ReplyLikeDiv);
+        if(data['replies']){
+            ParentContainer.append(CommentContainer1);
+        }else{
+            ParentContainer.insertBefore(CommentContainer1,ParentContainer.firstChild);
+
+        }
+
+    }
+
+
+    function renderReply(data, event,type) {
+
+    let parentContainer;
+    let previousElement;
+    let MegaParentContainer;
+    if(type === "pagination"){
+
+        parentContainer = event.parentElement.previousElementSibling
+
+    }
+    else if(type == "nested"){
+
+        parentContainer = event;
+    }
+    else{
+
+        ReplyDialogBox = event.parentElement.parentElement;
+        MegaParentContainer = ReplyDialogBox.parentElement;
+        previousElement = MegaParentContainer.querySelector('.reply-container');
+        console.log(previousElement);
+        if (previousElement) {
+            parentContainer = previousElement;
+        } else {
+            parentContainer = document.createElement('div');
+            parentContainer.classList = "mt-4 space-y-4 reply-container";
+        }
+        console.log(parentContainer);
+    }
+    const CommentContainer1 = document.createElement('div');
+    CommentContainer1.classList = "w-full rounded-lg p-3";
+    const CommentContainer = document.createElement('div');
+    CommentContainer.classList = "w-full flex gap-2";
+
+    // ProfileImage handling
+    var ProfileImage = "{{ picture_url }}";
+    ProfileImage = decodeURIComponent(ProfileImage.replace(/&amp;/g, '&'));
+    const imageTag = document.createElement('img');
+    imageTag.classList = "h-12 w-12 rounded-full object-cover";
+
+    if (data['profile_image']) {
+
+        imageTag.src = data['profile_image'] ;
+    }else if(ProfileImage !== "None" && ProfileImage){
+        ProfileImage = decodeURIComponent(ProfileImage.replace(/&amp;/g, '&'));
+        imageTag.src = ProfileImage;
+    }
+    else {
+        imageTag.src = "{% static 'image/default.png' %}";
+    }
+
+    const CommentCard = document.createElement('div');
+    CommentCard.classList = "flex flex-1 items-start bg-gray-50 space-x-4";
+
+    const CommentCardContent = document.createElement('div');
+    CommentCardContent.classList = "w-full border rounded-lg px-2 py-2";
+
+    const CommentContent = document.createElement('div');
+    CommentContent.classList = "flex items-center justify-between";
+
+    const nameTag = document.createElement('p');
+    nameTag.classList = "font-bold";
+    nameTag.textContent = data['name'];
+
+    CommentContent.append(nameTag);
+    console.log(data.urls);
+
+
+    // currentUser and postUser handling
+    var currentUser = "{{ request.user }}";
+    var postUser = "{{ post.user }}";
+
+
+    var currentUser = "{{request.user}}"
+        var postUser = "{{post.user}}"
+
+        if(currentUser === postUser){
+            const dropdown = document.createElement('div');
+            dropdown.classList = "mx-4 relative cursor-pointer";
+            const icon = document.createElement('i');
+            icon.classList = "fas fa-ellipsis-h delete-dropdownButton";
+            const dropdownlist = document.createElement('ul');
+            dropdownlist.classList = "absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown";
+            dropdownlist.style.display = "none";
+            const listItem = document.createElement('li');
+            listItem.classList = "relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors";
+            const anchorTag = document.createElement('a');
+            anchorTag.onclick = ()=>delete_post_comments(anchorTag);
+            anchorTag.classList = "ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline";
+            anchorTag.textContent = "Delete Comment"
+            const deleteIcon =  document.createElement('i');
+            deleteIcon.classList = "fa-solid fa-trash mx-2";
+
+            icon.addEventListener('click',function(){
+
+                if(dropdownlist.style.display == "block"){
+                    dropdownlist.style.display = "none"
+                }
+                else{
+                    dropdownlist.style.display = "block"
+                }
+            })
+            anchorTag.setAttribute("data-comment-urn",data['comment_urn']);
+            anchorTag.setAttribute("data-actor",data['user_id']);
+            anchorTag.onclick = ()=> delete_post_comments(anchorTag)
+            anchorTag.append(deleteIcon);
+            listItem.append(anchorTag);
+            dropdownlist.append(listItem);
+            dropdown.append(icon);
+            dropdown.append(dropdownlist);
+            CommentContent.append(dropdown);
+
+        }
+
+
+    CommentCardContent.append(CommentContent);
+
+    const CommentTextContent = document.createElement('p');
+    CommentTextContent.classList = "text-gray-700";
+    CommentTextContent.textContent = data["text"];
+    CommentCardContent.append(CommentTextContent);
+    if(data.urls){
+        const ImageContainer = document.createElement('div');
+        ImageContainer.classList = "mt-2";
+
+        for(let img in data.urls){
+            console.log(data.urls[img]);
+           const image = document.createElement('img');
+           image.src = data.urls[img]
+           ImageContainer.append(image);
+
+        }
+
+        CommentCardContent.append(ImageContainer);
+
+    }
+
+    CommentCard.append(CommentCardContent);
+    CommentContainer.append(imageTag);
+    CommentContainer.append(CommentCard);
+    CommentContainer1.append(CommentContainer);
+
+    // Reply and Like section
+    const ReplyLikeDiv = document.createElement('div');
+    ReplyLikeDiv.classList = "w-full pl-14";
+
+    // permission and userRole handling
+    var permission = "{{ permission }}";
+    var userRole = "{{ user_role }}";
+    if( (permission === "WRITE" && userRole === "MEMBER") || currentUser === postUser ){
+        const LikeReplyButtonDiv = document.createElement('div');
+        LikeReplyButtonDiv.classList = "w-full";
+        const LikeButton = document.createElement('button');
+        LikeButton.classList = "like-button relative focus:outline-red";
+        LikeButton.type = "button";
+        LikeButton.onclick = (event) => postLike(data["comment_urn"],event);
+        const LikeIcon = `<svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>`;
+
+        LikeButton.innerHTML = LikeIcon;
+
+
+
+        LikeReplyButtonDiv.append(LikeButton);
+        ReplyLikeDiv.append(LikeReplyButtonDiv);
+
+    }
+
+
+    CommentContainer1.append(ReplyLikeDiv);
+
+    parentContainer.append(CommentContainer1);
+
+    if(type === "nested"){
+        return parentContainer;
+    }
+
+    if (type !== "pagination" && !previousElement) {
+        MegaParentContainer.insertBefore(parentContainer, ReplyDialogBox);
+    }
+}
+
+
+
+
+    function showSpinner(button) {
+        const spinner = document.createElement('div');
+        spinner.className = 'spinner';
+        button.innerHTML = ''; // Remove button text
+        button.appendChild(spinner);
+        button.disabled = true;
+    }
+
+    // Function to hide the spinner and set the button text
+    function hideSpinner(button,text) {
+        console.log(button);
+        console.log(text);
+        button.innerHTML = text;
+        button.disabled = false;
+    }
+
+
+    async function postComment(event){
+        const post_id = document.getElementById('post_id').value;
+        const page_id = document.getElementById('page_id').value;
+        const searchParams = new URLSearchParams(window.location.search);
+        const provider_name = searchParams.get('page_name');
+        const csrfToken = getCSRFToken();
+         const commentInput = event.target.previousElementSibling
+        const comment = commentInput.value;
+
+        if(comment === ""){
+            return ;
+        }
+        showSpinner(event.target);
+        const json = { 'text': comment  }
+        try {
+        const res = await fetch(
+            `/posts/comment/${post_id}/${page_id}?page_name=${provider_name}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify(json)
+            }
+        );
+        const data = await res.json();
+
+        hideSpinner(event.target, "Post");
+        renderComment(data['comment_response']);
+        commentInput.value = "";
+        } catch (error) {
+            // Handle errors here
+            console.error('Error:', error);
+            hideSpinner(event.target, "Post");
+        }
+
+
+
+
+    }
+    async function postReply(event, comment_urn) {
+
+    const post_id = document.getElementById('post_id').value;
+    const page_id = document.getElementById('page_id').value;
+    const searchParams = new URLSearchParams(window.location.search);
+    const provider_name = searchParams.get('page_name');
+    const csrfToken = getCSRFToken(); // Make sure this function is defined
+    const commentInput = event.target.previousElementSibling
+    const comment = commentInput.value;
+
+    if (comment === "") {
+        return;
+    }
+
+    // Show a loading spinner (assuming you have the showSpinner function defined)
+    showSpinner(event.target);
+
+    const json = { 'text': comment, "urn": comment_urn };
+
+    try {
+        const res = await fetch(
+            `/posts/reply/${post_id}/${page_id}?page_name=${provider_name}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify(json)
+            }
+        );
+        const data = await res.json();
+
+
+        // Hide the loading spinner and render the reply
+        hideSpinner(event.target, "Post"); // Assuming you have the hideSpinner function defined
+        renderReply(data['comment_response'], event.target); // Assuming renderReply is defined
+        commentInput.value = "";
+    } catch (error) {
+        // Handle errors here
+        console.error('Error:', error);
+        hideSpinner(event.target, "Reply Post"); // Hide the spinner on error
+    }
+}
+
+
+
+
+    async function GetReplies(event) {
+
+    const post_id = document.getElementById('post_id').value;
+    const page_id = document.getElementById('page_id').value;
+    const searchParams = new URLSearchParams(window.location.search);
+    const provider_name = searchParams.get('page_name');
+    const pagination_link = event.target.getAttribute("data-attribute")
+    let encodeURL = encodeURIComponent(pagination_link);
+    console.log(encodeURL);
+
+    // Show a loading spinner (assuming you have the showSpinner function defined)
+    event.target.parentElement.classList = "flex justify-center";
+    showSpinner(event.target);
+
+    try {
+        const res = await fetch(
+            `/posts/reply/paginate/${post_id}/${page_id}?page_name=${provider_name}&pagination_link=${encodeURL}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        const data = await res.json();
+        console.log(data);
+        response = data['comment_response']
+        event.target.parentElement.classList.remove("flex");
+        event.target.parentElement.classList.remove("justify-center");
+        hideSpinner(event.target, "Load More Replies");
+        for(d in response){
+            renderReply(response[d],event.target,"pagination");
+        }
+
+       if(data['next']){
+            event.target.setAttribute('data-attribute',data['next'])
+        }else{
+            event.target.parentElement.style.display = "none";
+        }
+
+        // Hide the loading spinner and render the reply
+
+    } catch (error) {
+        // Handle errors here
+        hideSpinner(event.target, "Load More Replies");
+        console.error('Error:', error);
+    }
+}
+
+
+
+async function GetComments(event) {
+
+    const post_id = document.getElementById('post_id').value;
+    const page_id = document.getElementById('page_id').value;
+    const searchParams = new URLSearchParams(window.location.search);
+    const provider_name = searchParams.get('page_name');
+    const pagination_link = event.target.getAttribute("data-attribute")
+    let encodeURL = encodeURIComponent(pagination_link);
+    console.log(encodeURL);
+
+    // Show a loading spinner (assuming you have the showSpinner function defined)
+    event.target.parentElement.classList = "flex justify-center";
+    showSpinner(event.target);
+
+    try {
+        const res = await fetch(
+            `/posts/comment/paginate/${post_id}/${page_id}?page_name=${provider_name}&pagination_link=${encodeURL}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        const data = await res.json();
+        console.log(data);
+        response = data['comment_response']
+        event.target.parentElement.classList.remove("flex");
+        event.target.parentElement.classList.remove("justify-center");
+        hideSpinner(event.target, "View More Comments");
+        for(d in response){
+            renderComment(response[d]);
+        }
+        if(data['next']){
+            event.target.setAttribute('data-attribute',data['next'])
+        }else{
+            event.target.parentElement.style.display = "none";
+        }
+
+        // Hide the loading spinner and render the reply
+
+    } catch (error) {
+        // Handle errors here
+        hideSpinner(event.target, "Load Previous Reply");
+        console.error('Error:', error);
+    }
+}
+
 
 
 

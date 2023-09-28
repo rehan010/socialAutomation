@@ -28,10 +28,10 @@ app.conf.beat_schedule = {
         'schedule': crontab(),  # Example: Run the task every 15 minutes
     },
 
-    'gathering post data':{
-        'task': 'app.tasks.task_two',
-        'schedule': crontab(minute='0',hour='*/1') #run after each hour
+    # 'gathering post data':{
+    #     'task': 'app.tasks.task_two',
+        # 'schedule': crontab(minute='0',hour='*/1') #run after each hour
         # 'schedule': crontab() #run after each hour
-    }
+    # }
 
 }

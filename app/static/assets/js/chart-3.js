@@ -4,19 +4,27 @@
 var ctx3 = document.getElementById("like-chart-line").getContext("2d");
 
 
-var gradientStroke1 = ctx2.createLinearGradient(0, 230, 0, 50);
+
+var gradientStroke1 = ctx3.createLinearGradient(0, 230, 0, 50);
 
 gradientStroke1.addColorStop(1, "rgb(70,130,180)");
 gradientStroke1.addColorStop(0.2, "rgba(72,72,176,0.0)");
 gradientStroke1.addColorStop(0, "rgb(100,149,237)"); //purple colors
 
-var gradientStroke2 = ctx2.createLinearGradient(0, 230, 0, 50);
 
-gradientStroke2.addColorStop(1, "rgb(135,206,250)");
-gradientStroke2.addColorStop(0.2, "rgb(0,191,255)");
-gradientStroke2.addColorStop(0, "rgba(20,23,0,0)"); //blue colors
+var gradientStroke2 = ctx3.createLinearGradient(0, 230, 0, 50);
 
-var gradientStroke3 = ctx2.createLinearGradient(0, 230, 0, 50);
+
+gradientStroke2.addColorStop(0, "rgba(59, 89, 152, 0.4)"); // Facebook Blue
+gradientStroke2.addColorStop(1, "rgba(0, 0, 0, 0)");
+gradientStroke2.addColorStop(0, "rgba(0, 119, 181, 0)");// Transparent
+
+var gradientStroke3 = ctx3.createLinearGradient(0, 230, 0, 50);
+
+gradientStroke3.addColorStop(1, "rgba(203,12,159,0.2)");
+gradientStroke3.addColorStop(0.2, "rgba(72,72,176,0.0)");
+gradientStroke3.addColorStop(0, "rgba(203,12,159,0)"); //purple colors
+
 
 gradientStroke3.addColorStop(1, "rgb(219,112,147)");
 gradientStroke3.addColorStop(0.2, "rgb(221,160,221)");
@@ -197,7 +205,7 @@ async function fetchLikeGraph(start = getFormattedDate(2) , end = getFormattedDa
 
 
 }
-fetchLikeGraph();
+
 
 
 

@@ -16,7 +16,8 @@ from allauth.socialaccount.models import SocialToken
 from django.shortcuts import redirect
 import requests
 from django.http import JsonResponse
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urlparse,parse_qs, urlencode
+
 from django.db.models import Q ,Sum
 
 import json
@@ -183,7 +184,7 @@ def fb_socialactions(post_urn, access_token, page_id):
     except Exception as e:
         e
 
-    url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from,reactions,attachment,user_likes,comments.limit(1){{message,created_time,from,reactions,attachment,user_likes,comments.limit(1){{message, created_time,from, reactions, attachment,user_likes}}}}&limit=5"
+    url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from,reactions,attachment,user_likes,comments.order(reverse_chronological).limit(1){{message,created_time,from,reactions,attachment,user_likes,comments{{message, created_time,from, reactions, attachment,user_likes}}}}&order=reverse_chronological&limit=5"
 
     #     comments{message,created_time,from}  field to get replies
     headers = {
@@ -195,12 +196,12 @@ def fb_socialactions(post_urn, access_token, page_id):
     elements = response_json2.get("data")
     next = None
     if len(elements) > 0:
-        next = response_json2['paging'].get('next')
+        next = response_json2.get('paging',{}).get('next')
 
     data = fb_social_action_data_organizer(elements, headers)
 
 
-    return t_likes, t_comments, data, next, profile_picture_url
+    return t_likes, t_comments, data, profile_picture_url,next
 
 
 def insta_social_actions_data_organizer(elements, headers):
@@ -215,11 +216,8 @@ def insta_social_actions_data_organizer(elements, headers):
                 actor = element.get('user', {}).get('id')
 
                 if actor:
-
                     url = f"https://graph.facebook.com/v17.0/{actor}?fields=profile_picture_url"
-
                     response_2 = requests.get(url=url, headers=headers)
-
                     response_json_2 = response_2.json()
 
                     if "profile_picture_url" in response_json_2:
@@ -233,7 +231,7 @@ def insta_social_actions_data_organizer(elements, headers):
 
                 if element.get('replies'):
                     replies = element.get('replies').get('data')
-                    obj['next'] = element.get('replies')['paging'].get('next')
+                    obj['next'] = element.get('replies').get('paging',{}).get('next')
                     obj['replies'] = insta_social_actions_data_organizer(replies, headers)
 
                 data.append(obj)
@@ -269,7 +267,7 @@ def insta_socialactions(post_urn, access_token, user_id):
     form.post_comments = t_comments
     form.save()
 
-    url = f"https://graph.facebook.com/v17.0/{post_urn}/comments/?fields=from,text,like_count,media,user,replies.limit(1){{like_count,from,text,user}}&limit=5"
+    url = f"https://graph.facebook.com/v17.0/{post_urn}/comments/?fields=from,text,like_count,media,user,replies.order(reverse_chronological).limit(1){{like_count,from,text,user}}&order=reverse_chronological&limit=5"
 
     response = requests.get(url=url, headers=headers)
 
@@ -278,7 +276,7 @@ def insta_socialactions(post_urn, access_token, user_id):
     elements = response_json_1.get("data")
     next = None
     if len(elements) > 0:
-        next = response_json_1['paging'].get('next')
+        next = response_json_1.get('paging',{}).get('next')
     data = insta_social_actions_data_organizer(elements, headers)
 
     return t_likes, t_comments, data, profile_picture_url, next
@@ -842,7 +840,6 @@ def get_instagram_image_id(image, page_id, access_token):
     data_post = {
         "image_url": image.image_url
     }
-    # print(data_post)
 
     # data_post = {
     #     "image_url":"https://messangel.caansoft.com/uploads/social_prefrences/image/1691750723366-homepage-seen-computer-screen_CvuwFmi.jpg"
@@ -1125,16 +1122,62 @@ def post_nested_comment_linkedin(social, access_token, post_urn, reply, comment_
         'Authorization': f'Bearer {access_token}',
         'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4552:u=55:x=1:i=1689679535:t=1689752271:v=2:sig=AQHrXpQbD6C1r_eMUoL9o6xmwpPa1AEs"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=55:x=1:i=1689314606:t=1689334414:v=2:sig=AQHSFW1fjeXULNO8CiDc8_rZkoMXJMK3"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
     }
-
+    comment_response = dict()
     response = requests.request("POST", url, headers=headers, data=payload)
     if response.status_code == 201:
-        response = response.json()
-        # print("Replied to Comment successfully.")
-    else:
-        pass
-        # print("Failed to reply.")
+        response2 = response.json()
+        actor = response2['created']['actor']
+        prefix, value = actor.rsplit(':', 1)
+        if prefix == 'urn:li:organization':
+            url = "https://api.linkedin.com/v2/organizations/" + value + "?projection=(localizedName,logoV2(original~:playableStreams))"
 
-    return response
+            payload = {}
+            headers = {
+                'Linkedin-Version': '202304',
+                'X-Restli-Protocol-Version': '2.0.0',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + access_token,
+                'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689588794:t=1689613491:v=2:sig=AQEuUJEbIsk57LyEy9HwFJQrEu7ayH9n"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689587318:t=1689613491:v=2:sig=AQGp8c3I7u6ZkNJN7oSt0OLu8JRVv3WX"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=TB01:s=T:r=T:a=T:p=T:g=5807:u=1:x=1:i=1689586527:t=1689672927:v=2:sig=AQFFnf4QlGIIpq60wKa97GoDCwxO3u-D"'
+            }
+
+            response = requests.request("GET", url, headers=headers, data=payload)
+            response = response.json()
+            name = response['localizedName']
+        else:
+            url = "https://api.linkedin.com/v2/people/(id:" + value + ")?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))"
+
+            payload = {}
+            headers = {
+                'LinkedIn-Version': '202304',
+                'X-Restli-Protocol-Version': '2.0.0',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + access_token,
+                'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=53:x=1:i=1689164560:t=1689211004:v=2:sig=AQFTaVIUWiQvbWucAVvFtIY0AKWyBlpL"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=OB01:s=O:r=O:a=O:p=O:g=5300:u=1:x=1:i=1689164320:t=1689250720:v=2:sig=AQG5yzvdOIb42jeJLKgJispG3AzPSMcJ"'
+            }
+
+            response = requests.request("GET", url, headers=headers, data=payload)
+            response = response.json()
+
+            name = response['firstName']["localized"]['en_US'] + " " + response['lastName']["localized"]['en_US']
+
+        comment_response['name'] = name
+        comment_response['user_id'] = response2['actor']
+        # comment_response['created_time'] = response2['created_time']
+        comment_response['text'] = response2['message']['text']
+        comment_response['comment_urn'] = response2['$URN']
+        comment_response['comment_id'] = response2['id']
+
+        try:
+            comment_response['profile_image'] = response['profilePicture']['displayImage~']['elements'][3]['identifiers'][0]['identifier']
+        except Exception as e:
+            e
+
+        #
+        return comment_response
+    else:
+        return "error"
+
+
 
 
 def post_nested_comment_media_linkedin(social, access_token, post_urn, reply, comment_urn, media, org_id):
@@ -1194,10 +1237,79 @@ def post_nested_comment_media_linkedin(social, access_token, post_urn, reply, co
 
         return response
 
+def ugcpost_socialactions_nested_comments_data_orgainzer(elements,access_token):
+    replies = []
+    if len(elements) > 0:
+        for element in elements:
+            urls = []
+            if 'content' in element:
+                for content in element['content']:
+                    if 'url' in content:
+                        urls.append(content['url'])
+            if 'likesSummary' in element:
+                liked = element['likesSummary']['likedByCurrentUser']
+            else:
+                liked = None
+            text = element['message']['text']
+            actor = element['actor']
+            comment_urn = element['$URN']
+            comment_id = element['id']
+            prefix, value = actor.rsplit(':', 1)
+            if prefix == 'urn:li:organization':
+                url = "https://api.linkedin.com/v2/organizations/" + value + "?projection=(localizedName,logoV2(original~:playableStreams))"
+
+                payload = {}
+                headers = {
+                    'Linkedin-Version': '202304',
+                    'X-Restli-Protocol-Version': '2.0.0',
+                    'Authorization': 'Bearer ' + access_token,
+                    'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689588794:t=1689613491:v=2:sig=AQEuUJEbIsk57LyEy9HwFJQrEu7ayH9n"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689587318:t=1689613491:v=2:sig=AQGp8c3I7u6ZkNJN7oSt0OLu8JRVv3WX"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=TB01:s=T:r=T:a=T:p=T:g=5807:u=1:x=1:i=1689586527:t=1689672927:v=2:sig=AQFFnf4QlGIIpq60wKa97GoDCwxO3u-D"'
+                }
+
+                response = requests.request("GET", url, headers=headers, data=payload)
+                response = response.json()
+                if 'logoV2' in response:
+                    display_image = response['logoV2']['original~']['elements'][0]['identifiers'][0]['identifier']
+                else:
+                    display_image = ''
+                name = response['localizedName']
+                obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn,
+                       "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
+                replies.append(obj)
+            else:
+                url = "https://api.linkedin.com/v2/people/(id:" + value + ")?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))"
+
+                payload = {}
+                headers = {
+                    'LinkedIn-Version': '202304',
+                    'X-Restli-Protocol-Version': '2.0.0',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + access_token,
+                    'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=53:x=1:i=1689164560:t=1689211004:v=2:sig=AQFTaVIUWiQvbWucAVvFtIY0AKWyBlpL"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=OB01:s=O:r=O:a=O:p=O:g=5300:u=1:x=1:i=1689164320:t=1689250720:v=2:sig=AQG5yzvdOIb42jeJLKgJispG3AzPSMcJ"'
+                }
+
+                response = requests.request("GET", url, headers=headers, data=payload)
+                response = response.json()
+                if 'profilePicture' in response:
+                    display_image = response['profilePicture']['displayImage~']['elements'][0]['identifiers'][0][
+                        'identifier']
+                else:
+                    display_image = ''
+                name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized'][
+                    'en_US']
+
+                obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn,
+                       "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
+                replies.append(obj)
+    else:
+        # print("No Replies on Comments")
+        replies = []
+    return replies
+
 
 def get_nested_comments(access_token, comment_urn):
     encoded_urn = quote(comment_urn, safe='')
-    url = "https://api.linkedin.com/rest/socialActions/" + encoded_urn + "/comments"
+    url = "https://api.linkedin.com/rest/socialActions/" + encoded_urn + "/comments?start=0&count=1"
     payload = {}
     headers = {
         'Linkedin-Version': '202304',
@@ -1206,81 +1318,24 @@ def get_nested_comments(access_token, comment_urn):
         'Authorization': f'Bearer {access_token}',
         'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4552:u=55:x=1:i=1689679535:t=1689752271:v=2:sig=AQHrXpQbD6C1r_eMUoL9o6xmwpPa1AEs"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=55:x=1:i=1689314606:t=1689334414:v=2:sig=AQHSFW1fjeXULNO8CiDc8_rZkoMXJMK3"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
     }
+    replies = []
+    next = None
     response = requests.request("GET", url, headers=headers, data=payload)
     if response.status_code == 200:
         response = response.json()
-        replies = []
-        if len(response['elements']) > 0:
-            for element in response['elements']:
-                urls = []
-                if 'content' in element:
-                    for content in element['content']:
-                        if 'url' in content:
-                            urls.append(content['url'])
-                if 'likesSummary' in element:
-                    liked = element['likesSummary']['likedByCurrentUser']
-                else:
-                    liked = None
-                text = element['message']['text']
-                actor = element['actor']
-                comment_urn = element['$URN']
-                comment_id = element['id']
-                prefix, value = actor.rsplit(':', 1)
-                if prefix == 'urn:li:organization':
-                    url = "https://api.linkedin.com/v2/organizations/" + value + "?projection=(localizedName,logoV2(original~:playableStreams))"
+        elements = response['elements']
 
-                    payload = {}
-                    headers = {
-                        'Linkedin-Version': '202304',
-                        'X-Restli-Protocol-Version': '2.0.0',
-                        'Authorization': 'Bearer ' + access_token,
-                        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689588794:t=1689613491:v=2:sig=AQEuUJEbIsk57LyEy9HwFJQrEu7ayH9n"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689587318:t=1689613491:v=2:sig=AQGp8c3I7u6ZkNJN7oSt0OLu8JRVv3WX"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=TB01:s=T:r=T:a=T:p=T:g=5807:u=1:x=1:i=1689586527:t=1689672927:v=2:sig=AQFFnf4QlGIIpq60wKa97GoDCwxO3u-D"'
-                    }
+        replies = ugcpost_socialactions_nested_comments_data_orgainzer(elements,access_token)
 
-                    response = requests.request("GET", url, headers=headers, data=payload)
-                    response = response.json()
-                    if 'logoV2' in response:
-                        display_image = response['logoV2']['original~']['elements'][0]['identifiers'][0]['identifier']
-                    else:
-                        display_image = ''
-                    name = response['localizedName']
-                    obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn,
-                           "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
-                    replies.append(obj)
-                else:
-                    url = "https://api.linkedin.com/v2/people/(id:" + value + ")?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))"
-
-                    payload = {}
-                    headers = {
-                        'LinkedIn-Version': '202304',
-                        'X-Restli-Protocol-Version': '2.0.0',
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + access_token,
-                        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=53:x=1:i=1689164560:t=1689211004:v=2:sig=AQFTaVIUWiQvbWucAVvFtIY0AKWyBlpL"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=OB01:s=O:r=O:a=O:p=O:g=5300:u=1:x=1:i=1689164320:t=1689250720:v=2:sig=AQG5yzvdOIb42jeJLKgJispG3AzPSMcJ"'
-                    }
-
-                    response = requests.request("GET", url, headers=headers, data=payload)
-                    response = response.json()
-                    if 'profilePicture' in response:
-                        display_image = response['profilePicture']['displayImage~']['elements'][0]['identifiers'][0][
-                            'identifier']
-                    else:
-                        display_image = ''
-                    name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized'][
-                        'en_US']
-
-                    obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn,
-                           "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
-                    replies.append(obj)
-        else:
-            # print("No Replies on Comments")
-            obj = {}
-            replies.append(obj)
-
+        link = response.get('paging', {}).get("links")
+        if link and len(link) > 0:
+            for l in link:
+                if l.get('rel') == "next":
+                    next = l.get('href')
     else:
         # print("Fetching Replies Failed")
         pass
-    return replies
+    return replies , next
 
 
 def create_comment_media_linkedin(org_id, access_token, post_urn, comment, social, media):
@@ -1490,15 +1545,156 @@ def create_comment(access_token, post_urn, comment, social):
     }
 
     response = requests.post(url, headers=headers, json=data)
-
+    comment_response = dict()
     if response.status_code == 201:
-        response = response.json()
+        response2 = response.json()
+
+        actor = response2['created']['actor']
+        prefix, value = actor.rsplit(':', 1)
+        if prefix == 'urn:li:organization':
+            url = "https://api.linkedin.com/v2/organizations/" + value + "?projection=(localizedName,logoV2(original~:playableStreams))"
+
+            payload = {}
+            headers = {
+                'Linkedin-Version': '202304',
+                'X-Restli-Protocol-Version': '2.0.0',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + access_token,
+                'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689588794:t=1689613491:v=2:sig=AQEuUJEbIsk57LyEy9HwFJQrEu7ayH9n"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689587318:t=1689613491:v=2:sig=AQGp8c3I7u6ZkNJN7oSt0OLu8JRVv3WX"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=TB01:s=T:r=T:a=T:p=T:g=5807:u=1:x=1:i=1689586527:t=1689672927:v=2:sig=AQFFnf4QlGIIpq60wKa97GoDCwxO3u-D"'
+            }
+
+            response = requests.request("GET", url, headers=headers, data=payload)
+            response = response.json()
+            name = response['localizedName']
+        else:
+            url = "https://api.linkedin.com/v2/people/(id:" + value + ")?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))"
+
+            payload = {}
+            headers = {
+                'LinkedIn-Version': '202304',
+                'X-Restli-Protocol-Version': '2.0.0',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + access_token,
+                'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=53:x=1:i=1689164560:t=1689211004:v=2:sig=AQFTaVIUWiQvbWucAVvFtIY0AKWyBlpL"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=OB01:s=O:r=O:a=O:p=O:g=5300:u=1:x=1:i=1689164320:t=1689250720:v=2:sig=AQG5yzvdOIb42jeJLKgJispG3AzPSMcJ"'
+            }
+
+            response = requests.request("GET", url, headers=headers, data=payload)
+            response = response.json()
+
+            name = response['firstName']["localized"]['en_US'] + " " + response['lastName']["localized"]['en_US']
+
+
+        comment_response['name'] = name
+        comment_response['user_id'] = response2['actor']
+        # comment_response['created_time'] = response2['created_time']
+        comment_response['text'] = response2['message']['text']
+        comment_response['comment_urn'] = response2['$URN']
+        comment_response['comment_id'] = response2['id']
+
+        try:
+            comment_response['profile_image'] = response['profilePicture']['displayImage~']['elements'][3]['identifiers'][0]['identifier']
+        except Exception as e:
+            e
+
+
+
         # print("Comment created successfully.")
         # print(response['$URN'])
     # else:
     #     print("Failed to create comment.")
     #     print(response.json())
-    return response
+        return comment_response
+    else:
+        return "error"
+
+
+def ugcpost_socialactions_comment_data_organizer(elements,access_token_string):
+    data = []
+    next = None
+    for element in elements:
+        urls = []
+        if 'content' in element:
+            for content in element['content']:
+                if 'url' in content:
+                    urls.append(content['url'])
+        actor = element.get('actor')
+        comment_urn = element.get('$URN')
+        comment_id = element.get('id')
+        if 'likesSummary' in element:
+            liked = element['likesSummary']['likedByCurrentUser']
+        else:
+            liked = None
+        if comment_urn:
+            result = get_nested_comments(access_token_string, comment_urn)
+            replies = result[0]
+            next = result[1]
+
+        else:
+            replies = None
+        texts = element.get('message', {}).get('text')
+        if elements and len(elements) > 0:
+            prefix, value = actor.rsplit(':', 1)
+            if prefix == 'urn:li:organization':
+                url = "https://api.linkedin.com/v2/organizations/" + value + "?projection=(localizedName,logoV2(original~:playableStreams))"
+
+                payload = {}
+                headers = {
+                    'Linkedin-Version': '202304',
+                    'X-Restli-Protocol-Version': '2.0.0',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + access_token_string,
+                    'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689588794:t=1689613491:v=2:sig=AQEuUJEbIsk57LyEy9HwFJQrEu7ayH9n"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689587318:t=1689613491:v=2:sig=AQGp8c3I7u6ZkNJN7oSt0OLu8JRVv3WX"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=TB01:s=T:r=T:a=T:p=T:g=5807:u=1:x=1:i=1689586527:t=1689672927:v=2:sig=AQFFnf4QlGIIpq60wKa97GoDCwxO3u-D"'
+                }
+
+                response = requests.request("GET", url, headers=headers, data=payload)
+                response = response.json()
+                if 'logoV2' in response:
+                    display_image = response['logoV2']['original~']['elements'][0]['identifiers'][0]['identifier']
+                else:
+                    display_image = ''
+                name = response['localizedName']
+                obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
+                       "comment_urn": comment_urn, 'liked': liked, "comment_id": comment_id, "actor": actor}
+                obj['replies'] = replies
+                obj['next'] = next
+
+                data.append(obj)
+            else:
+                url = "https://api.linkedin.com/v2/people/(id:" + value + ")?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))"
+
+                payload = {}
+                headers = {
+                    'LinkedIn-Version': '202304',
+                    'X-Restli-Protocol-Version': '2.0.0',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + access_token_string,
+                    'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=53:x=1:i=1689164560:t=1689211004:v=2:sig=AQFTaVIUWiQvbWucAVvFtIY0AKWyBlpL"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=OB01:s=O:r=O:a=O:p=O:g=5300:u=1:x=1:i=1689164320:t=1689250720:v=2:sig=AQG5yzvdOIb42jeJLKgJispG3AzPSMcJ"'
+                }
+
+                response = requests.request("GET", url, headers=headers, data=payload)
+                response = response.json()
+                if 'profilePicture' in response:
+                    display_image = response['profilePicture']['displayImage~']['elements'][0]['identifiers'][0][
+                        'identifier']
+                else:
+                    display_image = ''
+                name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized'][
+                    'en_US']
+
+                obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
+                       "comment_urn": comment_urn, 'liked': liked, "comment_id": comment_id, "actor": actor}
+                obj['replies'] = replies
+                obj['next'] = next
+                data.append(obj)
+        else:
+            obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", 'liked': False,
+                   "comment_id": "", "actor": ""}
+            replies = None
+            obj['replies'] = replies
+            obj['next'] = next
+            data.append(obj)
+    return data
+
 
 
 def ugcpost_socialactions(urn, access_token_string, linkedin_post):
@@ -1523,8 +1719,9 @@ def ugcpost_socialactions(urn, access_token_string, linkedin_post):
     form.post_likes = t_likes
     form.post_comments = t_comments
     form.save()
+    next = None
     if linkedin_post.comment_check:
-        url = "https://api.linkedin.com/v2/socialActions/" + encoded_urn + "/comments"
+        url = "https://api.linkedin.com/v2/socialActions/" + encoded_urn + "/comments?start=0&count=5"
 
         payload = {}
         headers = {
@@ -1536,92 +1733,24 @@ def ugcpost_socialactions(urn, access_token_string, linkedin_post):
 
         response = requests.request("GET", url, headers=headers, data=payload)
         response_json3 = response.json()
+        link = response_json3.get('paging',{}).get("links")
+        if link and len(link) > 0:
+            for l in link:
+                if l.get('rel') == "next":
+                    next = l.get('href')
+
+
+
         elements = response_json3.get('elements')
-        data = []
-        for element in elements:
-            urls = []
-            if 'content' in element:
-                for content in element['content']:
-                    if 'url' in content:
-                        urls.append(content['url'])
-            actor = element.get('actor')
-            comment_urn = element.get('$URN')
-            comment_id = element.get('id')
-            if 'likesSummary' in element:
-                liked = element['likesSummary']['likedByCurrentUser']
-            else:
-                liked = None
-            if comment_urn:
-                result = get_nested_comments(access_token, comment_urn)
-                replies = result
-            else:
-                replies = None
-            texts = element.get('message', {}).get('text')
-            if elements and len(elements) > 0:
-                prefix, value = actor.rsplit(':', 1)
-                if prefix == 'urn:li:organization':
-                    url = "https://api.linkedin.com/v2/organizations/" + value + "?projection=(localizedName,logoV2(original~:playableStreams))"
-
-                    payload = {}
-                    headers = {
-                        'Linkedin-Version': '202304',
-                        'X-Restli-Protocol-Version': '2.0.0',
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + access_token_string,
-                        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689588794:t=1689613491:v=2:sig=AQEuUJEbIsk57LyEy9HwFJQrEu7ayH9n"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4551:u=55:x=1:i=1689587318:t=1689613491:v=2:sig=AQGp8c3I7u6ZkNJN7oSt0OLu8JRVv3WX"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=TB01:s=T:r=T:a=T:p=T:g=5807:u=1:x=1:i=1689586527:t=1689672927:v=2:sig=AQFFnf4QlGIIpq60wKa97GoDCwxO3u-D"'
-                    }
-
-                    response = requests.request("GET", url, headers=headers, data=payload)
-                    response = response.json()
-                    if 'logoV2' in response:
-                        display_image = response['logoV2']['original~']['elements'][0]['identifiers'][0]['identifier']
-                    else:
-                        display_image = ''
-                    name = response['localizedName']
-                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
-                           "comment_urn": comment_urn, 'liked': liked, "comment_id": comment_id, "actor": actor}
-                    obj['replies'] = replies
-
-                    data.append(obj)
-                else:
-                    url = "https://api.linkedin.com/v2/people/(id:" + value + ")?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))"
-
-                    payload = {}
-                    headers = {
-                        'LinkedIn-Version': '202304',
-                        'X-Restli-Protocol-Version': '2.0.0',
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + access_token_string,
-                        'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4546:u=53:x=1:i=1689164560:t=1689211004:v=2:sig=AQFTaVIUWiQvbWucAVvFtIY0AKWyBlpL"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"; lidc="b=OB01:s=O:r=O:a=O:p=O:g=5300:u=1:x=1:i=1689164320:t=1689250720:v=2:sig=AQG5yzvdOIb42jeJLKgJispG3AzPSMcJ"'
-                    }
-
-                    response = requests.request("GET", url, headers=headers, data=payload)
-                    response = response.json()
-                    if 'profilePicture' in response:
-                        display_image = response['profilePicture']['displayImage~']['elements'][0]['identifiers'][0][
-                            'identifier']
-                    else:
-                        display_image = ''
-                    name = response['firstName']['localized']['en_US'] + " " + response['lastName']['localized'][
-                        'en_US']
-
-                    obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
-                           "comment_urn": comment_urn, 'liked': liked, "comment_id": comment_id, "actor": actor}
-                    obj['replies'] = replies
-                    data.append(obj)
-            else:
-                obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", 'liked': False,
-                       "comment_id": "", "actor": ""}
-                replies = None
-                obj['replies'] = replies
-                data.append(obj)
-        return t_likes, t_comments, data
+        data = ugcpost_socialactions_comment_data_organizer(elements,access_token_string)
+        return t_likes, t_comments, data , next
     else:
         data = []
         obj = {}
         data.append(obj)
 
-    return t_likes, t_comments, data
+    return t_likes, t_comments, data , next
+
 
 
 def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
@@ -2493,6 +2622,7 @@ def get_image_url(file):
     payload = {'base_path': '/social_prefrences/image/',
                'artifect_type': 'image',
                'filename': 'test.png'}
+
     files = [
         ('dataFiles', (file),)
 
@@ -2549,7 +2679,7 @@ def text_post_linkedin(post, access_token_string, org_id):
     return response
 
 
-def meta_comments(urn, text, media, access_token):
+def meta_comments(urn, text, media, access_token,provider_name):
     url = f"https://graph.facebook.com/v17.0/{urn}/comments"
 
     headers = {
@@ -2577,7 +2707,41 @@ def meta_comments(urn, text, media, access_token):
             ]
 
     response = requests.post(url=url, headers=headers, data=data, files=files)
-    return response.json()
+    comment_response = dict()
+    if response.status_code == 200:
+        id = response.json()['id']
+        if provider_name == "facebook":
+
+            url = f"https://graph.facebook.com/v17.0/{id}"
+
+            respone2 = requests.get(url = url, headers=headers)
+
+            if respone2.status_code == 200:
+                response2 = respone2.json()
+                comment_response['name'] = response2['from']['name']
+                comment_response['user_id'] = response2['from']['id']
+                comment_response['created_time'] = response2['created_time']
+                comment_response['text'] = response2['message']
+                comment_response['comment_urn'] = response2['id']
+
+                return comment_response
+        elif provider_name == "instagram":
+            url = f"https://graph.facebook.com/v17.0/{id}?fields=from,text"
+            respone2 = requests.get(url=url, headers=headers)
+
+            if respone2.status_code == 200:
+                response2 = respone2.json()
+                comment_response['name'] = response2['from']['username']
+                comment_response['user_id'] = response2['from']['id']
+                comment_response['text'] = response2['text']
+                comment_response['comment_urn'] = response2['id']
+
+                return comment_response
+
+
+
+    else:
+        return "error"
 
 
 def meta_nested_comment(urn, text, media, access_token, provider_name):
@@ -2588,7 +2752,7 @@ def meta_nested_comment(urn, text, media, access_token, provider_name):
     data = {}
     if text:
         data['message'] = text
-
+    comment_response = dict()
     if provider_name == "facebook":
         url = f"https://graph.facebook.com/{urn}/comments"
         if media and media != '':
@@ -2607,13 +2771,94 @@ def meta_nested_comment(urn, text, media, access_token, provider_name):
 
             else:
                 pass
+        response = requests.post(url=url, headers=headers, data=data, files=files)
+
+        if response.status_code == 200:
+            id = response.json()['id']
+
+            url = f"https://graph.facebook.com/v17.0/{id}"
+
+            respone2 = requests.get(url=url, headers=headers)
+
+            if respone2.status_code == 200:
+                response2 = respone2.json()
+                comment_response['name'] = response2['from']['name']
+                comment_response['user_id'] = response2['from']['id']
+                comment_response['created_time'] = response2['created_time']
+                comment_response['text'] = response2['message']
+                comment_response['comment_urn'] = response2['id']
+
+                return comment_response
 
     elif provider_name == "instagram":
         url = f"https://graph.facebook.com/{urn}/replies"
 
-    response = requests.post(url=url, headers=headers, data=data, files=files)
+        response = requests.post(url=url, headers=headers, data=data, files=files)
+        if response.status_code == 200:
+            id = response.json()['id']
+            url = f"https://graph.facebook.com/v17.0/{id}?fields=from,text"
+            respone2 = requests.get(url=url, headers=headers)
 
-    response_json = response.json()
+            if respone2.status_code == 200:
+                response2 = respone2.json()
+                comment_response['name'] = response2['from']['username']
+                comment_response['user_id'] = response2['from']['id']
+                comment_response['text'] = response2['text']
+                comment_response['comment_urn'] = response2['id']
+
+                return comment_response
+
+
+
+def meta_reply_pagination(pagination,access_token,provider_name):
+
+    parse_url = urlparse(pagination)
+    scheme = parse_url.scheme
+    netloc = parse_url.netloc
+    path = parse_url.path
+    query = parse_url.query
+    query_parameters = parse_qs(query)
+    # query_parameters.pop("limit")
+    query_parameters["limit"] = ["5"]
+    encodedquery = urlencode(query_parameters, doseq=True)
+
+    url = scheme + "://"+ netloc + path + "?" + encodedquery
+
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(url=url,headers=headers)
+    data = "error"
+    if response.status_code == 200:
+        response = response.json()
+        element = response.get('data')
+        data = dict()
+        if provider_name  == "facebook":
+
+            if response['paging'].get('next'):
+                data['next'] = response['paging']['next']
+            else:
+                data['next'] = None
+
+            data['comment_response'] = fb_social_action_data_organizer(element,headers)
+
+        elif provider_name == "instagram":
+            if response.get('paging',{}).get('next'):
+                data['next'] = response['paging']['next']
+            else:
+                data['next'] = None
+            data['comment_response'] = insta_social_actions_data_organizer(element,headers)
+
+    return data
+
+
+
+
+
+
+
+
 
 
 def linkedin_validator(request):
@@ -3041,3 +3286,44 @@ def delete_linkedin_comments(access_token, post_urn, comment_id, actor):
         return 'success'
     else:
         return 'failed'
+
+
+def linkdein_pagination(pagination,access_token, type):
+    parse_url = urlparse(pagination)
+
+    path = parse_url.path
+    query = parse_url.query
+    query_parameters = parse_qs(query)
+    # query_parameters.pop("count")
+    query_parameters['count'] = ['5']
+    encodedquery = urlencode(query_parameters, doseq=True)
+
+    url = "https://api.linkedin.com" + path + "?" + encodedquery
+
+    headers = {
+        'X-Restli-Protocol-Version': '2.0.0',
+        'LinkedIn-Version': '202304',
+        "Authorization": f"Bearer {access_token}",
+    }
+    response = requests.get(url=url,headers=headers)
+    data = "error"
+    if response.status_code == 200:
+        response = response.json()
+        elements = response.get('elements')
+
+        data = dict()
+        link = response.get('paging', {}).get("links")
+        if link and len(link) > 0:
+            for l in link:
+                if l.get('rel') == "next":
+                    data['next'] = l.get('href')
+
+            if not data.get('next'):
+                data['next'] = None
+
+        if type == "comment":
+            data['comment_response'] = ugcpost_socialactions_comment_data_organizer(elements, access_token)
+        elif type == "reply":
+            data['comment_response'] = ugcpost_socialactions_nested_comments_data_orgainzer(elements, access_token)
+
+    return data

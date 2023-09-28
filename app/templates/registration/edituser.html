@@ -103,7 +103,12 @@
                     </div>
                     <div class="text-center my-4">
                         <h5 class="block mb-1 text-xl font-semibold">{{user.first_name}} {{user.last_name}}</h5>
-                        <span class="block mb-0 font-semibold leading-normal text-sm">{{user_role}} @{{user.company}}</span>
+
+                        {% for company in user.company.all %}
+                            <span class="block mb-0 font-semibold leading-normal text-sm">{{user_role}} @{{company.name}}</span>
+                        {% endfor %}
+
+
                     </div>
                 </div>
 
@@ -205,12 +210,15 @@
                             Company
                         </p>
                         <div class="w-4/6">
+
                             <div class="mb-4">
                                     <label for = "{{ form.company.id_for_label}}" class="inline-block mb-2 ml-1 font-bold text-sm text-slate-700">
                                         Company
                                     </label>
-                                    <input type="text" name="company" value="{{user.company}}" for = "{{form.company.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-gray-100 bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all" disabled>
+                                    {% for user in user.company.all %}
 
+                                    <input type="text" name="company" value="{{user.name}}" for = "{{form.company.id_for_label}}" class="focus:shadow-primary-outline text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-gray-100 bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all" disabled>
+                                    {% endfor %}
                             </div>
 
                         </div>

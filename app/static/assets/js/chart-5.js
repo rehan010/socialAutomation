@@ -3,25 +3,30 @@
 
 var ctx5 = document.getElementById("followers-chart-line").getContext("2d");
 
-var gradientStroke1 = ctx2.createLinearGradient(0, 230, 0, 50);
+
+var gradientStroke1 = ctx5.createLinearGradient(0, 230, 0, 50);
+
 
 gradientStroke1.addColorStop(1, "rgb(70,130,180)");
 gradientStroke1.addColorStop(0.2, "rgba(72,72,176,0.0)");
 gradientStroke1.addColorStop(0, "rgb(100,149,237)"); //purple colors
 
-var gradientStroke2 = ctx2.createLinearGradient(0, 230, 0, 50);
+
+var gradientStroke2 = ctx5.createLinearGradient(0, 230, 0, 50);
 
 gradientStroke2.addColorStop(1, "rgb(135,206,250)");
 gradientStroke2.addColorStop(0.2, "rgb(0,191,255)");
 gradientStroke2.addColorStop(0, "rgba(20,23,0,0)"); //blue colors
 
-var gradientStroke3 = ctx2.createLinearGradient(0, 230, 0, 50);
 
-gradientStroke3.addColorStop(1, "rgb(219,112,147)");
-gradientStroke3.addColorStop(0.2, "rgb(221,160,221)");
-gradientStroke3.addColorStop(0, "rgb(199,21,133)");
+var gradientStroke3 = ctx5.createLinearGradient(0, 230, 0, 50);
 
-var gradientStroke4 = ctx4.createLinearGradient(0, 230, 0, 50);
+gradientStroke3.addColorStop(1, "rgba(203,12,159,0.2)");
+gradientStroke3.addColorStop(0.2, "rgba(72,72,176,0.0)");
+gradientStroke3.addColorStop(0, "rgba(203,12,159,0)"); //purple colors
+
+
+var gradientStroke4 = ctx5.createLinearGradient(0, 230, 0, 50);
 
 gradientStroke4.addColorStop(1, "rgba(255, 255, 0, 0.2)"); // Yellowish color with 20% opacity
 gradientStroke4.addColorStop(0.2, "rgba(72, 72, 176, 0.0)");
@@ -195,7 +200,7 @@ async function fetchFollowersGraph(start = getFormattedDate(2) , end = getFormat
     }
 
 }
-fetchFollowersGraph();
+
 
 
 
