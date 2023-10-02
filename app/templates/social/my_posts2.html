@@ -126,12 +126,12 @@
                             <thead class="align-bottom">
                             <tr>
                                 <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
-                                    Created by
+                                    Pages
                                 </th>
-                                <th class="px-6 py-3 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+                                <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                     Post
                                 </th>
-                                <th class="px-6 py-3 pl-2 font-bold tracking-normal text-left uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
+                                <th class="px-6 py-3 pl-2 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
                                     Images
                                 </th>
                                 <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
@@ -142,10 +142,10 @@
                                     Created at
                                 </th>
                                 <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
-                                    Published At
+                                    Created by
                                 </th>
                                 <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
-                                    pages
+                                    Published At
                                 </th>
                                 <th class="px-6 py-3 font-bold tracking-normal text-center uppercase align-middle bg-transparent border-b letter border-b-solid text-xxs whitespace-nowrap border-b-gray-200 text-slate-400 opacity-70">
 
@@ -163,18 +163,57 @@
                             </form>
                             {% for p in paginated %}
                             <tr class="post" data-post-id="{{p.id}}">
-                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
                                     <div class="flex px-2 py-1">
-                                            {% if p.user.profile_image %}
-                                            <img src="{{ p.user.profile_image.url }}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" >
-                                            {% else %}
-                                             <img src="{% static 'image/default.png' %}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
-                                            {% endif %}
+                                        {% if p.status == 'PUBLISHED' and p|any == True %}
                                         <div class="flex flex-col justify-center">
-                                            <h6 class="mb-0 text-sm leading-normal font-semibold">{{p.user|title}}</h6>
-                                            <p class="mb-0 text-xs leading-tight text-slate-400 pt-1">
-                                                {{p.user.email}}</p>
+                                            {% for page_name in p.post_urn.all %}
+                                            {%if page_name.org.provider == 'facebook' %}
+                                            <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
+                                                <h6 class="mb-0 text-sm font-bold leading-normal">{{page_name.org}}</h6>
+
+                                            </a>
+                                            {%endif%}
+                                            {%endfor%}
+
                                         </div>
+                                        {% elif p.status == 'DRAFT' %}
+                                        <div class="flex flex-col justify-center">
+                                            <a href="{%url 'post_draft' p.pk %}">
+                                                <h6 class="bg-gradient-to-tl from-red-700 to-yellow-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISH THIS DRAFT</h6>
+                                            </a>
+                                        </div>
+                                        {% elif p.status == 'FAILED' and p|any == True %}
+                                        <div class="flex flex-col justify-center">
+                                            {% for page_name in p.post_urn.all %}
+                                            {%if page_name.org.provider == 'facebook' %}
+                                            <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
+                                                <h6 class="mb-0 text-sm font-bold leading-normal">{{page_name.org}}</h6>
+
+                                            </a>
+                                            {%endif%}
+                                            {%endfor%}
+
+                                        </div>
+                                        {% elif p|any == False %}
+                                        <div class="flex flex-col justify-center">
+                                            {% for page_name in p.prepost_page.all %}
+                                            {%if page_name.provider == 'facebook' %}
+                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
+                                            {%endif%}
+                                            {%endfor%}
+
+                                        </div>
+                                        {% else %}
+                                        <div class="flex flex-col justify-center">
+                                            {% for page_name in p.prepost_page.all %}
+                                            {%if page_name.provider == 'facebook' %}
+                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
+                                            {%endif%}
+                                            {%endfor%}
+
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </td>
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
@@ -208,7 +247,7 @@
                                                     {% endif %}
                                                 {% elif forloop.counter == 4 %}
                                                     <a href=""
-                                                       class="photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-gray-500 transition-all duration-200 border-2 border-gray-200 border-solid rounded-full ease-soft-in-out text-sm hover:no-underline"
+                                                       class="photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-gray-600 bg-white duration-200 border-2 border-gray-200 border-solid rounded-full ease-soft-in-out text-sm hover:no-underline"
                                                        data-target="tooltip_trigger" data-placement="bottom">
                                                            + {{ p.images.count|sub:3 }}
                                                     </a>
@@ -269,7 +308,20 @@
                                         </div>
                                     </div>
                                 </td>
-
+                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                    <div class="flex px-2 py-1 gap-1">
+                                            {% if p.user.profile_image %}
+                                            <img src="{{ p.user.profile_image.url }}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" >
+                                            {% else %}
+                                             <img src="{% static 'image/default.png' %}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                            {% endif %}
+                                        <div class="flex flex-col justify-center">
+                                            <h6 class="mb-0 text-sm leading-normal font-semibold">{{p.user|title}}</h6>
+                                            <p class="mb-0 text-xs leading-tight text-slate-400 pt-1">
+                                                {{p.user.email}}</p>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
                                     <div class="flex px-4 py-1">
 
@@ -282,59 +334,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap justify-center">
-                                    <div class="flex px-2 py-1">
-                                        {% if p.status == 'PUBLISHED' and p|any == True %}
-                                        <div class="flex flex-col justify-center">
-                                            {% for page_name in p.post_urn.all %}
-                                            {%if page_name.org.provider == 'facebook' %}
-                                            <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-                                                <h6 class="mb-0 text-sm font-bold leading-normal">{{page_name.org}}</h6>
 
-                                            </a>
-                                            {%endif%}
-                                            {%endfor%}
-
-                                        </div>
-                                        {% elif p.status == 'DRAFT' %}
-                                        <div class="flex flex-col justify-center">
-                                            <a href="{%url 'post_draft' p.pk %}">
-                                                <h6 class="bg-gradient-to-tl from-red-700 to-yellow-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">PUBLISH THIS DRAFT</h6>
-                                            </a>
-                                        </div>
-                                        {% elif p.status == 'FAILED' and p|any == True %}
-                                        <div class="flex flex-col justify-center">
-                                            {% for page_name in p.post_urn.all %}
-                                            {%if page_name.org.provider == 'facebook' %}
-                                            <a href="{%url 'my_detail_posts' p.pk page_name.pk%}?page_name={{ page_name.org.provider }}">
-                                                <h6 class="mb-0 text-sm font-bold leading-normal">{{page_name.org}}</h6>
-
-                                            </a>
-                                            {%endif%}
-                                            {%endfor%}
-
-                                        </div>
-                                        {% elif p|any == False %}
-                                        <div class="flex flex-col justify-center">
-                                            {% for page_name in p.prepost_page.all %}
-                                            {%if page_name.provider == 'facebook' %}
-                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
-                                            {%endif%}
-                                            {%endfor%}
-
-                                        </div>
-                                        {% else %}
-                                        <div class="flex flex-col justify-center">
-                                            {% for page_name in p.prepost_page.all %}
-                                            {%if page_name.provider == 'facebook' %}
-                                            <h6 class="mb-0 text-sm leading-normal">{{page_name.name}}</h6>
-                                            {%endif%}
-                                            {%endfor%}
-
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                </td>
                                 {% if user_role == 'MEMBER' and permission == 'WRITE' %}
                                 <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
                                     <div class="mx-4 relative cursor-pointer">
@@ -579,10 +579,10 @@ function updatePage(event, platform) {
                     const remainingCount = imagesData.length - maxImages;
                     const remainingLabel = document.createElement('a');
                     remainingLabel.href = 'javascript:;';
-                    remainingLabel.className = 'photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-gray-500 transition-all duration-200 border-2 border-gray-200 border-solid rounded-full ease-soft-in-out text-sm hover:z-30';
+                    remainingLabel.className = 'photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-gray-600 bg-white duration-200 border-2 border-gray-200 border-solid rounded-full ease-soft-in-out text-sm hover:z-30';
                     remainingLabel.dataset.target = 'tooltip_trigger';
                     remainingLabel.dataset.placement = 'bottom';
-                    remainingLabel.textContent = ` ' '+ ${remainingCount}`;
+                    remainingLabel.textContent = ` + ${remainingCount}`;
 
                     divMediaGroup.appendChild(remainingLabel);
                 }
@@ -613,12 +613,12 @@ function updatePage(event, platform) {
     function createProfileTd(userData) {
 
         const divFlex = document.createElement('div');
-        divFlex.className = 'flex px-6 py-2';
+        divFlex.className = 'flex px-2 py-1 gap-1';
 
 
         const img = document.createElement('img');
         img.className = 'inline-flex items-center justify-center mr-4 max-w-none text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl';
-        img.alt = userData.username; // Replace with the appropriate user data field for alt text
+        img.alt = userData.username;
 
         if (userData.profile_image.url !== null) {
             img.src = userData.profile_image.url;
@@ -638,7 +638,7 @@ function updatePage(event, platform) {
 
         const p = document.createElement('p');
         p.className = 'mb-0 text-xs leading-tight text-slate-400 pt-1';
-        p.textContent = userData.email; // Replace with the appropriate user data field for the email
+        p.textContent = userData.email;
 
         divText.appendChild(h6);
         divText.appendChild(p);
@@ -1525,13 +1525,13 @@ let lastButton = null;
                             }
 
                             // Append table cells to the row
-                            row.appendChild(cell1);
+                            row.appendChild(cell7);
                             row.appendChild(cell2);
                             row.appendChild(cell3);
                             row.appendChild(cell4);
                             row.appendChild(cell5);
+                            row.appendChild(cell1);
                             row.appendChild(cell6);
-                            row.appendChild(cell7);
                             row.appendChild(cell8);
 
                             // Append the row to the table body

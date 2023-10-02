@@ -75,8 +75,8 @@ async function fetchPostGraph(start = getFormattedDate(2) , end = getFormattedDa
                 borderWidth: 3,
                 pointRadius: 4,
                 borderColor: "#1B5583",
-                backgroundColor: gradientStroke1,
-                fill: true,
+
+                fill: false,
                 maxBarThickness: 6,
                 pointBackgroundColor: "#6F8FAF",
                 pointBorderColor: "#4682B4	",
@@ -89,8 +89,8 @@ async function fetchPostGraph(start = getFormattedDate(2) , end = getFormattedDa
                 borderWidth: 3,
                 maxBarThickness: 6,
                 lineTension: 0.3,
-                backgroundColor: "#F0F8FF",
-                fill: true,
+
+                fill: false,
                 pointRadius: 4,
                 pointBackgroundColor: "#0096FF",
                 pointBorderColor: "#1877F2",
@@ -107,11 +107,11 @@ async function fetchPostGraph(start = getFormattedDate(2) , end = getFormattedDa
                 borderWidth: 3,
                 maxBarThickness: 6,
                 lineTension: 0.3,
-                backgroundColor: "#C13584",
-                borderColor: "#FF8C00",
-                fill: true,
+
+                borderColor: "#C13584",
+                fill: false,
                 pointRadius: 4,
-                pointBackgroundColor: "#C13584",
+                pointBackgroundColor: "red",
                 pointBorderColor: "#E1306C",
                 pointHoverBackgroundColor: "#E1306C",
 
@@ -173,9 +173,21 @@ async function fetchPostGraph(start = getFormattedDate(2) , end = getFormattedDa
               },
             },
             tooltips: {
-               enabled: true,
-               mode: 'label'
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: function (tooltipItem, data) {
+                  var label = data.datasets[tooltipItem.datasetIndex].label || '';
+                  var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                  return label + ': ' + value;
+                },
+                title: function (tooltipItems, data) {
+                  // Customize the title if needed
+                  return 'Data at Time ' + data.labels[tooltipItems[0].index];
+                },
+              },
             },
+
             legend: {
                 display: false,
             }

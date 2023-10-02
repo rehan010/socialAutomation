@@ -84,7 +84,7 @@ async function fetchLikeGraph(start = getFormattedDate(2) , end = getFormattedDa
             borderWidth: 3,
             pointRadius: 4,
             borderColor: "#1B5583",
-            backgroundColor: gradientStroke1,
+
             fill: true,
             maxBarThickness: 6,
             pointBackgroundColor: "#6F8FAF",
@@ -98,8 +98,8 @@ async function fetchLikeGraph(start = getFormattedDate(2) , end = getFormattedDa
             borderWidth: 3,
             maxBarThickness: 6,
             lineTension: 0.3,
-            backgroundColor: "#F0F8FF",
-            fill: true,
+
+            fill: false,
             pointRadius: 4,
             pointBackgroundColor: "#0096FF",
             pointBorderColor: "#1877F2",
@@ -115,11 +115,12 @@ async function fetchLikeGraph(start = getFormattedDate(2) , end = getFormattedDa
             borderWidth: 3,
             maxBarThickness: 6,
             lineTension: 0.3,
-            backgroundColor: "#C13584",
-            borderColor: "#FF8C00",
-            fill: true,
+
+
+            borderColor: "#C13584",
+            fill: false,
             pointRadius: 4,
-            pointBackgroundColor: "#C13584",
+            pointBackgroundColor: "red",
             pointBorderColor: "#E1306C",
             pointHoverBackgroundColor: "#E1306C",
           },
@@ -132,8 +133,8 @@ async function fetchLikeGraph(start = getFormattedDate(2) , end = getFormattedDa
             pointRadius: 3,
             borderColor: "#F4B400",
             borderWidth: 4,
-            backgroundColor: gradientStroke3,
-            fill: true,
+
+            fill: false,
 
             maxBarThickness: 6,
           },

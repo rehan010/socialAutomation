@@ -2143,6 +2143,8 @@ class PostDeleteView(DestroyAPIView):
 
                             if response['message'] == 'success':
                                 post.post_urn.remove(urn1)
+                                urn1.is_deleted = True
+                                urn1.save()
                                 post.prepost_page.remove(page)
                                 if len(post.post_urn.all()) == 0:
                                     post.delete()
@@ -2166,6 +2168,8 @@ class PostDeleteView(DestroyAPIView):
 
                         if response['message'] == 'success':
                             post.post_urn.remove(post_urn)
+                            post_urn.is_deleted = True
+                            post_urn.save()
                             if len(post.post_urn.all()) == 0:
                                 post.delete()
 
@@ -2209,6 +2213,9 @@ class PostDeleteView(DestroyAPIView):
 
                             if response['message'] == 'success':
                                 post.post_urn.remove(urn1)
+                                urn1.is_deleted = True
+                                urn1.save()
+
                                 if len(post.post_urn.all()) == 0:
                                     post.delete()
                     else:
@@ -2230,6 +2237,9 @@ class PostDeleteView(DestroyAPIView):
 
                         if response['message'] == 'success':
                             post.post_urn.remove(page_post)
+                            page_post.is_deleted = True
+                            page_post.save()
+
                             if len(post.post_urn.all()) == 0:
                                 post.delete()
 

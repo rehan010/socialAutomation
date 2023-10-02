@@ -223,7 +223,7 @@ input[type="date"]::-webkit-inner-spin-button {
                     <div class="flex flex-row -mx-3">
                         <div class="flex-none w-2/3 max-w-full px-3">
                             <div>
-                                <p class="mb-0 font-sans text-sm font-semibold leading-normal">New followers today</p>
+                                <p class="mb-0 font-sans text-sm font-semibold leading-normal">Followers today</p>
                                 <div class="mb-0 mt-3 font-bold grid grid-cols-2 grid-rows-2 gap-x-4 gap-y-2 items-center">
 
                                     <span class="text-sm leading-normal font-weight-bolder text-lime-500 max-w-max flex gap-12 items-center">
@@ -452,7 +452,7 @@ input[type="date"]::-webkit-inner-spin-button {
                 <div class="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid bg-white p-6 pb-0">
                      <div class="card-header bg-white border-b border-gray-300">
                         <i class="fas fa-image mr-1"></i>
-                                Posts overview
+                                Posts Graph
                      </div>
                 </div>
                 <div class="flex-auto p-4">
@@ -472,7 +472,7 @@ input[type="date"]::-webkit-inner-spin-button {
 
                     <div class="card-header bg-white border-b border-gray-300">
                         <i class="fa-solid fa-heart mr-1"></i>
-                                Likes overview
+                                Likes Graph
                     </div>
                 </div>
                 <div class="flex-auto p-4">
@@ -487,7 +487,7 @@ input[type="date"]::-webkit-inner-spin-button {
                     <div class="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid bg-white p-6 pb-0">
                         <div class="card-header bg-white border-b border-gray-300">
                             <i class="fa-solid fa-comments mr-1"></i>
-                                Comments overview
+                                Comments Graph
                         </div>
                     </div>
                     <div class="flex-auto p-4">
@@ -502,7 +502,7 @@ input[type="date"]::-webkit-inner-spin-button {
                         <div class="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid bg-white p-6 pb-0">
                             <div class="card-header bg-white border-b border-gray-300">
                                 <i class="fas fa-users mr-1"></i>
-                                    Followers overview
+                                    Followers Graph
                             </div>
                         </div>
                         <div class="flex-auto p-4">
@@ -623,7 +623,7 @@ async function GetRequestCard(taskId) {
             // Continue polling
             setTimeout(() => {
                 GetRequestCard(taskId);
-            }, 60000);
+            }, 20000);
         }
     } catch (error) {
         HideAlert();

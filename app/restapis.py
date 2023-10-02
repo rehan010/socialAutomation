@@ -3141,8 +3141,8 @@ def instagram_account_insights(urn, since, until):
 
 def fb_post_insights(urn_list, urn, since=None, until=None):
 
-
     access_token = urn.access_token
+    print("Access Token " + access_token)
     base_url = 'https://graph.facebook.com/v17.0/'
 
     headers = {
@@ -3168,8 +3168,11 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
     batch_request2 = json.dumps(batch_request2)
     response1 = requests.post(base_url, headers=headers, params={'batch': batch_request1, 'include_headers': 'false'})
     response2 = requests.post(base_url, headers=headers, params={'batch': batch_request2, 'include_headers': 'false'})
+
     reaction_response = response1.json()
     comment_response = response2.json()
+    print(reaction_response)
+    print(comment_response)
     total_reactions = 0
     for reaction in reaction_response:
         response = json.loads(reaction.get('body'))

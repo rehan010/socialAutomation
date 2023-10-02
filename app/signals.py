@@ -250,6 +250,7 @@ def schedule_publish_task(instance):
 @shared_task
 def gather_post_insight(instance):
     try:
+        print("tried 3")
         since = datetime.now(timezone.utc).replace(minute=0,hour=0,second=0,microsecond=0)
         until = datetime.now(timezone.utc)
         post_urns = Post_urn.objects.filter(org=instance).values_list('urn', flat=True)

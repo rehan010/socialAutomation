@@ -80,8 +80,8 @@ async function fetchFollowersGraph(start = getFormattedDate(2) , end = getFormat
             borderWidth: 3,
             pointRadius: 4,
             borderColor: "#1B5583",
-            backgroundColor: gradientStroke1,
-            fill: true,
+
+            fill: false,
             maxBarThickness: 6,
             pointBackgroundColor: "#6F8FAF",
             pointBorderColor: "#4682B4	",
@@ -94,8 +94,8 @@ async function fetchFollowersGraph(start = getFormattedDate(2) , end = getFormat
             borderWidth: 3,
             maxBarThickness: 6,
             lineTension: 0.3,
-            backgroundColor: "#F0F8FF",
-            fill: true,
+
+            fill: false,
             pointRadius: 4,
             pointBackgroundColor: "#0096FF",
             pointBorderColor: "#1877F2",
@@ -111,11 +111,12 @@ async function fetchFollowersGraph(start = getFormattedDate(2) , end = getFormat
             borderWidth: 3,
             maxBarThickness: 6,
             lineTension: 0.3,
-            backgroundColor: "#C13584",
-            borderColor: "#FF8C00",
-            fill: true,
+
+
+            borderColor: "#C13584",
+            fill: false,
             pointRadius: 4,
-            pointBackgroundColor: "#C13584",
+            pointBackgroundColor: "red",
             pointBorderColor: "#E1306C",
             pointHoverBackgroundColor: "#E1306C",
           },
@@ -128,8 +129,8 @@ async function fetchFollowersGraph(start = getFormattedDate(2) , end = getFormat
             pointRadius: 4,
             borderColor: "#F4B400",
             borderWidth: 3,
-            backgroundColor: gradientStroke3,
-            fill: true,
+
+            fill: false,
 
             maxBarThickness: 6,
           },

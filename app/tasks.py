@@ -47,9 +47,11 @@ def task_three(users,lock_key):
     cache.get(lock_key)
     if not cache.get(lock_key):
         try:
+            print("tried 1")
             cache.set(lock_key, "1", None)
             share_pages = SharePage.objects.filter(user__id__in=users)
             for pages in share_pages:
+                print("tried 2")
                 gather_post_insight(pages)
             cache.delete(lock_key)
         except Exception as e:
