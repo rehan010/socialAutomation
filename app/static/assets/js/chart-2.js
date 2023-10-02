@@ -118,7 +118,7 @@ async function fetchPostGraph(start = getFormattedDate(2) , end = getFormattedDa
               },
             ],
           },
-          options: {
+            options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
@@ -127,8 +127,8 @@ async function fetchPostGraph(start = getFormattedDate(2) , end = getFormattedDa
               },
             },
             interaction: {
+              mode: 'index',    // Set the mode to 'index'
               intersect: false,
-              mode: "nearest",
             },
             scales: {
               y: {
@@ -173,24 +173,13 @@ async function fetchPostGraph(start = getFormattedDate(2) , end = getFormattedDa
               },
             },
             tooltips: {
-              mode: 'index',
+              mode: 'index',    // Set the mode to 'index'
               intersect: false,
-              callbacks: {
-                label: function (tooltipItem, data) {
-                  var label = data.datasets[tooltipItem.datasetIndex].label || '';
-                  var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-                  return label + ': ' + value;
-                },
-                title: function (tooltipItems, data) {
-                  // Customize the title if needed
-                  return 'Data at Time ' + data.labels[tooltipItems[0].index];
-                },
-              },
             },
-
-            legend: {
-                display: false,
-            }
+            hover: {
+              mode: 'index',    // Set the mode to 'index'
+              intersect: false,
+            },
           },
         });
      } catch (error) {

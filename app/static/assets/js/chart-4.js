@@ -4,19 +4,19 @@
 var ctx4 = document.getElementById("comments-chart-line").getContext("2d");
 
 
-var gradientStroke1 = ctx2.createLinearGradient(0, 230, 0, 50);
+var gradientStroke1 = ctx4.createLinearGradient(0, 230, 0, 50);
 
 gradientStroke1.addColorStop(1, "rgb(70,130,180)");
 gradientStroke1.addColorStop(0.2, "rgba(72,72,176,0.0)");
 gradientStroke1.addColorStop(0, "rgb(100,149,237)"); //purple colors
 
-var gradientStroke2 = ctx2.createLinearGradient(0, 230, 0, 50);
+var gradientStroke2 = ctx4.createLinearGradient(0, 230, 0, 50);
 
 gradientStroke2.addColorStop(1, "rgb(135,206,250)");
 gradientStroke2.addColorStop(0.2, "rgb(0,191,255)");
 gradientStroke2.addColorStop(0, "rgba(20,23,0,0)"); //blue colors
 
-var gradientStroke3 = ctx2.createLinearGradient(0, 230, 0, 50);
+var gradientStroke3 = ctx4.createLinearGradient(0, 230, 0, 50);
 
 gradientStroke3.addColorStop(1, "rgb(219,112,147)");
 gradientStroke3.addColorStop(0.2, "rgb(221,160,221)");
@@ -133,60 +133,68 @@ async function fetchCommentsGraph(start = getFormattedDate(2) , end = getFormatt
         ],
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-        interaction: {
-          intersect: false,
-          mode: "nearest",
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: "#b2b9bf",
-              font: {
-                size: 11,
-                family: "Open Sans",
-                style: "normal",
-                lineHeight: 2,
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
               },
             },
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              borderDash: [5, 5],
+            interaction: {
+              mode: 'index',    // Set the mode to 'index'
+              intersect: false,
             },
-            ticks: {
-              display: true,
-              color: "#b2b9bf",
-              padding: 20,
-              font: {
-                size: 11,
-                family: "Open Sans",
-                style: "normal",
-                lineHeight: 2,
+            scales: {
+              y: {
+                grid: {
+                  drawBorder: false,
+                  display: true,
+                  drawOnChartArea: true,
+                  drawTicks: false,
+                  borderDash: [5, 5],
+                },
+                ticks: {
+                  display: true,
+                  padding: 10,
+                  color: "#b2b9bf",
+                  font: {
+                    size: 11,
+                    family: "Open Sans",
+                    style: "normal",
+                    lineHeight: 2,
+                  },
+                },
+              },
+              x: {
+                grid: {
+                  drawBorder: false,
+                  display: false,
+                  drawOnChartArea: false,
+                  drawTicks: false,
+                  borderDash: [5, 5],
+                },
+                ticks: {
+                  display: true,
+                  color: "#b2b9bf",
+                  padding: 20,
+                  font: {
+                    size: 11,
+                    family: "Open Sans",
+                    style: "normal",
+                    lineHeight: 2,
+                  },
+                },
               },
             },
+            tooltips: {
+              mode: 'index',    // Set the mode to 'index'
+              intersect: false,
+            },
+            hover: {
+              mode: 'index',    // Set the mode to 'index'
+              intersect: false,
+            },
           },
-        },
-      },
     });
 
 

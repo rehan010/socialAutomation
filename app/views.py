@@ -2123,8 +2123,8 @@ class PostDeleteView(DestroyAPIView):
         comment_urn = self.request.data.get('urn')
         actor = self.request.data.get('actor')
         comment_id = self.request.data.get('comment_id')
-        post_id = self.request.data.get('post_id')
-        page_name = self.request.data.get('page_name')
+
+        page_name = self.request.GET.get('page_name')
         response = {}
         response['user'] = self.request.user.id
         post = self.get_object()

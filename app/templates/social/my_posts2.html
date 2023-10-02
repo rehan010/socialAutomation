@@ -219,7 +219,6 @@
                                 <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap">
                                     <div class="flex px-2 py-1">
                                         <div class="flex flex-col justify-center">
-
                                             <h6 class="mb-0 text-sm leading-normal">{{p.post|truncatewords:5}}</h6>
                                         </div>
                                     </div>
@@ -382,9 +381,11 @@
                                     <a href="?platform={{platform}}&page={{ paginated.previous_page_number }}" data-page="{{ paginated.previous_page_number }}" class="pagination-link mr-2" onclick="updatePage(event,'{{platform}}')">Previous</a>
                                 {% endif %}
                             </div>
-
-                            <span class="current-page">Page {{ paginated.number }} of {{ paginated.paginator.num_pages }}</span>
-
+                            {% if paginated == '' %}
+                                <span class="current-page">Page 1 of 1</span>
+                            {% else %}
+                                <span class="current-page">Page {{ paginated.number }} of {{ paginated.paginator.num_pages }}</span>
+                            {% endif %}
                             <div >
                                 {% if paginated.has_next %}
                                     <a href="?platform={{platform}}&page={{ paginated.next_page_number }}"  data-page="{{ paginated.next_page_number }}" class="pagination-link ml-2" onclick="updatePage(event,'{{platform}}')">Next</a>
@@ -1037,7 +1038,7 @@ let lastButton = null;
                             const cell1 = document.createElement('td');
                             cell1.className = 'p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent';
 
-                                                        const profileTd = createProfileTd(userData);
+                            const profileTd = createProfileTd(userData);
                             cell1.appendChild(profileTd);
                             const cell2 = document.createElement('td');
                             cell2.className = 'p-2 align-middle bg-transparent border-b whitespace-nowrap';
@@ -1047,7 +1048,9 @@ let lastButton = null;
                             div2.className = 'flex flex-col justify-center';
                             const h6 = document.createElement('h6');
                             h6.className = 'mb-0 text-sm leading-normal';
-                            h6.textContent = result.post;
+                            const text = result.post;
+                            const maxLength = 14;
+                            h6.textContent = text.substring(0, maxLength - 3) + '...';
 
                             // Append the elements together to build the structure
                             div2.appendChild(h6);
@@ -1704,16 +1707,17 @@ let lastButton = null;
 
         const csrfToken = getCSRFToken();
 
-        const json = { 'post_id': post_id  ,'page_name':page_name }
+
+
 
         const res = await fetch(
-          `/delete-post/${post_id}`,{
+          `/delete-post/${post_id}?page_name=${page_name}`,{
               method:'Delete',
                headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
                 },
-               body: JSON.stringify(json)
+
         });
         if (res.ok) {
         // Remove the deleted post row from the page

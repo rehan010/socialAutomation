@@ -1775,7 +1775,7 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
     form.post_likes = t_likes
     form.post_comments = t_comments
     form.save()
-
+    next = None
     if linkedin_post.comment_check:
         url = "https://api.linkedin.com/v2/socialActions/" + encoded_urn + "/comments"
 
@@ -1789,6 +1789,11 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
 
         response = requests.request("GET", url, headers=headers, data=payload)
         response_json3 = response.json()
+        link = response_json3.get('paging', {}).get("links")
+        if link and len(link) > 0:
+            for l in link:
+                if l.get('rel') == "next":
+                    next = l.get('href')
 
         elements = response_json3.get('elements')
         data = []
@@ -1870,13 +1875,13 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                 obj['replies'] = replies
                 data.append(obj)
 
-        return t_likes, t_comments, data
+        return t_likes, t_comments, data, next
     else:
         data = []
         obj = {}
         data.append(obj)
 
-    return t_likes, t_comments, data
+    return t_likes, t_comments, data, next
 
 
 def linkedin_org_stats(access_token_string, id, data_list):
@@ -3171,8 +3176,7 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
 
     reaction_response = response1.json()
     comment_response = response2.json()
-    print(reaction_response)
-    print(comment_response)
+
     total_reactions = 0
     for reaction in reaction_response:
         response = json.loads(reaction.get('body'))
