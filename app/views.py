@@ -2784,14 +2784,18 @@ class ConnectionView(ConnectionsView):
         from allauth.socialaccount.models import SocialApp
 
         social_apps = SocialApp.objects.all()
-
+        referrer = self.request.META.get('HTTP_REFERER', '')
         for apps in social_apps:
             context[f'{apps.provider}_app'] = apps
             try:
                 context[f'{apps.provider}'] = SocialAccount.objects.filter(user=self.request.user.id, provider=apps.provider).first()
 
+
             except Exception as e:
                 e
+
+        if referrer == "" and context.get('instagram') and not context.get('facebook'):
+            context['error'] = True
 
         return context
 

@@ -42,6 +42,35 @@
         100% { transform: rotate(360deg); }
     }
 
+    .tooltipnew {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .tooltipnew .tooltiptext {
+        visibility: hidden;
+        width: 120px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        font-size:13px;
+        border-radius: 5px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: -150%;
+        left: 50%;
+        margin-left: -60px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+        /* Show the tooltip on hover */
+    .tooltipnew:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+    }
+
 
 
     </style>
@@ -122,6 +151,7 @@
                 </a>
             </div>
         </div>
+
         <input type="hidden" value="{{page_id}}" id="page_id">
         <input type="hidden" value="{{post_id}}" id="post_id">
         <br>
@@ -130,50 +160,55 @@
             <div class="flex items-center">
 <!--                <input type="hidden" id="post" value="{{post_id}}">-->
 <!--                <input type="hidden" id="page" value="{{page_id}}">-->
+                {% if user_role == 'MEMBER' and permission == 'WRITE' and request.GET.page_name != "instagram" %}
+                {% if is_liked %}
+                <button onclick="deleteLike('',event)" type="button" class="like-button relative focus:outline-red">
+                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                         fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </button>
+                {% else %}
+                <button onclick="postLike('',event)" type="button" class="like-button relative focus:outline-red">
+                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </button>
+                {% endif %}
+                {% elif post.user == request.user and request.GET.page_name != "instagram" %}
+                {% if is_liked %}
+                <button onclick="deleteLike('',event)" type="button" class="like-button relative focus:outline-red">
+                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                         fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </button>
+                {% else %}
+                <button onclick="postLike('',event)" type="button" class="like-button relative focus:outline-red">
+                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </button>
+                {% endif %}
+                {% else %}
 
-                {% if user_role == 'MEMBER' and permission == 'WRITE' %}
-                {% if is_liked %}
-                <button onclick="deleteLike('',event)" type="button" class="like-button relative focus:outline-red">
-                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
-                         fill="red" viewBox="0 0 24 24" stroke="currentColor">
+
+                <div class="tooltipnew">
+                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
-                </button>
-                {% else %}
-                <button onclick="postLike('',event)" type="button" class="like-button relative focus:outline-red">
-                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                    </svg>
-                </button>
-                {% endif %}
-                {% elif post.user == request.user %}
-                {% if is_liked %}
-                <button onclick="deleteLike('',event)" type="button" class="like-button relative focus:outline-red">
-                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
-                         fill="red" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                    </svg>
-                </button>
-                {% else %}
-                <button onclick="postLike('',event)" type="button" class="like-button relative focus:outline-red">
-                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                    </svg>
-                </button>
-                {% endif %}
-                {% else %}
-                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
-                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
+                    <span class="tooltiptext">Not Supported</span>
+                </div>
+
                 {% endif %}
                 <span id="likes-count" class="text-gray-600 text-sm font-bold ml-1"> {{ no_likes }} Likes</span>
             </div>

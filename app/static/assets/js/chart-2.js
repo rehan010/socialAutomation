@@ -26,7 +26,7 @@ gradient.addColorStop(0.5, 'rgba(253,29,29,1)');
 gradient.addColorStop(1, 'rgba(252,176,69,1)');
 
 let chart2;
-async function fetchPostGraph(start = getFormattedDate(2) , end = getFormattedDate()) {
+async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDate()) {
     const json = {
         'start': `${start}`,
         'end': `${end}`

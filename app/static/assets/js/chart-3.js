@@ -36,7 +36,7 @@ gradientStroke4.addColorStop(1, "rgba(255, 255, 0, 0.2)"); // Yellowish color wi
 gradientStroke4.addColorStop(0.2, "rgba(72, 72, 176, 0.0)");
 gradientStroke4.addColorStop(0, "rgba(20, 23, 39, 0)"); // Transparent
 let chart3;
-async function fetchLikeGraph(start = getFormattedDate(2) , end = getFormattedDate()) {
+async function fetchLikeGraph(start = getFormattedDate(7) , end = getFormattedDate()) {
     const json = {
         'start': `${start}`,
         'end': `${end}`

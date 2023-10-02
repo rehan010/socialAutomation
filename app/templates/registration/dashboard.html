@@ -8,18 +8,116 @@
 input[type="date"]::-webkit-inner-spin-button {
     display: none;
 }
+.borders{
+        border: 1px solid black !important;
+    }
+
+  .disabled{
+        cursor: not-allowed;
+        pointer-events: none;
+        position: relative;
+   }
+
+  .disabled::before{
+    content: "";
+    background-color: rgba(255, 255, 255, 0.2); /* Transparent white overlay */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+  }
+
+  .tooltip-container {
+    position: relative;
+}
+
+    .tooltiptext {
+        visibility: hidden;
+        width: 200px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        font-size:12px;
+        border-radius: 5px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 0%;
+        right: 110%;
+        margin-left: -60px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+        /* Show the tooltip on hover */
+    .tooltip-container:hover .tooltiptext {
+        visibility: visible!important;
+        opacity: 1!important;
+    }
 </style>
 
 <div class="w-full px-7 py-7 mx-auto">
-    <div class="p-2 flex justify-end relative">
-        <div class="hidden flex items-center text-xs text-center rounded-lg bg-gradient-to-tl from-purple-700 to-pink-500 text-white px-1">
-            Please Wait for a moment.
+    <div class="p-2 flex justify-end">
+        <div class="tooltip-container">
+            <button class="tooltipnew px-3 py-1 cursor-pointer flex items-center gap-2 text-xs font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-lg cursor-pointer leading-pro  ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline" onclick="openModal()" id="refreshButton">
+                <span class="tracking-wide">Refresh </span>
+                   <svg fill="#ffffff" height="30" width="25" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 383.748 383.748" xml:space="preserve" stroke="#ffffff">
+                       <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                       <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                       <g id="SVGRepo_iconCarrier">
+                       <g> <path d="M62.772,95.042C90.904,54.899,137.496,30,187.343,30c83.743,0,151.874,68.13,151.874,151.874h30 C369.217,81.588,287.629,0,187.343,0c-35.038,0-69.061,9.989-98.391,28.888C70.368,40.862,54.245,56.032,41.221,73.593 L2.081,34.641v113.365h113.91L62.772,95.042z"></path>
+                       <path d="M381.667,235.742h-113.91l53.219,52.965c-28.132,40.142-74.724,65.042-124.571,65.042 c-83.744,0-151.874-68.13-151.874-151.874h-30c0,100.286,81.588,181.874,181.874,181.874c35.038,0,69.062-9.989,98.391-28.888 c18.584-11.975,34.707-27.145,47.731-44.706l39.139,38.952V235.742z"></path> </g> </g>
+                </svg>
+            </button>
+            <dialog class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden hidden justify-center items-center animated fadeIn faster"
+                                        style="background: rgba(0,0,0,.7);" id="mainDialog">
+                <div
+                    class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                    <div class="modal-content py-2 text-left px-6">
+                        <!--Title-->
+                        <div class="flex justify-between items-center pt-3 pb-1">
+                            <p class="text-3xl font-bold ">Confirm</p>
+                            <div class="modal-close cursor-pointer z-50" onclick="hideModal()">
+                                <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                    viewBox="0 0 18 18">
+                                    <path
+                                        d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
+                                    </path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="my-4">
+                        <p>This might take time.. <br />
+                            Are you sure you want to continue?
+                        </p>
+                        </div>
+
+                        <!--Footer-->
+                        <div class="flex justify-end pt-2">
+
+
+                            <a
+                                class="cursor-pointer hover:no-underline hover:text-black focus:outline-none px-4 p-2 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black" id="mainDialog-cancel" onclick="hideModal()">
+
+                                <span>Cancel</span>
+
+                            </a>
+
+
+                            <a  class="cursor-pointer focus:outline-none px-4 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-2" id="mainDialog-confirm" onclick="postRequestCards(event)">
+    <!--                                                    <i class='bx bx-camera lg:text-4xl text-4xl'></i>-->
+
+                                    <span>Confirm</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </dialog>
         </div>
-        <a class="cursor-pointer" onclick="PostRequestCards(event)" id="refresh-button">
-           <svg enable-background="new 0 0 70 70" height="44" id="Icons" version="1.1" viewBox="0 0 70 70" width="44" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
-               <path d="M51.211,30.05V18.789L47.01,22.99C43.937,19.91,39.695,18,35,18c-9.389,0-17,7.611-17,17s7.611,17,17,17  c6.319,0,11.82-3.455,14.75-8.571l-3.475-1.986C44.032,45.354,39.823,48,35,48c-7.168,0-13-5.832-13-13c0-7.168,5.832-13,13-13  c3.585,0,6.828,1.464,9.18,3.82l-4.23,4.23H51.211z"/>
-           </svg>
-        </a>
+
+
 
 
     </div>
@@ -533,37 +631,65 @@ input[type="date"]::-webkit-inner-spin-button {
 
 <script>
 
-function ShowAlert(){
-    const button = document.getElementById('refresh-button');
+function showAlert(){
+    const button = document.getElementById('refreshButton');
+
+    // Add the necessary CSS classes to the button
+    button.classList.add('disabled');
+
     button.disabled = true;
-    console.log(button.previousElementSibling);
-    const Alert = button.previousElementSibling;
-    const svg = button.querySelector('svg');
-    console.log(svg);
-    svg.style.fill = "grey";
-    Alert.classList.remove('hidden');
-}
 
-function HideAlert(){
-    const button = document.getElementById('refresh-button');
-     button.disabled = false;
-    const Alert = button.previousElementSibling;
-    const svg = button.querySelector('svg');
-    svg.style.fill = "black";
-    Alert.classList.add('hidden');
+
+    // Create a tooltip element
+    const tooltipText = document.createElement('p');
+    tooltipText.innerText = "Please Wait your request is in Progress";
+    tooltipText.classList.add('tooltiptext'); // Use classList.add() to add the class
+
+    // Append the tooltip to the button's parent
+    button.parentElement.appendChild(tooltipText); // Use appendChild() instead of append()
+
+
+
 
 }
 
+function hideAlert(){
+    const button = document.getElementById('refreshButton');
+
+    // Add the necessary CSS classes to the button
+    button.classList.remove('disabled');
+
+    button.disabled = false;
+    const tooltipText = button.parentElement.querySelector('.tooltiptext');
+    tooltipText.remove();
+
+}
+
+function openModal(){
+    const Dialog = document.getElementById('mainDialog');
+    const closeDialogButton = document.getElementById('error-close_button');
+    Dialog.classList.add('flex');
+    Dialog.classList.remove('hidden');
+}
+
+function hideModal(){
+    const Dialog = document.getElementById('mainDialog');
+    Dialog.classList.add('hidden');
+    Dialog.classList.remove('flex')
 
 
-async function PostRequestCards(event){
+
+}
+
+async function postRequestCards(event){
 
     const csrfToken = getCSRFToken();
    try{
-            ShowAlert();
+            hideModal();
+            showAlert()
             if(localStorage.getItem('task_id')){
 
-                GetRequestCard(localStorage.getItem('task_id'));
+                getRequestCards(localStorage.getItem('task_id'));
             }
             else{
                 const response = await fetch('dashboardapi/',
@@ -580,14 +706,15 @@ async function PostRequestCards(event){
             }
             const data = await response.json();
             localStorage.setItem('task_id',data.task_id);
-            GetRequestCard(data.task_id);
+            getRequestCards(data.task_id);
 
 
         }
 
 
    }catch(e){
-         HideAlert();
+         hideModal();
+         hideAlert();
         console.log(e);
    }
 
@@ -596,7 +723,7 @@ async function PostRequestCards(event){
 }
 
 
-async function GetRequestCard(taskId) {
+async function getRequestCards(taskId) {
     try {
         const response = await fetch(`dashboardapi/?task_id=${taskId}`);
         if (!response.ok) {
@@ -618,16 +745,17 @@ async function GetRequestCard(taskId) {
 
 
             }
-             HideAlert();
+
+             hideAlert();
             console.log(data);
         } else {
             // Continue polling
             setTimeout(() => {
-                GetRequestCard(taskId);
+                getRequestCards(taskId);
             }, 20000);
         }
     } catch (error) {
-        HideAlert();
+        hideAlert();
         console.error('Fetch error:', error);
         // Handle the error as needed
     }

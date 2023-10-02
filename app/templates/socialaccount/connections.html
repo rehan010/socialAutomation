@@ -343,6 +343,43 @@
             </fieldset>
         </form>
     </div>
+        <dialog class="main-modal error fixed w-full h-100 inset-0 z-50 overflow-hidden hidden justify-center items-center animated fadeIn faster"
+            style="background: rgba(0,0,0,.7);" id="error-modal">
+            <div
+                class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-lg mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                <div class="modal-content py-2 text-left px-6">
+
+                    <div class="flex items-center pb-3">
+                        <p class="flex flex-1 justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="60" height="60" viewBox="0 0 50 50">
+                                  <path d="M 25 2 C 12.309295 2 2 12.309295 2 25 C 2 37.690705 12.309295 48 25 48 C 37.690705 48 48 37.690705 48 25 C 48 12.309295 37.690705 2 25 2 z M 25 4 C 36.609824 4 46 13.390176 46 25 C 46 36.609824 36.609824 46 25 46 C 13.390176 46 4 36.609824 4 25 C 4 13.390176 13.390176 4 25 4 z M 25 11 A 3 3 0 0 0 22 14 A 3 3 0 0 0 25 17 A 3 3 0 0 0 28 14 A 3 3 0 0 0 25 11 z M 21 21 L 21 23 L 22 23 L 23 23 L 23 36 L 22 36 L 21 36 L 21 38 L 22 38 L 23 38 L 27 38 L 28 38 L 29 38 L 29 36 L 28 36 L 27 36 L 27 21 L 26 21 L 22 21 L 21 21 z"></path>
+                            </svg>
+                        </p>
+                        <div class="modal-close cursor-pointer z-50" id="error-close_button">
+                            <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                viewBox="0 0 18 18">
+                                <path
+                                    d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+                    <!--Footer-->
+                    <div class="flex justify-center py-2">
+                        <p class="w-full text-center text-sm leading-6">
+                            Please Connect Facebook to Continue posting on instagram.
+                            <br/>
+                            Instagram Account Should Be Connected to Facebook Page
+                            <br />
+
+                            <span>For More Detail Visit. &nbsp;<a class="text-blue-800" href="https://developers.facebook.com/docs/instagram-api/overview#pages" target="_blank">here</a></span>
+                        </p>
+
+
+                    </div>
+                </div>
+            </div>
+        </dialog>
 
 
 
@@ -357,13 +394,38 @@
 
 <script>
 
+
+    document.cookie = "last_visited=" + document.referrer;
+
+    var error = "{{error}}"
+    console.log(error);
+    if(error !== ""){
+        const myDialog = document.getElementById('error-modal');
+        const closeDialogButton = document.getElementById('error-close_button');
+        myDialog.classList.add('flex');
+        myDialog.classList.remove('hidden');
+
+        closeDialogButton.addEventListener('click',function(){
+            myDialog.classList.add('hidden');
+            myDialog.classList.remove('flex');
+
+    })
+
+
+    }
+
+
+
 const modalClose = (modal) => {
     modal.classList.remove('fadeIn');
     modal.classList.add('fadeOut');
-    
+
     modal.style.display = 'none';
-    
+
 }
+
+
+
 
 const openModal = (modal) => {
     modal.classList.remove('fadeOut');
