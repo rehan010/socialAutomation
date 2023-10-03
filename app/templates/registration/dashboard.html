@@ -622,15 +622,8 @@ input[type="date"]::-webkit-inner-spin-button {
     {% csrf_token %}
 
 </div>
-<script src="{% static 'assets/js/plugins/chartjs.min.js' %}" async></script>
-<script src="{% static 'assets/js/chart-2.js' %}" async></script>
-<script src="{% static 'assets/js/chart-3.js' %}" async></script>
-<script src="{% static 'assets/js/chart-4.js' %}" async></script>
-<script src="{% static 'assets/js/chart-5.js' %}" async></script>
-
-
+<script src="{% static 'assets/js/plugins/chartjs.min.js' %}" type="text/javascript" ></script>
 <script>
-
 function showAlert(){
     const button = document.getElementById('refreshButton');
 
@@ -761,22 +754,6 @@ async function getRequestCards(taskId) {
     }
 }
 
-
-
-
-
-
-
-<!--var labels = {{labels | safe}};-->
-<!--var data_ln = {{data_ln | safe}};-->
-<!--var data_fb = {{data_fb | safe}};-->
-<!--var data_insta = {{data_insta | safe}};-->
-
-<!--var linkedInCounts = {{linkedin_counts | safe}};-->
-<!--var facebookCounts = {{facebook_counts | safe}};-->
-<!--var instagramCounts = {{instagram_counts | safe}};-->
-<!--var months = {{months | safe}};-->
-
 function getCSRFToken() {
         const csrfTokenInput = document.querySelector('input[name=csrfmiddlewaretoken]');
         if (csrfTokenInput) {
@@ -876,8 +853,8 @@ fromDate.max = today;
 <!--</table>-->
 
 <!--{%endif%}-->
-
-<!--<script src="{% static 'assets/js/chart-1.js' %}" async></script>-->
-
-
+<script src="{% static 'assets/js/chart-2.js' %}" type="text/javascript" ></script>
+<script src="{% static 'assets/js/chart-3.js' %}" type="text/javascript" ></script>
+<script src="{% static 'assets/js/chart-4.js' %}" type="text/javascript" ></script>
+<script src="{% static 'assets/js/chart-5.js' %}" type="text/javascript" ></script>
 {%endblock%}
