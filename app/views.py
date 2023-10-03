@@ -2162,6 +2162,7 @@ class PostDeleteView(DestroyAPIView):
 
                     access_token = post_urn.org.access_token
                     urn = post_urn.urn
+                    page = Post_urn.objects.get(id = page_id).org
 
                     if comment_urn:
                         response['message'] = delete_meta_posts_comment(access_token, comment_urn)
@@ -2172,6 +2173,7 @@ class PostDeleteView(DestroyAPIView):
 
                         if response['message'] == 'success':
                             post.post_urn.remove(post_urn)
+                            post.prepost_page.remove(page)
                             post_urn.is_deleted = True
                             post_urn.save()
                             if len(post.post_urn.all()) == 0:
@@ -2233,6 +2235,7 @@ class PostDeleteView(DestroyAPIView):
                                 post.delete()
                 else:
                     post_urn = page_post.urn
+                    page = Post_urn.objects.get(id = page_id).org
                     access_token = page_post.org.access_token
 
                     if comment_urn:
@@ -2244,11 +2247,13 @@ class PostDeleteView(DestroyAPIView):
 
                         if response['message'] == 'success':
                             post.post_urn.remove(page_post)
+                            post.prepost_page.remove(page)
                             page_post.is_deleted = True
                             page_post.save()
 
                             if len(post.post_urn.all()) == 0:
                                 post.delete()
+
 
             except Exception as e:
                 return 'failed'
@@ -3196,7 +3201,7 @@ class LikeApiView(APIView):
     def delete(self, request, page_id, post_id, *kwargs):
         page_id = self.kwargs['page_id']
         post_id = self.kwargs['post_id']
-        comment_urn = self.request.data.get('urn')
+        comment_urn = self.request.GET.get('urn')
         unlike_response = {"like_response":"error"}
         if self.request.GET.get('page_name') == "facebook":
             try:

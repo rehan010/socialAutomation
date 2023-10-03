@@ -42,34 +42,34 @@
         100% { transform: rotate(360deg); }
     }
 
-    .tooltipnew {
-        position: relative;
-        cursor: pointer;
-    }
+        .tooltipnew {
+            position: relative;
+            cursor: pointer;
+        }
 
-    .tooltipnew .tooltiptext {
-        visibility: hidden;
-        width: 120px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        font-size:13px;
-        border-radius: 5px;
-        padding: 5px;
-        position: absolute;
-        z-index: 1;
-        bottom: -150%;
-        left: 50%;
-        margin-left: -60px;
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
+        .tooltipnew .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            font-size:13px;
+            border-radius: 5px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: -150%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
 
-        /* Show the tooltip on hover */
-    .tooltipnew:hover .tooltiptext {
-        visibility: visible;
-        opacity: 1;
-    }
+            /* Show the tooltip on hover */
+        .tooltipnew:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
 
 
 
@@ -163,7 +163,7 @@
                 {% if user_role == 'MEMBER' and permission == 'WRITE' and request.GET.page_name != "instagram" %}
                 {% if is_liked %}
                 <button onclick="deleteLike('',event)" type="button" class="like-button relative focus:outline-red">
-                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                    <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart" xmlns="http://www.w3.org/2000/svg"
                          fill="red" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -171,7 +171,7 @@
                 </button>
                 {% else %}
                 <button onclick="postLike('',event)" type="button" class="like-button relative focus:outline-red">
-                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                    <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart" xmlns="http://www.w3.org/2000/svg"
                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -181,15 +181,15 @@
                 {% elif post.user == request.user and request.GET.page_name != "instagram" %}
                 {% if is_liked %}
                 <button onclick="deleteLike('',event)" type="button" class="like-button relative focus:outline-red">
-                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
-                         fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart" xmlns="http://www.w3.org/2000/svg"
+                         fill="red" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
                 </button>
                 {% else %}
                 <button onclick="postLike('',event)" type="button" class="like-button relative focus:outline-red">
-                    <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+                    <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart" xmlns="http://www.w3.org/2000/svg"
                          fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -210,7 +210,7 @@
                 </div>
 
                 {% endif %}
-                <span id="likes-count" class="text-gray-600 text-sm font-bold ml-1"> {{ no_likes }} Likes</span>
+                <span id="likes-count" class="text-gray-600 text-sm font-bold ml-1"> {{ no_likes }}</span>
             </div>
             <div class="flex items-center">
                         <span class="mr-3 inline-flex items-center cursor-pointer">
@@ -222,7 +222,7 @@
                         </span>
 
                 {% if post.comment_check %}
-                <span class="text-gray-600 text-sm font-bold">{{ no_comments }} Comments</span>
+                <span class="text-gray-600 text-sm font-bold" id="commentCount">{{ no_comments }} Comments</span>
                 {% if provider_name != "instagram" %}
                     {% if user_role == 'MEMBER' and permission == 'WRITE' or post.user == request.user %}
                         <div class="mx-4 relative cursor-pointer">
@@ -355,9 +355,9 @@
                             {% if comment.liked %}
                             <button onclick="deleteLike('{{ comment.comment_urn }}',event)" type="button"
                                     class="like-button relative focus:outline-red">
-                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart"
                                      xmlns="http://www.w3.org/2000/svg"
-                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                     fill="red" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                 </svg>
@@ -365,7 +365,7 @@
                             {% else %}
                             <button onclick="postLike('{{ comment.comment_urn }}',event)" type="button"
                                     class="like-button relative focus:outline-red">
-                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart"
                                      xmlns="http://www.w3.org/2000/svg"
                                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -385,9 +385,9 @@
                             {% if comment.liked %}
                             <button onclick="deleteLike('{{ comment.comment_urn }}',event)" type="button"
                                     class="like-button relative focus:outline-red">
-                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart"
                                      xmlns="http://www.w3.org/2000/svg"
-                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                     fill="red" viewBox="0 0 24 24" >
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                 </svg>
@@ -395,7 +395,7 @@
                             {% else %}
                             <button onclick="postLike('{{ comment.comment_urn }}',event)" type="button"
                                     class="like-button relative focus:outline-red">
-                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart"
                                      xmlns="http://www.w3.org/2000/svg"
                                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -461,9 +461,9 @@
                                             {% if reply.liked %}
                                             <button onclick="deleteLike('{{ reply.comment_urn }}',event)" type="button"
                                                     class="like-button relative focus:outline-red">
-                                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                                <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart"
                                                      xmlns="http://www.w3.org/2000/svg"
-                                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                                     fill="red" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                                 </svg>
@@ -471,7 +471,7 @@
                                             {% else %}
                                             <button onclick="postLike('{{ reply.comment_urn }}',event)" type="button"
                                                     class="like-button relative focus:outline-red">
-                                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                                <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart"
                                                      xmlns="http://www.w3.org/2000/svg"
                                                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -486,9 +486,9 @@
                                             {% if reply.liked %}
                                             <button onclick="deleteLike('{{ reply.comment_urn }}',event)" type="button"
                                                     class="like-button relative focus:outline-red">
-                                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                                <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart"
                                                      xmlns="http://www.w3.org/2000/svg"
-                                                     fill="red" viewBox="0 0 24 24" stroke="currentColor">
+                                                     fill="red" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                                 </svg>
@@ -496,7 +496,7 @@
                                             {% else %}
                                             <button onclick="postLike('{{ reply.comment_urn }}',event)" type="button"
                                                     class="like-button relative focus:outline-red">
-                                                <svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart"
+                                                <svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart"
                                                      xmlns="http://www.w3.org/2000/svg"
                                                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -729,6 +729,11 @@
         parentButton.onclick = (event) => deleteLike(urn,event);
 
         like.setAttribute("fill","red");
+        if(like.tagName === "path"){
+             like.parentElement.removeAttribute('stroke');
+        }else{
+            like.removeAttribute('stroke');
+        }
         if((urn === null || urn === '') && data['like_count']){
             const liketextDiv = document.getElementById('likes-count');
             liketextDiv.innerText = data['like_count'];
@@ -751,28 +756,31 @@
       const parentButton = event.currentTarget;
       parentButton.disabled = true;
 
-        let like = parentButton.querySelector("path");
-      const json = { 'urn': urn }
-
-      const res = await fetch(
-          `/posts/like/${post_id}/${page_id}?page_name=${provider_name}`,{
+       let like = parentButton.querySelector("path");
+       const res = await fetch(
+          `/posts/like/${post_id}/${page_id}?page_name=${provider_name}&urn=${urn}`,{
               method:'Delete',
                headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
                 },
-               body: JSON.stringify(json)
+
         });
       const data = await res.json();
         parentButton.onclick = (event) => postLike(urn ,event);
         like.setAttribute("fill","none");
         parentButton.disabled = false;
-        if((urn === null || urn === '') && data['like_count']){
+
+        if(like.tagName === "path"){
+             like.parentElement.setAttribute('stroke','currentColor');
+
+        }else{
+            like.parentElement.setAttribute('stroke','currentColor');
+        }
+        if((urn === null || urn === '') && (data['like_count'] == 0 || data['like_count'])){
             const liketextDiv = document.getElementById('likes-count');
             liketextDiv.innerText = data['like_count'];
         }
-
-
     }
 
 
@@ -817,7 +825,6 @@
     }
 
   function renderComment(data){
-
         const ParentContainer = document.querySelector('.comment_container');
         const CommentContainer1 = document.createElement('div');
         CommentContainer1.classList = "w-full rounded-lg p-3";
@@ -852,12 +859,6 @@
         nameTag.classList = "font-bold";
         nameTag.textContent = data['name'];
         CommentContent.append(nameTag)
-
-
-
-
-
-
         var currentUser = "{{request.user}}"
         var postUser = "{{post.user}}"
 
@@ -938,7 +939,7 @@
             LikeButton.classList = "like-button relative focus:outline-red";
             LikeButton.type = "button";
             LikeButton.onclick = (event) => postLike(data["comment_urn"],event);
-            const LikeIcon = `<svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+            const LikeIcon = `<svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart" xmlns="http://www.w3.org/2000/svg"
                                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -1021,10 +1022,7 @@
             ReplyLikeDiv.insertBefore(replyContainer,ReplyDialogBox);
 
         }
-        console.log(data);
-        console.log(data['next']);
         if(data['next']){
-            console.log(1);
             const nextLinkDiv = document.createElement('div');
             nextLinkDiv.classList = "text-sm p-2";
             const nextLink = document.createElement('a');
@@ -1138,7 +1136,7 @@
             const anchorTag = document.createElement('a');
             anchorTag.onclick = ()=>delete_post_comments(anchorTag);
             anchorTag.classList = "ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline";
-            anchorTag.textContent = "Delete Comment"
+            anchorTag.textContent = "Delete Reply"
             const deleteIcon =  document.createElement('i');
             deleteIcon.classList = "fa-solid fa-trash mx-2";
 
@@ -1205,7 +1203,7 @@
         LikeButton.classList = "like-button relative focus:outline-red";
         LikeButton.type = "button";
         LikeButton.onclick = (event) => postLike(data["comment_urn"],event);
-        const LikeIcon = `<svg class="fill-heart text-gray-700 inline-block h-5 w-5 heart" xmlns="http://www.w3.org/2000/svg"
+        const LikeIcon = `<svg class="fill-heart text-gray-700 inline-block h-6 w-6 heart" xmlns="http://www.w3.org/2000/svg"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -1228,15 +1226,10 @@
     if(type === "nested"){
         return parentContainer;
     }
-
     if (type !== "pagination" && !previousElement) {
         MegaParentContainer.insertBefore(parentContainer, ReplyDialogBox);
     }
 }
-
-
-
-
     function showSpinner(button) {
         const spinner = document.createElement('div');
         spinner.className = 'spinner';
@@ -1247,8 +1240,6 @@
 
     // Function to hide the spinner and set the button text
     function hideSpinner(button,text) {
-        console.log(button);
-        console.log(text);
         button.innerHTML = text;
         button.disabled = false;
     }
@@ -1284,6 +1275,13 @@
         hideSpinner(event.target, "Post");
         renderComment(data['comment_response']);
         commentInput.value = "";
+        const commentCountSpan = document.getElementById('commentCount');
+        let count = commentCountSpan.innerText.split(' ');
+        let newCommentCount = Number(count[0])+1;
+        count[0]= newCommentCount;
+        let newCount = count.join(" ");
+        commentCountSpan.innerText = newCount;
+
         } catch (error) {
             // Handle errors here
             console.error('Error:', error);

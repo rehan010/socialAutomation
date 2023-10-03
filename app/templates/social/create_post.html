@@ -64,7 +64,7 @@
 
 </style>
 
-<div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl bg-white">
+<div class="editor mx-auto w-10/12 relative flex flex-col text-gray-800 border border-gray-300 pb-4 px-4 pt-12 shadow-lg max-w-2xl bg-white">
   <form
     method="post"
     id="yourForm"
@@ -82,7 +82,7 @@
 <!--    </div>-->
 <!--    {% endif %}-->
 
-
+    <a class="absolute top-2 right-2 text-lg text-red-500 cursor-pointer hover:no-underline no-underline" href="{% url 'my_posts' user.pk %}">❌</a>
     <div class="absolute top-0 right-0 mt-10 ml-10 mb-2 z-100" style="z-index:200;" id="errorMessageContainer">
       {% for message in messages %}
           <div class="alert flex items-center bg-blue-500 text-white sm:text-sm text-xs font-bold px-4 py-3 mb-2 message ease-out duration-300 opacity-0.5" role="alert">
@@ -137,6 +137,7 @@
     <div class="error-message">{{ form.post.errors }}</div>
     {% endif %}
     <div class="flex items-center justify-center w-full">
+
       <label
         for="dropzone-file"
         class="flex flex-col items-center justify-center w-full h-36 border-dashed border-2 border-gray-200 bg-white-100 rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-white-700 hover:bg-gray-100 hover:border-gray-400"

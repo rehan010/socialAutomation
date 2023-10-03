@@ -593,9 +593,10 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
         data['media_type'] = 'VIDEO'
     else:
         data['image_url'] = media[0].image_url
-
+    print(data)
     # print("data is",data)
     response = requests.post(url, headers=headers, json=data)
+    print(response.json())
     if response.status_code == 400:
         post.status = 'FAILED'
         post.save()
@@ -613,6 +614,7 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
 
             response = requests.request("GET", url=check_url, headers=headers)
             status = response.json().get("status_code")
+
             # print(status)
             if status == "FINISHED":
                 break
@@ -629,6 +631,7 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
     }
 
     response = requests.post(url, headers=headers, data=data)
+
     if response.status_code == 200:
         response = response.json()
         post_id = response.get('id')
@@ -789,6 +792,7 @@ def facebook_post_multiimage(data, images, post, sharepage):
 def create_insta_post(page_id, access_token, media, post, page):
     if media:
         if len(media) > 1:
+            print(2)
             instagram_multi_media(page_id, access_token, media, post, page)
         else:
             instagram_post_single_media(page_id, access_token, media, post, page)
@@ -1970,8 +1974,9 @@ def delete_post_like_linkedin(post_urn, social, access_token):
     like_response = requests.request("DELETE", url, headers=headers, data=payload)
 
 
-    if like_response.status_code == 201:
-        like_response = like_response.json()
+    if like_response.status_code == 204:
+        like_response = "success"
+
     else:
         like_response = "error"
 
@@ -1990,6 +1995,7 @@ def delete_post_like_linkedin(post_urn, social, access_token):
     like_count = requests.request("GET", url, headers=headers, data=payload)
     like_count = like_count.json()
     t_likes = like_count['likesSummary']['aggregatedTotalLikes']
+
 
 
     return like_response ,t_likes
