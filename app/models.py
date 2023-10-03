@@ -179,6 +179,7 @@ class SharePage(models.Model):
     provider = models.CharField(max_length=255, blank=True)
     access_token = models.CharField(max_length=500, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)
 
 
     def __str__(self):

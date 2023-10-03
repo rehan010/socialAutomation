@@ -791,13 +791,13 @@
         const json = { 'urn': urn , 'actor':actor , 'comment_id':comment_id}
 
         const res = await fetch(
-          `/delete-post/${post_id}?page_name=${provider_name}&page_id=${page_id}`,{
+          `/delete-post/${post_id}?page_name=${provider_name}&page_id=${page_id}&urn=${urn}&actor=${actor}&comment_id=${comment_id}`,{
               method:'Delete',
                headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
                 },
-               body: JSON.stringify(json)
+
         });
         const data = await res.json();
 

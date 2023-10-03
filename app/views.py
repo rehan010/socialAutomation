@@ -2062,6 +2062,8 @@ class PostApiView(ListAPIView):
 
         if platform == 'ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
             post = posts.filter(prepost_page__provider="linkedin").distinct()
+
+
             if search is not None and search != '':
                 post = post.filter(
                     Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
@@ -2091,8 +2093,6 @@ class PostApiView(ListAPIView):
                     Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
                     Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
             post = post.order_by('-created_at')
-
-
         else:
             post = []
 
@@ -2120,9 +2120,9 @@ class PostDeleteView(DestroyAPIView):
     serializer_class = PostImageSerializer
     def delete(self, request, *args, **kwargs):
         page_id = self.request.GET.get('page_id')
-        comment_urn = self.request.data.get('urn')
-        actor = self.request.data.get('actor')
-        comment_id = self.request.data.get('comment_id')
+        comment_urn = self.request.GET.get('urn')
+        actor = self.request.GET.get('actor')
+        comment_id = self.request.GET.get('comment_id')
 
         page_name = self.request.GET.get('page_name')
         response = {}
@@ -2131,8 +2131,9 @@ class PostDeleteView(DestroyAPIView):
         if self.request.GET.get('page_name') == "facebook" or page_name == 'facebook':
             try:
                 post_urn = post.post_urn.all().filter(pk=page_id).first()
-                if post_urn is None:
+                if post_urn is None and (comment_urn == '' or comment_urn is None):
                     post_urn1 = post.post_urn.all().filter(org__provider='facebook')
+
                     if len(post_urn1) > 0:
                         for urn1 in post_urn1:
                             access_token = urn1.org.access_token
@@ -2146,6 +2147,9 @@ class PostDeleteView(DestroyAPIView):
                                 urn1.is_deleted = True
                                 urn1.save()
                                 post.prepost_page.remove(page)
+                                prepost = post.prepost_page.all().filter(provider='facebook')
+                                for page in prepost:
+                                    post.prepost_page.remove(page)
                                 if len(post.post_urn.all()) == 0:
                                     post.delete()
                     else:
@@ -2181,7 +2185,7 @@ class PostDeleteView(DestroyAPIView):
 
 
                 page_post = post.post_urn.all().filter(pk=page_id).first()
-                if page_post is None:
+                if page_post is None and (comment_urn == '' or comment_urn is None):
                     prepost = post.prepost_page.all().filter(provider='instagram')
                     for page in prepost:
                         post.prepost_page.remove(page)
@@ -2201,7 +2205,7 @@ class PostDeleteView(DestroyAPIView):
         elif self.request.GET.get('page_name') == "linkedin" or page_name == 'linkedin':
             try:
                 page_post = post.post_urn.all().filter(pk=page_id).first()
-                if page_post is None:
+                if page_post is None and (comment_urn == '' or comment_urn is None):
                     post_urn1 = post.post_urn.all().filter(org__provider='linkedin')
                     if len(post_urn1) > 0:
                         for urn1 in post_urn1:
@@ -2215,6 +2219,9 @@ class PostDeleteView(DestroyAPIView):
                                 post.post_urn.remove(urn1)
                                 urn1.is_deleted = True
                                 urn1.save()
+                                prepost = post.prepost_page.all().filter(provider='linkedin')
+                                for page in prepost:
+                                    post.prepost_page.remove(page)
 
                                 if len(post.post_urn.all()) == 0:
                                     post.delete()
