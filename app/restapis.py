@@ -1816,7 +1816,9 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                 liked = None
             if comment_urn:
                 result = get_nested_comments(access_token, comment_urn)
-                replies = result
+                replies = result[0]
+                reply_next = result[1]
+
             else:
                 replies = None
             texts = element.get('message', {}).get('text')
@@ -1844,6 +1846,7 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                     obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
                            "comment_urn": comment_urn, "liked": liked, "comment_id": comment_id, "actor": actor}
                     obj['replies'] = replies
+                    obj['next'] = reply_next
                     data.append(obj)
                 else:
 
@@ -1871,12 +1874,14 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                     obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
                            "comment_urn": comment_urn, "liked": liked, "comment_id": comment_id, "actor": actor}
                     obj['replies'] = replies
+                    obj['next'] = reply_next
                     data.append(obj)
             else:
                 obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", "liked": False,
                        "comment_id": "", "actor": ""}
                 replies = None
                 obj['replies'] = replies
+                obj['next'] = reply_next
                 data.append(obj)
 
         return t_likes, t_comments, data, next

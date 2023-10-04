@@ -33,6 +33,7 @@ urlpatterns = [
     path('assign_manager/', assign_manager.as_view(), name='assign_manager'),
     path('change_role/', change_role.as_view(), name='change_role'),
     path('delete_invite/', delete_invite.as_view(), name='delete_invite'),
+    path('user_approval/', user_approval.as_view(), name='user_approval'),
     path('accept_invitation/', views.accept_invitation_view, name='accept_invitation_view'),
     path('reject_invitation/', views.reject_invitation_view, name='reject_invitation_view'),
 
@@ -63,9 +64,6 @@ urlpatterns = [
 
     path('social/social/profile/', SocialProfileView.as_view(), name="social_profile"),
     path('social/social/profile/api/', SocialProfileAPI.as_view(), name="social_profile_api"),
-
-
-
     path('api_posts/', PostApiView.as_view(), name='api_posts'),
 
 

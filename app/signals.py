@@ -253,9 +253,9 @@ def gather_post_insight(instance):
         print("tried 3")
         since = datetime.now(timezone.utc).replace(minute=0,hour=0,second=0,microsecond=0)
         until = datetime.now(timezone.utc)
-        post_urns = Post_urn.objects.filter(org=instance).values_list('urn', flat=True)
+        post_urns = Post_urn.objects.filter(org=instance, is_deleted=False).values_list('urn', flat=True)
         if instance.provider == "facebook":
-            fb_post_insights(post_urns,instance,since,until)
+            fb_post_insights(post_urns, instance, since, until)
         elif instance.provider == "instagram":
 
             since = datetime.now(timezone.utc) - timedelta(days=1)

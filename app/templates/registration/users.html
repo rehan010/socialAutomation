@@ -295,6 +295,89 @@
           </div>
         </div>
     <br>
+    {{request.user.superuser_status}}
+    {% if request.user.is_superuser == True %}
+    <div class="flex flex-wrap -mx-3">
+          <div class="flex-none w-full max-w-full px-3">
+            <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
+              <div class="p-6 pb-0 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
+                <h6 class="text-xl font-bold">Approvals</h6>
+              </div>
+              <div class="flex-auto px-0 pt-0 pb-2">
+                <div class="p-0 overflow-x-auto">
+                  <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                    <thead class="align-bottom">
+                      <tr>
+                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Name</th>
+                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Email</th>
+                        <th class="px-6 py-3 pl-2 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Organization</th>
+                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Created On</th>
+                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Status</th>
+                        <th class="px-6 py-3 font-semibold capitalize align-middle bg-transparent border-b border-gray-200 border-solid shadow-none tracking-none whitespace-nowrap text-slate-400 opacity-70"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+
+
+                    {% for user in users %}
+                    <tr>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                          <div class="flex px-2 py-1">
+                                {% if user.profile_image %}
+                                <img src="{{ user.profile_image.url }}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" >
+                                {% else %}
+                                     <img src="{% static 'image/default.png' %}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                {% endif %}
+                             <div class="flex flex-col justify-center">
+                                  {% if user.first_name == '' %}
+                                  <h6 class="mb-0 text-sm leading-normal">{{user.username | title }}
+                                        </h6>
+                                  {% else %}
+                                  <h6 class="mb-0 text-sm leading-normal">{{user.first_name | title}}
+                                        {{user.last_name|truncatewords:0}}</h6>
+                                  {% endif %}
+                             </div>
+                          </div>
+                        </td>
+                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                          <div class="flex px-2 py-1">
+                              <div class="flex flex-col justify-center">
+                                    <p class="mb-0 text-xs leading-tight text-slate-400">{{user.email}}</p>
+                              </div>
+                          </div>
+                        </td>
+                        <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
+                            {% for company in user.company.all %}
+                            <p class="mb-0 text-xs font-semibold text-center leading-tight">{{company.name}}</p>
+                            {% endfor %}
+                        </td>
+                        <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                              <span class="text-xs font-semibold leading-tight text-slate-400">{{user.date_joined}}</span>
+                        </td>
+                        <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
+                            <div class="flex gap-2 justify-center">
+                                <button type="submit"
+                                        class="approval bg-gradient-to-tl from-green-600 to-green-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white"
+                                        data-target1="{{ user.id }}">Approve
+                                </button>
+                                <button type="button"
+                                        class="reject bg-gradient-to-tl from-red-600 to-red-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white"
+                                        data-target1="{{ user.id }}">Reject
+                                </button>
+                            </div>
+                        </td>
+                      </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+    {% endif %}
 <script>
 
         document.getElementById("addPeopleBtn").addEventListener("click", function () {
@@ -800,6 +883,88 @@
                     'X-CSRFToken': csrfToken,
                 },
                 body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                location.reload();
+                const target = button.getAttribute('data-target1');
+                const dialog = document.getElementById(target);
+                if (dialog) {
+                    dialog.style.display = 'none';
+                }})
+            .catch(error => {
+                console.error("Error sending api request ", error);
+            });
+
+        });
+
+    });
+
+    const approval = document.querySelectorAll('.approval');
+
+    approval.forEach(button => {
+        button.addEventListener('click', () => {
+
+            const csrfToken = getCSRFToken();
+            const target = button.getAttribute('data-target1');
+
+            const user = target.replace("dialog", "");
+
+
+            const url = `/user_approval/`;
+            const data = {
+                user: user,
+                csrfmiddlewaretoken: csrfToken,
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                location.reload();
+                const target = button.getAttribute('data-target1');
+                const dialog = document.getElementById(target);
+                if (dialog) {
+                    dialog.style.display = 'none';
+                }})
+            .catch(error => {
+                console.error("Error sending api request ", error);
+            });
+
+        });
+
+    });
+
+    const reject = document.querySelectorAll('.reject');
+
+    reject.forEach(button => {
+        button.addEventListener('click', () => {
+
+            const csrfToken = getCSRFToken();
+            const target = button.getAttribute('data-target1');
+            const user = target.replace("dialog", "");
+
+
+            const url = `/user_approval/?user=${user}`;
+            const data = {
+                user: user,
+                csrfmiddlewaretoken: csrfToken,
+            };
+
+            fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
             })
             .then(response => response.json())
             .then(data => {

@@ -166,6 +166,7 @@ class UserView(LoginRequiredMixin,TemplateView):
         if user_manager != None:
             context['invites_admin'] = InviteEmploye.objects.filter(Q(invited_by=self.request.user) | Q(invited_by=user_manager))
         context['invites'] = InviteEmploye.objects.filter(~Q(is_deleted=True), invited_by=self.request.user)
+        context['users'] = User.objects.filter(~Q(is_active=True), manager=None)
 
         return context
 
@@ -271,6 +272,69 @@ class delete_invite(CreateView):
             return JsonResponse({'error': 'Invite not found.'}, status=400)
 
 
+from asgiref.sync import async_to_sync
+
+class user_approval(APIView):
+    model = User
+
+
+    def approve_email(self,user):
+       token = generate_random_token()
+       invite_link = f"https://cloudwind-smartpresence-staging.com/accounts/login?token={token}"
+       email = user.email
+
+       context = {'recipient_name': user.username, 'invite_link': invite_link}
+       email_subject = 'REQUEST APPROVED BY SMART PRESENCE'
+       email_body = render_to_string('registration/emails.html', context)
+
+       send_mail(email_subject, email_body, 'smart.presence.help@gmail.com', [email])
+
+
+
+
+    def post(self, request, *kwargs):
+        if self.request.method == 'POST':
+
+            user_id = self.request.data.get('user')
+            user = User.objects.get(id=user_id)
+            user.is_active = True
+            user.save()
+
+            self.approve_email(user)
+
+            return JsonResponse({'message': 'Request approved of' + user.username})
+
+        else:
+
+            return JsonResponse({'error': 'Invite not found.'}, status=400)
+
+    def delete(self, request, *kwargs):
+        if self.request.method == 'DELETE':
+
+            user_id = self.request.GET.get('user')
+            user = User.objects.get(id=user_id)
+            token = generate_random_token()
+            email = user.email
+
+            context = {'recipient_name': user.username
+                       }
+            email_subject = 'REQUEST REJECTED BY SMART PRESENCE'
+            email_body = render_to_string('registration/rejected_admin.html', context)
+
+            # Send the email using Django's email functionality
+            send_mail(email_subject, email_body, 'smart.presence.help@gmail.com', [email])
+            user.delete()
+
+
+
+            return JsonResponse({'message': 'Request approved of' + user.username})
+
+        else:
+
+            return JsonResponse({'error': 'Invite not found.'}, status=400)
+
+
+
 class assign_manager(CreateView):
     model = InviteEmploye
 
@@ -297,21 +361,19 @@ class assign_manager(CreateView):
                     invite.save()
                     selected_user.is_invited = True
                     selected_user.save()
-                    # reject_link = f"https://localhost:8000/reject_invitation?token={token}"
-                    reject_link = f"https://cloudwind-smartpresence-staging.com/reject_invitation?token={token}"
-                    # invite_link = f"https://localhost:8000/accept_invitation?token={token}"
+                   # invite_link = f"https://localhost:8000/accept_invitation?token={token}"
                     invite_link = f"https://cloudwind-smartpresence-staging.com/accept_invitation?token={token}"
                     email = selected_user.email
                     # email = 'anasurrehman5@gmail.com'
 
                     # Render the email template with the dynamic content
                     context = {'recipient_name': selected_user.username, 'invite_link': invite_link,
-                               'reject_link': reject_link}
+                               }
                     email_subject = 'Invitation to Join Our App'
                     email_body = render_to_string('registration/emails.html', context)
 
                     # Send the email using Django's email functionality
-                    send_mail(email_subject, email_body, 'social_presence@gmail.com', [email])
+                    send_mail(email_subject, email_body, 'smart.presence.help@gmail.com', [email])
                 else:
                     invite = InviteEmploye(token=token, invited_by=self.request.user, status='PENDING', email=email, role=role, permission=permission , manager_corp=manager_corp, expiration_date=expiration_date)
                     invite.save()
@@ -328,7 +390,7 @@ class assign_manager(CreateView):
                     email_body = render_to_string('registration/emails.html', context)
 
                     # Send the email using Django's email functionality
-                    send_mail(email_subject, email_body, 'social_presence@gmail.com', [email])
+                    send_mail(email_subject, email_body, 'smart.presence.help@gmail.com', [email])
 
                 return JsonResponse({'message': email})
 
@@ -1007,10 +1069,13 @@ class RegisterView(FormView):
             # If no company name is provided, create a new company with the user's username
             company, created = Company.objects.get_or_create(name=user.username)
             user.company.add(company)
-
+        user.is_active = False
         user.save()
-        login(self.request, user)
-        return redirect(reverse("dashboard"))
+
+        # login(self.request, user)
+        # return redirect(reverse("dashboard"))
+
+        return redirect(reverse("login"))
 
 
 class RegisterViewInvite(FormView):
@@ -1037,16 +1102,6 @@ class RegisterViewInvite(FormView):
             if self.request.user.is_authenticated:
                 logout(request)
             return super().get(request, *args, **kwargs)
-
-    # def form_invalid(self, form):
-    #
-    #     submitted_company_data = self.request.POST.get('company')
-    #     company_name = Company.objects.get(pk=submitted_company_data)
-    #
-    #     # Re-populate the form with the submitted data
-    #     form = CustomUserInvitationForm(self.request.POST, company=company_name)
-    #
-    #     return self.render_to_response(self.get_context_data(form=form))
 
     def form_valid(self, form):
 
@@ -1081,11 +1136,11 @@ class RegisterViewInvite(FormView):
             form.add_error(self.request, 'Invitation was sent to different email address')
             return self.form_invalid(form)
 
+        user.save()
 
         login(self.request, user)
-
-
         return redirect(reverse("dashboard"))
+
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
