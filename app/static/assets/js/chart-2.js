@@ -116,6 +116,23 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
                 pointHoverBackgroundColor: "#E1306C",
 
               },
+              {
+                label: "Google",
+                data: googleLikeCounts,
+
+
+                borderWidth: 3,
+                maxBarThickness: 6,
+                lineTension: 0.3,
+
+                borderColor: "#F4B400",
+                fill: false,
+                pointRadius: 4,
+
+                pointBorderColor: "#E1306C",
+                pointHoverBackgroundColor: "#E1306C",
+
+              },
             ],
           },
             options: {
