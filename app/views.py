@@ -236,11 +236,6 @@ class delete_invite(CreateView):
             invite_id = data.get('user')
             invite = InviteEmploye.objects.get(pk=invite_id)
             current_time = timezone.now()
-
-            # if invite.expiration_date < current_time:
-            #     invite.is_expired = True
-            #
-
             if invite.selected_user:
                 selected_user = User.objects.get(pk=invite.selected_user.id)
                 for company in selected_user.company.all():
@@ -253,9 +248,6 @@ class delete_invite(CreateView):
                 invite.delete()
 
                 email = selected_user.email
-                # email = 'anasurrehman5@gmail.com'
-
-                # Render the email template with the dynamic content
                 context = {'recipient_name': selected_user.username}
                 email_subject = "User's Permission Revoked"
                 email_body = render_to_string('registration/delete_emails.html', context)
@@ -2258,7 +2250,6 @@ class PostDeleteView(DestroyAPIView):
 
             except Exception as e:
                 return 'failed'
-
         elif self.request.GET.get('page_name') == "linkedin" or page_name == 'linkedin':
             try:
                 page_post = post.post_urn.all().filter(pk=page_id).first()
@@ -2279,7 +2270,6 @@ class PostDeleteView(DestroyAPIView):
                                 prepost = post.prepost_page.all().filter(provider='linkedin')
                                 for page in prepost:
                                     post.prepost_page.remove(page)
-
                                 if len(post.post_urn.all()) == 0:
                                     post.delete()
                     else:
@@ -2309,18 +2299,10 @@ class PostDeleteView(DestroyAPIView):
                             if len(post.post_urn.all()) == 0:
                                 post.delete()
 
-
             except Exception as e:
                 return 'failed'
 
         return JsonResponse(response)
-
-
-
-
-
-        # self.destroy(request, *args, **kwargs)
-        return JsonResponse({'message': 'Object deleted successfully.'})
 
 
 

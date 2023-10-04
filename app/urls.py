@@ -57,16 +57,12 @@ urlpatterns = [
     path('posts/like/<int:post_id>/<int:page_id>', LikeApiView.as_view(), name='like_apiview'),
     path('posts/reply/paginate/<int:post_id>/<int:page_id>', ReplyPagination.as_view(), name='reply_pagination'),
     path('post_draft/<int:pk>', PostDraftView.as_view(), name='post_draft'),
-
     path('delete-post/<int:pk>/', PostDeleteView.as_view(), name='delete_post'),
-
     path('social/social/connections/', ConnectionView.as_view(), name="socialaccount_connections"),
-
     path('social/social/profile/', SocialProfileView.as_view(), name="social_profile"),
     path('social/social/profile/api/', SocialProfileAPI.as_view(), name="social_profile_api"),
     path('api_posts/', PostApiView.as_view(), name='api_posts'),
-
-
-    path('social/page/', PageDataView.as_view(), name="page_data")
+    path('social/page/', PageDataView.as_view(), name="page_data"),
+    # path('invitation/delete',TemplateView.as_view(template_name = 'registration/invitation_failed.html'))
 
 ]

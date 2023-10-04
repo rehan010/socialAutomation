@@ -47,7 +47,7 @@ from django.db.models.signals import m2m_changed, pre_delete
 # def handle_list3(sender, **kwargs):
 #     post = kwargs.get('instance')
 #     # logic3(announce)
-#     print(post)
+#     modal-content py-2 text-left px-6(post)
 # def call(sender,instance,**kwargs):
 #     print(instance)
 #
@@ -250,10 +250,12 @@ def schedule_publish_task(instance):
 @shared_task
 def gather_post_insight(instance):
     try:
-        print("tried 3")
+
         since = datetime.now(timezone.utc).replace(minute=0,hour=0,second=0,microsecond=0)
         until = datetime.now(timezone.utc)
-        post_urns = Post_urn.objects.filter(org=instance, is_deleted=False).values_list('urn', flat=True)
+
+        post_urns = Post_urn.objects.filter(org=instance,is_deleted = False).values_list('urn', flat=True)
+
         if instance.provider == "facebook":
             fb_post_insights(post_urns, instance, since, until)
         elif instance.provider == "instagram":
@@ -264,9 +266,6 @@ def gather_post_insight(instance):
             instagram_account_insights(instance , since , until)
         elif instance.provider == "linkedin":
             linkedin_share_stats(instance, since, until)
-
-
-
         else:
             pass
 

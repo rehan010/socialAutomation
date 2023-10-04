@@ -208,3 +208,10 @@ class SocialStats(BaseModel):
 
     def __str__(self):
         return self.org.name + "--" + self.date.__str__()
+
+# class CeleryTask(models.Model):
+#     STATUS_TYPE = [("FINISHED","FINISHED"), ('PROCESSING', 'PROCESSING'), ('FAILED', 'FAILED')]
+#
+#     task_id = models.CharField()
+#     status = models.CharField(default='PROCESSING', max_length=100,choices = STATUS_TYPE)
+

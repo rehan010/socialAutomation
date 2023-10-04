@@ -37,6 +37,12 @@
     animation: spin 2s linear infinite;
     }
 
+    .big.spinner{
+        width:50px;
+        height: 50px;
+        border-top: 6px solid #3498db;
+    }
+
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -70,9 +76,6 @@
             visibility: visible;
             opacity: 1;
         }
-
-
-
     </style>
 <!--    <div class="absolute top-0 right-0 mt-10 ml-10 mb-2">-->
 
@@ -229,7 +232,7 @@
                             <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
                             <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
                                 <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
-                                    <a onclick="delete_post_comments(this)" data-comment-urn="{{ comment.comment_urn }}" data-actor="{{ comment.actor }}" data-comment-id="{{ comment.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
+                                    <a onclick="delete_post_comments(this)" data-comment-urn="{{ comment.comment_urn }}" data-actor="{{ comment.user_id }}" data-comment-id="{{ comment.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
                                         <i class="fa-solid fa-trash mx-2"></i> Delete Post
                                     </a>
                                 </li>
@@ -326,7 +329,7 @@
                                     <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
                                     <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
                                         <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
-                                            <a onclick="delete_post_comments(this)" data-comment-urn="{{ comment.comment_urn }}" data-actor="{{ comment.actor }}" data-comment-id="{{ comment.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
+                                            <a onclick="delete_post_comments(this)" data-comment-urn="{{ comment.comment_urn }}" data-actor="{{ comment.user_id }}" data-comment-id="{{ comment.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
                                                 <i class="fa-solid fa-trash mx-2"></i> Delete Comment
                                             </a>
 
@@ -432,7 +435,7 @@
                                                             <i class="fas fa-ellipsis-h delete-dropdownButton"></i>
                                                             <ul class="absolute text-sm before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-44 before:sm:right-7.5 before:text-5.5  origin-top list-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding py-2 text-left text-slate-500 transition-all before:absolute before:right-0 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-3 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer before:-top-5 transform-dropdown-show delete-dropdown" style="display:none;">
                                                                 <li class="relative hover:bg-gray-100 rounded-lg duration-300 lg:transition-colors">
-                                                                    <a onclick="delete_post_comments(this)" data-comment-urn="{{ reply.comment_urn }}" data-actor="{{ reply.actor }}" data-comment-id="{{ reply.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
+                                                                    <a onclick="delete_post_comments(this)" data-comment-urn="{{ reply.comment_urn }}" data-actor="{{ reply.user_id }}" data-comment-id="{{ reply.comment_id }}" class="ease-soft py-1.2 clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:text-slate-700 lg:transition-colors hover:no-underline" >
                                                                         <i class="fa-solid fa-trash mx-2"></i> Delete Reply
                                                                     </a>
 
@@ -554,7 +557,6 @@
     <!--                        </button>-->
     <!--                    </div>-->
                         {% elif post.user == request.user %}
-
                         <div class="reply-dialog hidden mt-4 w-full border flex gap-2 items-start rounded-lg p-3 mb-4">
                             {% if picture_url %}
                                 <img src="{{ picture_url }}" class="h-12 w-12 rounded-full object-cover" />
@@ -567,7 +569,6 @@
                                     Submit Reply
                                 </button>
                             </div>
-
                         </div>
 
 
@@ -589,7 +590,6 @@
     <!--                    </div>-->
                 {% endif %}
                 </div>
-
             </div>
             <br>
             {% endfor %}
@@ -604,6 +604,13 @@
         {% endif %}
     </div>
 </form>
+
+<dialog class="main-modal delete-error fixed w-full h-100 inset-0 z-50 overflow-hidden hidden justify-center items-center animated fadeIn faster" style="background: rgba(0,0,0,.7);" id="mainDialog">
+        <div class="border border-teal-500 shadow-lg modal-container flex justify-center bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+            <div class="my-4 big spinner">
+            </div>
+        </div>
+</dialog>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
@@ -788,14 +795,16 @@
         var urn = button.getAttribute('data-comment-urn');
         var actor = button.getAttribute('data-actor');
         var comment_id = button.getAttribute('data-comment-id');
-
+        console.log(comment_id);
 
         const post_id = document.getElementById('post_id').value;
         const page_id = document.getElementById('page_id').value;
         const searchParams = new URLSearchParams(window.location.search);
         const provider_name = searchParams.get('page_name');
+        const spinner = document.querySelector('.delete-error');
         const csrfToken = getCSRFToken();
-
+        spinner.classList.remove('hidden');
+        spinner.classList.add('flex');
         const json = { 'urn': urn , 'actor':actor , 'comment_id':comment_id}
 
         const res = await fetch(
@@ -810,7 +819,8 @@
         const data = await res.json();
 
         if(data['message'] == "success"  ){
-
+            spinner.classList.add('hidden');
+            spinner.classList.remove('flex');
             if(data['request'] === 'post'){
                 var userId = data['user']
                 window.location.href = `/posts/${userId}`
@@ -819,7 +829,9 @@
             }
          }
         else{
-            console.log(data['message'])
+            console.log(data['message']);
+            spinner.classList.add('hidden');
+            spinner.classList.remove('flex');
 
         }
     }
@@ -838,12 +850,15 @@
 
             imageTag.src = data['profile_image'];
         }else if(ProfileImage !== "None" && ProfileImage){
+
             let encodedProfileImage = decodeURIComponent(ProfileImage.replace(/&amp;/g, '&'));
             imageTag.src = encodedProfileImage;
         }
         else {
+
             imageTag.src = "{% static 'image/default.png' %}";
         }
+        imageTag.onerror="this.onerror=null;this.src='{% static 'image/default.png' %}'";
         imageTag.classList = "h-12 w-12 rounded-full object-cover";
 
         const CommentCard = document.createElement('div');
@@ -961,12 +976,13 @@
             ReplyDialogBox.classList = "reply-dialog hidden mt-4 w-full border flex gap-2 items-start rounded-lg p-3 mb-4";
             const ReplyImageTag = document.createElement('img');
             console.log(ProfileImage);
-            if(ProfileImage !== "None"){
+            if(ProfileImage !== "None" && ProfileImage){
                 let encodedProfileImage = decodeURIComponent(ProfileImage.replace(/&amp;/g, '&'));
                 ReplyImageTag.src = encodedProfileImage;
             }else{
                 ReplyImageTag.src = "{% static 'image/default.png' %}";
             }
+            ReplyImageTag.onerror="this.onerror=null;this.src='{% static 'image/default.png' %}'";
             ReplyImageTag.classList = "h-12 w-12 rounded-full object-cover";
             const ReplyTextAreaContainer  = document.createElement('div');
             ReplyTextAreaContainer.classList = "flex-1";
@@ -1150,7 +1166,9 @@
                 }
             })
             anchorTag.setAttribute("data-comment-urn",data['comment_urn']);
+            console.log(data);
             anchorTag.setAttribute("data-actor",data['user_id']);
+            anchorTag.setAttribute("data-comment-id",data['comment_id']);
             anchorTag.onclick = ()=> delete_post_comments(anchorTag)
             anchorTag.append(deleteIcon);
             listItem.append(anchorTag);
@@ -1251,7 +1269,7 @@
         const searchParams = new URLSearchParams(window.location.search);
         const provider_name = searchParams.get('page_name');
         const csrfToken = getCSRFToken();
-         const commentInput = event.target.previousElementSibling
+        const commentInput = event.target.previousElementSibling
         const comment = commentInput.value;
 
         if(comment === ""){
@@ -1301,7 +1319,6 @@
     const csrfToken = getCSRFToken(); // Make sure this function is defined
     const commentInput = event.target.previousElementSibling
     const comment = commentInput.value;
-
     if (comment === "") {
         return;
     }
@@ -1329,6 +1346,12 @@
         hideSpinner(event.target, "Post"); // Assuming you have the hideSpinner function defined
         renderReply(data['comment_response'], event.target); // Assuming renderReply is defined
         commentInput.value = "";
+        const commentCountSpan = document.getElementById('commentCount');
+        let count = commentCountSpan.innerText.split(' ');
+        let newCommentCount = Number(count[0])+1;
+        count[0]= newCommentCount;
+        let newCount = count.join(" ");
+        commentCountSpan.innerText = newCount;
     } catch (error) {
         // Handle errors here
         console.error('Error:', error);

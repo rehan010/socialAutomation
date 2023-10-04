@@ -12,6 +12,27 @@
     font-family:Open sans;!important
 }
 
+    .spinner {
+    display: block;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid #3498db;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+    }
+
+    .big.spinner{
+        width:50px;
+        height: 50px;
+        border-top: 6px solid #3498db;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
 .tooltiptext {
     visibility: hidden;
     opacity: 0;
@@ -400,6 +421,13 @@
     </div>
 </div>
 </div>
+
+<dialog class="main-modal delete-error fixed w-full h-100 inset-0 z-50 overflow-hidden hidden justify-center items-center animated fadeIn faster" style="background: rgba(0,0,0,.7);" id="mainDialog">
+        <div class="border border-teal-500 shadow-lg modal-container flex justify-center bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+            <div class="my-4 big spinner">
+            </div>
+        </div>
+</dialog>
 
 <script src="{% static 'customjs/images.js' %}"></script>
 <script>
@@ -1688,6 +1716,7 @@ let lastButton = null;
         var post = button.getAttribute('data-target');
         const searchParams = new URLSearchParams(window.location.search);
         const provider_name = searchParams.get('platform');
+        const spinner = document.querySelector('.delete-error');
         let page_name;
         if (provider_name === 'fb'){
             page_name = 'facebook';
@@ -1709,7 +1738,8 @@ let lastButton = null;
 
 
 
-
+        spinner.classList.remove('hidden');
+        spinner.classList.add('flex');
         const res = await fetch(
           `/delete-post/${post_id}?page_name=${page_name}`,{
               method:'Delete',
@@ -1720,16 +1750,20 @@ let lastButton = null;
 
         });
         if (res.ok) {
-        // Remove the deleted post row from the page
-        const postRow = document.querySelector(`tr[data-post-id="${post_id}"]`);
-        if (postRow) {
-          postRow.remove();
+            // Remove the deleted post row from the page
+            spinner.classList.add('hidden');
+            spinner.classList.remove('flex');
+            const postRow = document.querySelector(`tr[data-post-id="${post_id}"]`);
+            if (postRow) {
+              postRow.remove();
+            }
+            console.log("Success");
+        } else {
+            const data = await res.json();
+            console.error(data);
+            spinner.classList.add('hidden');
+            spinner.classList.remove('flex');
         }
-        console.log("Success");
-      } else {
-        const data = await res.json();
-        console.error(data);
-      }
     }
 
     document.addEventListener('DOMContentLoaded', setDefaultQueryParams);

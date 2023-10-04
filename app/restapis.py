@@ -162,20 +162,13 @@ def fb_socialactions(post_urn, access_token, page_id):
         org_id = post.org.org_id
         post.urn = org_id + "_" + response_json.get('post_id')
         post.save()
-
         post_urn = post.urn
-
     except Exception as e:
-
-        url = f"https://graph.facebook.com/{post_urn}?fields=reactions.summary(true),comments.summary(true)"
+        url = f"https://graph.facebook.com/{post_urn}?fields=reactions.summary(true),comments.filter(stream).summary(true)"
         response = requests.get(url=url, headers=headers)
-
         response_json = response.json()
-
     t_likes = response_json.get("reactions", {}).get("summary", {}).get("total_count", {})
-
     t_comments = response_json.get("comments", {}).get("summary", {}).get("total_count", {})
-
     try:
         post = Post_urn.objects.get(urn=post_urn)
         post.post_likes = t_likes
@@ -183,7 +176,6 @@ def fb_socialactions(post_urn, access_token, page_id):
         post.save()
     except Exception as e:
         e
-
     url = f"https://graph.facebook.com/{post_urn}/comments?fields=message,created_time,from,reactions,attachment,user_likes,comments.order(reverse_chronological).limit(1){{message,created_time,from,reactions,attachment,user_likes,comments{{message, created_time,from, reactions, attachment,user_likes}}}}&order=reverse_chronological&limit=5"
 
     #     comments{message,created_time,from}  field to get replies
@@ -1278,7 +1270,7 @@ def ugcpost_socialactions_nested_comments_data_orgainzer(elements,access_token):
                     display_image = ''
                 name = response['localizedName']
                 obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn,
-                       "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
+                       "urls": urls, 'liked': liked, 'user_id': actor, 'comment_id': comment_id}
                 replies.append(obj)
             else:
                 url = "https://api.linkedin.com/v2/people/(id:" + value + ")?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))"
@@ -1303,7 +1295,7 @@ def ugcpost_socialactions_nested_comments_data_orgainzer(elements,access_token):
                     'en_US']
 
                 obj = {'name': name, "profile_image": display_image, "text": text, "comment_urn": comment_urn,
-                       "urls": urls, 'liked': liked, 'actor': actor, 'comment_id': comment_id}
+                       "urls": urls, 'liked': liked, 'user_id': actor, 'comment_id': comment_id}
                 replies.append(obj)
     else:
         # print("No Replies on Comments")
@@ -1658,7 +1650,7 @@ def ugcpost_socialactions_comment_data_organizer(elements,access_token_string):
                     display_image = ''
                 name = response['localizedName']
                 obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
-                       "comment_urn": comment_urn, 'liked': liked, "comment_id": comment_id, "actor": actor}
+                       "comment_urn": comment_urn, 'liked': liked, "comment_id": comment_id, "user_id": actor}
                 obj['replies'] = replies
                 obj['next'] = next
 
@@ -1686,13 +1678,13 @@ def ugcpost_socialactions_comment_data_organizer(elements,access_token_string):
                     'en_US']
 
                 obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
-                       "comment_urn": comment_urn, 'liked': liked, "comment_id": comment_id, "actor": actor}
+                       "comment_urn": comment_urn, 'liked': liked, "comment_id": comment_id, "user_id": actor}
                 obj['replies'] = replies
                 obj['next'] = next
                 data.append(obj)
         else:
             obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", 'liked': False,
-                   "comment_id": "", "actor": ""}
+                   "comment_id": "", "user_id": ""}
             replies = None
             obj['replies'] = replies
             obj['next'] = next
@@ -1819,6 +1811,7 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                 replies = result[0]
                 reply_next = result[1]
 
+
             else:
                 replies = None
             texts = element.get('message', {}).get('text')
@@ -1844,7 +1837,7 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                         display_image = ''
                     name = response['localizedName']
                     obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
-                           "comment_urn": comment_urn, "liked": liked, "comment_id": comment_id, "actor": actor}
+                           "comment_urn": comment_urn, "liked": liked, "comment_id": comment_id, "user_id": actor}
                     obj['replies'] = replies
                     obj['next'] = reply_next
                     data.append(obj)
@@ -1872,13 +1865,13 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
                         'en_US']
 
                     obj = {'name': name, "profile_image": display_image, "text": texts, "urls": urls,
-                           "comment_urn": comment_urn, "liked": liked, "comment_id": comment_id, "actor": actor}
+                           "comment_urn": comment_urn, "liked": liked, "comment_id": comment_id, "user_id": actor}
                     obj['replies'] = replies
                     obj['next'] = reply_next
                     data.append(obj)
             else:
                 obj = {'name': "", "profile_image": "", "text": "", "urls": urls, "comment_urn": "", "liked": False,
-                       "comment_id": "", "actor": ""}
+                       "comment_id": "", "user_id": ""}
                 replies = None
                 obj['replies'] = replies
                 obj['next'] = reply_next
@@ -3158,7 +3151,6 @@ def instagram_account_insights(urn, since, until):
 def fb_post_insights(urn_list, urn, since=None, until=None):
 
     access_token = urn.access_token
-    print("Access Token " + access_token)
     base_url = 'https://graph.facebook.com/v17.0/'
 
     headers = {
@@ -3187,7 +3179,6 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
 
     reaction_response = response1.json()
     comment_response = response2.json()
-
     total_reactions = 0
     for reaction in reaction_response:
         response = json.loads(reaction.get('body'))

@@ -1,59 +1,46 @@
+{%extends 'registration/base.html'%}
 {% load static %}
 {% load humanize %}
-{% block bar %}
-{% endblock %}
+
 
 {% block content %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invitation Failed</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.15/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-        body {
-            height: 100vh; /* Set a fixed height for the body to center the content */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-            background-color: #f7f7f7;
-        }
-
-        .card {
-            font-family: Arial, sans-serif;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            text-align: center;
-            max-width: 600px;
-            font-size: 30px;
-        }
-
-        .check-icon {
-            color: #FF0000; /* Red color */
-            font-size: 64px;
-            margin-top: 30px;
-        }
-    </style>
-</head>
-<body>
-<div class="flex flex-col 2-full ">
-    <div class="bg-gray-200 flex py-2 px-4 flex  align-top justify-between  items-center w-full rounded-xl ">
-        <a href="" class="text-black text-xl font-bold mr-6">Smart Presence</a>
-        <a href="{% url 'login' %}" class="text-black ml-6">Login</a>
-    </div>
+<dialog class="main-modal fixed w-full h-screen inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster"
+                                        style="background: rgba(0,0,0,.7);" id="mainDialog">
+                <div
+                    class="border border-teal-500 shadow-lg modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                    <div class="modal-content py-2 text-left px-6">
 
 
-    <div>
-        <div class="card">
-            <h2>We are sorry, your invite is canceled</h2>
-            <i class="check-icon">&#10008;</i>
-        </div>
-    </div>
-</div>
-</body>
+                        <!--Title-->
+                        <div class="flex justify-between items-start pt-3 pb-1">
 
+                             <div class="flex-1 flex justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.com/svgjs" id="SvgjsSvg1031" width="80" height="80" version="1.1">
+                                    <defs id="SvgjsDefs1032"/>
+                                    <g id="SvgjsG1033">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14" width="80" height="80">
+                                        <path fill="#ff0000" fill-rule="evenodd" d="M7 12C9.76142 12 12 9.76142 12 7C12 4.23858 9.76142 2 7 2C4.23858 2 2 4.23858 2 7C2 9.76142 4.23858 12 7 12ZM7 13C10.3137 13 13 10.3137 13 7C13 3.68629 10.3137 1 7 1C3.68629 1 1 3.68629 1 7C1 10.3137 3.68629 13 7 13Z" clip-rule="evenodd" class="color000 svgShape"/>
+                                        <path fill="#ff0000" fill-rule="evenodd" d="M7 3.65656C7.27614 3.65656 7.5 3.88041 7.5 4.15656V6.77817C7.5 7.05431 7.27614 7.27817 7 7.27817C6.72386 7.27817 6.5 7.05431 6.5 6.77817V4.15656C6.5 3.88041 6.72386 3.65656 7 3.65656ZM7 8.26244C7.27614 8.26244 7.5 8.4863 7.5 8.76244V9C7.5 9.27614 7.27614 9.5 7 9.5C6.72386 9.5 6.5 9.27614 6.5 9V8.76244C6.5 8.4863 6.72386 8.26244 7 8.26244Z" clip-rule="evenodd" class="color000 svgShape"/>
+                                    </svg>
+                                    </g>
+                                </svg>
+                             </div>
+                            <a class="cursor-pointer" onclick="closeModal(this.parentElement.parentElement.parentElement.parentElement)">
+                                 <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                    viewBox="0 0 18 18">
+                                    <path
+                                        d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
+                                    </path>
+                                </svg>
+                            </a>
 
+                        </div>
+                        <div class="my-4 flex justify-center">
+                            <p>Your invite has been rejected.<br />
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </dialog>
 {% endblock %}

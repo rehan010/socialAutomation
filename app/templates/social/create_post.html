@@ -82,7 +82,7 @@
 <!--    </div>-->
 <!--    {% endif %}-->
 
-    <a class="absolute top-2 right-2 text-lg text-red-500 cursor-pointer hover:no-underline no-underline" href="{% url 'my_posts' user.pk %}">❌</a>
+    <a class="absolute top-2 right-2 text-lg text-black cursor-pointer hover:no-underline no-underline hover:text-black" href="{% url 'my_posts' user.pk %}"><i class="fa-solid fa-xmark"></i></a>
     <div class="absolute top-0 right-0 mt-10 ml-10 mb-2 z-100" style="z-index:200;" id="errorMessageContainer">
       {% for message in messages %}
           <div class="alert flex items-center bg-blue-500 text-white sm:text-sm text-xs font-bold px-4 py-3 mb-2 message ease-out duration-300 opacity-0.5" role="alert">
