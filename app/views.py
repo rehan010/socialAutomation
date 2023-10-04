@@ -1085,7 +1085,8 @@ class RegisterViewInvite(FormView):
             return render(request, 'registration/invitation_failed.html')
 
         elif invite.is_deleted:
-            invite.delete()
+            if self.request.user.is_authenticated:
+                logout(request)
 
             return render(request, 'registration/invitation_failed.html')
 

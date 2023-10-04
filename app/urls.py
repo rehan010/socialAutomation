@@ -64,5 +64,4 @@ urlpatterns = [
     path('api_posts/', PostApiView.as_view(), name='api_posts'),
     path('social/page/', PageDataView.as_view(), name="page_data"),
     # path('invitation/delete',TemplateView.as_view(template_name = 'registration/invitation_failed.html'))
-
 ]
