@@ -93,9 +93,13 @@
 <!--    </div>-->
 
     <div class="w-1/2 mx-auto bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border p-8">
-
-        <div class="pl-4">
+        <div class="relative">
+            <a class="absolute top-0 right-2  text-lg text-black cursor-pointer hover:no-underline no-underline hover:text-black" href="{% url 'my_posts' user.pk %}"><i class="fa-solid fa-xmark"></i></a>
+        </div>
+        <br>
+            <div class="pl-4">
             <header class="border-b border-grey-400">
+
                 <a href="#"
                    class="block cursor-pointer py-4 flex items-center text-sm outline-none focus:outline-none focus:border-gray-300 transition duration-150 ease-in-out">
                     {% if picture_url %}

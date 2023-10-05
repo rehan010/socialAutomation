@@ -60,6 +60,10 @@
 </style>
 
   <div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
+      <div class="relative">
+            <a class="absolute top-0 right-2  text-lg text-black cursor-pointer hover:no-underline no-underline hover:text-black" href="{% url 'my_posts' user.pk %}"><i class="fa-solid fa-xmark"></i></a>
+      </div>
+
     <form method="post" enctype="multipart/form-data" class="w-100" onsubmit="return validateForm()">
         {% csrf_token %}
 
