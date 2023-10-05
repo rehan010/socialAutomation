@@ -1984,7 +1984,7 @@ class PostsGetView2(LoginRequiredMixin, TemplateView):
             posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted=False)
 
 
-        items_per_page = 10
+        items_per_page = 6
         search = self.request.GET.get('search', '')
         platform = self.request.GET.get('platform', 'fb')
         platform = 'fb'

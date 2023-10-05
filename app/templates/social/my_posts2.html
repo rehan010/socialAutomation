@@ -39,7 +39,7 @@
         background-color: #333;
         color: #fff;
         text-align: center;
-        font-size:10px;
+        font-size:12px;
         border-radius: 5px;
         padding: 5px;
         position: absolute;
@@ -51,6 +51,7 @@
         transition: opacity 0.3s;
 
 }
+
 
 .tooltiptext:hover {
     visibility: visible;
@@ -381,11 +382,11 @@
                                 </td>
                                 {% else %}
                                 <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
-                                    <div class="mx-4 relative cursor-pointer">
-                                        <i class="fas fa-info text-slate-700 tooltipButton">
-                                            <span class="tooltiptext" >Don't have permission to delete post
-                                            </span>
+                                    <div class="mx-4 relative cursor-pointer tooltipButton">
+                                        <i class="fas fa-info ">
                                         </i>
+                                         <span class="tooltiptext" >Don't have permission to delete post
+                                         </span>
                                     </div>
                                 </td>
                                 {% endif %}
@@ -1334,25 +1335,21 @@ let lastButton = null;
                                         tooltip.textContent = "Don't have permission to delete post"; // Set the tooltip text content
 
                                     }
-                                    tooltip.style.fontFamily = "Arial, sans-serif"; // Arial font
-                                    tooltip.style.fontSize = "15px";
-
-
 
                                     // Event listener to show tooltip on hover
-                                    iconElement.addEventListener("mouseover", function () {
+                                    divContainer.addEventListener("mouseover", function () {
                                       tooltip.style.visibility = "visible";
                                       tooltip.style.opacity = "1";
                                     });
 
                                     // Event listener to hide tooltip on mouseout
-                                    iconElement.addEventListener("mouseout", function () {
+                                    divContainer.addEventListener("mouseout", function () {
                                       tooltip.style.visibility = "hidden";
                                       tooltip.style.opacity = "0";
                                     });
 
                                     // Append the tooltip to the icon
-                                    iconElement.appendChild(tooltip);
+                                    divContainer.appendChild(tooltip);
 
                                     // Append the icon element to the div
                                     divContainer.appendChild(iconElement);
@@ -1493,25 +1490,21 @@ let lastButton = null;
                                         tooltip.textContent = "Don't have permission to delete post"; // Set the tooltip text content
 
                                     }
-                                    tooltip.style.fontFamily = "Arial, sans-serif"; // Arial font
-                                    tooltip.style.fontSize = "15px";
-
-
 
                                     // Event listener to show tooltip on hover
-                                    iconElement.addEventListener("mouseover", function () {
+                                    divContainer.addEventListener("mouseover", function () {
                                       tooltip.style.visibility = "visible";
                                       tooltip.style.opacity = "1";
                                     });
 
                                     // Event listener to hide tooltip on mouseout
-                                    iconElement.addEventListener("mouseout", function () {
+                                    divContainer.addEventListener("mouseout", function () {
                                       tooltip.style.visibility = "hidden";
                                       tooltip.style.opacity = "0";
                                     });
 
                                     // Append the tooltip to the icon
-                                    iconElement.appendChild(tooltip);
+                                    divContainer.appendChild(tooltip);
 
                                     // Append the icon element to the div
                                     divContainer.appendChild(iconElement);
