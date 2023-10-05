@@ -10,8 +10,6 @@
             <div class="checkbox-container">
 
                 {%for obj in data%}
-
-
                 <label>
                     <input type="checkbox" name="selected_keys" value="{{ obj.key }}" {% if  obj.checked  %} checked {% endif %}>
                     {{ obj.name }}

@@ -35,20 +35,21 @@
 
 .tooltiptext {
     visibility: hidden;
-    opacity: 0;
-    width: 220px;
-    background-color: #fff;
-    color: #777;
-    text-align: center;
-    padding: 2px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    right: 50%;
-    transform: translateX(-50%);
-    font-family: Arial, sans-serif;
-    font-size: 15px;
-    transition: opacity 0.2s;
+        width: 300px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        font-size:10px;
+        border-radius: 5px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        right: 50%;
+        margin-left: -60px;
+        opacity: 0;
+        transition: opacity 0.3s;
+
 }
 
 .tooltiptext:hover {
@@ -252,21 +253,18 @@
                                                     {% if image.is_mp4_file %}
                                                         Video
                                                     {% else %}
-                                                        <a href="javascript:;"
-                                                           class="photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:z-30"
-                                                           data-target="tooltip_trigger" data-placement="bottom">
+                                                        <a
+                                                           class="photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:no-underline"
+                                                           >
                                                             <img src="{{image.image.url}}" class="w-full h-full object-cover rounded-full" alt="team1"/>
                                                         </a>
-                                                        <div data-target="tooltip"
+                                                        <div
                                                              class="hidden px-2 py-1 text-white bg-black rounded-lg text-sm"
-                                                             role="tooltip">
-                                                            {{image.image}}
-                                                            <div class="invisible absolute h-2 w-2 bg-inherit before:visible before:absolute before:h-2 before:w-2 before:rotate-45 before:bg-inherit before:content-['']"
-                                                                 data-popper-arrow></div>
+                                                             >
                                                         </div>
                                                     {% endif %}
                                                 {% elif forloop.counter == 4 %}
-                                                    <a href=""
+                                                    <a
                                                        class="photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-gray-600 bg-white duration-200 border-2 border-gray-200 border-solid rounded-full ease-soft-in-out text-sm hover:no-underline"
                                                        data-target="tooltip_trigger" data-placement="bottom">
                                                            + {{ p.images.count|sub:3 }}
@@ -576,7 +574,6 @@ function updatePage(event, platform) {
                     divInner.textContent = 'Video';
                 } else {
                     const anchorLink = document.createElement('a');
-                    anchorLink.href = 'javascript:;';
                     anchorLink.className = 'photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-white transition-all duration-200 border-2 border-white border-solid rounded-full ease-soft-in-out text-xs hover:no-underline';
                     anchorLink.dataset.target = 'tooltip_trigger';
                     anchorLink.dataset.placement = 'bottom';
@@ -607,8 +604,7 @@ function updatePage(event, platform) {
                 if (index === maxImages - 1 && imagesData.length > maxImages) {
                     const remainingCount = imagesData.length - maxImages;
                     const remainingLabel = document.createElement('a');
-                    remainingLabel.href = 'javascript:;';
-                    remainingLabel.className = 'photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-gray-600 bg-white duration-200 border-2 border-gray-200 border-solid rounded-full ease-soft-in-out text-sm hover:z-30';
+                    remainingLabel.className = 'photos relative z-20 inline-flex items-center justify-center w-10 h-10 text-gray-600 bg-white duration-200 border-2 border-gray-200 border-solid rounded-full ease-soft-in-out text-sm hover:no-underline';
                     remainingLabel.dataset.target = 'tooltip_trigger';
                     remainingLabel.dataset.placement = 'bottom';
                     remainingLabel.textContent = ` + ${remainingCount}`;
@@ -1331,19 +1327,7 @@ let lastButton = null;
                                     var tooltip = document.createElement("span");
                                     tooltip.className = "tooltiptext";
                                     tooltip.style.visibility = "hidden"; // Initially hidden
-                                    tooltip.style.width = "220px"; // Set the width as needed
-                                    tooltip.style.backgroundColor = "#fff"; // White background
-                                    tooltip.style.color = "#777"; // Gray text color
-                                    tooltip.style.textAlign = "center";
-                                    tooltip.style.padding = "2px"; // Padding for better appearance
-                                    tooltip.style.position = "absolute";
-                                    tooltip.style.zIndex = "1";
-                                    tooltip.style.bottom = "125%";
 
-                                    tooltip.style.right = "50%";
-                                    tooltip.style.transform = "translateX(-50%)";
-                                    tooltip.style.opacity = "0";
-                                    tooltip.style.transition = "opacity 0.2s";
                                     if (platformName === 'instagram'){
                                         tooltip.textContent = "Post cannot be deleted in Instagram API"; // Set the tooltip text content
                                     }else{
@@ -1502,20 +1486,7 @@ let lastButton = null;
                                     // Create the tooltip element
                                     var tooltip = document.createElement("span");
                                     tooltip.className = "tooltiptext";
-                                    tooltip.style.visibility = "hidden"; // Initially hidden
-                                    tooltip.style.width = "220px"; // Set the width as needed
-                                    tooltip.style.backgroundColor = "#fff"; // White background
-                                    tooltip.style.color = "#777"; // Gray text color
-                                    tooltip.style.textAlign = "center";
-                                    tooltip.style.padding = "2px"; // Padding for better appearance
-                                    tooltip.style.position = "absolute";
-                                    tooltip.style.zIndex = "1";
-                                    tooltip.style.bottom = "125%";
 
-                                    tooltip.style.right = "50%";
-                                    tooltip.style.transform = "translateX(-50%)";
-                                    tooltip.style.opacity = "0";
-                                    tooltip.style.transition = "opacity 0.2s";
                                     if (platformName === 'instagram'){
                                         tooltip.textContent = "Post cannot be deleted in Instagram API"; // Set the tooltip text content
                                     }else{

@@ -49,7 +49,7 @@ from django.db.models.signals import m2m_changed, pre_delete
 #     # logic3(announce)
 #     modal-content py-2 text-left px-6(post)
 # def call(sender,instance,**kwargs):
-#     print(instance)
+#     instance)
 #
 # post_save.connect(call,sender=PostModel)
 
@@ -61,7 +61,7 @@ from django.db.models.signals import m2m_changed, pre_delete
 # def handle_m2m_change(sender, instance, action, reverse, pk_set, **kwargs):
 #     if action == 'post_add' and not reverse and instance == PostModel.objects.last():
 #         announce = kwargs.get('instance')
-#         print(instance)
+#         instance)
 #
 
 
@@ -96,7 +96,7 @@ from django.db.models.signals import m2m_changed, pre_delete
 #             hours, remainder = divmod(time_remaining.seconds, 3600)
 #             minutes, seconds = divmod(remainder, 60)
 #
-#             print(f"Time remaining: {days} days, {hours} hours, {minutes} minutes, {seconds} seconds.")
+#             f"Time remaining: {days} days, {hours} hours, {minutes} minutes, {seconds} seconds.")
 #
 #             # time_remaining = instance.schedule_datetime - timezone.now()
 #             # Schedule the task to publish the post on the scheduled date
@@ -202,22 +202,20 @@ def publish_post_on_social_media(instance):
 
 @shared_task
 def schedule_signals_task(instance):
-    # print(instance)
+
     try:
-        post = PostModel.objects.get(id=instance.id)
-        for image in instance.images.all():
-
-            try:
-                save_file1(image)
-            except Exception as e:
-
-                # print(f"An error occurred: {str(e)}")
-                instance.status = 'FAILED'
-
         if instance:
+            for image in instance.images.all():
+
+                try:
+                    save_file1(image)
+                except Exception as e:
+
+                    # f"An error occurred: {str(e)}")
+                    instance.status = 'FAILED'
+                    instance.save()
+
             if instance.status == 'DRAFT':
-                # raise PermissionDenied("This post is in draft status. Cannot proceed.")
-                # return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
                 pass
             elif instance.status == 'PROCESSING':
                     publish_post_on_social_media(instance)
@@ -225,46 +223,15 @@ def schedule_signals_task(instance):
             elif instance.status == 'SCHEDULED':
                 current_datetime = timezone.now()
                 given_datetime_str = instance.schedule_datetime
-                # given_datetime = timezone.make_aware(given_datetime_str)
 
-                # time_remaining = instance.schedule_datetime - timezone.now()
-                # Schedule the task to publish the post on the scheduled date
-                # print(current_datetime )
-                # print(given_datetime_str)
                 if given_datetime_str < current_datetime:
                     schedule_publish_task(instance)
                 else:
                     pass
-                return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
-
-                pass
-            if instance:
-                if instance.status == 'DRAFT':
-                    # raise PermissionDenied("This post is in draft status. Cannot proceed.")
-                    # return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
-                    pass
-                elif instance.status == 'PROCESSING':
-                        publish_post_on_social_media(instance)
-
-                elif instance.status == 'SCHEDULED':
-                    current_datetime = timezone.now()
-                    given_datetime_str = instance.schedule_datetime
-                    # given_datetime = timezone.make_aware(given_datetime_str)
-
-                    # time_remaining = instance.schedule_datetime - timezone.now()
-                    # Schedule the task to publish the post on the scheduled date
-                    # print(current_datetime )
-                    # print(given_datetime_str)
-                    if given_datetime_str < current_datetime:
-                        schedule_publish_task(instance)
-                    else:
-                        pass
-                    return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
 
     except PostModel.DoesNotExist:
         pass
-        # Handle the case if the post object is not found
-    return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
+
 
 
 

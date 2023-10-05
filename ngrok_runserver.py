@@ -10,7 +10,7 @@ ngrok.set_auth_token("1yil0KHiUzZGvigFuDVZmUIFdr9_Y1RAquHkpPPjk9e6Wfk9")  # Repl
 # public_url = ngrok.connect(config_path="/Users/apple/.ngrok2/ngrok.yml", options={"bind_tls": True})
 
 public_url = ngrok.connect(8000,options={"bind_tls": True})  # Replace 8000 with the port of your Django development server
-print("Public URL:", public_url)
+"Public URL:", public_url)
 
 # Run Django server
 execute_from_command_line(['manage.py', 'runserver'])

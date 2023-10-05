@@ -17,7 +17,7 @@ class CustomAccountAdapter(DefaultSocialAccountAdapter):
         from allauth.socialaccount import app_settings
 
         # config = app_settings.PROVIDERS.get(provider, {}).get('APP')
-        # print(config)
+        # config)
         # if config:
         #     app = SocialApp(provider=provider)
         #     for field in ['client_id', 'secret', 'key']:

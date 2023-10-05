@@ -745,7 +745,7 @@ async function getRequestCards(taskId) {
             // Continue polling
             setTimeout(() => {
                 getRequestCards(taskId);
-            }, 20000);
+            }, 5000);
         }
     } catch (error) {
         hideAlert();

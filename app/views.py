@@ -2847,6 +2847,9 @@ class ConnectionView(ConnectionsView):
         if referrer == "" and context.get('instagram') and not context.get('facebook'):
             context['error'] = True
 
+        elif referrer != "" and context.get('instagram') and not context.get('facebook'):
+            context['error'] = True
+
         return context
 
 

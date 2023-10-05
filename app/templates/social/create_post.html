@@ -73,15 +73,6 @@
     id="yourForm"
     onsubmit="return validateForm()"
   >
-<!--    {% if messages %}-->
-<!--    <div class="mt-2 mb-2 absolute right-0 top-10">-->
-<!--&lt;!&ndash;        {% for message in messages %}&ndash;&gt;-->
-<!--        <p class="text-white p-2 text-sm mb-1">{{message}}</p>-->
-<!--        <p class="text-white p-2 text-sm mb-1">Hello</p>-->
-<!--&lt;!&ndash;        {% endfor %}&ndash;&gt;-->
-<!--    </div>-->
-<!--    {% endif %}-->
-
     <a class="absolute top-2 right-2 text-lg text-black cursor-pointer hover:no-underline no-underline hover:text-black" href="{% url 'my_posts' user.pk %}"><i class="fa-solid fa-xmark"></i></a>
     <div class="absolute top-0 right-0 mt-10 ml-10 mb-2 z-100" style="z-index:200;" id="errorMessageContainer">
       {% for message in messages %}
@@ -143,6 +134,7 @@
         class="flex flex-col items-center justify-center w-full h-36 border-dashed border-2 border-gray-200 bg-white-100 rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-white-700 hover:bg-gray-100 hover:border-gray-400"
       >
         <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <br>
           <svg
             class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
             aria-hidden="true"
@@ -176,7 +168,7 @@
         />
         <br>
         <p id="error-message" style="color: red; display: none">
-          Video is too large. Max size: 20MB
+          File is too large. Max size of each file: 20MB
         </p>
       </label>
     </div>
@@ -227,19 +219,6 @@
             class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
             style="min-height: 2.5rem"
           >
-<!--            {% for obj in data.facebook_page%}-->
-<!--            <label-->
-<!--              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"-->
-<!--            >-->
-<!--              <input-->
-<!--                type="checkbox"-->
-<!--                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"-->
-<!--                name="facebook"-->
-<!--                value="{{obj.id}}"-->
-<!--              />-->
-<!--              <span class="ml-2 text-sm">{{obj.name}}</span>-->
-<!--            </label>-->
-<!--            {% endfor %}-->
           </div>
         </div>
       </div>
@@ -286,19 +265,6 @@
             class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
             style="min-height: 2.5rem"
           >
-<!--            {% for obj in data.insta_data %}-->
-<!--            <label-->
-<!--              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"-->
-<!--            >-->
-<!--              <input-->
-<!--                type="checkbox"-->
-<!--                class="form-checkbox h-4 w-4 text-blue-500 transition duration-150 ease-in-out"-->
-<!--                name="instagram"-->
-<!--                value="{{obj.id}}"-->
-<!--              />-->
-<!--              <span class="ml-2 text-sm text-gray-700">{{obj.name}}</span>-->
-<!--            </label>-->
-<!--            {% endfor %}-->
           </div>
         </div>
       </div>
@@ -344,20 +310,6 @@
             class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
             style="min-height: 2.5rem"
           >
-<!--            {% for obj in data.linkedin_page %}-->
-
-<!--            <label-->
-<!--              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"-->
-<!--            >-->
-<!--              <input-->
-<!--                type="checkbox"-->
-<!--                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"-->
-<!--                name="linkedin"-->
-<!--                value="{{ obj.key }}"-->
-<!--              />-->
-<!--              <span class="ml-2 text-sm">{{obj.name}}</span>-->
-<!--            </label>-->
-<!--            {% endfor %}-->
           </div>
         </div>
       </div>
@@ -461,7 +413,6 @@
     </li>
 
     <div class="w-full flex items-center mt-1">
-      <!--            <label class="mr-4 font-bold">Schedule</label>-->
 
       <div class="ml-auto flex">
         <div class="inline-block px-4 py-2 font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-l-xl cursor-pointer leading-pro text-sm ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25">
@@ -478,13 +429,13 @@
     </div>
   </form>
 </div>
-<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
 
-<script src="{% static 'lib/js/config.min.js'%}"></script>
-<script src="{% static 'lib/js/util.min.js'%}"></script>
-<script src="{% static 'lib/js/jquery.emojiarea.min.js'%}"></script>
-<script src="{% static 'lib/js/emoji-picker.min.js'%}"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script type="text/javascript" src="{% static 'lib/js/config.min.js'%}"></script>
+<script type="text/javascript" src="{% static 'lib/js/util.min.js'%}"></script>
+<script type="text/javascript" src="{% static 'lib/js/jquery.emojiarea.min.js'%}"></script>
+<script type="text/javascript" src="{% static 'lib/js/emoji-picker.min.js'%}"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
       {% verbatim %}
@@ -579,18 +530,27 @@
                 container.removeChild(container.firstChild);
             }
 
-
-          const maxFileSizeMB = 20;
           const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
           const fileInput = event.target;
-          console.log(fileInput);
+
+          var maxFileSizeMB = 20;
+
+          errorMessage.style.display = 'none';
+
+          for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var fileSizeMB = file.size / (1024 * 1024); // Convert bytes to MB
+
+                if (fileSizeMB > maxFileSizeMB) {
+                    errorMessage.style.display = 'block';
+                    return; // Stop further processing if a large file is found
+                }else {
+                    errorMessage.style.display = 'none';
+              }
+          }
 
 
-
-
-
-
-
+          // Display the uploaded images
           for (var i = 0; i < files.length; i++) {
             var file = files[i];
             var reader = new FileReader();
@@ -598,11 +558,11 @@
             reader.onload = (function (file) {
                 return function (e) {
                     var imageContainer = document.createElement("div");
-                    imageContainer.classList.add("relative", "inline-block", "mr-2", "mb-2");
+                    imageContainer.classList.add("relative", "z-20", "inline-flex", "items-center", "justify-center", "w-32", "h-32", "text-white","border-2", "border-white", "border-solid");
 
                     if (e.target.result.slice(0, 15).includes("mp4")) {
                         var video = document.createElement("video");
-                        video.classList.add("w-44", "h-auto");
+                        video.classList.add("w-full", "h-full" ,"object-cover");
 
                         var source = document.createElement("source");
                         source.src = e.target.result;
@@ -629,7 +589,7 @@
                     } else {
                         var image = document.createElement("img");
                         image.src = e.target.result;
-                        image.classList.add("w-44", "h-auto");
+                        image.classList.add("w-full", "h-full" ,"object-cover");
 
                         var removeIcon = document.createElement("span");
                         removeIcon.innerHTML = "&times;";
@@ -872,12 +832,6 @@
 
 window.addEventListener('load', removeMessages);
 
-
-
-
-
-
-      
 </script>
 <style>
   .alert-box {
