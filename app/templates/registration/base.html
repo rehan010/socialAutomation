@@ -262,10 +262,17 @@
     {%endif%}
 
     <main class="flex-1 relative">
-
+       {% if user.is_authenticated %}
         {% block content %}
         <!-- Main content goes here -->
-        {%endblock%}
+            {%endblock%}
+
+        {% else %}
+        {% block main%}
+            {% endblock %}
+
+        {% endif %}
+
 
 
     </main>
