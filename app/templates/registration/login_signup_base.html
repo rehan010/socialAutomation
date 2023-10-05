@@ -8,12 +8,17 @@
     <script src="https://kit.fontawesome.com/c4dfba4734.js" crossorigin="anonymous"></script>
 
 </head>
+<style>
+    .bg-color{
+        background-color: rgba(0,137,191,0.6)
+    }
+</style>
 <body>
   <div class="w-full sm:h-screen min-h-screen flex overflow-hidden font-sans">
 
         <div class="sm:block hidden image-container relative w-1/2">
             <img src="{% static 'image/social_image_login.png'%}" alt="social-image" class="w-full h-full">
-            <div class="bg-[#0089E0BF]  absolute top-0 left-0 w-full h-full"></div>
+            <div class="bg-color absolute top-0 left-0 w-full h-full"></div>
         </div>
 
       {% block content %}

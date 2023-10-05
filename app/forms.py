@@ -3,6 +3,7 @@ from django import forms
 from .models import *
 from django.core.exceptions import ValidationError
 from django.contrib.auth import login, password_validation, update_session_auth_hash
+from allauth.account.forms import LoginForm
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -19,6 +20,7 @@ class CustomUserCreationForm(UserCreationForm):
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'company': forms.SelectMultiple(attrs={'class': 'form-control'}),
         }
+
 
 
 class CustomUserInvitationForm(UserCreationForm):

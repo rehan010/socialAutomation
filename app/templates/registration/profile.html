@@ -3,11 +3,15 @@
 
 
 {% block content %}
-
+<style>
+  .bg-color{
+        background-color: rgba(0,137,191,0.5)
+    }
+</style>
 
 <div class="w-full px-6 mx-auto">
         <div class="relative flex items-center p-0 mt-6 overflow-hidden bg-center bg-cover min-h-75 rounded-2xl" style="background-image: url('{% static "image/social_image_login.png" %}'); background-position-y: 50%">
-            <span class="absolute inset-y-0 w-full h-full bg-center bg-cover bg-gradient-to-tl from-purple-500 to-red-500 opacity-60"></span>
+            <span class="absolute inset-y-0 w-full h-full bg-center bg-cover bg-color"></span>
         </div>
         <div class="relative flex flex-col flex-auto min-w-0 p-4 mx-6 -mt-16 overflow-hidden break-words border-0 shadow-blur rounded-2xl bg-white/80 bg-clip-border backdrop-blur-2xl backdrop-saturate-200">
           <div class="flex flex-wrap -mx-3">
@@ -54,24 +58,12 @@
                 <hr class="h-px my-6 bg-transparent bg-gradient-to-r from-transparent via-white to-transparent" />
                 <ul class="flex flex-col pl-0 mb-0 rounded-lg">
                   <li class="relative block px-4 py-2 pt-0 pl-0 leading-normal bg-white border-0 rounded-t-lg text-sm text-inherit"><strong class="text-slate-700">Full Name:</strong> &nbsp; {{request.user.first_name}} {{request.user.last_name}}</li>
-<!--                  <li class="relative block px-4 py-2 pl-0 leading-normal bg-white border-0 border-t-0 text-sm text-inherit"><strong class="text-slate-700">Mobile:</strong> &nbsp; (44) 123 1234 123</li>-->
                   <li class="relative block px-4 py-2 pl-0 leading-normal bg-white border-0 border-t-0 text-sm text-inherit"><strong class="text-slate-700">Email:</strong> &nbsp;{{request.user.email}}</li>
 
                   {% for company in user.company.all %}
                     <li class="relative block px-4 py-2 pl-0 leading-normal bg-white border-0 border-t-0 text-sm text-inherit"><strong class="text-slate-700">Company:</strong> &nbsp; {{company.name}}</li>
                   {% endfor %}
-<!--                  <li class="relative block px-4 py-2 pb-0 pl-0 bg-white border-0 border-t-0 rounded-b-lg text-inherit">-->
-<!--                    <strong class="leading-normal text-sm text-slate-700">Social:</strong> &nbsp;-->
-<!--                    <a class="inline-block py-0 pl-1 pr-2 mb-0 font-bold text-center text-blue-800 align-middle transition-all bg-transparent border-0 rounded-lg shadow-none cursor-pointer leading-pro text-xs ease-soft-in bg-none" href="javascript:;">-->
-<!--                      <i class="fab fa-facebook fa-lg"></i>-->
-<!--                    </a>-->
-<!--                    <a class="inline-block py-0 pl-1 pr-2 mb-0 font-bold text-center align-middle transition-all bg-transparent border-0 rounded-lg shadow-none cursor-pointer leading-pro text-xs ease-soft-in bg-none text-sky-600" href="javascript:;">-->
-<!--                      <i class="fab fa-twitter fa-lg"></i>-->
-<!--                    </a>-->
-<!--                    <a class="inline-block py-0 pl-1 pr-2 mb-0 font-bold text-center align-middle transition-all bg-transparent border-0 rounded-lg shadow-none cursor-pointer leading-pro text-xs ease-soft-in bg-none text-sky-900" href="javascript:;">-->
-<!--                      <i class="fab fa-instagram fa-lg"></i>-->
-<!--                    </a>-->
-<!--                  </li>-->
+
                 </ul>
               </div>
             </div>

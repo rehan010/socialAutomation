@@ -1,0 +1,120 @@
+
+{% extends 'registration/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .header{
+        position: relative;
+        display:flex;
+        justify-content:center;
+        height:16rem;
+        align-items: center;
+        background-image: url('{% static 'image/social_image_login.png'%}');
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+
+    }
+
+    .header::before{
+        content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,137,191,0.6);
+      z-index:0;
+
+    }
+    .margin-none{
+        margin:0px !important;
+
+    }
+</style>
+
+<div class="header">
+<h1 class="text-white text-6xl font-bold font-serif uppercase z-50">Smart Presence</h1>
+</div>
+<div class="flex justify-center gap-24">
+
+
+    <div class="grid grid-cols-2 grid-row-2 mt-12 gap-12">
+
+        <div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <a href="#">
+                <img class="rounded-t-lg" src="/docs/images/blog/image-1.jpg" alt="" />
+            </a>
+            <div class="p-5">
+                <a href="#">
+                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Facebook</h5>
+                </a>
+                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+
+            </div>
+        </div>
+        <div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <a href="#">
+                <img class="rounded-t-lg" src="/docs/images/blog/image-1.jpg" alt="" />
+            </a>
+            <div class="p-5">
+                <a href="#">
+                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Instagram</h5>
+                </a>
+                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+
+            </div>
+        </div>
+    <div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <a href="#">
+                <img class="rounded-t-lg" src="/docs/images/blog/image-1.jpg" alt="" />
+            </a>
+            <div class="p-5">
+                <a href="#">
+                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Linkedin</h5>
+                </a>
+                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+
+            </div>
+        </div>
+    <div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+            <a href="#">
+                <img class="rounded-t-lg" src="/docs/images/blog/image-1.jpg" alt="" />
+            </a>
+            <div class="p-5">
+                <a href="#">
+                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Google</h5>
+                </a>
+                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow w-full z-50 mt-20 py-4">
+    <div class="w-full mx-auto max-w-screen-xl p-2 md:flex md:items-center md:justify-between">
+      <span class="text-sm text-gray-500 sm:text-center">© 2023 <a href="#" class="hover:underline">VirtuoSoft</a>. All Rights Reserved.
+    </span>
+    <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-500  sm:mt-0">
+        <li>
+            <a href="#" class="mr-4 hover:underline md:mr-6 ">About</a>
+        </li>
+        <li>
+            <a href="{% url 'privacy_policy' %}" class="mr-4 hover:underline md:mr-6">Privacy Policy</a>
+        </li>
+        <li>
+            <a href="#" class="mr-4 hover:underline md:mr-6">Licensing</a>
+        </li>
+        <li>
+            <a href="#" class="hover:underline">Contact</a>
+        </li>
+    </ul>
+    </div>
+</div>
+{% block dialog %}
+{% endblock %}
+
+
+{% endblock %}

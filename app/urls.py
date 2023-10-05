@@ -7,7 +7,7 @@ from . import views
 
 
 urlpatterns = [
-    path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
+    path('accounts/login/', CustomLoginView.as_view(), name='login'),
     path('accounts/register/', RegisterView.as_view(), name='register'),
     path('accounts/register/invite', RegisterViewInvite.as_view(), name='register_with_company'),
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
@@ -17,7 +17,7 @@ urlpatterns = [
     path('accounts/password_reset/done/', PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('accounts/reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(),name='password_reset_confirm'),
     path('accounts/reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    path('', BaseView.as_view(), name="base"),
+    path('', TemplateView.as_view(template_name='registration/home.html'), name="home"),
     path('dashboard', DashboardView.as_view(), name="dashboard"),
     path('dashboardapi/', DashBoardCardView.as_view(), name="dashboard_api"),
     path('likeGraphApiview/', LikeGraphApi.as_view(), name="like_graph"),
@@ -36,16 +36,8 @@ urlpatterns = [
     path('user_approval/', user_approval.as_view(), name='user_approval'),
     path('accept_invitation/', views.accept_invitation_view, name='accept_invitation_view'),
     path('reject_invitation/', views.reject_invitation_view, name='reject_invitation_view'),
-
-
-
-    # path('<int:post_id>/publish/', views.publish_post, name='publish_post'),
-    # path('<int:post_id>/schedule/', views.schedule_post, name='schedule_post'),
-
-
-
     path('upload/file', PointFileCreateView.as_view(), name="upload_file"),
-    path('privacy_policy/', Privacy_policy.as_view(), name="privacy_policy"),
+    path('privacy_policy/', PrivacyPolicyView.as_view(), name="privacy_policy"),
     path('upload/<int:pk>/delete/', PointFileDeleteView.as_view(), name='point_delete'),
     path('create/post/', PostCreateView.as_view(), name='create_post'),
     path('posts/<int:pk>', PostsGetView2.as_view(), name='my_posts'),
@@ -63,5 +55,5 @@ urlpatterns = [
     path('social/social/profile/api/', SocialProfileAPI.as_view(), name="social_profile_api"),
     path('api_posts/', PostApiView.as_view(), name='api_posts'),
     path('social/page/', PageDataView.as_view(), name="page_data"),
-    # path('invitation/delete',TemplateView.as_view(template_name = 'registration/invitation_failed.html'))
+    path('home/',TemplateView.as_view(template_name = 'registration/home.html'),name = "home")
 ]

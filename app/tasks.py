@@ -43,7 +43,6 @@ def task_two():
 
 @app.task
 def task_three(users,lock_key):
-
     cache.get(lock_key)
     if not cache.get(lock_key):
         try:

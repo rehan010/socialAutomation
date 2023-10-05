@@ -585,8 +585,11 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
         data['media_type'] = 'VIDEO'
     else:
         data['image_url'] = media[0].image_url
-    # "data is",data)
+
+
+    # print("data is",data)
     response = requests.post(url, headers=headers, json=data)
+
     if response.status_code == 400:
         post.status = 'FAILED'
         post.save()
@@ -711,9 +714,6 @@ def getmediaid(image, data, post):
     }
 
     response = requests.post(url, headers=headers, data=data)
-
-    # image.save()
-
     return response.json()
 
 
@@ -749,13 +749,13 @@ def facebook_post_multiimage(data, images, post, sharepage):
     if len(images) != 0:
         for _ in range(len(images)):
             response_id = getmediaid(images[_], data, post)["id"]
-
             images[_].image_posted = response_id
             images[_].save()
             data_post[f"attached_media[{_}]"] = f'{{"media_fbid": "{response_id}"}}'
 
 
     response = requests.post(url, headers=headers, data=data_post)
+
 
     if response.status_code == 200:
 
@@ -764,7 +764,6 @@ def facebook_post_multiimage(data, images, post, sharepage):
         # post_id)
         post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
         post_urn.save()
-        # "Post Successfull Created")
 
         post.post_urn.add(post_urn)
         post.published_at = timezone.now()
@@ -782,6 +781,7 @@ def facebook_post_multiimage(data, images, post, sharepage):
 def create_insta_post(page_id, access_token, media, post, page):
     if media:
         if len(media) > 1:
+
             instagram_multi_media(page_id, access_token, media, post, page)
         else:
             instagram_post_single_media(page_id, access_token, media, post, page)

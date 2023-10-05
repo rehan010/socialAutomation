@@ -50,6 +50,10 @@ from rest_framework.exceptions import NotFound
 from django.conf import settings
 
 from celery.result import AsyncResult
+from django.contrib.auth.views import RedirectURLMixin
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login as auth_login
+
 
 
 
@@ -137,6 +141,28 @@ def my_business_view(request):
 class BaseView(TemplateView):
     template_name = "registration/base.html"
 
+
+class CustomLoginView(FormView):
+    form_class = AuthenticationForm
+    authentication_form = None
+    template_name = "registration/login.html"
+    success_url = reverse_lazy('dashboard')
+    redirect_authenticated_user = False
+    extra_context = None
+    def form_valid(self, form):
+       user = form.get_user()
+       auth_login(self.request, user)
+       return super(CustomLoginView, self).form_valid(form)
+    
+    
+    def form_invalid(self, form):
+        user = User.objects.filter(username = form.cleaned_data['username'])
+        if user.exists():
+            if user.first().is_active == False:
+                form.errors.get("__all__").data.pop()
+                form.add_error(None, 'Please Request Root User To Grant Access')
+        return super(CustomLoginView, self).form_invalid(form)
+    
 class ProfileView(LoginRequiredMixin,TemplateView):
     template_name = "registration/profile.html"
 
@@ -1147,7 +1173,7 @@ class RegisterViewInvite(FormView):
 
         return kwargs
 
-class Privacy_policy(LoginRequiredMixin, TemplateView):
+class PrivacyPolicyView(TemplateView):
     template_name = 'registration/privacy_policy.html'
     #
     # def get_context_data(self, **kwargs):

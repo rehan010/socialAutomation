@@ -136,6 +136,7 @@ def publish_post_on_social_media(instance):
 
 
     for page in share_page:
+
         if page.provider == "linkedin":
             socialaccount = SocialAccount.objects.get(user=page.user.id, provider="linkedin_oauth2")
             access_token = SocialToken.objects.filter(account=socialaccount)[0]
@@ -149,14 +150,17 @@ def publish_post_on_social_media(instance):
                                 org, get_img_urn, upload_img, post_single_image_linkedin,
                                     post, post_linkedin)
         elif page.provider == "facebook":
+
             post = instance
             page_id = page.org_id
             access_token = page.access_token
             media = images
             share_page = page
+
             create_fb_post(page_id, access_token, media, post, share_page)
 
         elif page.provider == "instagram":
+
             access_token = page.access_token
             post = instance
             page_id = page.org_id
@@ -165,7 +169,7 @@ def publish_post_on_social_media(instance):
         else:
             pass
 
-    return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
+
 
 
 # def publish_post_on_social_media(instance):
@@ -210,10 +214,10 @@ def schedule_signals_task(instance):
                 try:
                     save_file1(image)
                 except Exception as e:
-
                     # f"An error occurred: {str(e)}")
                     instance.status = 'FAILED'
                     instance.save()
+
 
             if instance.status == 'DRAFT':
                 pass

@@ -18,6 +18,10 @@
         border: 1px solid black !important;
     }
 
+    .bg-color{
+        background-color: rgba(0,137,191,0.5)
+    }
+
 
 </style>
 
@@ -28,7 +32,7 @@
         <div class="w-full max-w-full px-3 py-4 shrink-0 md:flex-0 mb-14">
         <div class="relative flex flex-col min-w-0 break-words bg-white border-0 shadow-xl rounded-2xl">
         <div class="relative flex items-center p-0 mt-6 overflow-hidden bg-center bg-cover min-h-custom rounded-2xl" style="background-image: url('{% static "image/social_image_login.png" %}'); background-position-y: 50%">
-            <span class="absolute inset-y-0 w-full h-full bg-center bg-cover bg-gradient-to-tl from-purple-500 to-red-500 opacity-60"></span>
+            <span class="absolute inset-y-0 w-full h-full bg-center bg-cover bg-color"></span>
         </div>
             <form method="post" enctype="multipart/form-data">
                 <div class="flex flex-col items-center flex-wrap justify-center">
