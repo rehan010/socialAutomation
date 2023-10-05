@@ -192,7 +192,7 @@ class UserView(LoginRequiredMixin,TemplateView):
         if user_manager != None:
             context['invites_admin'] = InviteEmploye.objects.filter(Q(invited_by=self.request.user) | Q(invited_by=user_manager))
         context['invites'] = InviteEmploye.objects.filter(~Q(is_deleted=True), invited_by=self.request.user)
-        context['users'] = User.objects.filter(~Q(is_active=True), manager=None)
+        context['users'] = User.objects.filter(~Q(is_active=True), ~Q(company=None), manager=None)
 
         return context
 
