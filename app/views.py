@@ -192,7 +192,7 @@ class UserView(LoginRequiredMixin,TemplateView):
         if user_manager != None:
             context['invites_admin'] = InviteEmploye.objects.filter(Q(invited_by=self.request.user) | Q(invited_by=user_manager))
         context['invites'] = InviteEmploye.objects.filter(~Q(is_deleted=True), invited_by=self.request.user)
-        context['users'] = User.objects.filter(~Q(is_active=True), ~Q(company=None), manager=None)
+        context['users'] = User.objects.filter(Q(is_active=False), ~Q(company=None), manager=None)
 
         return context
 
@@ -341,7 +341,12 @@ class user_approval(APIView):
 
             # Send the email using Django's email functionality
             send_mail(email_subject, email_body, 'smart.presence.help@gmail.com', [email])
-            user.delete()
+            # company = user.company.all().first()
+            # created_company = Company.objects.get(pk=company)
+            # created_company.delete()
+            user.is_deleted = True
+            user.is_rejected = True
+            user.save()
 
 
 
@@ -1087,13 +1092,19 @@ class RegisterView(FormView):
             # If no company name is provided, create a new company with the user's username
             company, created = Company.objects.get_or_create(name=user.username)
             user.company.add(company)
-        user.is_active = False
-        user.save()
+        logged_in_user =  self.request.user.is_superuser
+        if logged_in_user == True:
+            user.is_active = True
+            user.save()
 
-        # login(self.request, user)
-        # return redirect(reverse("dashboard"))
+            return redirect(reverse("my_user"))
 
-        return redirect(reverse("login"))
+        else:
+            user.is_active = False
+            return redirect(reverse("login"))
+
+
+
 
 
 class RegisterViewInvite(FormView):

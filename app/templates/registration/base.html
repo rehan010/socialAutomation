@@ -135,11 +135,12 @@
 <div class="w-full flex h-full">
     {% if user.is_authenticated %}
 
+
     <aside class="w-52 relative screen ease-nav-brand inset-y-10 ml-4 flex-wrap items-center justify-between overflow-y-auto rounded-xl border-0 bg-gray-100 p-0 antialiased shadow-none transition-transform duration-200 flex-wrap left-0 translate-x-0 top-0 " id="sidebar">
           <div class="w-full flex items-center justify-center">
             <ul class="space-y-2 m-2 w-full">
 
-
+                {% if user.is_superuser == False %}
                 <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
                     <a href="{% url 'my_profile' %}"
                     class="  flex items-center py-2 px-4 rounded space-x-2 hover:no-underline hover:text-black">
@@ -217,6 +218,8 @@
                     </a>
                     <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
                 </li>
+                {% endif %}
+
                 {% if user_role == 'ADMIN' %}
                 <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
                     <a href="{% url 'my_user' %}"
@@ -242,22 +245,6 @@
           </div>
 
     </aside>
-    <footer class="fixed bottom-0 w-full bg-white p-4 hidden">
-        <ul>
-            <li class="p-1 block  text-gray-700 cursor-pointer rounded my-3">
-                <a href="{% url 'privacy_policy' %}"
-                   class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-black">
-                    <div class="w-6 h-6 flex items-center justify-center ">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                        </svg>
-                    </div>
-                    <span class="text-sm">Privacy Policy</span>
-                </a>
-                <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
-            </li>
-        </ul>
-    </footer>
 
     {%endif%}
 

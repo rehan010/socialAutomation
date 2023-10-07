@@ -55,6 +55,7 @@ class User(AbstractUser):
     is_invited = models.BooleanField(default=False)
     profile_image = models.ImageField(upload_to='media', blank=True)
     is_deleted = models.BooleanField(null=False, default=False)
+    is_rejected = models.BooleanField(default=False)
 
 
 
