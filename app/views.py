@@ -55,8 +55,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login
 
 
-
-
 # Import your custom filter
 
 
@@ -152,6 +150,10 @@ class CustomLoginView(FormView):
     def form_valid(self, form):
        user = form.get_user()
        auth_login(self.request, user)
+
+       if user.is_superuser:
+           return redirect(reverse_lazy("my_user"))
+
        return super(CustomLoginView, self).form_valid(form)
     
     
@@ -166,7 +168,13 @@ class CustomLoginView(FormView):
 class ProfileView(LoginRequiredMixin,TemplateView):
     template_name = "registration/profile.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
 
+        if user.is_superuser:
+            return redirect(reverse_lazy("my_user"))
+
+        return super(ProfileView, self).dispatch(request)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -184,6 +192,18 @@ class ProfileView(LoginRequiredMixin,TemplateView):
 class UserView(LoginRequiredMixin,TemplateView):
     template_name = "registration/users.html"
     model = User
+
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+        if user.manager !=None:
+            invite = InviteEmploye.objects.filter(email=user.email, status='ACCEPTED', permission='WRITE').first()
+
+            if invite:
+                return super().dispatch(request, *args, **kwargs)
+            else:
+                return redirect(reverse_lazy('dashboard'))
+        else:
+            return super().dispatch(request, *args, **kwargs)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # context['users'] = User.objects.filter(manager=self.request.user)
@@ -193,6 +213,19 @@ class UserView(LoginRequiredMixin,TemplateView):
             context['invites_admin'] = InviteEmploye.objects.filter(Q(invited_by=self.request.user) | Q(invited_by=user_manager))
         context['invites'] = InviteEmploye.objects.filter(~Q(is_deleted=True), invited_by=self.request.user)
         context['users'] = User.objects.filter(Q(is_active=False), ~Q(company=None), manager=None)
+
+        if self.request.user.is_superuser == True:
+            companies = Company.objects.all()
+            users_grouped_by_company = []
+            for company in companies:
+
+                owner = User.objects.filter(company = company , manager = None,is_deleted = False, is_active = True).first()
+                if owner:
+                    employee = InviteEmploye.objects.filter(~Q(selected_user__manager = None),selected_user__company= company,selected_user__is_deleted = False, selected_user__is_active = True)
+                    user = {"owner": owner,"employee":employee}
+                    users_grouped_by_company.append(user)
+            context['user_grouped_by_company'] = users_grouped_by_company
+
 
         return context
 
@@ -294,8 +327,6 @@ from asgiref.sync import async_to_sync
 
 class user_approval(APIView):
     model = User
-
-
     def approve_email(self,user):
        token = generate_random_token()
        invite_link = f"https://cloudwind-smartpresence-staging.com/accounts/login?token={token}"
@@ -478,7 +509,13 @@ class UserCreateView(LoginRequiredMixin,TemplateView):
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "registration/dashboard.html"
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
 
+        if user.is_superuser:
+            return redirect(reverse_lazy("my_user"))
+        
+        return super(DashboardView, self).dispatch(request)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         today = date.today()
@@ -499,7 +536,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 user_permission = role.permission
                 if user_permission == 'HIDE':
 
-                    total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED', is_deleted=False)
+                    total_posts = PostModel.objects.filter( Q(status='PUBLISHED') | Q(status='FAILED'),user=self.request.user,  is_deleted=False)
                     sharepages = SharePage.objects.filter(user=self.request.user)
 
                 else:
@@ -510,7 +547,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             else:
                 invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list('selected_user', flat=True).distinct()
 
-                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invited), status='PUBLISHED', is_deleted = False)
+                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invited),Q(status='PUBLISHED') | Q(status='FAILED'), is_deleted = False)
 
                 sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invited))
 
@@ -583,203 +620,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             if total_followers_google is None:
                 total_followers_google = 0
 
-
-
-        #
-        #
-        #     results_ln = []
-        #     results_fb = []
-        #     results_insta = []
-        #
-        #
-        #     current_date = timezone.now().date()
-        #
-        #     # Calculate the start date (seven days ago)
-        #     start_date = current_date - timedelta(days=6)
-        #
-        #
-        #     # Loop through the days of the week
-        #     for day in range(7):
-        #         # Calculate the end date for the current day
-        #         end_date = start_date + timedelta(days=1)
-        #
-        #         # Query the database to count the number of posts created on the current day
-        #         post_count_ln = total_posts.filter(post_urn__org__provider='linkedin', created_at__gte=start_date, created_at__lt=end_date).count()
-        #         post_count_fb = total_posts.filter(post_urn__org__provider='facebook', created_at__gte=start_date, created_at__lt=end_date).count()
-        #         post_count_insta = total_posts.filter(post_urn__org__provider='instagram', created_at__gte=start_date, created_at__lt=end_date).count()
-        #
-        #         # Append the result to the list
-        #         results_ln.append((start_date.strftime("%A"), post_count_ln))
-        #         results_fb.append((start_date.strftime("%A"), post_count_fb))
-        #         results_insta.append((start_date.strftime("%A"), post_count_insta))
-        #
-        #         # Move to the next day
-        #         start_date = end_date
-        #
-        #     #Monthly Post Platfrom Wise
-        #     end_date = datetime.now()
-        #     start_date = end_date - timedelta(days=30)
-        #
-        #     # Initialize lists to store the months and counts for each provider
-        #     months = []  # To store months
-        #     linkedin_counts = []  # To store LinkedIn counts
-        #     facebook_counts = []  # To store Facebook counts
-        #     instagram_counts = []  # To store Instagram counts
-        #
-        #     # Loop through each month within the past 30 days
-        #     current_month = start_date.replace(day=1)  # Start with the first day of the start month
-        #     while current_month <= end_date:
-        #         # Calculate the start and end of the current month
-        #         next_month = current_month.replace(day=28) + timedelta(days=4)  # Get the last day of the month
-        #         end_month = next_month - timedelta(days=next_month.day)
-        #
-        #         # Query the database to count posts for LinkedIn, Facebook, and Instagram in the current month
-        #         post_count_ln = total_posts.filter(post_urn__org__provider='linkedin', created_at__gte=current_month,
-        #                                            created_at__lte=end_month).count()
-        #         post_count_fb = total_posts.filter(post_urn__org__provider='facebook', created_at__gte=current_month,
-        #                                            created_at__lte=end_month).count()
-        #         post_count_insta = total_posts.filter(post_urn__org__provider='instagram',
-        #                                               created_at__gte=current_month, created_at__lte=end_month).count()
-        #
-        #         # Store the current month in the "months" list (assuming all months are the same)
-        #         months.append(current_month.strftime("%B %Y"))
-        #
-        #         # Store the counts in their respective provider-specific lists
-        #         linkedin_counts.append(post_count_ln)
-        #         facebook_counts.append(post_count_fb)
-        #         instagram_counts.append(post_count_insta)
-        #
-        #         # Move to the next month
-        #         current_month = next_month
-        #
-        #     # months = list(monthly_counts_ln.keys())
-        #     # linkedin_counts = list(monthly_counts_ln.values())
-        #     # facebook_counts = list(monthly_counts_fb.values())
-        #     # instagram_counts = list(monthly_counts_insta.values())
-        #
-        #     context["linkedin_counts"] = linkedin_counts
-        #     context["facebook_counts"] = facebook_counts
-        #     context["instagram_counts"] = instagram_counts
-        #     context["months"] = months
-        #
-        #     labels = []
-        #     values_ln = []
-        #     values_fb = []
-        #     values_insta = []
-        #
-        #     for item in results_ln:
-        #         labels.append(item[0])
-        #         values_ln.append(item[1])
-        #     for item in results_fb:
-        #         values_fb.append(item[1])
-        #     for item in results_insta:
-        #         values_insta.append(item[1])
-        #
-        #     day_name_mapping = {
-        #         'Monday': 'Mon',
-        #         'Tuesday': 'Tue',
-        #         'Wednesday': 'Wed',
-        #         'Thursday': 'Thu',
-        #         'Friday': 'Fri',
-        #         'Saturday': 'Sat',
-        #         'Sunday': 'Sun'
-        #     }
-        #     label = [day_name_mapping[day] for day in labels]
-        #
-        #     context['data_ln'] = values_ln
-        #     context['labels'] = label
-        #     context['data_fb'] = values_fb
-        #     context['data_insta'] = values_insta
-        #
-        #     # Post,likes,comments for today
-        #     user_post = total_posts.filter(created_at__date=today,is_deleted = False)
-        #     likes_today = 0
-        #     comments_today = 0
-        #     likes_overall = 0
-        #     comments_overall = 0
-        #     followers_today = 0
-        #     followers_overall = 0
-        #
-        #     linkedin_org = sharepages.filter(provider="linkedin")
-        #     linkedin_post_today = user_post.filter(post_urn__org__provider = "linkedin").distinct().count()
-        #     linkedin_likes_today = 0
-        #     linkedin_comments_today = 0
-        #     linkedin_new_followers = 0
-        #     if len(linkedin_org) > 0:
-        #         for page in linkedin_org:
-        #
-        #             org_id = page.org_id
-        #             access_token = page.access_token
-        #
-        #
-        #             # result = linkedin_share_stats(org_id, access_token, start)
-        #             # likes = result[0]
-        #             # comments = result[1]
-        #
-        #             linkedin_likes_today += likes
-        #             linkedin_comments_today += comments
-        #
-        #             # result = linkedin_share_stats_overall(org_id, access_token)
-        #             # likes_ovr = result[0]
-        #             # comments_ovr = result[1]
-        #
-        #             # likes_overall += likes_ovr
-        #             # comments_overall += comments_ovr
-        #
-        #             result = linkedin_followers_today(org_id, access_token, start)
-        #             followers = result
-        #             followers_today += followers
-        #             linkedin_new_followers += followers
-        #             result = linkedin_followers(org_id, access_token)
-        #             followers_ovr = result
-        #             followers_overall += followers_ovr
-        #
-        #     fb_org = sharepages.filter(provider="facebook")
-        #     facebook_post_today = user_post.filter(post_urn__org__provider = "facebook").distinct().count()
-        #     facebook_likes_today = 0
-        #     facebook_comments_today = 0
-        #     facebook_new_followers = 0
-        #     if len(fb_org) > 0:
-        #         for page in fb_org:
-        #             page_id = page.org_id
-        #             access_token = page.access_token
-        #
-        #             # result = fb_page_insights(access_token, page_id)
-        #             # likes = result[0]
-        #             # comments = result[1]
-        #             # newfollowers_today = result[2]
-        #
-        #             # followers_today += newfollowers_today
-        #             # facebook_new_followers += newfollowers_today
-        #             # facebook_likes_today += likes
-        #             # facebook_comments_today += comments
-        #
-        #
-        #     insta_accounts = sharepages.filter(provider="instagram")
-        #     instagram_post_today = user_post.filter(post_urn__org__provider = "instagram").distinct().count()
-        #     instagram_likes_today = 0
-        #     instagram_comments_today = 0
-        #     if len(insta_accounts) > 0:
-        #         for account in insta_accounts:
-        #             access_token = account.access_token
-        #             account_id = account.org_id
-        #
-        #             # result = instagram_page_insigths(access_token, account_id)
-        #             # likes = result[0]
-        #             # comments = result[1]
-        #             #
-        #             # instagram_likes_today += likes
-        #             # instagram_comments_today += comments
-        #
-        #
-        #     #Weekly comparison
-        #     current_week_post = len(total_posts.filter(created_at__lte=curr_date, created_at__gte=before_date))
-        #     previous_week_post = len(total_posts.filter(created_at__lte=before_date, created_at__gte=week_before_date))
-        #     if previous_week_post > 0:
-        #         change_per = round((current_week_post - previous_week_post)*(100/previous_week_post), 1)
-        #     else:
-        #         change_per = 100
-        #
             # context['likes_today'] = likes_today
             context['linkedin_likes_today'] = total_likes_linkedin
             context['facebook_likes_today'] = total_likes_facebook
@@ -807,6 +647,58 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 
         return context
+
+
+
+class DeleteCompanyApiView(APIView):
+
+    def delete(self,request):
+        try:
+            userId = request.GET.get('userId')
+            owner = User.objects.filter(id=userId).first()
+            company = owner.company.first()
+
+            users = User.objects.filter(~Q(manager=None), company=company, is_deleted=False, is_active=True)
+
+            employees = InviteEmploye.objects.filter(selected_user__in=users)
+
+            length = len(employees)
+            i = 0
+            while i < length:
+                user = users[i]
+                employee = employees[i]
+
+                user.is_deleted = True
+                user.is_active = False
+                user.company.remove(company)
+                user.manager = None
+                user.save()
+
+                employee.is_deleted = True
+                employee.save()
+
+                i = i + 1
+
+            owner.is_deleted = True
+            owner.is_active = False
+            owner.company.remove(company)
+            owner.manager = None
+            owner.save()
+
+            # Return a success response
+            return JsonResponse({'message': 'success'})
+
+        except Exception as e:
+            # Handle the exception, log it, or return an error response
+            return JsonResponse({'error': str(e)})
+
+
+
+        # invited_employees = InviteEmploye.objects.filter()
+
+
+
+
 
 class DashBoardCardView(APIView):
 
@@ -1008,15 +900,6 @@ class ConnectPageView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Add your context data here
-        # if self.request.user.is_authenticated:
-        #     point_files = list(PointFileModel.objects.filter(user=self.request.user,is_deleted=False).values('id','name','point_file'))
-        #     lat_long= {}
-        #     for _ in point_files:
-        #         lat_long_list = list(LatLongModel.objects.filter(file=_['id']).values('latitude', 'longitude'))
-        #         # Convert Decimal values to float
-        #         _['lat_long'] = [{'latitude': float(lat['latitude']), 'longitude': float(lat['longitude'])} for lat
-        #                             in lat_long_list]
 
         user = self.request.user  # Set the user to the logged-in user
         social = SocialAccount.objects.filter(user=user.id)
@@ -1046,7 +929,6 @@ class ConnectPageView(LoginRequiredMixin, CreateView):
             if share.count() > 0:
                 pass
             else:
-                # SharePage.objects.create(user=social,organizations_id=id)
                 SharePage.objects.create(user=self.request.user,organizations_id=id)
 
         return redirect(reverse("ln_posts", kwargs={'pk': self.request.user.id}))
@@ -1101,6 +983,7 @@ class RegisterView(FormView):
 
         else:
             user.is_active = False
+            user.save()
             return redirect(reverse("login"))
 
 
@@ -1111,6 +994,13 @@ class RegisterViewInvite(FormView):
     template_name = "registration/invitation.html"
     form_class = CustomUserInvitationForm
 
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+
+        if user.is_superuser:
+            return redirect(reverse_lazy("my_user"))
+
+        return super(RegisterViewInvite, self).dispatch(request)
     def get(self, request, *args, **kwargs):
         token = self.request.GET['token']
         invite = InviteEmploye.objects.get(token=token)
@@ -1186,9 +1076,7 @@ class RegisterViewInvite(FormView):
 
 class PrivacyPolicyView(TemplateView):
     template_name = 'registration/privacy_policy.html'
-    #
-    # def get_context_data(self, **kwargs):
-    #     return self
+
 
 class PointFileCreateView(LoginRequiredMixin, CreateView):
     model = PointFileModel
@@ -1239,6 +1127,13 @@ class PostCreateView(CreateView):
     template_name = 'social/create_post.html'
     success_url = reverse_lazy('my_posts')
 
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+
+        if user.is_superuser:
+            return redirect(reverse_lazy("my_user"))
+
+        return super(PostCreateView, self).dispatch(request)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         comment_check = True
@@ -1679,9 +1574,9 @@ class PostGraphApiView(APIView):
             user_role = role.role
             user_permission = role.permission
             if user_permission == 'HIDE':
-                total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED', is_deleted=False)
+                total_posts = PostModel.objects.filter(Q(status='PUBLISHED') | Q(status='FAILED'), user=self.request.user, is_deleted=False)
             else:
-                total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager), status='PUBLISHED')
+                total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager),Q(status='PUBLISHED') | Q(status='FAILED'), is_deleted=False)
 
         else:
             invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
@@ -1689,7 +1584,7 @@ class PostGraphApiView(APIView):
             for user in invited:
                 invited_users_id = user.selected_user.id
                 invites.append(invited_users_id)
-            total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites),status='PUBLISHED', is_deleted=False)
+            total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites),Q(status='PUBLISHED') | Q(status='FAILED'), is_deleted=False)
 
 
         result_fb = []
@@ -1800,8 +1695,6 @@ class PageDataView(APIView):
                 data["instagram"] += insta_data
             # For Instagram
 
-
-
             if _.provider == 'linkedin_oauth2':
 
                 linkedin_page = linkedin_get_user_organization(access_token.get(_.user.username).get("linkedin_oauth2"),access_token[_.user.username]['id'])
@@ -1820,6 +1713,13 @@ class PostDraftView(UpdateView):
     template_name = 'social/publish_drafts.html'
     success_url = reverse_lazy('my_posts')
 
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+
+        if user.is_superuser:
+            return redirect(reverse_lazy("my_user"))
+
+        return super(PostDraftView, self).dispatch(request)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post_id = self.kwargs['pk']
@@ -1973,6 +1873,14 @@ def get_paginated_post_list(post_queryset, items_per_page, page_number):
 class PostsGetView2(LoginRequiredMixin, TemplateView):
     template_name = 'social/my_posts2.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+
+        if user.is_superuser:
+            return redirect(reverse_lazy("my_user"))
+
+        return super(PostsGetView2, self).dispatch(request)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user_manager = self.request.user.manager
@@ -2025,6 +1933,14 @@ class PostsGetView2(LoginRequiredMixin, TemplateView):
 
 class PostsGetView(LoginRequiredMixin, TemplateView):
     template_name = 'social/my_posts.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+
+        if user.is_superuser:
+            return redirect(reverse_lazy("my_user"))
+
+        return super(PostsGetView, self).dispatch(request)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -2348,7 +2264,13 @@ class PostDeleteView(DestroyAPIView):
 class PostsDetailView(LoginRequiredMixin, TemplateView):
     template_name = 'social/post_detail.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
 
+        if user.is_superuser:
+            return redirect(reverse_lazy("my_user"))
+
+        return super(PostsDetailView, self).dispatch(request)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post_id = self.kwargs['post_id']
@@ -2479,21 +2401,6 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'reply_media_counter': 0
             }
 
-
-
-
-        # data_list = []
-        # for id in ids:
-        #     linkedin_org_stats(access_token_string, id, data_list)
-        #
-        # provider_name1 = "Facebook"
-        # facebook_post = PostModel.objects.get(post_urn__org__provider=provider_name1)
-        #
-        # provider_name2 = "Instagram"
-        # instagram_post = PostModel.objects.get(post_urn__org__provider=provider_name2)
-        #
-        # provider_name3 = "Google Books"
-        # google_post = PostModel.objects.get(post_urn__org__provider=provider_name3)
 
         return context
 
@@ -2895,7 +2802,13 @@ class ConnectionView(ConnectionsView):
 class SocialProfileView(LoginRequiredMixin,TemplateView):
     template_name = 'social/social_profile_2.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
 
+        if user.is_superuser:
+            return redirect(reverse_lazy("my_user"))
+
+        return super(SocialProfileView, self).dispatch(request)
 
     def get_context_data(self, **kwargs):
         provider_name = self.request.GET.get('provider_name')

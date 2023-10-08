@@ -19,6 +19,7 @@ urlpatterns = [
     path('accounts/reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('', TemplateView.as_view(template_name='registration/home.html'), name="home"),
     path('dashboard', DashboardView.as_view(), name="dashboard"),
+    path('delete/company/', DeleteCompanyApiView.as_view(), name="delete_company"),
     path('dashboardapi/', DashBoardCardView.as_view(), name="dashboard_api"),
     path('likeGraphApiview/', LikeGraphApi.as_view(), name="like_graph"),
     path('CommentGraphApiview/', CommentGraphApi.as_view(), name="comment_graph"),
@@ -55,5 +56,5 @@ urlpatterns = [
     path('social/social/profile/api/', SocialProfileAPI.as_view(), name="social_profile_api"),
     path('api_posts/', PostApiView.as_view(), name='api_posts'),
     path('social/page/', PageDataView.as_view(), name="page_data"),
-    path('home/',TemplateView.as_view(template_name = 'registration/home.html'),name = "home")
+    path('home/',TemplateView.as_view(template_name = 'registration/home.html'),name = "home"),
 ]

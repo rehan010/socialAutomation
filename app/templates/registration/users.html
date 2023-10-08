@@ -24,6 +24,8 @@
 
 <div class="w-full px-6 py-6 mx-auto m-0 font-sans text-base antialiased font-normal leading-default bg-gray-50 text-slate-500">
     <br>
+    {% csrf_token %}
+
     {% if user_role == 'ADMIN' and user.is_superuser == False %}
     <div class="flex items-center justify-between px-4 py-2 ">
         <h1 class="text-2xl font-bold font-cool text-black">Manage access</h1>
@@ -39,6 +41,243 @@
 
 
     {% endif %}
+    {% if user.is_superuser == True %}
+    <div class="flex flex-wrap -mx-3 mt-8">
+            <div class="flex-none w-full max-w-full px-3">
+                <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
+                    <div class="p-6 pb-0 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
+                        <h6 class="text-xl font-bold">Users</h6>
+                    </div>
+                    <div class="flex-auto px-0 pt-0 pb-2">
+                        <div class="p-0 overflow-x-auto">
+                            <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                                <thead class="align-bottom">
+                                    <tr>
+                                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Name</th>
+                                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Email</th>
+                                        <th class="px-6 py-3 pl-2 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Invited By</th>
+                                        <th class="px-6 py-3 text-center font-bold uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Organization</th>
+                                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Role</th>
+                                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Permissions</th>
+                                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">Created On</th>
+                                        <th class="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in user_grouped_by_company %}
+                                    <tr class="userRow cursor-pointer" onclick="showSubRows(this)">
+                                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                            <div class="flex items-center px-2 py-1">
+                                                <i class="fa-solid fa-chevron-down mr-3"></i>
+                                                {% if user.owner.profile_image %}
+                                                     <img src="{{ user.owner.profile_image.url }}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" >
+                                                {% else %}
+                                                     <img src="{% static 'image/default.png' %}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                                {% endif %}
+                                                        <div class="flex flex-col justify-center">
+                                                  {% if user.owner.first_name == '' %}
+                                                  <h6 class="mb-0 text-sm leading-normal">{{user.owner.username | title }}
+                                                        </h6>
+                                                  {% else %}
+                                                  <h6 class="mb-0 text-sm leading-normal">{{user.owner.first_name | title}}
+                                                        {{user.owner.last_name|truncatewords:0}}</h6>
+                                                  {% endif %}
+                                                    </div>
+                                            </div>
+
+                                        </td>
+                                        <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                            <div class="flex px-2 py-1">
+                                              <div class="flex flex-col justify-center">
+                                                    <p class="mb-0 text-xs leading-tight text-slate-400">{{user.owner.email}}</p>
+                                              </div>
+                                            </div>
+                                        </td>
+                                        <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                                <span class="text-xs font-semibold leading-tight text-slate-400">-</span>
+                                        </td>
+                                        <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                             {% for company in user.owner.company.all %}
+                                                <p class="mb-0 text-xs font-semibold text-center leading-tight">{{company.name}}</p>
+                                            {% endfor %}
+
+                                        </td>
+                                        <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                            <span class="bg-gradient-to-tl from-gray-600 to-red-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">OWNER</span>
+                                        </td>
+                                        <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                            <span class="bg-gradient-to-tl from-blue-600 to-blue-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">WRITE</span>
+                                        </td>
+                                        <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                              <span class="text-xs font-semibold leading-tight text-slate-400">{{user.owner.date_joined|date:"d M Y"}}</span>
+                                        </td>
+
+                                        <td class="p-2 align-middle text-center bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                                        <button class="openDeleteButton modal-button cursor-pointer fas fa-trash-alt text-slate-700" data-target1="{{ user.owner.id }}"></button>
+                                        <div id="{{ user.owner.id }}"
+                                             class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden flex justify-center items-center animated fadeIn faster hidden"
+                                             style="background: rgba(0,0,0,.7);">
+                                            <div class="modal-container border border-teal-500 shadow-lg bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+                                                <div class="modal-content py-2 text-left px-6">
+                                                    <!--Title-->
+                                                    <div class="flex justify-between items-center pb-3">
+                                                        <p class="text-xl font-bold">Delete User</p>
+                                                        <div class="modal-close cursor-pointer z-50">
+                                                        </div>
+                                                    </div>
+                                                    <!--Body-->
+                                                    <hr class="bg-150 bg-gradient-to-tl from-gray-900 to-slate-800">
+                                                    <div class="flex py-2 justify-center">
+                                                        <h4 class="flex justify-center text-center">Are you sure you want to delete this Company ?</h4>
+                                                    </div>
+                                                    <br>
+                                                    <div class="flex justify-between">
+                                                        <button type="button"
+                                                                onclick="deleteCompany(this)"
+                                                                class="text-sm focus:outline-none px-2 py-1 mb-2 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline p-2 ml-3 rounded-lg text-white mb-2"
+                                                                data-target1="{{ user.owner.id }}">Confirm
+                                                        </button>
+                                                        <button type="button"
+                                                                class="closeDeleteButton text-sm focus:outline-none modal-close px-2 py-1 mb-2 borders border-solid rounded-lg shadow-none cursor-pointer border-black text-black"
+                                                                data-target1="{{ user.owner.id }}">Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        </td>
+                                    </tr>
+                                    {% if user.employee|length > 0 %}
+                                        {% for employe in user.employee%}
+                                            <tr class="SubuserRow hidden bg-gray-100">
+                                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                                  <div class="flex px-2 pl-5 py-1">
+                                                        {% if employe.selected_user.profile_image %}
+                                                        <img src="{{ employe.selected_user.profile_image.url }}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1" >
+                                                        {% else %}
+                                                             <img src="{% static 'image/default.png' %}" class="inline-flex max-w-none items-center justify-center mr-4 text-sm text-white transition-all duration-200 ease-soft-in-out h-9 w-9 rounded-xl" alt="user1">
+                                                        {% endif %}
+                                                     <div class="flex flex-col justify-center">
+                                                          {% if employe.selected_user.first_name == '' %}
+                                                          <h6 class="mb-0 text-sm leading-normal">{{employe.selected_user.username | title }}
+                                                                </h6>
+                                                          {% else %}
+                                                          <h6 class="mb-0 text-sm leading-normal">{{employe.selected_user.first_name | title}}
+                                                                {{employe.selected_user.last_name|truncatewords:0}}</h6>
+                                                          {% endif %}
+                                                     </div>
+                                                  </div>
+                                                </td>
+                                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                                  <div class="flex px-2 py-1">
+                                                      <div class="flex flex-col justify-center">
+                                                            <p class="mb-0 text-xs leading-tight text-slate-400">{{employe.email}}</p>
+                                                      </div>
+                                                  </div>
+                                                </td>
+                                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                                  <p class="mb-0 text-xs font-semibold leading-tight">
+                                                                {{employe.invited_by.first_name}}
+                                                                {{employe.invited_by.last_name}}</p>
+                                                    <p class="mb-0 text-xs font-semibold leading-tight">
+                                                                {{employe.invited_by.email}}
+                                                    </p>
+                                                    <p class="mb-0 text-xs leading-tight text-slate-400">
+                                                        {% for company in employe.invited_by.company.all %}
+                                                                {{company.name}}</p>
+                                                        {% endfor %}
+                                                </td>
+                                                <td class="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                                    {% if employe.selected_user %}
+                                                    {% for company in employe.selected_user.company.all %}
+                                                    <p class="mb-0 text-xs font-semibold text-center leading-tight">{{company.name}}</p>
+                                                    {% endfor %}
+                                                    {% else %}
+                                                    {% for company in employe.invited_by.company.all %}
+                                                  <p class="mb-0 text-xs leading-tight text-center text-slate-400">{{company.name}}</p>
+                                                    {% endfor %}
+                                                    {% endif %}
+                                                </td>
+                                                <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                                    {% if employe.role == 'MEMBER' %}
+                                                    <span class="bg-gradient-to-tl from-gray-600 to-red-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{employe.role}}</span>
+                                                    {% else %}
+                                                    <span class="bg-gradient-to-tl from-black to-purple-600 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{employe.role}}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                                    {% if employe.permission != 'HIDE' %}
+                                                    <span class="bg-gradient-to-tl from-blue-600 to-blue-500 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">{{employe.permission}}</span>
+                                                    {% else %}
+                                                    <span class=" px-2.5 text-xs  py-1.4  whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-gray">-</span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                                      {% if employe.status == 'ACCEPTED' %}
+                                                      <span class="text-xs font-semibold leading-tight text-slate-400">{{employe.selected_user.date_joined|date:"d M Y"}}</span>
+                                                      {% elif employe.status == 'PENDING' %}
+                                                      <span class="text-xs font-semibold leading-tight text-slate-400">PENDING</span>
+                                                      {% else %}
+                                                      <span class="text-xs font-semibold leading-tight text-slate-400">REJECTED</span>
+                                                      {% endif %}
+                                                </td>
+                                                <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent"></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                            <tr class="SubuserRow hidden bg-gray-100">
+                                                <td class="p-2 align-middle bg-transparent border-b text-center whitespace-nowrap shadow-transparent">
+                                                    <span class="text-xs font-semibold leading-tight text-slate-400">-</span>
+                                                </td>
+                                                <td class="p-2 align-middle bg-transparent border-b text-center whitespace-nowrap shadow-transparent">
+                                                            <span class="text-xs font-semibold leading-tight text-slate-400">-</span>
+
+                                                </td>
+                                                <td class="p-2 align-middle bg-transparent border-b text-center whitespace-nowrap shadow-transparent">
+                                                            <span class="text-xs font-semibold leading-tight text-slate-400">-</span>
+
+                                                </td>
+                                                <td class="p-2 align-middle bg-transparent border-b text-center whitespace-nowrap shadow-transparent">
+                                                      <span class="text-xs font-semibold leading-tight text-slate-400">-</span>
+
+                                                </td>
+                                                <td class="p-2 text-sm leading-normal text-center  align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                                                      <span class="text-xs font-semibold leading-tight text-slate-400">-</span>
+
+                                                </td>
+                                                <td class="p-2 text-center align-middle bg-transparent text-center border-b whitespace-nowrap shadow-transparent">
+                                                    <span class="text-xs font-semibold leading-tight text-slate-400">-</span>
+
+                                                </td>
+
+                                                <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+
+                                                      <span class="text-xs font-semibold leading-tight text-slate-400">-</span>
+
+                                                </td>
+                                                <td class="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent"></td>
+                                            </tr>
+
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+
+
+
+
+
+
+
+    {% else %}
     <div id="searchBarDiv" class="mt-8 mx-4 p-4 border border-gray-300 shadow-md rounded-lg" style="display:none">
         <div class="relative">
             <button id="closeSearchBtn" class="absolute top-2 right-4 text-red-500">&#10006;</button>
@@ -87,7 +326,7 @@
             </div>
             <div id="emailInputBox" class="hidden p-2 bg-blue-100 rounded-lg flex items-center justify-between">
                 <input type="text" id="email" name="email"
-                       class="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500">
+                       class="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500" placeholder="Enter email address...">
                 <div class="flex flex-col items-center justify-center mr-5">
                     <select id="roleSelectEmail" class="relative right-1 px-3 py-1 text-xs text-white ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline rounded">
                         <option value="MEMBER" class="text-black">MEMBER</option>
@@ -302,6 +541,7 @@
             </div>
           </div>
         </div>
+    {% endif %}
     <br>
     {% if request.user.is_superuser == True %}
     <div class="flex flex-wrap -mx-3">
@@ -409,6 +649,16 @@
     </div>
     {% endif %}
 <script>
+
+        function getCSRFToken() {
+        const csrfTokenInput = document.querySelector('input[name=csrfmiddlewaretoken]');
+        if (csrfTokenInput) {
+            return csrfTokenInput.value;
+        } else {
+            return null;
+        }
+        }
+
         try{
 
         document.getElementById("addPeopleBtn").addEventListener("click", function () {
@@ -524,14 +774,7 @@
             clearSelectedUser()
     });
 
-    function getCSRFToken() {
-        const csrfTokenInput = document.querySelector('input[name=csrfmiddlewaretoken]');
-        if (csrfTokenInput) {
-            return csrfTokenInput.value;
-        } else {
-            return null;
-        }
-    }
+
 
     document.addEventListener('DOMContentLoaded', function() {
         const roleSelectEmail = document.getElementById('roleSelectEmail');
@@ -950,7 +1193,7 @@
                 user: user,
                 csrfmiddlewaretoken: csrfToken,
             };
-
+            console.log(data);
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -1040,6 +1283,66 @@
             }
         });
     });
+
+    function showSubRows(row){
+        var nextRow = row.nextElementSibling;
+        var arrow = row.querySelector('.fa-solid'); // Assuming the element has the class 'fa-solid'
+
+        if (arrow.classList.contains('fa-chevron-down')) {
+            arrow.classList.remove('fa-chevron-down');
+            arrow.classList.add('fa-chevron-up');
+        } else {
+            arrow.classList.remove('fa-chevron-up');
+            arrow.classList.add('fa-chevron-down');
+        }
+
+        // Iterate through the rows until the next owner-row is encountered
+        while (nextRow && !nextRow.classList.contains('userRow')) {
+            var tdList = nextRow.classList.toggle('hidden');
+            nextRow = nextRow.nextElementSibling;
+        }
+    }
+
+
+
+    function deleteCompanyRows(button){
+        const ownerRow = button.closest('.userRow');
+        var nextRow = ownerRow.nextElementSibling;
+        while (nextRow && !nextRow.classList.contains('userRow')) {
+
+            var tempNextRow = nextRow.nextElementSibling;
+            nextRow.remove();
+            nextRow = tempNextRow;
+        }
+        ownerRow.remove();
+    }
+
+  async function deleteCompany(button) {
+      console.log(button);
+      const csrfToken = getCSRFToken();
+      const userId = button.getAttribute('data-target1');
+      try {
+        const res = await fetch(`/delete/company/?userId=${userId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+          },
+        });
+
+        if (res.ok) {
+          // The company was successfully deleted
+          const data = await res.json();
+          deleteCompanyRows(button);
+
+
+        } else {
+          console.error('Failed to delete company');
+        }
+      } catch (error) {
+        console.error('An error occurred while deleting the company:', error);
+      }
+    }
 
 
 
