@@ -957,6 +957,14 @@ class PasswordChangeView(LoginRequiredMixin,auth_views.PasswordChangeView):
 class RegisterView(FormView):
     template_name = "registration/register.html"
     form_class = CustomUserCreationForm
+    
+    def form_invalid(self, form):
+
+        logged_in_user = self.request.user.is_superuser
+        if logged_in_user:
+            return redirect(reverse("my_user"))
+        
+        return super(RegisterView, self).form_invalid(form)
 
     def form_valid(self, form):
         user = form.save(commit=False)

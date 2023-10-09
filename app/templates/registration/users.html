@@ -1494,6 +1494,12 @@ function hideModal(){
 
 }
 
+let password1Error = false;
+let password2Error = false;
+let usernameError = false;
+let emailError = false;
+let companyError = false;
+
 function checkusername(event) {
     const csrftoken = getCSRFToken();
     const username = event.value;
@@ -1515,6 +1521,7 @@ function checkusername(event) {
 
         if (data.exists) {
             button.disabled = true;
+            usernameError = true;
             button.classList.add('disabled');
             button.classList.add('cursor-not-allowed');
             const error = document.getElementById("usernameError");
@@ -1534,9 +1541,12 @@ function checkusername(event) {
             }catch(error){
 
             }
+            usernameError = false;
+            if(!password1Error && !password2Error && !usernameError && !companyError && !emailError){
+                button.disabled = false;
+                button.classList.remove('cursor-not-allowed');
+            }
 
-            button.disabled = false;
-            button.classList.remove('cursor-not-allowed');
 
         }
         // Perform any additional actions based on the response here
@@ -1568,6 +1578,7 @@ function checkemail(event) {
         if (data.exists) {
             button.disabled = true;
             button.classList.add('disabled');
+            emailError = true;
             button.classList.add('cursor-not-allowed');
             const error = document.getElementById("usernameError");
             if(!error){
@@ -1585,8 +1596,11 @@ function checkemail(event) {
             }catch(error){
 
             }
-            button.classList.remove('cursor-not-allowed');
-            button.disabled = false;
+            emailError = false;
+             if(!password1Error && !password2Error && !usernameError && !companyError && !emailError){
+                button.disabled = false;
+                button.classList.remove('cursor-not-allowed');
+            }
 
         }
         // Perform any additional actions based on the response here
@@ -1617,6 +1631,7 @@ function checkcompany(event) {
 
         if (data.exists) {
             button.disabled = true;
+            companyError = true;
             button.classList.add('disabled');
             button.classList.add('cursor-not-allowed');
             const error = document.getElementById("companyError");
@@ -1634,9 +1649,11 @@ function checkcompany(event) {
                 error.remove();
             }catch(error){
             }
-
-            button.disabled = false;
-            button.classList.remove('cursor-not-allowed');
+             companyError = false;
+             if(!password1Error && !password2Error && !usernameError && !companyError && !emailError){
+                button.disabled = false;
+                button.classList.remove('cursor-not-allowed');
+            }
 
         }
         // Perform any additional actions based on the response here
@@ -1668,6 +1685,7 @@ function validatepassword(event){
 
         if (data.errors) {
             button.disabled = true;
+            password1Error = true;
             button.classList.add('disabled');
             button.classList.add('cursor-not-allowed');
             const error = document.getElementById("passwordError");
@@ -1694,8 +1712,12 @@ function validatepassword(event){
             }
             let password2 = document.getElementById('id_password2');
             checkpassword(password2);
-            button.disabled = false;
-            button.classList.remove('cursor-not-allowed');
+            password1Error = false;
+             if(!password1Error && !password2Error && !usernameError && !companyError && !emailError){
+                button.disabled = false;
+                button.classList.remove('cursor-not-allowed');
+            }
+
 
         }
         // Perform any additional actions based on the response here
@@ -1712,6 +1734,7 @@ function checkpassword(event){
 
     if(password1 !== password2){
         button.disabled = true;
+        password2Error = true;
         button.classList.add('disabled');
         button.classList.add('cursor-not-allowed');
         const error = document.getElementById("passwordError2");
@@ -1732,8 +1755,11 @@ function checkpassword(event){
             }catch(error){
 
             }
-            button.classList.remove('cursor-not-allowed');
-            button.disabled = false;
+            password2Error = false;
+             if(!password1Error && !password2Error && !usernameError && !companyError && !emailError){
+                button.disabled = false;
+                button.classList.remove('cursor-not-allowed');
+            }
 
 
         }
