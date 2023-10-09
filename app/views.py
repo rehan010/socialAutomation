@@ -227,7 +227,7 @@ class UserView(LoginRequiredMixin,TemplateView):
             users_grouped_by_company = []
             for company in companies:
 
-                owner = User.objects.filter(company = company , manager = None,is_deleted = False, is_active = True).first()
+                owner = User.objects.filter(company = company , manager = None,is_deleted = False, is_active = True,is_superuser = False).first()
                 if owner:
                     employee = InviteEmploye.objects.filter(~Q(selected_user__manager = None),selected_user__company= company,selected_user__is_deleted = False, selected_user__is_active = True)
                     user = {"owner": owner,"employee":employee}
