@@ -160,7 +160,11 @@ class CustomLoginView(FormView):
     def form_invalid(self, form):
         user = User.objects.filter(username = form.cleaned_data['username'])
         if user.exists():
-            if user.first().is_active == False:
+            if user.first().is_active == False and user.first().is_deleted == True:
+                form.errors.get("__all__").data.pop()
+                form.add_error(None, 'Your access has been revoked by Root User')
+
+            elif user.first().is_active == False:
                 form.errors.get("__all__").data.pop()
                 form.add_error(None, 'Please Request Root User To Grant Access')
         return super(CustomLoginView, self).form_invalid(form)
@@ -406,7 +410,7 @@ class assign_manager(CreateView):
                 manager_corp = 'False'
                 permission = "WRITE"
 
-            if User.objects.filter(email=email).exists():
+            if User.objects.filter(email=email).exists() or InviteEmploye.objects.filter(email=email).exists():
                 return JsonResponse({'message': 'A user with this email already exists'})
             try:
                 token = generate_random_token()
@@ -663,7 +667,7 @@ class DeleteCompanyApiView(APIView):
 
             users = User.objects.filter(~Q(manager=None), company=company, is_deleted=False, is_active=True)
 
-            employees = InviteEmploye.objects.filter(selected_user__in=users)
+            employees = InviteEmploye.objects.filter(selected_user__in=users, is_deleted=False)
 
             length = len(employees)
             i = 0
@@ -1015,6 +1019,11 @@ class RegisterViewInvite(FormView):
             return render(request, 'registration/invitation_failed.html')
 
         elif invite.is_deleted:
+            if self.request.user.is_authenticated:
+                logout(request)
+
+            return render(request, 'registration/invitation_failed.html')
+        elif invite.invited_by.is_deleted == True:
             if self.request.user.is_authenticated:
                 logout(request)
 
