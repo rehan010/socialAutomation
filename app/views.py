@@ -3342,7 +3342,6 @@ def check_email_exists(request):
         data = json.loads(request.body)
         email = data.get('email', '')
 
-        # Check if the username already exists in the database
         try:
             user = User.objects.get(email=email)
             exists = True

@@ -154,9 +154,20 @@ disabled{
                         {% endif %}
                     {% endfor %}
                     <div class="flex justify-end">
+
+
+
+                        {% if form.errors %}
+                        <button type="submit" class="focus:outline-none px-6 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline ml-3 rounded-lg text-white mb-4 mr-3 py-2 " disabled>
+                            Create
+                        </button>
+                        {%else%}
                         <button type="submit" class="focus:outline-none px-6 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline ml-3 rounded-lg text-white mb-4 mr-3 py-2" id="createUserButton">
                             Create
                         </button>
+
+                        {% endif %}
+
                     </div>
                 </div>
 
@@ -1488,7 +1499,12 @@ function openModal(){
 function hideModal(){
     const Dialog = document.getElementById('mainDialog');
     Dialog.classList.add('hidden');
-    Dialog.classList.remove('flex')
+    Dialog.classList.remove('flex');
+    document.getElementById('id_username').value = '';
+    document.getElementById('id_email').value = '';
+    document.getElementById('id_password1').value = '';
+    document.getElementById('id_password2').value = '';
+    document.getElementById('id_company_name').value = '';
 
 
 
@@ -1561,6 +1577,7 @@ function checkemail(event) {
     const email = event.value;
 
     const button = document.getElementById('createUserButton');
+    button.disabled = true;
     const data = { 'email': email };
 
     // Make a POST request to the Django view
@@ -1580,7 +1597,7 @@ function checkemail(event) {
             button.classList.add('disabled');
             emailError = true;
             button.classList.add('cursor-not-allowed');
-            const error = document.getElementById("usernameError");
+            const error = document.getElementById("emailError");
             if(!error){
                 const p = document.createElement('p');
                 p.innerText = "Email already Exist";
