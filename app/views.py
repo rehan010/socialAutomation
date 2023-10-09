@@ -1,3 +1,5 @@
+import json
+
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.utils import user_username
 from allauth.exceptions import ImmediateHttpResponse
@@ -18,7 +20,7 @@ from django.db.models import Q ,Sum , Case, When, Value, BooleanField
 from .serializer import *
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework.pagination import PageNumberPagination
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt,csrf_protect
 from django.utils.safestring import mark_safe
 # from django.contrib.auth.models import User
 from django.core.cache import cache
@@ -52,7 +54,8 @@ from django.conf import settings
 from celery.result import AsyncResult
 from django.contrib.auth.views import RedirectURLMixin
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login as auth_login
+from django.contrib.auth import login as auth_login , authenticate
+from django.contrib.auth.password_validation import validate_password
 
 
 # Import your custom filter
@@ -159,6 +162,7 @@ class CustomLoginView(FormView):
     
     def form_invalid(self, form):
         user = User.objects.filter(username = form.cleaned_data['username'])
+        # isauthenticate = authenticate(self.request,username = form.cleaned_data['username'],password = form.cleaned_data['password'])
         if user.exists():
             if user.first().is_active == False and user.first().is_deleted == True:
                 form.errors.get("__all__").data.pop()
@@ -230,7 +234,7 @@ class UserView(LoginRequiredMixin,TemplateView):
                     users_grouped_by_company.append(user)
             context['user_grouped_by_company'] = users_grouped_by_company
 
-
+        context['form'] = CustomUserCreationForm()
         return context
 
 class UserSearchView(ListAPIView):
@@ -994,6 +998,51 @@ class RegisterView(FormView):
             return redirect(reverse("login"))
 
 
+
+class CreateUserFormView(FormView,LoginRequiredMixin):
+    template_name = 'registration/create_user.html'
+    form_class = CustomUserCreationForm
+
+    def dispatch(self, request, *args, **kwargs):
+
+        user = self.request.user
+        if user.is_superuser == False:
+            return redirect(reverse_lazy("dashboard"))
+
+        return super(CreateUserFormView, self).dispatch(request)
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        company_name = form.cleaned_data.get('company_name')
+        email = form.cleaned_data.get('email')
+        user_email = User.objects.filter(email=email)
+
+        user_company = Company.objects.filter(name=company_name)
+        if user_company.exists():
+            form.add_error('company_name', 'A Company with this name already exists.')
+
+            return self.form_invalid(form)
+
+        if user_email.exists():
+            form.add_error('email', 'A user with this email already exists.')
+            return self.form_invalid(form)
+
+        else:
+            user.save()
+        # Check if the company name is provided
+        if company_name:
+            # Create a new company if it doesn't exist
+            company, created = Company.objects.get_or_create(name=company_name)
+            user.company.add(company)
+        else:
+            # If no company name is provided, create a new company with the user's username
+            company, created = Company.objects.get_or_create(name=user.username)
+            user.company.add(company)
+        logged_in_user =  self.request.user.is_superuser
+        if logged_in_user == True:
+            user.is_active = True
+            user.save()
+
+        return redirect(reverse("my_user"))
 
 
 
@@ -3256,5 +3305,81 @@ class LikeApiView(APIView):
             pass
         return JsonResponse(unlike_response)
 
+@csrf_protect
+def check_username_exists(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)  # Parse JSON data
+        username = data.get('username', '')
 
 
+
+        # Check if the username already exists in the database
+        try:
+            username = username.strip()
+            user = User.objects.get(username=username)
+            exists = True
+        except User.DoesNotExist:
+            exists = False
+
+        data = {
+            'exists': exists
+        }
+
+        return JsonResponse(data)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+@csrf_protect
+def check_email_exists(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email', '')
+
+        # Check if the username already exists in the database
+        try:
+            user = User.objects.get(email=email)
+            exists = True
+        except User.DoesNotExist:
+            exists = False
+
+        data = {
+            'exists': exists
+        }
+
+        return JsonResponse(data)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+@csrf_protect
+def check_company_exists(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        company_name = data.get('company', '')  # Use company_name instead of company
+
+        # Check if the company already exists in the database
+        try:
+            company = Company.objects.get(name=company_name)
+            exists = True
+        except Company.DoesNotExist:
+            exists = False
+
+        response_data = {
+            'exists': exists
+        }
+
+        return JsonResponse(response_data)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+@csrf_protect
+def passwor_validation(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        password_1 = data.get('password','')
+        try:
+            validate_password(password_1)
+        except ValidationError as e:
+            error_messages = e.messages
+            return JsonResponse({'errors': error_messages})
+        else:
+            return JsonResponse({'message': True})
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
