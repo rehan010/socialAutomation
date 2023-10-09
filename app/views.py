@@ -405,6 +405,9 @@ class assign_manager(CreateView):
             if role == 'ADMIN':
                 manager_corp = 'False'
                 permission = "WRITE"
+
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({'message': 'A user with this email already exists'})
             try:
                 token = generate_random_token()
                 expiration_date = timezone.now() + settings.TOKEN_EXPIRY
@@ -1031,32 +1034,35 @@ class RegisterViewInvite(FormView):
         email_invite = InviteEmploye.objects.filter(selected_user__email=email)
         email_user = User.objects.filter(email=email)
         if email_invite.exists():
-            form.add_error(self.request, 'A user with this email already exists.')
+            form.add_error('email', 'A user with this email already exists.')
             return self.form_invalid(form)
         if email_user.exists():
-            form.add_error(self.request, 'A user with this email already exists.')
+            form.add_error('email', 'A user with this email already exists.')
             return self.form_invalid(form)
+
+
 
         company_name = form.cleaned_data.get('company').first()
         c_name = Company.objects.get(name=company_name)
 
-        user.save()
+        try:
+            invited = InviteEmploye.objects.get(token=token, email=email)
+        except InviteEmploye.DoesNotExist:
+            invited = None
 
-        invite = InviteEmploye.objects.filter(token=token, email=email)
-
-        if invite:
-            invite = InviteEmploye.objects.get(token=token, email=email)
-            user.manager = invite.invited_by
-            user.company.add(c_name)
+        if invited != None:
             user.save()
-            invite.selected_user = user
-            invite.status = 'ACCEPTED'
-            invite.save()
         else:
-            form.add_error(self.request, 'Invitation was sent to different email address')
+            form.add_error('email', 'Invite was sent to a different Email address')
             return self.form_invalid(form)
-
+        user.manager = invited.invited_by
+        user.company.add(c_name)
         user.save()
+        invited.selected_user = user
+        invited.status = 'ACCEPTED'
+        invited.save()
+
+
 
         login(self.request, user)
         return redirect(reverse("dashboard"))
@@ -2766,6 +2772,10 @@ class CommentPagination(APIView):
 
             return JsonResponse({'message': str(e)}, status=400)
 
+
+
+class BusinessView(TemplateView):
+    template_name = 'socialaccount/business_profile.html'
 
 
 

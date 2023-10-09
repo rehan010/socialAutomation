@@ -1,0 +1,60 @@
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Connect</title>
+    <!-- Include Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.7/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-200 p-4">
+    <div class="container mx-auto mt-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Facebook Card -->
+            <div class="card">
+                <div class="relative">
+                    <!-- Logo -->
+                    <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" alt="Connect Facebook" title="Connect Facebook" class="w-12 mx-auto -mt-8">
+                    <div class="bg-white p-4 rounded-lg shadow-lg">
+                        <h4 class="text-xl text-center mb-4">Facebook</h4>
+                        <div class="text-center">
+                            <a href="/accounts/create" class="btn btn-primary mb-2">Connect Page</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Twitter Card -->
+            <div class="card">
+                <div class="relative">
+                    <!-- Logo -->
+                    <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" alt="Connect Twitter" title="Connect Twitter" class="w-12 mx-auto -mt-8">
+                    <div class="bg-white p-4 rounded-lg shadow-lg">
+                        <h4 class="text-xl text-center mb-4">Instagram</h4>
+                        <div class="text-center">
+                            <a href="#" class="btn btn-primary mb-2">Connect Page</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LinkedIn Card -->
+            <div class="card">
+                <div class="relative">
+                    <!-- Logo -->
+                    <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" alt="Connect LinkedIn" title="Connect LinkedIn" class="w-12 mx-auto -mt-8">
+                    <div class="bg-white p-4 rounded-lg shadow-lg">
+                        <h4 class="text-xl text-center mb-4">LinkedIn</h4>
+                        <div class="text-center">
+                            <a href="/accounts/create" class="btn btn-primary mb-2">Connect Page</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add more cards as needed -->
+        </div>
+    </div>
+</body>
+</html>
