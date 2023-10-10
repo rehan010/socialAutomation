@@ -1916,7 +1916,7 @@ class PostDraftView(UpdateView):
                     user = User.objects.get(id=info['user'])
                     sharepage = SharePage.objects.create(user=user)
                     sharepage.name = info.get('name')
-                    sharepage.access_token = SocialToken.objects.get(account__user__id=info['user'],
+                    sha=repage.access_token = SocialToken.objects.get(account__user__id=info['user'],
                                                                      app__provider="facebook").token
                     sharepage.org_id = info.get('id')
                     sharepage.provider = "instagram"

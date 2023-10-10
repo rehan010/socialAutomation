@@ -507,6 +507,40 @@
         // Assign the new FileList to your input element
         fileInput.files = newFileList.files;
     }
+     var imageData = [
+    {% for image in post.images.all %}
+        "{{ image.image.url }},{{image.id}}",
+    {% endfor %}
+  ];
+
+
+        var imageDataLength = imageData.length
+
+
+       function deleteObject(pk,callback) {
+       const csrfToken = getCookie('csrftoken');
+
+        $.ajax({
+            type: 'DELETE',
+            url: `/delete-image/${pk}/`,
+            beforeSend: function(xhr) {
+                // Set the CSRF token in the request header
+                xhr.setRequestHeader('X-CSRFToken', csrfToken);
+            },
+            success: function(response) {
+    <!--            alert(response.message);  // Display the success message returned from the server-->
+
+                 imageDataLength  = imageDataLength - 1;
+                if (typeof callback === 'function') {
+                    callback(imageDataLength );
+                }
+            },
+            error: function(xhr, status, error) {
+    <!--            alert('Error deleting object: ' + xhr.responseText);-->
+            }
+
+        });
+    }
 
 
       function previewImages(event) {
@@ -544,10 +578,10 @@
 
 
             var files = event.target.files;
-            console.log(files.length);
+            var length = files.length + imageDataLength;
 
             // Check if the number of selected files exceeds the maximum limit
-            if (files.length > maxFileCount) {
+            if (length > maxFileCount) {
                     const errorMessage = document.getElementById("error-message");
                     errorMessage.textContent = "Can't Upload more than 10 files";
                     errorMessage.style.display = "block";
@@ -631,40 +665,6 @@
           }
       }
 
-    var imageData = [
-    {% for image in post.images.all %}
-        "{{ image.image.url }},{{image.id}}",
-    {% endfor %}
-  ];
-
-
-  var imageDataLength = imageData.length
-
-
-       function deleteObject(pk,callback) {
-       const csrfToken = getCookie('csrftoken');
-
-        $.ajax({
-            type: 'DELETE',
-            url: `/delete-image/${pk}/`,
-            beforeSend: function(xhr) {
-                // Set the CSRF token in the request header
-                xhr.setRequestHeader('X-CSRFToken', csrfToken);
-            },
-            success: function(response) {
-    <!--            alert(response.message);  // Display the success message returned from the server-->
-
-                 imageDataLength  = imageDataLength - 1;
-                if (typeof callback === 'function') {
-                    callback(imageDataLength );
-                }
-            },
-            error: function(xhr, status, error) {
-    <!--            alert('Error deleting object: ' + xhr.responseText);-->
-            }
-
-        });
-    }
 
   function validateForm() {
         const postTextarea = document.getElementById("id_post");
