@@ -51,6 +51,7 @@ urlpatterns = [
     path('posts/reply/paginate/<int:post_id>/<int:page_id>', ReplyPagination.as_view(), name='reply_pagination'),
     path('post_draft/<int:pk>', PostDraftView.as_view(), name='post_draft'),
     path('delete-post/<int:pk>/', PostDeleteView.as_view(), name='delete_post'),
+    path('delete-image/<int:pk>/', ImageDeleteView.as_view(), name='delete_image'),
     path('social/social/connections/', ConnectionView.as_view(), name="socialaccount_connections"),
     path('business_profile/', BusinessView.as_view(), name="business_profile"),
     path('social/social/profile/', SocialProfileView.as_view(), name="social_profile"),

@@ -67,7 +67,7 @@
       <a class="absolute top-0 right-2 text-lg text-black cursor-pointer hover:no-underline no-underline hover:text-black" href="{% url 'my_posts' user.pk %}"><i class="fa-solid fa-xmark"></i></a>
 </div>
         <br>
-        
+
         <div class="absolute top-0 right-0 mt-10 ml-10 mb-2 z-100" style="z-index:200;" id="errorMessageContainer">
         {% for message in messages %}
             <div class="alert flex items-center bg-blue-500 text-white sm:text-sm text-xs font-bold px-4 py-3 mb-2 message ease-out duration-300 opacity-0.5" role="alert">
@@ -107,21 +107,27 @@
         {% if form.name.errors %}
         <div class="error-message">{{ form.post.errors }}</div>
         {% endif %}
+
          <div class="flex items-center justify-center w-full" >
             <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-36 border-dashed border-2 border-gray-200 bg-white-100 rounded-lg cursor-pointer dark:hover:bg-bray-800 dark:bg-white-700 hover:bg-gray-100 hover:border-gray-400">
                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                    <br>
                     <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                     </svg>
                     <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">PNG and JPG (MAX. 800x400px)</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">MP4, PNG and JPG (MAX. 800x400px)</p>
                 </div>
-                <input id="dropzone-file" name="images" type="file" class="hidden" multiple="multiple" onchange="previewImages(event)"/>
+                <input id="dropzone-file" name="images" type="file" class="hidden" multiple="multiple" onchange="previewImages(event)" accept="image/png,image/jpeg,image/jpg,video/mp4"/>
                 <br>
                 <p id="error-message" style="color: red; display: none;">Video is too large. Max size: 20MB</p>
             </label>
         </div>
+        <br>
+        <br>
+
         <div id="image-preview-container" class="flex flex-wrap"></div>
+        <div id="saved-image-preview-container" class="flex flex-wrap"></div>
 
 
         <!--                Platforms-->
@@ -477,11 +483,194 @@
       });
     });
 
+  function showDiv() {
+
+    const myDiv = document.getElementById("date-div");
+    myDiv.classList.remove("hidden");
+  }
+
+  function hideDiv() {
+    const myDiv = document.getElementById("date-div");
+    myDiv.classList.add("hidden");
+  }
+
+    var selectedFiles = [];
+
+    function updateFileList(fileInput) {
+        // Create a new FileList based on the selectedFiles array
+        var newFileList = new DataTransfer();
+
+        for (var i = 0; i < selectedFiles.length; i++) {
+            newFileList.items.add(selectedFiles[i]);
+        }
+
+        // Assign the new FileList to your input element
+        fileInput.files = newFileList.files;
+    }
+
+
+      function previewImages(event) {
+          var files = event.target.files;
+          const errorMessage = document.getElementById('error-message');
+          errorMessage.style.display = 'none';
+          var container = document.getElementById("image-preview-container");
+
+          selectedFiles = [];
+          while (container.firstChild) {
+                container.removeChild(container.firstChild);
+          }
+
+
+          const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
+          const fileInput = event.target;
+
+          var maxFileSizeMB = 20;
+
+          errorMessage.style.display = 'none';
+
+          for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var fileSizeMB = file.size / (1024 * 1024); // Convert bytes to MB
+
+                if (fileSizeMB > maxFileSizeMB) {
+                    errorMessage.style.display = 'block';
+                    return; // Stop further processing if a large file is found
+                }else {
+                    errorMessage.style.display = 'none';
+              }
+          }
+
+            var maxFileCount = 10; // Set the maximum number of files allowed
+
+
+            var files = event.target.files;
+            console.log(files.length);
+
+            // Check if the number of selected files exceeds the maximum limit
+            if (files.length > maxFileCount) {
+                    const errorMessage = document.getElementById("error-message");
+                    errorMessage.textContent = "Can't Upload more than 10 files";
+                    errorMessage.style.display = "block";
+                    return;
+
+
+            }else{
+
+                    errorMessage.style.display = "none";
+
+            }
+
+
+          // Display the uploaded images
+          for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var reader = new FileReader();
+
+            reader.onload = (function (file) {
+                return function (e) {
+                    var imageContainer = document.createElement("div");
+                    imageContainer.classList.add("relative", "z-20", "inline-flex", "items-center", "justify-center", "w-32", "h-32", "text-white","border-2", "border-white", "border-solid");
+
+                    if (e.target.result.slice(0, 15).includes("mp4")) {
+                        var video = document.createElement("video");
+                        video.classList.add("w-full", "h-full" ,"object-cover");
+
+                        var source = document.createElement("source");
+                        source.src = e.target.result;
+
+                        var removeIcon = document.createElement("span");
+                        removeIcon.innerHTML = "&times;";
+                        removeIcon.classList.add("badge","absolute", "top-0", "right-0", "badge-danger", "badge-pill", "cursor-pointer");
+
+                        removeIcon.addEventListener("click", function () {
+                            imageContainer.remove();
+
+                            var fileIndex = selectedFiles.indexOf(file);
+                            if (fileIndex !== -1) {
+                                selectedFiles.splice(fileIndex, 1);
+
+                                updateFileList(fileInput);
+                            }
+                        });
+
+                        video.appendChild(source);
+                        imageContainer.appendChild(video);
+                        imageContainer.appendChild(removeIcon);
+                        container.appendChild(imageContainer);
+                    } else {
+                        var image = document.createElement("img");
+                        image.src = e.target.result;
+                        image.classList.add("w-full", "h-full" ,"object-cover");
+
+                        var removeIcon = document.createElement("span");
+                        removeIcon.innerHTML = "&times;";
+                        removeIcon.classList.add("badge","absolute", "top-0", "right-0", "badge-danger", "badge-pill", "cursor-pointer");
+
+                        removeIcon.addEventListener("click", function () {
+                            imageContainer.remove();
+                            // Remove the file from the selectedFiles array
+                            var fileIndex = selectedFiles.indexOf(file);
+                            if (fileIndex !== -1) {
+                                selectedFiles.splice(fileIndex, 1);
+                                // Update the FileList
+                                updateFileList(fileInput);
+                            }
+                        });
+
+                        imageContainer.appendChild(image);
+                        imageContainer.appendChild(removeIcon);
+                        container.appendChild(imageContainer);
+                    }
+
+                    // Add the file to the selectedFiles array
+                    selectedFiles.push(file);
+                };
+            })(file);
+
+            reader.readAsDataURL(file);
+          }
+      }
+
+    var imageData = [
+    {% for image in post.images.all %}
+        "{{ image.image.url }},{{image.id}}",
+    {% endfor %}
+  ];
+
+
+  var imageDataLength = imageData.length
+
+
+       function deleteObject(pk,callback) {
+       const csrfToken = getCookie('csrftoken');
+
+        $.ajax({
+            type: 'DELETE',
+            url: `/delete-image/${pk}/`,
+            beforeSend: function(xhr) {
+                // Set the CSRF token in the request header
+                xhr.setRequestHeader('X-CSRFToken', csrfToken);
+            },
+            success: function(response) {
+    <!--            alert(response.message);  // Display the success message returned from the server-->
+
+                 imageDataLength  = imageDataLength - 1;
+                if (typeof callback === 'function') {
+                    callback(imageDataLength );
+                }
+            },
+            error: function(xhr, status, error) {
+    <!--            alert('Error deleting object: ' + xhr.responseText);-->
+            }
+
+        });
+    }
+
   function validateForm() {
         const postTextarea = document.getElementById("id_post");
         const fileInput = document.getElementById("dropzone-file");
 
-        if (postTextarea.value.trim() === "" && fileInput.files.length === 0) {
+        if (postTextarea.value.trim() === "" && fileInput.files.length === 0 && imageDataLength  === 0) {
             // Both fields are empty, prevent form submission
 
             const errorMessage = document.getElementById("error-message");
@@ -495,123 +684,7 @@
         }
   }
 
-  function showDiv() {
 
-    const myDiv = document.getElementById("date-div");
-    myDiv.classList.remove("hidden");
-  }
-
-  function hideDiv() {
-    const myDiv = document.getElementById("date-div");
-    myDiv.classList.add("hidden");
-  }
-    function previewImages(event) {
-        var files = event.target.files;
-        var container = document.getElementById("image-preview-container");
-
-        const maxFileSizeMB = 20;
-        const maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
-        const fileInput = event.target;
-        const errorMessage = document.getElementById('error-message');
-
-        if (fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-
-            if (file.size > maxFileSizeBytes) {
-                // Reset the file input value to clear the selected file
-                fileInput.value = '';
-                errorMessage.style.display = 'block';
-            } else {
-                const fileName = file.name.toLowerCase();
-                if (fileName.endsWith('.gif') || fileName.endsWith('.svg')) {
-                    // Reset the file input value to clear the selected file
-                    fileInput.value = '';
-                    errorMessage.style.display = 'block';
-                    errorMessage.textContent = 'Only JPEG, and PNG files are allowed.';
-                }else {
-                    errorMessage.style.display = 'none';
-                }
-            }
-        }
-
-        // Display the uploaded images
-        for (var i = 0; i < files.length; i++) {
-            var file = files[i];
-            var reader = new FileReader();
-
-            reader.onload = (function (file) {
-                return function (e) {
-                    var imageContainer = document.createElement("div");
-                    imageContainer.classList.add("relative", "inline-block", "mr-2", "mb-2");
-                    if(e.target.result.slice(0,15).includes("mp4")){
-                        var video = document.createElement("video");
-                        video.classList.add("w-44", "h-auto");
-
-                        var source = document.createElement("source");
-                        source.src = e.target.result;
-
-                        var removeIcon = document.createElement("span");
-                        removeIcon.innerHTML = "&times;";
-                        removeIcon.classList.add("absolute", "top-0", "right-0", "text-red-500", "cursor-pointer");
-
-                        removeIcon.addEventListener("click", function () {
-                            imageContainer.remove();
-                        });
-
-                        video.appendChild(source);
-                        imageContainer.appendChild(video);
-                        imageContainer.appendChild(removeIcon);
-                        container.appendChild(imageContainer);
-                        }
-                        else{
-                            var image = document.createElement("img");
-                            image.src = e.target.result;
-                            image.classList.add("w-64", "h-auto");
-
-                            var removeIcon = document.createElement("span");
-                            removeIcon.innerHTML = "&times;";
-                            removeIcon.classList.add("absolute", "top-0", "right-0", "text-red-500", "cursor-pointer");
-
-                            removeIcon.addEventListener("click", function () {
-                                imageContainer.remove();
-                            });
-                            imageContainer.appendChild(image);
-                            imageContainer.appendChild(removeIcon);
-                            container.appendChild(imageContainer);
-                        }
-
-                };
-            })(file);
-
-            reader.readAsDataURL(file);
-        }
-    }
-
-    var imageData = [
-    {% for image in post.images.all %}
-        "{{ image.image.url }},{{image.id}}",
-    {% endfor %}
-    ];
-
-       function deleteObject(pk) {
-       const csrfToken = getCookie('csrftoken');
-
-        $.ajax({
-            type: 'DELETE',
-            url: `/delete-post/${pk}/`,
-            beforeSend: function(xhr) {
-                // Set the CSRF token in the request header
-                xhr.setRequestHeader('X-CSRFToken', csrfToken);
-            },
-            success: function(response) {
-    <!--            alert(response.message);  // Display the success message returned from the server-->
-                // Do additional actions if needed after successful deletion
-            },
-            error: function(xhr, status, error) {
-    <!--            alert('Error deleting object: ' + xhr.responseText);-->
-            }
-        });
-    }
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -630,13 +703,13 @@ function getCookie(name) {
 
     // Function to display the images in the container
     function displaySavedImages() {
-        var container = document.getElementById("image-preview-container");
+        var container = document.getElementById("saved-image-preview-container");
 
         // Loop through the image URLs and create image elements
 
         imageData.forEach(function (imageUrl) {
             var imageContainer = document.createElement("div");
-            imageContainer.classList.add("relative", "inline-block", "mr-2", "mb-2");
+            imageContainer.classList.add("relative", "z-20", "inline-flex", "items-center", "justify-center", "w-32", "h-32", "text-white","border-2", "border-white", "border-solid");
 
 
 
@@ -644,7 +717,7 @@ function getCookie(name) {
             const extension = ".mp4";
             if(url.endsWith(extension)){
                         var video = document.createElement("video");
-                        video.classList.add("w-44", "h-auto");
+                        video.classList.add("w-full", "h-full" ,"object-cover");
 
                         var source = document.createElement("source");
                         source.src = imageUrl.split(',')[0];
@@ -654,6 +727,10 @@ function getCookie(name) {
                         removeIcon.classList.add("absolute", "top-0", "right-0", "text-red-500", "cursor-pointer");
 
                         removeIcon.addEventListener("click", function () {
+                            deleteObject(id, function(imageDataLength ) {
+
+                                console.log("Image Length:", imageDataLength );
+                            });
                             imageContainer.remove();
                         });
 
@@ -666,16 +743,19 @@ function getCookie(name) {
                 var image = document.createElement("img");
                 console.log(imageUrl.split(',')[0]);
                 image.src = imageUrl.split(',')[0];
-                image.classList.add("w-64", "h-auto");
+                image.classList.add("w-full", "h-full" ,"object-cover");
 
                 var removeIcon = document.createElement("span");
                 removeIcon.innerHTML = "&times;";
                 removeIcon.classList.add("badge","absolute", "top-0", "right-0", "badge-danger", "badge-pill", "cursor-pointer");
                 var id=imageUrl.split(',')[1];
-                console.log(id);
+
 
             removeIcon.addEventListener("click", function () {
-                deleteObject(id);
+                deleteObject(id, function(imageDataLength ) {
+                                // Do something with the imageLength
+                                console.log("Image Length:", imageDataLength );
+                });
                 imageContainer.remove();
             })
 
@@ -902,6 +982,7 @@ function getCookie(name) {
 
 // Call the function when the page loads
 window.addEventListener('load', removeMessages);
+
 
 
 </script>

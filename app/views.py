@@ -56,6 +56,7 @@ from django.contrib.auth.views import RedirectURLMixin
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login , authenticate
 from django.contrib.auth.password_validation import validate_password
+from django.http import HttpResponseRedirect
 
 
 # Import your custom filter
@@ -1802,7 +1803,7 @@ class PostDraftView(UpdateView):
         return context
 
     def form_invalid(self, form):
-        return redirect(reverse("my_posts", kwargs={'pk': self.request.user.id}))
+        return HttpResponseRedirect(self.request.get_full_path())
 
     def form_valid(self, form):
         requestdata = dict(self.request.POST)
@@ -1916,9 +1917,8 @@ class PostDraftView(UpdateView):
                     sharepage.save()
                     share_pages.append(sharepage)
 
-        else:
-            from django.http import Http404
-            raise Http404("Please Select a Page To Share")
+
+
         images = self.request.FILES.getlist('images')
         post.save()
         image_object = []
@@ -2186,6 +2186,15 @@ class PostApiView(ListAPIView):
     #     ]))
 
 
+class ImageDeleteView(DestroyAPIView):
+    queryset = ImageModel.objects.all()
+
+
+    def delete(self, request, *args, **kwargs):
+        image_id = self.kwargs.get('pk')
+        image = ImageModel.objects.get(pk=image_id).delete()
+
+        return JsonResponse({'message' : 'success'})
 
 
 class PostDeleteView(DestroyAPIView):

@@ -154,7 +154,7 @@
             <span class="font-semibold">Click to upload</span> or drag and drop
           </p>
           <p class="text-xs text-gray-500 dark:text-gray-400">
-             PNG, JPG or GIF (MAX. 800x400px)
+             MP4, PNG and JPG (MAX. 800x400px)
           </p>
         </div>
         <input
@@ -549,6 +549,25 @@
               }
           }
 
+          var maxFileCount = 10; // Set the maximum number of files allowed
+
+
+            var files = event.target.files;
+
+            // Check if the number of selected files exceeds the maximum limit
+            if (files.length > maxFileCount) {
+                    const errorMessage = document.getElementById("error-message");
+                    errorMessage.textContent = "Can't Upload more than 10 files";
+                    errorMessage.style.display = "block";
+                    return;
+
+
+            }else{
+
+                    errorMessage.style.display = "none";
+
+            }
+
 
           // Display the uploaded images
           for (var i = 0; i < files.length; i++) {
@@ -569,15 +588,15 @@
 
                         var removeIcon = document.createElement("span");
                         removeIcon.innerHTML = "&times;";
-                        removeIcon.classList.add("absolute", "top-0", "right-0", "text-red-500", "cursor-pointer");
+                        removeIcon.classList.add("badge","absolute", "top-0", "right-0", "badge-danger", "badge-pill", "cursor-pointer");
 
                         removeIcon.addEventListener("click", function () {
                             imageContainer.remove();
-                            // Remove the file from the selectedFiles array
+
                             var fileIndex = selectedFiles.indexOf(file);
                             if (fileIndex !== -1) {
                                 selectedFiles.splice(fileIndex, 1);
-                                // Update the FileList
+
                                 updateFileList(fileInput);
                             }
                         });
@@ -593,7 +612,7 @@
 
                         var removeIcon = document.createElement("span");
                         removeIcon.innerHTML = "&times;";
-                        removeIcon.classList.add("absolute", "top-0", "right-0", "text-red-500", "cursor-pointer");
+                        removeIcon.classList.add("badge","absolute", "top-0", "right-0", "badge-danger", "badge-pill", "cursor-pointer");
 
                         removeIcon.addEventListener("click", function () {
                             imageContainer.remove();
@@ -690,7 +709,7 @@
               const alertBox = document.getElementById("errorMessageContainer");
               const alertContent = document.querySelector(".pageError");
               const dublicateAlertContent = alertContent.cloneNode(true);
-               dublicateAlertContent.classList.remove('pageError')
+              dublicateAlertContent.classList.remove('pageError')
               dublicateAlertContent.classList.remove('hidden');
               dublicateAlertContent.classList.add('message');
 
@@ -831,6 +850,7 @@
 
 
 window.addEventListener('load', removeMessages);
+
 
 </script>
 <style>
