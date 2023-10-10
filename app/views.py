@@ -248,14 +248,15 @@ class UserSearchView(ListAPIView):
             queryset = super().get_queryset()
             search_query = self.request.query_params.get('q')
             if search_query:
-                user_queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query), ~Q(manager=self.request.user), ~Q(id=self.request.user.id), Q(is_invited=False), Q(company=(self.request.user.company.all()).first()))
+                # user_queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query), ~Q(manager=self.request.user), ~Q(id=self.request.user.id), Q(is_invited=False), Q(company=(self.request.user.company.all()).first()),is_deleted = False , is_active = True)
                 # if len(InviteEmploye.objects.filter(Q(status='REJECTED'))) > 0:
                 #     invite_queryset = InviteEmploye.objects.filter(
                 #         Q(status='REJECTED')
                 #     )
                 #     queryset = user_queryset.union(invite_queryset)
                 # else:
-                queryset = user_queryset
+                # queryset = user_queryset
+                queryset = []
 
                 # Combine the querysets using the union operator |
 
