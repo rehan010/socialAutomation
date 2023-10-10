@@ -1192,6 +1192,7 @@ def create_post_with_image(access_token, message, image_path):
     }
     response = requests.post(url, params=params, files=files)
     return response.json()
+import pytz
 
 
 class PostCreateView(CreateView):
@@ -1265,6 +1266,10 @@ class PostCreateView(CreateView):
 
             if schedule_datetime_str:
                 schedule_datetime = datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M')
+
+                schedule_datetime = schedule_datetime.astimezone(pytz.utc)
+
+
                 post.schedule_datetime = schedule_datetime
 
         else:

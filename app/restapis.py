@@ -579,7 +579,6 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
     headers = {
         "Authorization": f"Bearer {access_token}"
     }
-
     if media[0].image.name.endswith('.mp4'):
         data['video_url'] = media[0].image_url
         data['media_type'] = 'VIDEO'
@@ -587,7 +586,6 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
         data['image_url'] = media[0].image_url
 
 
-    # print("data is",data)
     response = requests.post(url, headers=headers, json=data)
 
     if response.status_code == 400:
@@ -595,24 +593,30 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
         post.save()
         return
 
-
-    mediaid = response.json().get('id')
+    try:
+        mediaid = response.json().get('id')
+        if mediaid is None:
+            raise KeyError
+    except KeyError:
+        post.status = 'FAILED'
+        post.save()
+        return
     # "media id is",mediaid,response.json())
 
     if data.get('media_type') == 'VIDEO':
         while True:
-            # "Waiting for 10s till the media is created")
+            # "Waiting for 10s till the media is created"
             time.sleep(10)
             check_url = f"https://graph.facebook.com/v17.0/{mediaid}?fields=status_code,status,id"
 
             response = requests.request("GET", url=check_url, headers=headers)
             status = response.json().get("status_code")
 
-            # status)
             if status == "FINISHED":
                 break
             elif status == "ERROR" or status == "FATAL":
-                # "Error Has Occured")
+                post.status = 'FAILED'
+                post.save()
                 return
             else:
                 pass
@@ -622,9 +626,7 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
     data = {
         'creation_id': mediaid
     }
-
     response = requests.post(url, headers=headers, data=data)
-
     if response.status_code == 200:
         response = response.json()
         post_id = response.get('id')
@@ -632,7 +634,7 @@ def instagram_post_single_media(page_id, access_token, media, post, page):
         post_urn = Post_urn.objects.create(org=page, urn=post_id)
         post_urn.save()
         post.post_urn.add(post_urn)
-        # "Post Successfull Created")
+        # "Post Successfull Created"
         post.published_at = timezone.now()
         if post.status == 'SCHEDULED' or post.status == 'DRAFT' or post.status == 'PROCESSING':
             post.status = 'PUBLISHED'
@@ -748,7 +750,14 @@ def facebook_post_multiimage(data, images, post, sharepage):
     # i = 0
     if len(images) != 0:
         for _ in range(len(images)):
-            response_id = getmediaid(images[_], data, post)["id"]
+            try:
+                response_id = getmediaid(images[_], data, post).get("id")
+                if response_id is None:
+                    raise KeyError
+            except KeyError:
+                post.status = 'FAILED'
+                post.save()
+                return
             images[_].image_posted = response_id
             images[_].save()
             data_post[f"attached_media[{_}]"] = f'{{"media_fbid": "{response_id}"}}'
@@ -760,18 +769,24 @@ def facebook_post_multiimage(data, images, post, sharepage):
     if response.status_code == 200:
 
         response = response.json()
-        post_id = response["id"]
-        # post_id)
+
+        try:
+            post_id = response.get("id")
+            if post_id is None:
+                raise KeyError
+        except KeyError:
+            post.status = 'FAILED'
+            post.save()
+            return
+
+        # post_id
         post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
         post_urn.save()
-
         post.post_urn.add(post_urn)
         post.published_at = timezone.now()
-
         if post.status in ['SCHEDULED', 'DRAFT', 'PROCESSING']:
             post.status = 'PUBLISHED'
             post.publish_check = True
-
         post.save()
     else:
         post.status = 'FAILED'
@@ -801,13 +816,21 @@ def facebook_post_video(data, video, post, sharepage):
     data_post = {
         'description': post.post
     }
-    if (len(video) != 0):
+    if len(video) != 0:
         data_post['file_url'] = video[0].image_url
     response = requests.post(url, headers=headers, data=data_post)
     if response.status_code == 200:
-        # response.status_code)
+
         response = response.json()
-        post_id = response.get('id')
+
+        try:
+            post_id = response.get('id')
+            if post_id is None:
+                raise KeyError
+        except KeyError:
+            post.status = 'FAILED'
+            post.save()
+            return
 
         post_urn = Post_urn.objects.create(org=sharepage, urn=post_id)
         post_urn.save()
@@ -888,10 +911,26 @@ def instagram_multi_media(page_id, access_token, media, post, page):
     for image in media:
         childern_id = None
         if image.image.name.endswith('.mp4'):
-            childern_id = get_instagram_video_id(image, page_id, access_token).get('id')
-            is_video = True
+            try:
+                childern_id = get_instagram_video_id(image, page_id, access_token).get('id')
+                is_video = True
+                if childern_id is None:
+                    raise KeyError
+            except KeyError:
+                post.status = 'FAILED'
+                post.save()
+                return
         else:
-            childern_id = get_instagram_image_id(image, page_id, access_token).get('id')
+            try:
+                childern_id = get_instagram_image_id(image, page_id, access_token).get('id')
+
+                if childern_id is None:
+                    raise KeyError
+            except KeyError:
+                post.status = 'FAILED'
+                post.save()
+                return
+
         childern_list.append(childern_id)
 
     headers = {
@@ -905,6 +944,11 @@ def instagram_multi_media(page_id, access_token, media, post, page):
     # data_post)
 
     media_id = get_instagram_media_id(data_post, headers, page_id).json().get('id')
+    if media_id is None:
+        post.status = 'FAILED'
+        post.save()
+        return
+
     # media_id)
     if is_video:
         while True:
@@ -919,7 +963,8 @@ def instagram_multi_media(page_id, access_token, media, post, page):
             if status == "FINISHED":
                 break
             elif status == "ERROR" or status == "FATAL":
-                # "Error Has Occured")
+                post.status = 'FAILED'
+                post.save()
                 return
             else:
                 pass
@@ -932,14 +977,10 @@ def instagram_multi_media(page_id, access_token, media, post, page):
 
     response_2 = requests.post(url_2, headers=headers, data=data_post_2)
     if response_2.status_code == 200:
-        # response_2.status_code)
         response_2 = response_2.json()
-        # response_2)
-
         post_id = response_2.get('id')
         post_urn = Post_urn.objects.create(org=page, urn=post_id)
         post_urn.save()
-
         post.post_urn.add(post_urn)
         post.published_at = timezone.now()
         if post.status == 'SCHEDULED' or post.status == 'DRAFT' or post.status == 'PROCESSING':
@@ -977,7 +1018,6 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
                 if response.status_code == 201:
                     response = post_video_linkedin(image_urn, access_token_string, org_id, post)
                     if response.status_code == 201:
-                        # response.status_code)
                         post_id_value = response.headers.get('x-restli-id')
                         post_urn, created = Post_urn.objects.get_or_create(org=org, urn=post_id_value)
                         if created:

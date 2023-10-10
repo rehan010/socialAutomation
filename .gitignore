@@ -17,3 +17,4 @@ celerybeat-schedule.dat
 celerybeat-schedule.bak
 celerybeat-schedule.dir
 celerybeat-schedule.db
+celerybeat-schedule.dat

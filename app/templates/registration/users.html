@@ -60,7 +60,7 @@ disabled{
                     &nbsp;&nbsp;Create User</a>
     </div>
 
-    <dialog class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden hidden justify-center items-center animated fadeIn faster rounded-full" style="background: rgba(0,0,0,0);" id="mainDialog">
+    <dialog class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden hidden justify-center items-center animated fadeIn faster" style="background: rgba(0,0,0,0);" id="mainDialog">
         <div class="border border-teal-500 shadow-lg modal-container flex flex-col items-center justify-center bg-white w-11/12 md:max-w-md mx-auto rounded-xl shadow-lg z-50 overflow-y-auto">
             <div class="modal-close cursor-pointer self-end	p-2 z-50" onclick="hideModal()">
                 <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -1518,6 +1518,7 @@ function checkusername(event) {
     const username = event.value;
 
     const button = document.getElementById('createUserButton');
+    button.disabled = true;
     const data = { 'username': username };
 
     // Make a POST request to the Django view
@@ -1629,6 +1630,7 @@ function checkcompany(event) {
     const company = event.value;
 
     const button = document.getElementById('createUserButton');
+    button.disabled = true;
     const data = { 'company': company };
 
     // Make a POST request to the Django view
@@ -1683,6 +1685,7 @@ function validatepassword(event){
     const password = event.value;
 
     const button = document.getElementById('createUserButton');
+    button.disabled = true;
     const data = { 'password': password };
 
     // Make a POST request to the Django view
@@ -1745,7 +1748,7 @@ function checkpassword(event){
     let password1 = document.getElementById('id_password1').value;
     let password2 = event.value;
     const button = document.getElementById('createUserButton');
-
+    button.disabled = true;
     if(password1 !== password2){
         button.disabled = true;
         password2Error = true;
