@@ -219,8 +219,9 @@ class UserView(LoginRequiredMixin,TemplateView):
         # context['invites'] = InviteEmploye.objects.all()
         user_manager = self.request.user.manager
         if user_manager != None:
-            context['invites_admin'] = InviteEmploye.objects.filter(Q(invited_by=self.request.user) | Q(invited_by=user_manager))
-        context['invites'] = InviteEmploye.objects.filter(~Q(is_deleted=True), invited_by=self.request.user)
+            context['invites'] = InviteEmploye.objects.filter(~Q(is_deleted=True), invited_by=self.request.user)
+        else:
+            context['invites'] = InviteEmploye.objects.filter(~Q(is_deleted=True), invited_by__company=self.request.user.company.all().first().id)
         context['users'] = User.objects.filter(Q(is_active=False), ~Q(company=None), manager=None)
 
         if self.request.user.is_superuser == True:
@@ -228,9 +229,9 @@ class UserView(LoginRequiredMixin,TemplateView):
             users_grouped_by_company = []
             for company in companies:
 
-                owner = User.objects.filter(company = company , manager = None,is_deleted = False, is_active = True,is_superuser = False).first()
+                owner = User.objects.filter(company=company, manager=None, is_deleted=False, is_active=True, is_superuser=False).first()
                 if owner:
-                    employee = InviteEmploye.objects.filter(~Q(selected_user__manager = None),selected_user__company= company,selected_user__is_deleted = False, selected_user__is_active = True)
+                    employee = InviteEmploye.objects.filter(~Q(selected_user__manager=None), selected_user__company=company, selected_user__is_deleted=False, selected_user__is_active=True)
                     user = {"owner": owner,"employee":employee}
                     users_grouped_by_company.append(user)
             context['user_grouped_by_company'] = users_grouped_by_company
@@ -248,14 +249,13 @@ class UserSearchView(ListAPIView):
             queryset = super().get_queryset()
             search_query = self.request.query_params.get('q')
             if search_query:
-                # user_queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query), ~Q(manager=self.request.user), ~Q(id=self.request.user.id), Q(is_invited=False), Q(company=(self.request.user.company.all()).first()),is_deleted = False , is_active = True)
+                # user_queryset = queryset.filter(Q(email__icontains=search_query) | Q(username__icontains=search_query), ~Q(manager=self.request.user), ~Q(id=self.request.user.id), Q(is_invited=False), Q(company=(self.request.user.company.all()).first()))
                 # if len(InviteEmploye.objects.filter(Q(status='REJECTED'))) > 0:
                 #     invite_queryset = InviteEmploye.objects.filter(
                 #         Q(status='REJECTED')
                 #     )
                 #     queryset = user_queryset.union(invite_queryset)
                 # else:
-                # queryset = user_queryset
                 queryset = []
 
                 # Combine the querysets using the union operator |
@@ -1916,7 +1916,7 @@ class PostDraftView(UpdateView):
                     user = User.objects.get(id=info['user'])
                     sharepage = SharePage.objects.create(user=user)
                     sharepage.name = info.get('name')
-                    sha=repage.access_token = SocialToken.objects.get(account__user__id=info['user'],
+                    sharepage.access_token = SocialToken.objects.get(account__user__id=info['user'],
                                                                      app__provider="facebook").token
                     sharepage.org_id = info.get('id')
                     sharepage.provider = "instagram"
