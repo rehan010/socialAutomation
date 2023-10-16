@@ -2294,22 +2294,29 @@ class PostApiView2(ListAPIView):
             queryset = posts
 
         # Get the total count before applying pagination
-        total_records = queryset.count()
+
+        total_records = len(queryset)
 
         # Apply pagination
-        if order_column:
-            queryset = queryset.order_by(order_column)[start: start + length]
+        if total_records > 0:
+            if order_column:
+                queryset = queryset.order_by(order_column)[start: start + length]
+            else:
+                 queryset = queryset[start: start + length]
+
+            data = self.serializer_class(queryset, many=True)
+            platform_name = self.platformMappings[platform]
+            orgainzed_data = self.organize_data(data.data, platform_name)
         else:
-            queryset = queryset[start: start + length]
+            orgainzed_data = []
         # Get the count after applying search and pagination
         filtered_records = len(queryset)
 
-        data = self.serializer_class(queryset,many=True)
 
 
-        platform_name = self.platformMappings[platform]
+
+
         # Prepare the response in the required format
-        orgainzed_data = self.organize_data(data.data,platform_name)
 
 
         response = {
