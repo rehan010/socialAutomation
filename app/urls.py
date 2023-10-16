@@ -56,7 +56,7 @@ urlpatterns = [
     path('business_profile/', BusinessView.as_view(), name="business_profile"),
     path('social/social/profile/', SocialProfileView.as_view(), name="social_profile"),
     path('social/social/profile/api/', SocialProfileAPI.as_view(), name="social_profile_api"),
-    path('api_posts/', PostApiView.as_view(), name='api_posts'),
+    # path('api_posts/', PostApiView.as_view(), name='api_posts'),
     path('api_posts2/', PostApiView2.as_view(), name='api_posts2'),
     path('social/page/', PageDataView.as_view(), name="page_data"),
     path('home/',TemplateView.as_view(template_name = 'registration/home.html'),name = "home"),

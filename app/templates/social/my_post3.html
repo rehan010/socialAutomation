@@ -630,7 +630,7 @@ function createProfileTd(userData) {
     divFlex.appendChild(divText);
     return divFlex;
 }
-function convertTimestampToNaturalTime(createdTimestamp) {
+function convertTimestampToNaturalTime(createdTimestamp,status) {
 
 
         const parsedTimestamp = new Date(createdTimestamp);
@@ -639,7 +639,15 @@ function convertTimestampToNaturalTime(createdTimestamp) {
         const currentDate = new Date();
 
         // Calculate the time difference in milliseconds
-        const timeDifference = currentDate - parsedTimestamp;
+        let timeDifference;
+        if(status === "SCHEDULED"){
+             timeDifference = parsedTimestamp - currentDate;
+             console.log(timeDifference)
+
+        }else{
+             timeDifference = currentDate - parsedTimestamp;
+
+        }
 
         // Define the time units in milliseconds
         const minute = 60 * 1000; // 1 minute
@@ -651,63 +659,63 @@ function convertTimestampToNaturalTime(createdTimestamp) {
 
         // Calculate the time difference in a human-readable format
         let naturalTime;
-
+    const precedingText = status === "SCHEDULED" ? "from now" : "ago";
 
     if (timeDifference < minute) {
         naturalTime = 'just now';
     } else if (timeDifference < hour) {
         const minutesAgo = Math.floor(timeDifference / minute);
-        naturalTime = `${minutesAgo} minute${minutesAgo > 1 ? 's' : ''} ago`;
+        naturalTime = `${minutesAgo} minute${minutesAgo > 1 ? 's' : ''} ${precedingText}`;
     } else if (timeDifference < day) {
         const hoursAgo = Math.floor(timeDifference / hour);
-        naturalTime = `${hoursAgo} hour${hoursAgo > 1 ? 's' : ''} ago`;
+        naturalTime = `${hoursAgo} hour${hoursAgo > 1 ? 's' : ''} ${precedingText}`;
     } else if (timeDifference < week) {
         const daysAgo = Math.floor(timeDifference / day);
         const hoursRemaining = Math.floor((timeDifference % day) / hour);
         if (daysAgo === 1) {
-            naturalTime = '1 day ago';
+            naturalTime = '1 day {precedingText}';
         }else if (daysAgo <1 && daysAgo > 7 && hoursRemaining < 1){
-            naturalTime = `${daysAgo} days ago`;
+            naturalTime = `${daysAgo} days ${precedingText}}`;
         }else {
-            naturalTime = `${daysAgo} days, ${hoursRemaining} hours ago`;
+            naturalTime = `${daysAgo} days, ${hoursRemaining} hours ${precedingText}`;
         }
     } else if (timeDifference < month) {
         const weeksAgo = Math.floor(timeDifference / week);
         const daysRemaining = Math.floor((timeDifference % week) / day);
         if (weeksAgo === 1) {
-            naturalTime = '1 week ago';
+            naturalTime = '1 week ${precedingText}';
         }else if (weeksAgo < 4 && daysRemaining < 1){
-            naturalTime = `${weeksAgo} weeks ago`;
+            naturalTime = `${weeksAgo} weeks ${precedingText}`;
         }else if (weeksAgo < 4) {
-            naturalTime = `${weeksAgo} weeks, ${daysRemaining} hours ago`;
+            naturalTime = `${weeksAgo} weeks, ${daysRemaining} hours ${precedingText}`;
         } else {
             const monthsAgo = Math.floor(weeksAgo / (365.25 / 12));
-            naturalTime = `${monthsAgo} month${monthsAgo > 1 ? 's' : ''} ago`;
+            naturalTime = `${monthsAgo} month${monthsAgo > 1 ? 's' : ''} ${precedingText}`;
         }
     } else if (timeDifference < year) {
         const monthsAgo = Math.floor(timeDifference / month);
         if (monthsAgo === 1) {
-            naturalTime = '1 month ago';
+            naturalTime = `1 month ${precedingText}`;
         } else if (monthsAgo < 12) {
-            naturalTime = `${monthsAgo} months ago`;
+            naturalTime = `${monthsAgo} months ${precedingText}`;
         } else {
             const yearsAgo = Math.floor(monthsAgo / 12);
             const remainingMonths = monthsAgo % 12;
             if (remainingMonths === 0) {
-                naturalTime = `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`;
+                naturalTime = `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ${precedingText}`;
             } else {
-                naturalTime = `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} and ${remainingMonths} month${remainingMonths > 1 ? 's' : ''} ago`;
+                naturalTime = `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} and ${remainingMonths} month${remainingMonths > 1 ? 's' : ''} ${precedingText}`;
             }
         }
     } else {
         const yearsAgo = Math.floor(timeDifference / year);
-        naturalTime = `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`;
+        naturalTime = `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ${precedingText}`;
     }
 
     return naturalTime;
 }
 
-function createCreatedAtTd(createdTimestamp) {
+function createCreatedAtTd(createdTimestamp,status) {
         const divFlex = document.createElement('div');
         divFlex.className = 'flex px-4 py-1';
 
@@ -720,7 +728,7 @@ function createCreatedAtTd(createdTimestamp) {
         // Calculate natural time using a function (e.g., naturalTimeFunction)
 
 
-        const naturalTime = convertTimestampToNaturalTime(createdTimestamp);
+        const naturalTime = convertTimestampToNaturalTime(createdTimestamp,status);
         h6.textContent = naturalTime;
         divInner.appendChild(h6);
         divFlex.appendChild(divInner);
@@ -958,7 +966,7 @@ $(document).ready(function () {
                 data: 'created_at',
                 render: function(data, type, row) {
                     const createdTimestamp = row.created_at;
-                    const createdAtTd = createCreatedAtTd(createdTimestamp);
+                    const createdAtTd = createCreatedAtTd(createdTimestamp,row.status);
 
 
                     return createdAtTd.outerHTML;  // You can apply custom formatting here
@@ -991,12 +999,18 @@ $(document).ready(function () {
                 data: 'published_at',
                 render: function(data, type, row) {
                     const publishedTimestamp = row.published_at;
-                    if ( publishedTimestamp === null){
+                    if(row.status == "SCHEDULED"){
+
+                        const published_Td = createCreatedAtTd(row.schedule_datetime,row.status);
+                        return published_Td.outerHTML;
+
+                    }
+                    else if ( publishedTimestamp === null){
                         const published_Td = createPublishedTd();
                         return published_Td.outerHTML;
 
                     }else{
-                         const published_Td = createCreatedAtTd(publishedTimestamp);
+                         const published_Td = createCreatedAtTd(publishedTimestamp,row.status);
                          return published_Td.outerHTML;
                     }
 
@@ -1276,6 +1290,7 @@ $(document).ready(function () {
     ]
 
     });
+    document.getElementById('postTable').setAttribute("data-platform", "fb")
 
 
     const tabLinks = document.querySelectorAll(".text-white.py-1");
@@ -1291,6 +1306,8 @@ $(document).ready(function () {
             link.classList.remove("shadow-2xl","font-bold");
           });
           table.ajax.url(`{% url 'api_posts2'%}?platform=${this.getAttribute("data-platform")}`).load();
+          document.getElementById('postTable').setAttribute("data-platform", this.getAttribute("data-platform"))
+
           this.classList.add("rounded-full","shadow-2xl","font-bold");
 
         });
@@ -1366,8 +1383,11 @@ function addEventListenerToDropDown(){
 
 async function delete_post(button) {
     var post = button.getAttribute('data-target');
-    const searchParams = new URLSearchParams(window.location.search);
-    const provider_name = searchParams.get('platform');
+
+    const provider_name = document.getElementById('postTable');
+    const provider_name2 = document.querySelector('.dataTable');
+    console.log(provider_name);
+    console.log(provider_name2);
     const spinner = document.querySelector('.delete-error');
     let page_name;
     if (provider_name === 'fb'){
@@ -1476,8 +1496,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     async function delete_post(button) {
         var post = button.getAttribute('data-target');
-        const searchParams = new URLSearchParams(window.location.search);
-        const provider_name = searchParams.get('platform');
+        const provider_name = document.getElementById('postTable').getAttribute('data-platform');
         const spinner = document.querySelector('.delete-error');
         let page_name;
         if (provider_name === 'fb'){

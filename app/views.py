@@ -1280,8 +1280,7 @@ class PostCreateView(CreateView):
                 # schedule_datetime = datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M')
                 schedule_datetime = (pytz.timezone(self.request.session['user_timezone']).localize(datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M'))).astimezone(pytz.utc)
 
-                # schedule_datetime = schedule_datetime
-
+                schedule_datetime = schedule_datetime
 
                 post.schedule_datetime = schedule_datetime
 
@@ -2202,72 +2201,7 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
 
 
 
-class PostApiView(ListAPIView):
-    serializer_class = PostSerializer
-    pagination_class = LinkHeaderPagination
 
-
-    def get_queryset(self):
-        user_manager = self.request.user.manager
-
-        if user_manager != None:
-            role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
-            user_permission = role.permission
-            if user_permission == 'HIDE':
-                posts = PostModel.objects.filter(user=self.request.user, is_deleted=False)
-            else:
-                posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager),
-                                                 is_deleted=False)
-
-        else:
-            invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
-            invites = []
-            for user in invited:
-                invited_users_id = user.selected_user.id
-                invites.append(invited_users_id)
-            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted=False)
-
-
-
-        search = self.request.GET.get('search', '')
-        platform = self.request.GET.get('platform', 'fb')
-        page = self.request.GET.get('page', '1')
-
-        if platform == 'ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
-            post = posts.filter(prepost_page__provider="linkedin").distinct()
-            if search is not None and search != '':
-                post = post.filter(
-                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            post = post.order_by('-created_at')
-
-        elif platform == 'fb' and len(posts.filter(prepost_page__provider="facebook")) > 0:
-            post = posts.filter(prepost_page__provider="facebook").distinct()
-            if search is not None and search != '':
-                post = post.filter(
-                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            post = post.order_by('-created_at')
-
-        elif platform == 'insta' and len(posts.filter(prepost_page__provider="instagram")) > 0:
-            post = posts.filter(prepost_page__provider="instagram").distinct()
-            if search is not None and search != '':
-                post = post.filter(
-                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            post = post.order_by('-created_at')
-
-        elif platform == 'google' and len(posts.filter(prepost_page__provider="Google Books")) > 0:
-            post = posts.filter(prepost_page__provider="Google Books").distinct()
-            if search is not None and search != '':
-                post = post.filter(
-                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            post = post.order_by('-created_at')
-        else:
-            post = []
-
-        return post
 class PostApiView2(ListAPIView):
     serializer_class = PostSerializer
     ORDER_COLUMN_CHOICES = ['prepost_page','post','images','status','created_at','user','published_at']
@@ -2286,6 +2220,19 @@ class PostApiView2(ListAPIView):
         search = self.request.GET.get('search[value]',None)
         order_column = self.request.GET.get('order[0][column]',None)
         order = self.request.GET.get('order[0][dir]',None)
+
+        platform = self.request.GET.get('platform', 'fb')
+
+        if platform == "google":
+            response = {
+                "draw": draw,
+                "recordsTotal": 0,
+                "recordsFiltered": 0,
+                "data": []  # Add your data here
+            }
+            return JsonResponse(response)
+
+
         if user_manager != None:
             role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
             user_permission = role.permission
@@ -2306,7 +2253,7 @@ class PostApiView2(ListAPIView):
 
 
 
-        platform = self.request.GET.get('platform', 'fb')
+
 
 
         if platform == 'ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
