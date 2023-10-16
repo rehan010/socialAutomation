@@ -469,10 +469,7 @@ function showAlert(){
 
     // Add the necessary CSS classes to the button
     button.classList.add('disabled');
-
     button.disabled = true;
-
-
     // Create a tooltip element
     const tooltipText = document.createElement('p');
     tooltipText.innerText = "Please Wait your request is in Progress";
@@ -548,7 +545,7 @@ async function postRequestCards(event){
    }catch(e){
          hideModal();
          hideAlert();
-        console.log(e);
+
    }
 
 
@@ -586,7 +583,6 @@ async function getRequestCards(taskId) {
         }
     } catch (error) {
         hideAlert();
-        console.error('Fetch error:', error);
         // Handle the error as needed
     }
 }
@@ -631,13 +627,11 @@ function getFormattedDate(daysBefore = 0){
 
 
 document.addEventListener("DOMContentLoaded", function() {
-    // This function will be called after the page has loaded
 
-    // Your chart initialization code here
-    fetchPostGraph();
-    fetchLikeGraph();
-    fetchCommentsGraph();
-    fetchFollowersGraph();
+        fetchPostGraph();
+        fetchLikeGraph();
+        fetchCommentsGraph();
+        fetchFollowersGraph();
 });
 
 const toDate = document.getElementById('to-date');

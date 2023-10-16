@@ -26,6 +26,8 @@
     <script type="text/javascript"  src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.slim.min.js"></script>
     <script type="text/javascript"  src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"defer></script>
+
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
@@ -39,8 +41,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
     <!-- Font Awesome Icons -->
-    <script type="text/javascript"  src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script><style media="all" id="fa-v4-font-face">/*!
-    <style>
+    <script type="text/javascript"  src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous">
+
+    </script>
+    <style media="all" id="fa-v4-font-face">
+
     .close{
         width: 7rem !important;
     }
@@ -55,6 +60,7 @@
     .cross{
         display:none !important;
     }
+
     </style>
 
 </head>
@@ -136,7 +142,7 @@
     {% if user.is_authenticated %}
 
 
-    <aside class="w-52 relative screen ease-nav-brand inset-y-10 ml-4 flex-wrap items-center justify-between overflow-y-auto rounded-xl border-0 bg-gray-100 p-0 antialiased shadow-none transition-transform duration-200 flex-wrap left-0 translate-x-0 top-0 " id="sidebar">
+    <aside class="w-52 relative screen ease-nav-brand inset-y-10 ml-4 flex-wrap items-center justify-between overflow-y-auto rounded-xl border-0 bg-slate-800 p-0 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 antialiased shadow-none transition-transform duration-200 flex-wrap left-0 translate-x-0 top-0 " id="sidebar" >
           <div class="w-full flex items-center justify-center">
             <ul class="space-y-2 m-2 w-full">
 
@@ -151,7 +157,7 @@
                                 <path d="M20.2571 7.51913C20.2571 3.80997 17.522 1 13.8878 1C10.2536 1 7.51855 3.80997 7.51855 7.51913C7.51855 11.3782 10.366 14.4879 13.8878 14.4879C17.4096 14.4879 20.2571 11.3782 20.2571 7.51913ZM8.26788 7.51913C8.26788 4.18463 10.6283 1.74933 13.8878 1.74933C17.1474 1.74933 19.5078 4.18463 19.5078 7.51913C19.5078 10.966 16.9975 13.7385 13.8878 13.7385C10.7781 13.7385 8.26788 10.966 8.26788 7.51913Z" fill="#00111C" stroke="black" stroke-width="0.5"/>
                             </svg>
                     </div>
-                        <span class="text-sm">My Profile</span>
+                        <span class="text-sm text-white">My Profile</span>
                     </a>
                     <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
                 </li>
@@ -159,14 +165,27 @@
                 <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
                     <a href="{% url 'dashboard' %}"
                     class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-black">
-                    <div class="w-5">
-                        <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M0.552278 25C0.479771 25 0.407969 24.9854 0.340973 24.957C0.273977 24.9286 0.213098 24.8869 0.161813 24.8344C0.110529 24.7819 0.0698429 24.7196 0.0420788 24.6509C0.0143147 24.5823 1.63047e-05 24.5087 0 24.4345L0 0.565577C1.44925e-05 0.491285 0.0143116 0.417717 0.0420749 0.349089C0.0698382 0.28046 0.110524 0.218121 0.161809 0.165604C0.213093 0.113087 0.273973 0.0714245 0.34097 0.0430164C0.407967 0.0146065 0.47977 -2.47955e-05 0.552278 1.90735e-06L23.8484 1.90735e-06C23.9948 3.62396e-05 24.1352 0.0596523 24.2387 0.165707C24.3422 0.271763 24.4003 0.415594 24.4004 0.565577L24.4004 24.4345C24.4003 24.5844 24.3422 24.7283 24.2387 24.8343C24.1352 24.9404 23.9948 25 23.8484 25L0.552278 25ZM1.10424 23.8689H11.6537L11.6537 16.5307H1.10424L1.10424 23.8689ZM12.7577 23.8689L23.2961 23.8689L23.2961 8.30871L12.7577 8.30871L12.7577 23.8689ZM1.10424 15.3996L11.6537 15.3996L11.6537 1.13112H1.10424L1.10424 15.3996ZM12.7577 7.17732L23.2961 7.17732V1.13112L12.7577 1.13112L12.7577 7.17732Z" fill="black"/>
+                        <svg width="24" height="24" viewBox="0 0 24 24" class="menu-icon-svg" fill="#fff">
+                            <rect opacity="0.01" width="24" height="24"></rect>
+                            <mask id="mask-db-0" maskUnits="userSpaceOnUse" x="16" y="2" width="7" height="9" style="mask-type: alpha;">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M22 2V10.5282L16.7347 10.5282V2L22 2Z"></path>
+                            </mask>
+                            <g mask="url(#mask-db-0)">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M16.7345 9.80988V2.71868C16.7345 2.32151 17.048 2 17.4353 2L21.2993 2C21.6862 2 22 2.32151 22 2.71868V9.80988C22 10.2067 21.6862 10.5282 21.2993 10.5282H17.4353C17.048 10.5282 16.7345 10.2067 16.7345 9.80988Z"></path>
+                            </g>
+                            <mask id="mask-db-1" maskUnits="userSpaceOnUse" x="2" y="2" width="13" height="9" style="mask-type: alpha;">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M14.478 2L14.478 10.5282L2.91311 10.5282L2.91311 2L14.478 2Z"></path>
+                            </mask><g mask="url(#mask-db-1)">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M2.91311 9.80988L2.91311 2.71868C2.91311 2.32151 3.22657 2 3.61382 2L13.7777 2C14.1646 2 14.478 2.32151 14.478 2.71868L14.478 9.80988C14.478 10.2067 14.1646 10.5282 13.7777 10.5282L3.61382 10.5282C3.22657 10.5282 2.91311 10.2067 2.91311 9.80988Z"></path></g>
+                            <mask id="mask-db-2" maskUnits="userSpaceOnUse" x="2" y="12" width="7" height="10" style="mask-type: alpha;">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.17822 12.8428L8.17822 21.371H2.91287L2.91287 12.8428L8.17822 12.8428Z"></path>
+                            </mask><g mask="url(#mask-db-2)">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M8.17822 13.5611L8.17822 20.6523C8.17822 21.0495 7.86475 21.371 7.47751 21.371H3.61348C3.2266 21.371 2.91276 21.0495 2.91276 20.6523L2.91276 13.5611C2.91276 13.1643 3.2266 12.8428 3.61348 12.8428H7.47751C7.86475 12.8428 8.17822 13.1643 8.17822 13.5611Z"></path></g>
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M22 13.5611V20.6523C22 21.0495 21.6865 21.371 21.2993 21.371H11.1354C10.7489 21.371 10.4347 21.0495 10.4347 20.6523L10.4347 13.5611C10.4347 13.1643 10.7489 12.8428 11.1354 12.8428L21.2993 12.8428C21.6865 12.8428 22 13.1643 22 13.5611Z"></path>
                         </svg>
-                    </div>
 
 
-                        <span class="text-sm">Dashboard</span>
+                        <span class="text-sm text-white">Dashboard</span>
                     </a>
                     <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
                 </li>
@@ -174,31 +193,10 @@
                 <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
                     <a href="{% url 'my_posts' user.pk  %}"
                     class="flex items-center py-2 px-4 space-x-2 text-black hover:no-underline hover:text-black">
+                        <svg width="24" height="24" viewBox="0 0 24 24" class="menu-icon-svg post-svg" fill="#fff"><path fill-rule="evenodd" clip-rule="evenodd" d="M18.291 15.0988H21.6999V6.36353H18.291V15.0988Z"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M18.291 15.0988H21.6999V6.36353H18.291V15.0988Z"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M18.291 16.174V15.428H21.6999V16.174L19.9956 18.8334L18.291 16.174Z"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M18.291 6.03488H21.6999V4H18.291V6.03488Z"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M15.1166 14.2725H11.5987C11.2041 14.2725 10.8621 14.5746 10.8694 14.9429V17.4717C10.8805 18.0447 10.1566 18.3568 9.69666 17.9767L5.41109 14.4379C5.28208 14.3311 5.11568 14.2725 4.94358 14.2725H2.70555C2.31569 14.2725 2 13.9776 2 13.6141V4.98704C2 4.62349 2.31569 4.32886 2.70555 4.32886H15.1166C15.5062 4.32886 15.8222 4.62349 15.8222 4.98704V13.6141C15.8222 13.9776 15.5062 14.2725 15.1166 14.2725ZM5.09945 7.82491C5.09945 7.5565 5.31704 7.33891 5.58545 7.33891H12.2365C12.5049 7.33891 12.7225 7.5565 12.7225 7.82491C12.7225 8.09332 12.5049 8.31091 12.2365 8.31091H5.58545C5.31704 8.31091 5.09945 8.09332 5.09945 7.82491ZM5.58545 9.93026C5.31704 9.93026 5.09945 10.1478 5.09945 10.4163C5.09945 10.6847 5.31704 10.9023 5.58545 10.9023H12.2365C12.5049 10.9023 12.7225 10.6847 12.7225 10.4163C12.7225 10.1478 12.5049 9.93026 12.2365 9.93026H5.58545Z"></path></svg>
 
 
-                        <div class="w-5">
-                            <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 40.000000 33.000000"
-                            preserveAspectRatio="xMidYMid meet">
-
-                            <g transform="translate(0.000000,33.000000) scale(0.100000,-0.100000)"
-                            fill="#000000" stroke="none">
-                            <path d="M16 314 c-23 -23 -23 -275 0 -298 13 -13 44 -16 183 -16 116 0 171 4
-                            179 12 17 17 17 289 0 306 -8 8 -63 12 -179 12 -139 0 -170 -3 -183 -16z m345
-                            -4 c17 -10 19 -22 19 -128 l0 -117 -36 38 c-42 44 -71 47 -104 12 l-24 -25
-                            -36 35 c-20 19 -45 35 -57 35 -12 0 -41 -20 -67 -47 l-46 -48 0 112 c0 88 3
-                            115 16 127 13 13 42 16 165 16 85 0 159 -5 170 -10z m-171 -217 c36 -40 49
-                            -51 45 -35 -5 17 -1 30 16 48 12 13 28 24 34 24 6 0 31 -21 55 -46 43 -44 44
-                            -46 26 -60 -15 -11 -55 -14 -167 -14 -158 0 -179 3 -179 28 0 19 88 112 106
-                            112 7 0 36 -26 64 -57z"/>
-                            <path d="M239 259 c-17 -33 3 -69 39 -69 33 0 52 16 52 45 0 29 -19 45 -52 45
-                            -18 0 -31 -7 -39 -21z m70 -8 c7 -13 6 -23 -3 -36 -17 -24 -50 -15 -54 14 -6
-                            39 39 56 57 22z"/>
-                            </g>
-                            </svg>
-
-                        </div>
-                        <span class="text-sm">Posts</span>
+                        <span class="text-sm text-white">Posts</span>
                     </a>
                     <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
                 </li>
@@ -206,15 +204,18 @@
                     <a href="{% url 'socialaccount_connections' %}"
                     class="flex items-center text-black py-2 px-4 space-x-2 hover:no-underline hover:text-black">
 
-                        <div class="w-5">
+                        <svg width="24" height="24" viewBox="0 0 24 24" class="menu-icon-svg account-svg" fill="#fff">
+                            <circle cx="13.3049" cy="12.1303" r="3.6118" stroke-width="1.47205" fill="none"></circle>
+                            <path d="M15.9133 9.30422L18.9568 6.26074M15.4785 15.6086L16.7829 17.5651M12.0003 15.6086L11.5655 17.5651M9.39156 13.8694L5.47852 16.4781M10.4785 8.65205C9.62955 7.71818 9.15357 7.1946 8.3046 6.26074" stroke-width="1.47205" stroke-linecap="round"></path>
+                            <circle cx="11.3481" cy="19.3043" r="1.95652"></circle>
+                            <circle cx="17.8691" cy="19.3043" r="1.95652"></circle>
+                            <circle cx="20.0434" cy="4.95652" r="1.95652"></circle>
+                            <circle cx="6.99998" cy="4.95652" r="1.95652"></circle>
+                            <circle cx="3.95652" cy="17.5652" r="1.95652"></circle>
+                        </svg>
 
-                            <svg viewBox="0 0 25 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M24.5589 3.01276H18.9643V0.43801C18.9643 0.196429 18.7663 0 18.5263 0H6.4676C6.22551 0 6.02959 0.196684 6.02959 0.43801V3.0125H0.43801C0.194898 3.0125 0 3.20918 0 3.45051V9.48265V21.5452C0 21.7862 0.198214 21.9811 0.43801 21.9811H24.562C24.8018 21.9811 25 21.7849 25 21.5452V9.48265V3.44974C24.9967 3.20918 24.7977 3.01276 24.5589 3.01276ZM6.9023 0.87551H18.087V3.0125H6.9023V0.87551ZM0.872959 3.88878H24.1209V9.04362H14.3941C14.3793 8.97857 14.3398 8.92628 14.3202 8.86327C14.2908 8.77449 14.2543 8.69286 14.2148 8.6102C14.148 8.47781 14.0645 8.3625 13.9707 8.25051C13.9143 8.18214 13.8589 8.11479 13.7974 8.05485C13.6806 7.94796 13.5452 7.86811 13.4094 7.79311C13.3416 7.75459 13.2801 7.70867 13.2082 7.67985C12.987 7.59235 12.7503 7.53699 12.499 7.53699C12.2464 7.53699 12.0087 7.59235 11.7898 7.67985C11.7168 7.70867 11.6584 7.75485 11.5906 7.79107C11.4508 7.86556 11.3173 7.94796 11.1995 8.0551C11.1337 8.11505 11.0847 8.18138 11.0286 8.25076C10.9347 8.36173 10.8513 8.47806 10.7834 8.61046C10.7416 8.69286 10.7074 8.77372 10.677 8.86352C10.6541 8.92755 10.6166 8.98036 10.602 9.04439H0.87602V3.88878H0.872959ZM11.4237 9.48265C11.4237 8.89235 11.9046 8.41148 12.4959 8.41148C13.0862 8.41148 13.5702 8.89235 13.5702 9.48265V12.4985C13.5702 13.0867 13.0865 13.5686 12.4959 13.5686C11.9056 13.5686 11.4237 13.0865 11.4237 12.4985V9.48265ZM24.1209 21.1071H0.872959V9.91964H10.5497V12.4982C10.5497 13.5704 11.4217 14.4423 12.4959 14.4423C13.5702 14.4423 14.4434 13.5704 14.4434 12.4982V9.91964H24.1212L24.1209 21.1071Z" fill="black"/>
-                            </svg>
-                        </div>
 
-
-                        <span class="text-sm">Business Profile</span>
+                        <span class="text-sm text-white">Accounts</span>
                     </a>
                     <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
                 </li>
@@ -234,7 +235,7 @@
 
 
                         </div>
-                        <span class="text-sm">Users</span>
+                        <span class="text-sm text-white">Users</span>
                     </a>
                     <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
                 </li>
@@ -271,6 +272,11 @@
 </body>
 
 <script>
+
+
+
+
+
   const profileDropdownbutton = document.getElementById('profile_dropdown_button');
    const profileDropdown = document.getElementById('profile_dropdown');
    profileDropdownbutton.addEventListener('click', () => {

@@ -57,6 +57,9 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login , authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.http import HttpResponseRedirect
+from django.utils import timezone
+from django.db.models.functions import TruncDate
+from django.db.models import Count
 
 
 # Import your custom filter
@@ -152,13 +155,19 @@ class CustomLoginView(FormView):
     redirect_authenticated_user = False
     extra_context = None
     def form_valid(self, form):
+       response = super(CustomLoginView, self).form_valid(form)
+
+       self.request.session['user_timezone'] = self.request.POST.get('user_timezone')
        user = form.get_user()
        auth_login(self.request, user)
 
        if user.is_superuser:
            return redirect(reverse_lazy("my_user"))
 
-       return super(CustomLoginView, self).form_valid(form)
+      
+       response.set_cookie('isLoggedIn', 'true')
+
+       return response
     
     
     def form_invalid(self, form):
@@ -531,14 +540,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return super(DashboardView, self).dispatch(request)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        today = date.today()
-        # year = timezone.now().year
-        # curr_date = datetime.now()
-        # before_date = datetime.now() + timedelta(days=-7)
-        # week_before_date = before_date + timedelta(days=-7)
-        # start_of_day = curr_date.replace(hour=0, minute=0, second=0, microsecond=0)
-        # start = int(start_of_day.timestamp() * 1000)
+        user_timezone = pytz.timezone(self.request.session['user_timezone'])
+        today = datetime.now(tz=pytz.timezone(self.request.session.get("user_timezone"))).replace(hour=0, minute=0, second=0)
+        today_str = today.strftime('%Y-%m-%d')
+        timezone_diff = timzone_difference(user_timezone)
 
+        starting_date = datetime.strptime(today_str,'%Y-%m-%d') + timedelta(hours=timezone_diff)
+        ending_date = (datetime.strptime(today_str,'%Y-%m-%d') + timedelta(hours=11,minutes=59)).astimezone(user_timezone).astimezone(pytz.utc)
         # Add your context data here
         if self.request.user.is_authenticated:
             user_manager = self.request.user.manager
@@ -549,113 +557,88 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 user_permission = role.permission
                 if user_permission == 'HIDE':
 
-                    total_posts = PostModel.objects.filter( Q(status='PUBLISHED') | Q(status='FAILED'),user=self.request.user,  is_deleted=False)
+                    total_posts = PostModel.objects.filter( Q(status='PUBLISHED') | Q(status='FAILED'),user=self.request.user,created_at__gte = starting_date,created_at__lte = ending_date  ,is_deleted=False)
                     sharepages = SharePage.objects.filter(user=self.request.user)
 
                 else:
-                    total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager), status='PUBLISHED')
+                    total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager),Q(status='PUBLISHED') | Q(status='FAILED'),created_at__gte = starting_date,created_at__lte = ending_date  ,is_deleted=False)
                     sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager))
 
 
             else:
                 invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list('selected_user', flat=True).distinct()
 
-                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invited),Q(status='PUBLISHED') | Q(status='FAILED'), is_deleted = False)
+                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invited),Q(status='PUBLISHED') | Q(status='FAILED'),created_at__gte = starting_date,created_at__lte = ending_date, is_deleted = False)
 
                 sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invited))
 
-
-
-
-
-
-            total_posts_count_today = total_posts.filter(Q(post_urn__org__provider='linkedin')|Q(post_urn__org__provider='facebook')|Q(post_urn__org__provider='instagram'), created_at__date__range = (today,today)).count()
-
-            post_count_ln = total_posts.filter(post_urn__org__provider='linkedin', created_at__date__range = (today,today)).count()
-            post_count_fb = total_posts.filter(post_urn__org__provider='facebook', created_at__date__range = (today,today)).count()
-            post_count_insta = total_posts.filter(post_urn__org__provider='instagram', created_at__date__range = (today,today)).count()
+            post_count_ln = total_posts.filter(post_urn__org__provider='linkedin').count()
+            post_count_fb = total_posts.filter(post_urn__org__provider='facebook').count()
+            post_count_insta = total_posts.filter(post_urn__org__provider='instagram').count()
 
             fb_share_pages = sharepages.filter(provider="facebook").distinct()
             insta_share_pages = sharepages.filter(provider="instagram").distinct()
             ln_share_pages = sharepages.filter(provider="linkedin").distinct()
             google_share_pages = sharepages.filter(provider="google").distinct()
 
-            total_likes_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
-                                                              date=today).aggregate(Sum('t_likes'))['t_likes__sum']
+            total_likes_facebook = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
             if total_likes_facebook is None:
                 total_likes_facebook = 0
 
 
-            total_likes_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
-                                                                  date=today).aggregate(Sum('t_likes'))['t_likes__sum']
+            total_likes_instagram = SocialStats.objects.filter(org__in=insta_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
             if total_likes_instagram is None:
                 total_likes_instagram = 0
-            total_likes_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
-                                                              date=today).aggregate(Sum('t_likes'))['t_likes__sum']
+            total_likes_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
             if total_likes_linkedin is None:
                 total_likes_linkedin = 0
-            total_likes_google = SocialStats.objects.filter(org__in=google_share_pages,
-                                                                date=today).aggregate(Sum('t_likes'))['t_likes__sum']
+            total_likes_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
             if total_likes_google is None:
                 total_likes_google = 0
 
 
-            total_comments_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
-                                                                 date=today).aggregate(Sum('t_comments'))['t_comments__sum']
+            total_comments_facebook = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
             if total_comments_facebook is None:
                 total_comments_facebook = 0
-            total_comments_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
-                                                                  date=today).aggregate(Sum('t_comments'))['t_comments__sum']
+            total_comments_instagram = SocialStats.objects.filter(org__in=insta_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
             if total_comments_instagram is None:
                 total_comments_instagram = 0
-            total_comments_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
-                                                                 date=today).aggregate(Sum('t_comments'))['t_comments__sum']
+            total_comments_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
             if total_comments_linkedin is None:
                 total_comments_linkedin = 0
-            total_comments_google = SocialStats.objects.filter(org__in=google_share_pages,
-                                                               date=today).aggregate(Sum('t_comments'))['t_comments__sum']
+            total_comments_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
             if total_comments_google is None:
                 total_comments_google = 0
-            total_followers_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
-                                                                  date=today).aggregate(Sum('t_followers'))['t_followers__sum']
+            total_followers_facebook = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
             if total_followers_facebook is None:
                 total_followers_facebook = 0
-            total_followers_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
-                                                                   date=today).aggregate(Sum('t_followers'))['t_followers__sum']
+            total_followers_instagram = SocialStats.objects.filter(org__in=insta_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
+
             if total_followers_instagram is None:
                 total_followers_instagram = 0
-            total_followers_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
-                                                                  date=today).aggregate(Sum('t_followers'))['t_followers__sum']
+            total_followers_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
             if total_followers_linkedin is None:
                 total_followers_linkedin = 0
-            total_followers_google = SocialStats.objects.filter(org__in=google_share_pages,
-                                                                date=today).aggregate(Sum('t_followers'))['t_followers__sum']
+            total_followers_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
             if total_followers_google is None:
                 total_followers_google = 0
 
-            # context['likes_today'] = likes_today
             context['linkedin_likes_today'] = total_likes_linkedin
             context['facebook_likes_today'] = total_likes_facebook
             context['instagram_likes_today'] = total_likes_instagram
             context['google_likes_today'] = total_likes_google
-            # context['post_percentage'] = change_per
-            # context['likes'] = likes_overall
-            # context['comments_today'] = comments_today
+
             context['facebook_comments_today'] = total_comments_facebook
             context['instagram_comments_today'] = total_comments_instagram
             context['linkedin_comments_today'] = total_comments_linkedin
             context['google_comments_today'] = total_comments_linkedin
-            # context['comments'] = comments_overall
-            context['total_posts'] = total_posts_count_today
-            # context['post_today'] = len(user_post)
+
             context['linkedin_post_today'] = post_count_ln
             context['facebook_post_today'] = post_count_fb
             context['instagram_post_today'] = post_count_insta
-            # context['followers_today'] = followers_today
             context['facebook_new_followers'] = total_followers_facebook
             context['instagram_new_followers'] = total_followers_instagram
             context['google_new_followers'] = total_followers_google
-            # context['followers_overall'] = followers_overall
             context['linkedin_new_followers'] = total_followers_linkedin
 
 
@@ -750,128 +733,141 @@ class DashBoardCardView(APIView):
         task = AsyncResult(task_id)
         if task.ready():
             if task.successful():
-                user_manager = self.request.user.manager
-                today = date.today()
-                if user_manager != None:
-                    role = InviteEmploye.objects.get(selected_user=self.request.user,
-                                                     invited_by=self.request.user.manager)
-                    user_role = role.role
-                    user_permission = role.permission
-                    if user_permission == 'HIDE':
+                user_timezone = pytz.timezone(self.request.session['user_timezone'])
+                today = datetime.now(tz=pytz.timezone(self.request.session.get("user_timezone"))).replace(hour=0,
+                                                                                                          minute=0,
+                                                                                                          second=0)
+                today_str = today.strftime('%Y-%m-%d')
+                timezone_diff = timzone_difference(user_timezone)
 
-                        total_posts = PostModel.objects.filter(user=self.request.user, status='PUBLISHED',
-                                                               is_deleted=False)
-                        sharepages = SharePage.objects.filter(user=self.request.user)
+                starting_date = datetime.strptime(today_str, '%Y-%m-%d') + timedelta(hours=timezone_diff)
+                ending_date = (datetime.strptime(today_str, '%Y-%m-%d') + timedelta(hours=11, minutes=59)).astimezone(
+                    user_timezone).astimezone(pytz.utc)
+                # Add your context data here
+                if self.request.user.is_authenticated:
+                    user_manager = self.request.user.manager
+
+                    if user_manager != None:
+                        role = InviteEmploye.objects.get(selected_user=self.request.user,
+                                                         invited_by=self.request.user.manager)
+                        user_role = role.role
+                        user_permission = role.permission
+                        if user_permission == 'HIDE':
+
+                            total_posts = PostModel.objects.filter(Q(status='PUBLISHED') | Q(status='FAILED'),
+                                                                   user=self.request.user,
+                                                                   created_at__gte=starting_date,
+                                                                   created_at__lte=ending_date, is_deleted=False)
+                            sharepages = SharePage.objects.filter(user=self.request.user)
+
+                        else:
+                            total_posts = PostModel.objects.filter(
+                                Q(user=self.request.user) | Q(user=self.request.user.manager),
+                                Q(status='PUBLISHED') | Q(status='FAILED'), created_at__gte=starting_date,
+                                created_at__lte=ending_date, is_deleted=False)
+                            sharepages = SharePage.objects.filter(
+                                Q(user=self.request.user) | Q(user=self.request.user.manager))
+
 
                     else:
-                        total_posts = PostModel.objects.filter(
-                            Q(user=self.request.user) | Q(user=self.request.user.manager), status='PUBLISHED')
-                        sharepages = SharePage.objects.filter(
-                            Q(user=self.request.user) | Q(user=self.request.user.manager))
+                        invited = InviteEmploye.objects.filter(invited_by=self.request.user,
+                                                               status="ACCEPTED").values_list('selected_user',
+                                                                                              flat=True).distinct()
+
+                        total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invited),
+                                                               Q(status='PUBLISHED') | Q(status='FAILED'),
+                                                               created_at__gte=starting_date,
+                                                               created_at__lte=ending_date, is_deleted=False)
+
+                        sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invited))
+
+                    post_count_ln = total_posts.filter(post_urn__org__provider='linkedin').count()
+                    post_count_fb = total_posts.filter(post_urn__org__provider='facebook').count()
+                    post_count_insta = total_posts.filter(post_urn__org__provider='instagram').count()
+
+                    fb_share_pages = sharepages.filter(provider="facebook").distinct()
+                    insta_share_pages = sharepages.filter(provider="instagram").distinct()
+                    ln_share_pages = sharepages.filter(provider="linkedin").distinct()
+                    google_share_pages = sharepages.filter(provider="google").distinct()
+
+                    total_likes_facebook = SocialStats.objects.filter(org__in=fb_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
+
+                    if total_likes_facebook is None:
+                        total_likes_facebook = 0
+
+                    total_likes_instagram = SocialStats.objects.filter(org__in=insta_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
+
+                    if total_likes_instagram is None:
+                        total_likes_instagram = 0
+                    total_likes_linkedin = SocialStats.objects.filter(org__in=ln_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
+
+                    if total_likes_linkedin is None:
+                        total_likes_linkedin = 0
+                    total_likes_google = SocialStats.objects.filter(org__in=google_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
+
+                    if total_likes_google is None:
+                        total_likes_google = 0
+
+                    total_comments_facebook = SocialStats.objects.filter(org__in=fb_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
+
+                    if total_comments_facebook is None:
+                        total_comments_facebook = 0
+                    total_comments_instagram = SocialStats.objects.filter(org__in=insta_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
+                    if total_comments_instagram is None:
+                        total_comments_instagram = 0
+                    total_comments_linkedin = SocialStats.objects.filter(org__in=ln_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
+                    if total_comments_linkedin is None:
+                        total_comments_linkedin = 0
+                    total_comments_google = SocialStats.objects.filter(org__in=google_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
+                    if total_comments_google is None:
+                        total_comments_google = 0
+                    total_followers_facebook = SocialStats.objects.filter(org__in=fb_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
+
+                    if total_followers_facebook is None:
+                        total_followers_facebook = 0
+                    total_followers_instagram = SocialStats.objects.filter(org__in=insta_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
 
 
-                else:
-                    invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list(
-                        'selected_user', flat=True).distinct()
+                    if total_followers_instagram is None:
+                        total_followers_instagram = 0
+                    total_followers_linkedin = SocialStats.objects.filter(org__in=ln_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
 
-                    total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invited),
-                                                           status='PUBLISHED', is_deleted=False)
+                    if total_followers_linkedin is None:
+                        total_followers_linkedin = 0
+                    total_followers_google = SocialStats.objects.filter(org__in=google_share_pages, created_at__gte=starting_date,
+                                               created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
 
-                    sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invited))
+                    if total_followers_google is None:
+                        total_followers_google = 0
+                    context = dict()
+                    context['linkedin_likes_today'] = total_likes_linkedin
+                    context['facebook_likes_today'] = total_likes_facebook
+                    context['instagram_likes_today'] = total_likes_instagram
+                    context['google_likes_today'] = total_likes_google
 
-                total_posts_count_today = total_posts.filter(
-                    Q(post_urn__org__provider='linkedin') | Q(post_urn__org__provider='facebook') | Q(
-                        post_urn__org__provider='instagram'), created_at__date__range=(today, today)).count()
+                    context['facebook_comments_today'] = total_comments_facebook
+                    context['instagram_comments_today'] = total_comments_instagram
+                    context['linkedin_comments_today'] = total_comments_linkedin
+                    context['google_comments_today'] = total_comments_linkedin
 
-                post_count_ln = total_posts.filter(post_urn__org__provider='linkedin',
-                                                   created_at__date__range=(today, today)).count()
-                post_count_fb = total_posts.filter(post_urn__org__provider='facebook',
-                                                   created_at__date__range=(today, today)).count()
-                post_count_insta = total_posts.filter(post_urn__org__provider='instagram',
-                                                      created_at__date__range=(today, today)).count()
-
-                fb_share_pages = sharepages.filter(provider="facebook").distinct()
-                insta_share_pages = sharepages.filter(provider="instagram").distinct()
-                ln_share_pages = sharepages.filter(provider="linkedin").distinct()
-                google_share_pages = sharepages.filter(provider="google").distinct()
-
-                total_likes_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
-                                                                  date=today).aggregate(Sum('t_likes'))['t_likes__sum']
-                if total_likes_facebook is None:
-                    total_likes_facebook = 0
-
-                total_likes_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
-                                                                   date=today).aggregate(Sum('t_likes'))['t_likes__sum']
-                if total_likes_instagram is None:
-                    total_likes_instagram = 0
-                total_likes_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
-                                                                  date=today).aggregate(Sum('t_likes'))['t_likes__sum']
-                if total_likes_linkedin is None:
-                    total_likes_linkedin = 0
-                total_likes_google = SocialStats.objects.filter(org__in=google_share_pages,
-                                                                date=today).aggregate(Sum('t_likes'))['t_likes__sum']
-                if total_likes_google is None:
-                    total_likes_google = 0
-
-                total_comments_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
-                                                                     date=today).aggregate(Sum('t_comments'))[
-                    't_comments__sum']
-                if total_comments_facebook is None:
-                    total_comments_facebook = 0
-                total_comments_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
-                                                                      date=today).aggregate(Sum('t_comments'))[
-                    't_comments__sum']
-                if total_comments_instagram is None:
-                    total_comments_instagram = 0
-                total_comments_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
-                                                                     date=today).aggregate(Sum('t_comments'))[
-                    't_comments__sum']
-                if total_comments_linkedin is None:
-                    total_comments_linkedin = 0
-                total_comments_google = SocialStats.objects.filter(org__in=google_share_pages,
-                                                                   date=today).aggregate(Sum('t_comments'))[
-                    't_comments__sum']
-                if total_comments_google is None:
-                    total_comments_google = 0
-                total_followers_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
-                                                                      date=today).aggregate(Sum('t_followers'))[
-                    't_followers__sum']
-                if total_followers_facebook is None:
-                    total_followers_facebook = 0
-                total_followers_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
-                                                                       date=today).aggregate(Sum('t_followers'))[
-                    't_followers__sum']
-                if total_followers_instagram is None:
-                    total_followers_instagram = 0
-                total_followers_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
-                                                                      date=today).aggregate(Sum('t_followers'))[
-                    't_followers__sum']
-                if total_followers_linkedin is None:
-                    total_followers_linkedin = 0
-                total_followers_google = SocialStats.objects.filter(org__in=google_share_pages,
-                                                                    date=today).aggregate(Sum('t_followers'))[
-                    't_followers__sum']
-                if total_followers_google is None:
-                    total_followers_google = 0
-
-                context = dict()
-                context['linkedin_likes_today'] = total_likes_linkedin
-                context['facebook_likes_today'] = total_likes_facebook
-                context['instagram_likes_today'] = total_likes_instagram
-                context['google_likes_today'] = total_likes_google
-                context['facebook_comments_today'] = total_comments_facebook
-                context['instagram_comments_today'] = total_comments_instagram
-                context['linkedin_comments_today'] = total_comments_linkedin
-                context['google_comments_today'] = 0
-                context['total_posts'] = total_posts_count_today
-                context['linkedin_post_today'] = post_count_ln
-                context['google_post_today'] = 0
-                context['facebook_post_today'] = post_count_fb
-                context['instagram_post_today'] = post_count_insta
-                context['facebook_new_followers'] = total_followers_facebook
-                context['instagram_new_followers'] = total_followers_instagram
-                context['google_new_followers'] = total_followers_google
-                context['linkedin_new_followers'] = total_followers_linkedin
+                    context['linkedin_post_today'] = post_count_ln
+                    context['facebook_post_today'] = post_count_fb
+                    context['instagram_post_today'] = post_count_insta
+                    context['facebook_new_followers'] = total_followers_facebook
+                    context['instagram_new_followers'] = total_followers_instagram
+                    context['google_new_followers'] = total_followers_google
+                    context['linkedin_new_followers'] = total_followers_linkedin
                 return Response({'status': 'SUCCESS', 'result': context})
             else:
                 return Response({'status': 'FAILURE', 'result': 'Task failed'})
@@ -1262,6 +1258,7 @@ class PostCreateView(CreateView):
             post.status = 'SCHEDULED'
             post.publish_check = False
             schedule_date = self.request.POST.get('date')
+
             schedule_time = self.request.POST.get('time')
             schedule_datetime_str = f"{schedule_date} {schedule_time}"
 
@@ -1362,9 +1359,12 @@ class LikeGraphApi(APIView):
 
         starting_date = post_data.get('start')
         end_date = post_data.get('end')
+        user_timezone = pytz.timezone(self.request.session['user_timezone'])
+        timezone_diff = timzone_difference(user_timezone)
 
-        starting_date = datetime.strptime(starting_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        starting_date_utc = datetime.strptime(starting_date, '%Y-%m-%d') + timedelta(hours=timezone_diff)
+        end_date_utc = (datetime.strptime(end_date, '%Y-%m-%d') + timedelta(hours=23, minutes=59)).astimezone(
+            user_timezone).astimezone(pytz.utc)
 
         user = self.request.user
 
@@ -1399,43 +1399,46 @@ class LikeGraphApi(APIView):
         result_google = []
         labels = []
 
-        starting = starting_date
+        total_likes_fb = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date_utc, created_at__lte=end_date_utc).annotate(created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(Sum('t_likes'))
+        total_like_ln = SocialStats.objects.filter(org__in=ln_share_pages,created_at__gte=starting_date_utc, created_at__lte=end_date_utc).annotate(created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(Sum('t_likes'))
+        total_likes_insta = SocialStats.objects.filter(org__in=insta_share_pages,created_at__gte=starting_date_utc, created_at__lte=end_date_utc).annotate(created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(Sum('t_likes'))
+        total_likes_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date_utc, created_at__lte=end_date_utc).annotate(created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(Sum('t_likes'))
 
-        while starting <= end_date:
+        created_date_user_ln = list(total_like_ln.values_list('created_at_user', flat=True))
+        count_ln = list(total_like_ln.values_list('t_likes__sum', flat=True))
+        created_date_user_fb = list(total_likes_fb.values_list('created_at_user', flat=True))
+        count_fb = list(total_likes_fb.values_list('t_likes__sum', flat=True))
+        created_date_user_insta = list(total_likes_insta.values_list('created_at_user', flat=True))
+        count_insta = list(total_likes_insta.values_list('t_likes__sum', flat=True))
+        created_date_user_google = list(total_likes_google.values_list('created_at_user', flat=True))
+        count_google = list(total_likes_google.values_list('t_likes__sum', flat=True))
+        starting = datetime.strptime(starting_date, "%Y-%m-%d")
+        end = datetime.strptime(end_date, "%Y-%m-%d")
 
-            total_likes_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
-                                                                       date = starting).aggregate(Sum('t_likes'))['t_likes__sum']
+        while starting <= end:
 
-            total_likes_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
-                                                               date=starting).aggregate(Sum('t_likes'))['t_likes__sum']
-
-            total_likes_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
-                                                              date=starting).aggregate(Sum('t_likes'))['t_likes__sum']
-
-            total_likes_google = SocialStats.objects.filter(org__in=google_share_pages,
-                                                            date=starting).aggregate(Sum('t_likes'))['t_likes__sum']
-
-            if not total_likes_facebook:
-                total_likes_facebook = 0
-
-            if not total_likes_instagram:
-                total_likes_instagram = 0
-
-            if not total_likes_linkedin:
-                total_likes_linkedin = 0
-
-            if not total_likes_google:
-                total_likes_google = 0
-
-
-
+            if starting.date() in created_date_user_fb:
+                index = created_date_user_fb.index(starting.date())
+                result_fb.append(count_fb[index])
+            else:
+                result_fb.append(0)
+            if starting.date() in created_date_user_ln:
+                index = created_date_user_ln.index(starting.date())
+                result_ln.append(count_ln[index])
+            else:
+                result_ln.append(0)
+            if starting.date() in created_date_user_insta:
+                index = created_date_user_insta.index(starting.date())
+                result_insta.append(count_insta[index])
+            else:
+                result_insta.append(0)
+            if starting.date() in created_date_user_google:
+                index = created_date_user_google.index(starting.date())
+                result_google.append(count_google[index])
+            else:
+                result_google.append(0)
 
             labels.append(starting.strftime("%Y-%m-%d"))
-            result_fb.append(total_likes_facebook)
-            result_ln.append(total_likes_linkedin)
-            result_insta.append(total_likes_instagram)
-            result_google.append(total_likes_google)
-
             starting = starting + timedelta(days=1)
 
 
@@ -1454,13 +1457,16 @@ class CommentGraphApi(APIView):
 
         starting_date = post_data.get('start')
         end_date = post_data.get('end')
+        user_timezone = pytz.timezone(self.request.session['user_timezone'])
+        timezone_diff = timzone_difference(user_timezone)
 
-        starting_date = datetime.strptime(starting_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        starting_date_utc = datetime.strptime(starting_date, '%Y-%m-%d') + timedelta(hours=timezone_diff)
+        end_date_utc = (datetime.strptime(end_date, '%Y-%m-%d') + timedelta(hours=23, minutes=59)).astimezone(
+            user_timezone).astimezone(pytz.utc)
 
         user = self.request.user
 
-        if user.manager !=None:
+        if user.manager != None:
             role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
             user_role = role.role
             user_permission = role.permission
@@ -1477,13 +1483,10 @@ class CommentGraphApi(APIView):
 
             sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invites))
 
-
-
-
-        fb_share_pages = sharepages.filter(provider = "facebook").distinct()
-        insta_share_pages = sharepages.filter(provider = "instagram").distinct()
-        ln_share_pages = sharepages.filter(provider = "linkedin").distinct()
-        google_share_pages = sharepages.filter(provider = "google").distinct()
+        fb_share_pages = sharepages.filter(provider="facebook").distinct()
+        insta_share_pages = sharepages.filter(provider="instagram").distinct()
+        ln_share_pages = sharepages.filter(provider="linkedin").distinct()
+        google_share_pages = sharepages.filter(provider="google").distinct()
 
         result_fb = []
         result_ln = []
@@ -1491,50 +1494,64 @@ class CommentGraphApi(APIView):
         result_google = []
         labels = []
 
-        starting = starting_date
+        total_comments_fb = SocialStats.objects.filter(org__in=fb_share_pages, created_at__gte=starting_date_utc,
+                                                    created_at__lte=end_date_utc).annotate(
+            created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(
+            Sum('t_comments'))
+        tota_comments_ln = SocialStats.objects.filter(org__in=ln_share_pages, created_at__gte=starting_date_utc,
+                                                   created_at__lte=end_date_utc).annotate(
+            created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(
+            Sum('t_comments'))
+        total_comments_insta = SocialStats.objects.filter(org__in=insta_share_pages, created_at__gte=starting_date_utc,
+                                                       created_at__lte=end_date_utc).annotate(
+            created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(
+            Sum('t_comments'))
+        total_comments_google = SocialStats.objects.filter(org__in=google_share_pages, created_at__gte=starting_date_utc,
+                                                        created_at__lte=end_date_utc).annotate(
+            created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(
+            Sum('t_comments'))
 
-        while starting <= end_date:
+        created_date_user_ln = list(tota_comments_ln.values_list('created_at_user', flat=True))
+        count_ln = list(tota_comments_ln.values_list('t_comments__sum', flat=True))
+        created_date_user_fb = list(total_comments_fb.values_list('created_at_user', flat=True))
+        count_fb = list(total_comments_fb.values_list('t_comments__sum', flat=True))
+        created_date_user_insta = list(total_comments_insta.values_list('created_at_user', flat=True))
+        count_insta = list(total_comments_insta.values_list('t_comments__sum', flat=True))
+        created_date_user_google = list(total_comments_google.values_list('created_at_user', flat=True))
+        count_google = list(total_comments_google.values_list('t_comments__sum', flat=True))
+        starting = datetime.strptime(starting_date, "%Y-%m-%d")
+        end = datetime.strptime(end_date, "%Y-%m-%d")
 
-            total_comments_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
-                                                                       date = starting).aggregate(Sum('t_comments'))['t_comments__sum']
+        while starting <= end:
 
-            total_comments_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
-                                                               date=starting).aggregate(Sum('t_comments'))['t_comments__sum']
-
-            total_comments_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
-                                                              date=starting).aggregate(Sum('t_comments'))['t_comments__sum']
-
-            total_comments_google = SocialStats.objects.filter(org__in=google_share_pages,
-                                                            date=starting).aggregate(Sum('t_comments'))['t_comments__sum']
-
-            if not total_comments_facebook:
-                total_comments_facebook = 0
-
-            if not total_comments_instagram:
-                total_comments_instagram = 0
-
-            if not total_comments_linkedin:
-                total_comments_linkedin = 0
-
-            if not total_comments_google:
-                total_comments_google = 0
-
-
-
+            if starting.date() in created_date_user_fb:
+                index = created_date_user_fb.index(starting.date())
+                result_fb.append(count_fb[index])
+            else:
+                result_fb.append(0)
+            if starting.date() in created_date_user_ln:
+                index = created_date_user_ln.index(starting.date())
+                result_ln.append(count_ln[index])
+            else:
+                result_ln.append(0)
+            if starting.date() in created_date_user_insta:
+                index = created_date_user_insta.index(starting.date())
+                result_insta.append(count_insta[index])
+            else:
+                result_insta.append(0)
+            if starting.date() in created_date_user_google:
+                index = created_date_user_google.index(starting.date())
+                result_google.append(count_google[index])
+            else:
+                result_google.append(0)
 
             labels.append(starting.strftime("%Y-%m-%d"))
-            result_fb.append(total_comments_facebook)
-            result_ln.append(total_comments_linkedin)
-            result_insta.append(total_comments_instagram)
-            result_google.append(total_comments_google)
-
             starting = starting + timedelta(days=1)
 
-
         data = {
-            'labels' : labels,
+            'labels': labels,
             'facebook': result_fb,
-            'instagram':result_insta,
+            'instagram': result_insta,
             'linkedin': result_ln,
             'google': result_google
         }
@@ -1548,13 +1565,16 @@ class FollowersGraphApi(APIView):
 
         starting_date = post_data.get('start')
         end_date = post_data.get('end')
+        user_timezone = pytz.timezone(self.request.session['user_timezone'])
+        timezone_diff = timzone_difference(user_timezone)
 
-        starting_date = datetime.strptime(starting_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        starting_date_utc = datetime.strptime(starting_date, '%Y-%m-%d') + timedelta(hours=timezone_diff)
+        end_date_utc = (datetime.strptime(end_date, '%Y-%m-%d') + timedelta(hours=23, minutes=59)).astimezone(
+            user_timezone).astimezone(pytz.utc)
 
         user = self.request.user
 
-        if user.manager !=None:
+        if user.manager != None:
             role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
             user_role = role.role
             user_permission = role.permission
@@ -1571,13 +1591,10 @@ class FollowersGraphApi(APIView):
 
             sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invites))
 
-
-
-
-        fb_share_pages = sharepages.filter(provider = "facebook").distinct()
-        insta_share_pages = sharepages.filter(provider = "instagram").distinct()
-        ln_share_pages = sharepages.filter(provider = "linkedin").distinct()
-        google_share_pages = sharepages.filter(provider = "google").distinct()
+        fb_share_pages = sharepages.filter(provider="facebook").distinct()
+        insta_share_pages = sharepages.filter(provider="instagram").distinct()
+        ln_share_pages = sharepages.filter(provider="linkedin").distinct()
+        google_share_pages = sharepages.filter(provider="google").distinct()
 
         result_fb = []
         result_ln = []
@@ -1585,55 +1602,86 @@ class FollowersGraphApi(APIView):
         result_google = []
         labels = []
 
-        starting = starting_date
+        total_followers_fb = SocialStats.objects.filter(org__in=fb_share_pages, created_at__gte=starting_date_utc,
+                                                    created_at__lte=end_date_utc).annotate(
+            created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(
+            Sum('t_followers'))
+        total_followers_ln = SocialStats.objects.filter(org__in=ln_share_pages, created_at__gte=starting_date_utc,
+                                                   created_at__lte=end_date_utc).annotate(
+            created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(
+            Sum('t_followers'))
+        total_followers_insta = SocialStats.objects.filter(org__in=insta_share_pages, created_at__gte=starting_date_utc,
+                                                       created_at__lte=end_date_utc).annotate(
+            created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(
+            Sum('t_followers'))
+        total_followers_google = SocialStats.objects.filter(org__in=google_share_pages, created_at__gte=starting_date_utc,
+                                                        created_at__lte=end_date_utc).annotate(
+            created_at_user=TruncDate('created_at', tzinfo=user_timezone)).values('created_at_user').annotate(
+            Sum('t_followers'))
 
-        while starting <= end_date:
+        created_date_user_ln = list(total_followers_ln.values_list('created_at_user', flat=True))
+        count_ln = list(total_followers_ln.values_list('t_followers__sum', flat=True))
+        created_date_user_fb = list(total_followers_fb.values_list('created_at_user', flat=True))
+        count_fb = list(total_followers_fb.values_list('t_followers__sum', flat=True))
+        created_date_user_insta = list(total_followers_insta.values_list('created_at_user', flat=True))
+        count_insta = list(total_followers_insta.values_list('t_followers__sum', flat=True))
+        created_date_user_google = list(total_followers_google.values_list('created_at_user', flat=True))
+        count_google = list(total_followers_google.values_list('t_followers__sum', flat=True))
+        starting = datetime.strptime(starting_date, "%Y-%m-%d")
+        end = datetime.strptime(end_date, "%Y-%m-%d")
 
-            total_followers_facebook = SocialStats.objects.filter(org__in=fb_share_pages,
-                                                                       date = starting).aggregate(Sum('t_followers'))['t_followers__sum']
+        while starting <= end:
 
-            total_followers_instagram = SocialStats.objects.filter(org__in=insta_share_pages,
-                                                               date=starting).aggregate(Sum('t_followers'))['t_followers__sum']
-
-            total_followers_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,
-                                                              date=starting).aggregate(Sum('t_followers'))['t_followers__sum']
-
-            total_followers_google = SocialStats.objects.filter(org__in=google_share_pages,
-                                                            date=starting).aggregate(Sum('t_followers'))['t_followers__sum']
-
-            if not total_followers_facebook:
-                total_followers_facebook = 0
-
-            if not total_followers_instagram:
-                total_followers_instagram = 0
-
-            if not total_followers_linkedin:
-                total_followers_linkedin = 0
-
-            if not total_followers_google:
-                total_followers_google = 0
-
-
-
+            if starting.date() in created_date_user_fb:
+                index = created_date_user_fb.index(starting.date())
+                result_fb.append(count_fb[index])
+            else:
+                result_fb.append(0)
+            if starting.date() in created_date_user_ln:
+                index = created_date_user_ln.index(starting.date())
+                result_ln.append(count_ln[index])
+            else:
+                result_ln.append(0)
+            if starting.date() in created_date_user_insta:
+                index = created_date_user_insta.index(starting.date())
+                result_insta.append(count_insta[index])
+            else:
+                result_insta.append(0)
+            if starting.date() in created_date_user_google:
+                index = created_date_user_google.index(starting.date())
+                result_google.append(count_google[index])
+            else:
+                result_google.append(0)
 
             labels.append(starting.strftime("%Y-%m-%d"))
-            result_fb.append(total_followers_facebook)
-            result_ln.append(total_followers_linkedin)
-            result_insta.append(total_followers_instagram)
-            result_google.append(total_followers_google)
-
             starting = starting + timedelta(days=1)
 
-
         data = {
-            'labels' : labels,
+            'labels': labels,
             'facebook': result_fb,
-            'instagram':result_insta,
+            'instagram': result_insta,
             'linkedin': result_ln,
             'google': result_google
         }
         return JsonResponse(data)
 
+def timzone_difference(user_timezone):
+
+    tz1 = pytz.utc
+
+    now_tz1 = datetime.now(tz1).strftime("%H:%M:%S")
+    now_tz2 = datetime.now(user_timezone).strftime("%H:%M:%S")
+
+    time_tz1 = datetime.strptime(now_tz1, "%H:%M:%S")
+    time_tz2 = datetime.strptime(now_tz2, "%H:%M:%S")
+
+    delta = time_tz1 - time_tz2
+
+    sec = delta.total_seconds()
+    min = sec / 60
+    hours = sec / (60 * 60)
+
+    return hours
 
 
 class PostGraphApiView(APIView):
@@ -1642,9 +1690,13 @@ class PostGraphApiView(APIView):
 
         starting_date = post_data.get('start')
         end_date = post_data.get('end')
+        user_timezone = pytz.timezone(self.request.session['user_timezone'])
+        timezone_diff = timzone_difference(user_timezone)
 
-        starting_date = datetime.strptime(starting_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        starting_date_utc = datetime.strptime(starting_date,'%Y-%m-%d') + timedelta(hours=timezone_diff)
+        end_date_utc = (datetime.strptime(end_date,'%Y-%m-%d') + timedelta(hours=23,minutes=59)).astimezone(user_timezone).astimezone(pytz.utc)
+
+
 
         user = self.request.user
 
@@ -1653,9 +1705,9 @@ class PostGraphApiView(APIView):
             user_role = role.role
             user_permission = role.permission
             if user_permission == 'HIDE':
-                total_posts = PostModel.objects.filter(Q(status='PUBLISHED') | Q(status='FAILED'), user=self.request.user, is_deleted=False)
+                total_posts = PostModel.objects.filter(Q(status='PUBLISHED') | Q(status='FAILED') ,created_at__gte=starting_date_utc, created_at__lte=end_date_utc,is_deleted = False , user = self.request.user).annotate(created_at_user=TruncDate('created_at', tzinfo=user_timezone))
             else:
-                total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager),Q(status='PUBLISHED') | Q(status='FAILED'), is_deleted=False)
+                total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager),Q(status='PUBLISHED') | Q(status='FAILED') ,created_at__gte=starting_date_utc, created_at__lte=end_date_utc,is_deleted = False).annotate(created_at_user=TruncDate('created_at', tzinfo=user_timezone))
 
         else:
             invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
@@ -1663,7 +1715,7 @@ class PostGraphApiView(APIView):
             for user in invited:
                 invited_users_id = user.selected_user.id
                 invites.append(invited_users_id)
-            total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites),Q(status='PUBLISHED') | Q(status='FAILED'), is_deleted=False)
+            total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites),Q(status='PUBLISHED') | Q(status='FAILED') ,created_at__gte=starting_date_utc, created_at__lte=end_date_utc,is_deleted = False).annotate(created_at_user=TruncDate('created_at', tzinfo=user_timezone))
 
 
         result_fb = []
@@ -1672,33 +1724,51 @@ class PostGraphApiView(APIView):
         result_google = []
         labels = []
 
-        starting = starting_date
+        total_post_ln = total_posts.filter(post_urn__org__provider='linkedin').values('created_at_user').annotate(count=Count('id')).order_by('created_at_user')
+        total_post_fb = total_posts.filter(post_urn__org__provider='facebook').values('created_at_user').annotate(count=Count('id')).order_by('created_at_user')
+        total_post_insta = total_posts.filter(post_urn__org__provider='instagram').values('created_at_user').annotate(count=Count('id')).order_by('created_at_user')
+        total_post_google = total_posts.filter(post_urn__org__provider='google').values('created_at_user').annotate(count=Count('id')).order_by('created_at_user')
 
-        while starting <= end_date:
+        created_date_user_ln = list(total_post_ln.values_list('created_at_user',flat=True))
+        count_ln = list(total_post_ln.values_list('count',flat=True))
+        created_date_user_fb = list(total_post_fb.values_list('created_at_user',flat=True))
+        count_fb = list(total_post_fb.values_list('count',flat=True))
+        created_date_user_insta = list(total_post_insta.values_list('created_at_user',flat=True))
+        count_insta = list(total_post_insta.values_list('count',flat=True))
+        created_date_user_google = list(total_post_google.values_list('created_at_user',flat=True))
+        count_google = list(total_post_google.values_list('count',flat=True))
 
-            post_count_ln = total_posts.filter(post_urn__org__provider='linkedin', created_at__date__range = (starting,starting)).count()
-            post_count_fb = total_posts.filter(post_urn__org__provider='facebook', created_at__date__range = (starting,starting)).count()
-            post_count_insta = total_posts.filter(post_urn__org__provider='instagram', created_at__date__range = (starting,starting)).count()
-            post_count_google = total_posts.filter(post_urn__org__provider='google', created_at__date__range = (starting,starting)).count()
+        starting = datetime.strptime(starting_date,"%Y-%m-%d")
+        end = datetime.strptime(end_date,"%Y-%m-%d")
 
-            # if not total_comments_facebook:
-            #     total_comments_facebook = 0
-            #
-            # if not total_comments_instagram:
-            #     total_comments_instagram = 0
-            #
-            # if not total_comments_linkedin:
-            #     total_comments_linkedin = 0
-            #
-            # if not total_comments_google:
-            #     total_comments_google = 0
+        while starting <= end:
+
+
+            if starting.date() in created_date_user_fb:
+                index = created_date_user_fb.index(starting.date())
+                result_fb.append(count_fb[index])
+            else:
+                result_fb.append(0)
+            if starting.date() in created_date_user_ln:
+                index = created_date_user_ln.index(starting.date())
+                result_ln.append(count_ln[index])
+            else:
+                result_ln.append(0)
+            if starting.date() in created_date_user_insta:
+                index = created_date_user_insta.index(starting.date())
+                result_insta.append(count_insta[index])
+            else:
+                result_insta.append(0)
+            if starting.date() in created_date_user_google:
+                index = created_date_user_google.index(starting.date())
+                result_google.append(count_google[index])
+            else:
+                result_google.append(0)
+
             labels.append(starting.strftime("%Y-%m-%d"))
-            result_fb.append(post_count_fb)
-            result_ln.append(post_count_ln)
-            result_insta.append(post_count_insta)
-            result_google.append(post_count_google)
-
             starting = starting + timedelta(days=1)
+
+
 
 
         data = {
@@ -1711,7 +1781,8 @@ class PostGraphApiView(APIView):
         return JsonResponse(data)
 
 
-
+    def orgainze_data(self,date_list,count_list,created_at_list):
+        pass
 
 
 
@@ -1850,10 +1921,12 @@ class PostDraftView(UpdateView):
             post.publish_check = False
             schedule_date = self.request.POST.get('date')
             schedule_time = self.request.POST.get('time')
+
             schedule_datetime_str = f"{schedule_date} {schedule_time}"
 
             if schedule_datetime_str:
                 schedule_datetime = datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M')
+                schedule_datetime = schedule_datetime.astimezone(pytz.utc)
                 post.schedule_datetime = schedule_datetime
 
         else:
@@ -2010,7 +2083,7 @@ class PostsGetView2(LoginRequiredMixin, TemplateView):
 
 
 class PostsGetView(LoginRequiredMixin, TemplateView):
-    template_name = 'social/my_posts.html'
+    template_name = 'social/my_post3.html'
 
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
@@ -2040,70 +2113,74 @@ class PostsGetView(LoginRequiredMixin, TemplateView):
                 invites.append(invited_users_id)
             posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted=False)
 
-        items_per_page = 2
-        search = self.request.GET.get('search', '')
-        platform = self.request.GET.get('platform', 'fb')
-        # platform = 'fb'
-        page = self.request.GET.get('page', '1')
+        facebook_post = posts.filter(prepost_page__provider="facebook").order_by('-created_at').distinct()[:20]
+
+        # items_per_page = 2
+        # search = self.request.GET.get('search', '')
+        # platform = self.request.GET.get('platform', 'fb')
+        # # platform = 'fb'
+        # page = self.request.GET.get('page', '1')
 
 
 
-        if platform =='ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
-            linkedin_post = posts.filter(prepost_page__provider="linkedin").distinct()
-            if search is not None and search != '':
-                linkedin_post = linkedin_post.filter(
-                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            linkedin_post_paginated = get_paginated_post_list(linkedin_post, items_per_page, page)
-        else:
-            linkedin_post_paginated = ''
-
-
-        if platform == 'fb' and len(posts.filter(prepost_page__provider="facebook")) > 0:
-            facebook_post = posts.filter(prepost_page__provider="facebook").distinct()
-            if search is not None and search != '':
-                facebook_post = facebook_post.filter(
-                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            facebook_post_paginated = get_paginated_post_list(facebook_post, items_per_page, page)
-        else:
-
-            facebook_post_paginated = ''
-
-
-        if platform == 'insta' and len(posts.filter(prepost_page__provider="instagram")) > 0:
-            instagram_post = posts.filter(prepost_page__provider="instagram").distinct()
-            if search is not None and search != '':
-                instagram_post = instagram_post.filter(
-                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            instagram_post_paginated = get_paginated_post_list(instagram_post, items_per_page, page)
-        else:
-
-            instagram_post_paginated = ''
-
-        if platform == 'google' and len(posts.filter(prepost_page__provider="Google Books")) > 0:
-            google_post = posts.filter(prepost_page__provider="Google Books").distinct()
-            if search is not None and search != '':
-                google_post = google_post.filter(
-                    Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
-                    Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
-            google_post_paginated = get_paginated_post_list(google_post, items_per_page, page)
-
-        else:
-            google_post_paginated = ''
-
-
-        context = {
-            'platform': platform,
-            # 'paginated': paginated,
-            'linkedin_post': linkedin_post_paginated,
-            'facebook_post': facebook_post_paginated,
-            'instagram_post': instagram_post_paginated,
-            'google_post': google_post_paginated,
-            # 'paginated': paginated,
-            # 'posts': PostModel.objects.filter(user_id=self.request.user.id),
-        }
+        # if platform =='ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
+        #     linkedin_post = posts.filter(prepost_page__provider="linkedin").distinct()
+        #     if search is not None and search != '':
+        #         linkedin_post = linkedin_post.filter(
+        #             Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+        #             Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+        #     linkedin_post_paginated = get_paginated_post_list(linkedin_post, items_per_page, page)
+        # else:
+        #     linkedin_post_paginated = ''
+        #
+        #
+        # if platform == 'fb' and len(posts.filter(prepost_page__provider="facebook")) > 0:
+        #     facebook_post = posts.filter(prepost_page__provider="facebook").distinct()
+        #     if search is not None and search != '':
+        #         facebook_post = facebook_post.filter(
+        #             Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+        #             Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+        #     facebook_post_paginated = get_paginated_post_list(facebook_post, items_per_page, page)
+        # else:
+        #
+        #     facebook_post_paginated = ''
+        #
+        #
+        # if platform == 'insta' and len(posts.filter(prepost_page__provider="instagram")) > 0:
+        #     instagram_post = posts.filter(prepost_page__provider="instagram").distinct()
+        #     if search is not None and search != '':
+        #         instagram_post = instagram_post.filter(
+        #             Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+        #             Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+        #     instagram_post_paginated = get_paginated_post_list(instagram_post, items_per_page, page)
+        # else:
+        #
+        #     instagram_post_paginated = ''
+        #
+        # if platform == 'google' and len(posts.filter(prepost_page__provider="Google Books")) > 0:
+        #     google_post = posts.filter(prepost_page__provider="Google Books").distinct()
+        #     if search is not None and search != '':
+        #         google_post = google_post.filter(
+        #             Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
+        #             Q(user__username__icontains=search) | Q(prepost_page__name__icontains=search))
+        #     google_post_paginated = get_paginated_post_list(google_post, items_per_page, page)
+        #
+        # else:
+        #     google_post_paginated = ''
+        #
+        #
+        # context = {
+        #     'platform': platform,
+        #     # 'paginated': paginated,
+        #     'linkedin_post': linkedin_post_paginated,
+        #     'facebook_post': facebook_post_paginated,
+        #     'instagram_post': instagram_post_paginated,
+        #     'google_post': google_post_paginated,
+        #     # 'paginated': paginated,
+        #     # 'posts': PostModel.objects.filter(user_id=self.request.user.id),
+        # }
+        seralized_data = json.dumps(PostSerializer(facebook_post,many=True).data)
+        context = {'data':seralized_data}
         return context
 
 
@@ -2141,8 +2218,6 @@ class PostApiView(ListAPIView):
 
         if platform == 'ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
             post = posts.filter(prepost_page__provider="linkedin").distinct()
-
-
             if search is not None and search != '':
                 post = post.filter(
                     Q(post__icontains=search) | Q(created_at__icontains=search) | Q(status__icontains=search) |
@@ -2176,6 +2251,171 @@ class PostApiView(ListAPIView):
             post = []
 
         return post
+class PostApiView2(ListAPIView):
+    serializer_class = PostSerializer
+    ORDER_COLUMN_CHOICES = ['prepost_page','post','images','status','created_at','user','published_at']
+
+    platformMappings = {
+        'fb': 'facebook',
+        'ln': 'linkedin',
+        'insta': 'instagram',
+        'google': 'google',
+    };
+    def get(self,request):
+        user_manager = self.request.user.manager
+        draw = self.request.GET.get('draw')
+        start = int(self.request.GET.get('start'))
+        length = int(self.request.GET.get('length'))
+        search = self.request.GET.get('search[value]',None)
+        order_column = self.request.GET.get('order[0][column]',None)
+        order = self.request.GET.get('order[0][dir]',None)
+        if user_manager != None:
+            role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
+            user_permission = role.permission
+            if user_permission == 'HIDE':
+                posts = PostModel.objects.filter(user=self.request.user, is_deleted=False)
+            else:
+                posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager),
+                                                 is_deleted=False)
+
+        else:
+            invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED")
+            invites = []
+            for user in invited:
+                invited_users_id = user.selected_user.id
+                invites.append(invited_users_id)
+            posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invites), is_deleted=False)
+
+
+
+
+        platform = self.request.GET.get('platform', 'fb')
+
+
+        if platform == 'ln' and len(posts.filter(prepost_page__provider="linkedin")) > 0:
+            post = posts.filter(prepost_page__provider="linkedin").distinct()
+            post = post.order_by('-created_at')
+
+        elif platform == 'fb' and len(posts.filter(prepost_page__provider="facebook")) > 0:
+            post = posts.filter(prepost_page__provider="facebook").distinct()
+
+            post = post.order_by('-created_at')
+
+        elif platform == 'insta' and len(posts.filter(prepost_page__provider="instagram")) > 0:
+            post = posts.filter(prepost_page__provider="instagram").distinct()
+            post = post.order_by('-created_at')
+
+        elif platform == 'google' and len(posts.filter(prepost_page__provider="Google Books")) > 0:
+            post = posts.filter(prepost_page__provider="Google Books").distinct()
+            post = post.order_by('-created_at')
+        else:
+            post = []
+        data = self.query_music_by_args(draw,length,start,search,order_column, order, post,platform)
+        return JsonResponse(data)
+
+    def query_music_by_args(self, draw, length, start, search_value, order_column, order, posts,platform):
+        # Determine the column to order by and the sorting order
+        order_column = self.ORDER_COLUMN_CHOICES[int(order_column)]
+        if order == "desc":
+            order_column = "-" + order_column
+
+        # Apply search criteria
+        if search_value:
+            queryset = posts.filter(
+                Q(post__icontains=search_value) | Q(created_at__icontains=search_value) | Q(
+                    status__icontains=search_value) |
+                Q(user__username__icontains=search_value) | Q(prepost_page__name__icontains=search_value)
+            )
+        else:
+            queryset = posts
+
+        # Get the total count before applying pagination
+        total_records = queryset.count()
+
+        # Apply pagination
+        if order_column:
+            queryset = queryset.order_by(order_column)[start: start + length]
+        else:
+            queryset = queryset[start: start + length]
+        # Get the count after applying search and pagination
+        filtered_records = len(queryset)
+
+        data = self.serializer_class(queryset,many=True)
+
+
+        platform_name = self.platformMappings[platform]
+        # Prepare the response in the required format
+        orgainzed_data = self.organize_data(data.data,platform_name)
+
+
+        response = {
+            "draw": draw,
+            "recordsTotal": total_records,
+            "recordsFiltered": total_records,
+            "data": orgainzed_data  # Add your data here
+        }
+        return response
+
+
+    def organize_data(self,records,platform):
+        records = json.loads((json.dumps(records)))
+
+        for record in records:
+            provider = False
+            new_post_urn_list = []
+            new_share_page_list = []
+            new_image_list = []
+            post_urn = record['post_urn']
+            prepost_page = record['prepost_page']
+            images = record['images']
+            for urn in post_urn:
+                if urn['org']['provider'] == platform:
+                    provider = True
+                    new_urn = {
+                        'page':{
+                            'pk' : urn['id'],
+                            'org_provider' : urn['org']['provider'],
+                            'name' : urn['org']['name'],
+                        }
+                    }
+                    new_post_urn_list.append(new_urn)
+
+            if provider == False:
+                for org in prepost_page:
+                    if org['provider'] == platform:
+                        new_share_page = {
+                            'page':{
+                            'name' : org['name'],
+                            'org_id' : org['org_id'],
+                            'provider' : org['provider']
+                            }
+                        }
+                        new_share_page_list.append(new_share_page)
+
+            for image in images:
+                image_url = image['image']
+
+                new_image = {
+                    'is_mp4_file': False,
+                    'image': {
+                        'url': image_url
+                    }
+                }
+
+                new_image_list.append(new_image)
+
+            record['post_urn'] = new_post_urn_list
+            record['prepost_page'] = new_share_page_list
+            record['images'] = new_image_list
+            record['provider'] = provider
+            record['platformName'] = platform
+
+        return records
+
+
+
+
+
 
     # def get_page_number(self, request, paginator):
     #     page_number = request.query_params.get(self.page_query_param, 1)
@@ -3405,3 +3645,5 @@ def passwor_validation(request):
         else:
             return JsonResponse({'message': True})
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+

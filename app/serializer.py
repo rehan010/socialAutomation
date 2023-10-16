@@ -4,7 +4,7 @@ from .models import User, ImageModel, InviteEmploye, PostModel, SharePage,Post_u
 class UserGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['id','email','first_name','last_name','username','profile_image']
 class InviteSerializer(serializers.ModelSerializer):
     class Meta:
         model = InviteEmploye
@@ -38,4 +38,4 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PostModel
-        fields = '__all__'
+        fields = ['id','post','post_urn','prepost_page','created_at','published_at','images','status','user']

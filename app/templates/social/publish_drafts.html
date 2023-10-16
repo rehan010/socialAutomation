@@ -56,12 +56,16 @@
     bottom: 0;
 
   }
+  .error-border{
+    border:1px solid red !important;
+
+  }
 
 </style>
 
   <div class="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
 
-    <form method="post" enctype="multipart/form-data" class="w-100" onsubmit="return validateForm()">
+    <form method="post" enctype="multipart/form-data" class="w-100" id="yourForm" onsubmit="return validateForm()">
         {% csrf_token %}
 <div class=" relative mb-2">
       <a class="absolute top-0 right-2 text-lg text-black cursor-pointer hover:no-underline no-underline hover:text-black" href="{% url 'my_posts' user.pk %}"><i class="fa-solid fa-xmark"></i></a>
@@ -130,8 +134,8 @@
 
         <!--                Platforms-->
         <br>
-        <div class="d-flex p-2" id="pageSelection">
-            <div class="col-sm-3">
+        <div class="flex items-center justify-center gap-6" id="pageSelection">
+            <div class="">
         <div class="relative inline-block">
           <button
             type="button"
@@ -169,35 +173,10 @@
             </svg>
             Facebook
           </button>
-          <div
-            class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
-            style="min-height: 2.5rem"
-          >
-            {% for obj in data.facebook_page%}
-            <label
-              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              <input
-                type="checkbox"
-                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
-                name="facebook"
-                value="{{obj.id}}"
-              />
-              <span class="ml-2 text-sm">{{obj.name}}</span>
-            </label>
-            {% for page in post.prepost_page.all %}
-                        {% if obj.id == page.org_id %}
-                            <script>
-                                document.querySelector('input[value="{{ obj.id }}"]').checked = true;
-                            </script>
-                        {% endif %}
-                        {% endfor %}
 
-            {% endfor %}
-          </div>
         </div>
       </div>
-            <div class="col-sm-3">
+            <div class="">
         <div class="relative inline-block">
           <button
             type="button"
@@ -236,34 +215,10 @@
             </svg>
             Instagram
           </button>
-          <div
-            class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
-            style="min-height: 2.5rem"
-          >
-            {% for obj in data.insta_data %}
-            <label
-              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              <input
-                type="checkbox"
-                class="form-checkbox h-4 w-4 text-blue-500 transition duration-150 ease-in-out"
-                name="instagram"
-                value="{{obj.id}}"
-              />
-              <span class="ml-2 text-sm text-gray-700">{{obj.name}}</span>
-            </label>
-            {% for page in post.prepost_page.all %}
-                        {% if obj.id == page.org_id %}
-                            <script>
-                                document.querySelector('input[value="{{ obj.id }}"]').checked = true;
-                            </script>
-                        {% endif %}
-                        {% endfor %}
-            {% endfor %}
-          </div>
+
         </div>
       </div>
-            <div class="col-sm-3">
+            <div class="">
         <div class="relative inline-block">
           <button
             type="button"
@@ -301,35 +256,10 @@
             </svg>
             Linkedin
           </button>
-          <div
-            class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
-            style="min-height: 2.5rem"
-          >
-            {% for obj in data.linkedin_page %}
 
-            <label
-              class="inline-flex items-center cursor-pointer block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              <input
-                type="checkbox"
-                class="form-checkbox h-3 w-3 text-blue-500 transition duration-150 ease-in-out"
-                name="linkedin"
-                value="{{ obj.key }}"
-              />
-              <span class="ml-2 text-sm">{{obj.name}}-{{obj.id}}</span>
-            </label>
-            {% for page in post.prepost_page.all %}
-                {% if obj.key == page.org_id %}
-                    <script>
-                        document.querySelector('input[value="{{ obj.key }}"]').checked = true;
-                    </script>
-                {% endif %}
-            {% endfor %}
-            {% endfor %}
-          </div>
         </div>
       </div>
-            <div class="col-sm-3">
+        <div class="">
         <div class="relative inline-block">
           <button
             type="button"
@@ -355,21 +285,7 @@
                 fill="currentFill"
               />
             </svg>
-            <svg
-              class="-ml-1 mr-2 h-4 w-4 hidden"
-              aria-hidden="true"
-              focusable="false"
-              data-prefix="fab"
-              data-icon="google"
-              role="img"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 488 512"
-            >
-              <path
-                fill="currentColor"
-                d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
-              ></path>
-            </svg>
+            <img src="{% static 'assets/img/Social-Logos/google_bussiness.svg'%}" class="w-6 hidden mr-2">
             Google
           </button>
         </div>
@@ -389,7 +305,7 @@
             name="date"
             id="date"
             class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-          />
+          onchange="validateDate(event)"/>
         </div>
       </div>
       <div class="w-56 px-3">
@@ -402,7 +318,7 @@
             name="time"
             id="time"
             class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-          />
+          onchange="validateTime(event)"/>
         </div>
       </div>
     </div>
@@ -480,6 +396,57 @@
         checkbox.checked = true;
       });
     });
+
+
+
+    function validateDate(event){
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = (today.getMonth() + 1).toString().padStart(2, '0');
+        const day = today.getDate().toString().padStart(2, '0');
+        const minDate = `${year}-${month}-${day}`;
+        const value = event.target.value;
+        if(value === "" || value < minDate ){
+            event.target.value = minDate;
+        }
+    }
+
+    function validateTime(event){
+      const currentTime = new Date();
+      const currentHour = currentTime.getHours();
+      const currentMinute = currentTime.getMinutes();
+      const enteredTime = event.target.value.split(":");
+      const enteredHour = parseInt(enteredTime[0], 10);
+      const enteredMinute = parseInt(enteredTime[1], 10);
+
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = (today.getMonth() + 1).toString().padStart(2, '0');
+      const day = today.getDate().toString().padStart(2, '0');
+      const minDate = `${year}-${month}-${day}`;
+
+      const datePicker = document.getElementById("date");
+
+      const selectedDate = datePicker.value;
+
+      const scheduleBtn = document.getElementById('scheduleBtn');
+      if ((selectedDate === minDate) && (currentHour > enteredHour || (currentHour === enteredHour && currentMinute > enteredMinute))) {
+
+        event.target.classList.add('error-border');
+
+        scheduleBtn.parentElement.classList.add('disabled');
+        scheduleBtn.parentElement.classList.add('cursor-not-allowed');
+        scheduleBtn.disable = true;
+      }else{
+        event.target.classList.remove('error-border');
+        scheduleBtn.parentElement.classList.remove('disabled');
+        scheduleBtn.parentElement.classList.remove('cursor-not-allowed');
+        scheduleBtn.disable = true;
+
+      }
+
+
+    }
 
   function showDiv() {
 
@@ -567,7 +534,7 @@
                 if (fileSizeMB > maxFileSizeMB) {
                     errorMessage.style.display = "block";
                     event.target.value = "";
-                    console.log(event.target.files);
+
                     setTimeout(function () {
                       errorMessage.style.display = "none";
                       }, 4000);
@@ -587,7 +554,7 @@
                     errorMessage.textContent = "Can't Upload more than 10 files";
                     errorMessage.style.display = "block";
                     event.target.value = "";
-                    console.log(event.target.files);
+
                     setTimeout(function () {
                       errorMessage.style.display = "none";
                       }, 4000);
@@ -731,7 +698,7 @@ function getCookie(name) {
                         removeIcon.addEventListener("click", function () {
                             deleteObject(id, function(imageDataLength ) {
 
-                                console.log("Image Length:", imageDataLength );
+
                             });
                             imageContainer.remove();
                         });
@@ -743,7 +710,7 @@ function getCookie(name) {
 
             }else{
                 var image = document.createElement("img");
-                console.log(imageUrl.split(',')[0]);
+
                 image.src = imageUrl.split(',')[0];
                 image.classList.add("w-full", "h-full" ,"object-cover");
 
@@ -756,7 +723,7 @@ function getCookie(name) {
             removeIcon.addEventListener("click", function () {
                 deleteObject(id, function(imageDataLength ) {
                                 // Do something with the imageLength
-                                console.log("Image Length:", imageDataLength );
+
                 });
                 imageContainer.remove();
             })
@@ -773,6 +740,15 @@ function getCookie(name) {
 
 
     document.addEventListener("DOMContentLoaded", function() {
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    const minDate = `${year}-${month}-${day}`;
+
+    const datePicker = document.getElementById("date");
+    datePicker.min = minDate;
 
     var publishButton = document.getElementById("publishButton");
     var scheduleButton = document.getElementById("scheduleBtn");
@@ -792,16 +768,54 @@ function getCookie(name) {
     // Get the schedule button element
     const scheduleBtn = document.getElementById("scheduleBtn");
 
-    // Function to show the date-time picker when the button is clicked
-    scheduleBtn.addEventListener("click", function () {
-      const currentDate = new Date();
-      flatpickr("#scheduleDateTimePicker", {
-        enableTime: true,
-        minDate: currentDate,
-        defaultDate: currentDate,
-      });
-    });
 
+    // Function to show the date-time picker when the button is clicked
+    scheduleBtn.addEventListener("click", function (event) {
+        const date = document.getElementById('date').value;
+        const time = document.getElementById('time').value;
+        const alertBox = document.getElementById("errorMessageContainer");
+        const alertContent = document.querySelector(".pageError");
+        const dublicateAlertContent = alertContent.cloneNode(true);
+        dublicateAlertContent.classList.remove('pageError')
+        dublicateAlertContent.classList.remove('hidden');
+        dublicateAlertContent.classList.add('message');
+
+        const crossButton = dublicateAlertContent.querySelector(".cross");
+
+        crossButton.addEventListener('click',function(){
+            dublicateAlertContent.style.display = "none";
+        })
+
+
+
+      if (date === "" && time === "") {
+        event.preventDefault();
+
+        dublicateAlertContent.querySelector("p").innerText = "Please Select Date and Time";
+        alertBox.appendChild(dublicateAlertContent);
+        setTimeout(function () {
+            alertBox.removeChild(dublicateAlertContent);
+        }, 3000);
+      } else if (date === "") {
+          event.preventDefault();
+
+          dublicateAlertContent.querySelector("p").innerText = "Please Select Date";
+          alertBox.appendChild(dublicateAlertContent);
+          setTimeout(function () {
+              alertBox.removeChild(dublicateAlertContent);
+          }, 3000);
+      } else if (time === "") {
+          event.preventDefault();
+
+          dublicateAlertContent.querySelector("p").innerText = "Please Select Time";
+          alertBox.appendChild(dublicateAlertContent);
+          setTimeout(function () {
+              alertBox.removeChild(dublicateAlertContent);
+          }, 3000);
+      }
+      console.log("sumbiting");
+
+  });
 //   Function to submit the form with the selected scheduled date-time
     //   const form = document.getElementById("scheduleForm");
     //   form.addEventListener("submit", function (event) {
@@ -917,7 +931,7 @@ function getCookie(name) {
            })
 
           }
-          console.log(platformButton.id)
+
       }
 
 
@@ -929,11 +943,11 @@ function getCookie(name) {
           const response = await fetch(`/social/page/?pk=${post_id}`);
           if (response.ok) {
               const data = await response.json();
-               console.log(data)
+
               if((Object.keys(data).length === 1 && data['posts']) || Object.keys(data).length === 0){
                      var publishButton = document.getElementById("publishButton");
                      var scheduleButton = document.getElementById("scheduleBtn");
-                      console.log(1)
+
                       publishButton.disabled = true;
                       scheduleButton.disabled = true;
 
@@ -941,8 +955,7 @@ function getCookie(name) {
                       publishButton.parentElement.classList.add('disabled');
                       scheduleButton.parentElement.classList.remove('hover:scale-102');
                       scheduleButton.parentElement.classList.add('disabled');
-                      console.log(publishButton.parentElement);
-                      console.log(scheduleButton.parentElement);
+
               }
 
               const dropdownButtons = document.getElementsByClassName('dropdownButton');
@@ -954,10 +967,10 @@ function getCookie(name) {
 
 
           } else {
-              console.error(`Failed to fetch data. Status code: ${response.status}`);
+<!--              console.error(`Failed to fetch data. Status code: ${response.status}`);-->
           }
       } catch (error) {
-          console.error('An error occurred:', error);
+<!--          console.error('An error occurred:', error);-->
       }
       }
 

@@ -524,7 +524,7 @@ function updatePage(event, platform) {
     function createStatusTd(status,provider) {
 
 
-        console.log(provider + " " + status);
+
 
         const span = document.createElement('span');
         span.className = 'bg-gradient-to-tl px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white';
@@ -1036,6 +1036,8 @@ let lastButton = null;
 
                         data.forEach(result=> {
 
+                            console.log(result);
+
                             const row = document.createElement('tr');
                             row.className = "post";
                             row.setAttribute('data-post-id', result.id);
@@ -1216,6 +1218,7 @@ let lastButton = null;
                             else if (p.status === 'FAILED' && (provider === true)) {
                                 const a = document.createElement('a');
                                 post_urn.forEach(urnData => {
+
                                     const urn = urnData.page;
                                     const pk = urn.pk;
                                     const provider = urn.org_provider;

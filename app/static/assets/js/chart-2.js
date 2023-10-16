@@ -27,6 +27,21 @@ gradient.addColorStop(1, 'rgba(252,176,69,1)');
 
 let chart2;
 async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDate()) {
+
+    // Create a new Date object to represent the current date and time
+    const currentTime = new Date();
+
+    // Extract the current hours, minutes, and seconds
+    const hours = currentTime.getHours();
+    const minutes = currentTime.getMinutes();
+    const seconds = currentTime.getSeconds();
+
+    // Format the time as a string (e.g., "hh:mm:ss")
+    const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+//    start = start + " " + formattedTime;
+//    end = end + " " + formattedTime;
+
     const json = {
         'start': `${start}`,
         'end': `${end}`
@@ -206,7 +221,6 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
 
 
 }
-fetchPostGraph();
 
 
 // end chart 2

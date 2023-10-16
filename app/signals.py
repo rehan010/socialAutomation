@@ -254,6 +254,7 @@ def gather_post_insight(instance):
         post_urns = Post_urn.objects.filter(org=instance,is_deleted = False).values_list('urn', flat=True)
 
         if instance.provider == "facebook":
+
             fb_post_insights(post_urns, instance, since, until)
         elif instance.provider == "instagram":
 

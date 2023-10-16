@@ -2137,18 +2137,21 @@ def linkedin_share_stats(org, start,end):
         followers_count = 0
 
     try:
-        stats, created = SocialStats.objects.get_or_create(org=org, date=datetime.date.today())
-        previous_date = datetime.date.today() - datetime.timedelta(days=1)
-        previous_entry = SocialStats.objects.filter(org=org_id, date__lte=previous_date).aggregate(Sum('t_followers'))[
+        datePrevious = SocialStats.objects.filter(org=org, created_at__gte=datetime.date.today(), created_at__lt = datetime.date.today() + datetime.timedelta(days=1))
+        previous_likes = datePrevious.aggregate(Sum('t_likes'))['t_likes__sum'] or 0
+        previous_comments = datePrevious.aggregate(Sum('t_comments'))['t_comments__sum'] or 0
+        like_count = like_count - previous_likes
+        comment_count = comment_count - previous_comments
+        previous_entry = SocialStats.objects.filter(org=org).aggregate(Sum('t_followers'))[
             't_followers__sum']
+        stats= SocialStats.objects.create(org=org,t_likes = like_count,t_comments=comment_count)
         if previous_entry:
             stats.t_followers = abs(previous_entry - followers_count)
         else:
             stats.t_followers = followers_count
-        stats.t_likes = like_count
-        stats.t_comments = comment_count
+
         stats.save()
-    except:
+    except Exception as e:
         pass
 
 
@@ -3156,20 +3159,20 @@ def instagram_account_insights(urn, since, until):
                 response2 = response2.json()
                 followers_count = response2['followers_count']
 
-            stats , created = SocialStats.objects.get_or_create(org=urn,date = datetime.date.today())
-            stats.t_likes = total_likes
-            stats.t_comments = total_comments
 
-            previous_date = datetime.date.today() - datetime.timedelta(days=1)
-            previous_entry = SocialStats.objects.filter(org=urn, date__lte=previous_date).aggregate(Sum('t_followers'))[
+            datePrevious = SocialStats.objects.filter(org=urn, created_at__gte=datetime.date.today(), created_at__lt = datetime.date.today() + datetime.timedelta(days=1))
+            previous_likes = datePrevious.aggregate(Sum('t_likes'))['t_likes__sum'] or 0
+            previous_comments = datePrevious.aggregate(Sum('t_comments'))['t_comments__sum'] or 0
+            total_likes = total_likes - previous_likes
+            total_comments = total_comments - previous_comments
+
+            previous_entry = SocialStats.objects.filter(org=urn).aggregate(Sum('t_followers'))[
                 't_followers__sum']
+            stats = SocialStats.objects.create(org=urn,t_likes = total_likes,t_comments=total_comments)
             if previous_entry:
                 stats.t_followers = abs(previous_entry - followers_count)
             else:
                 stats.t_followers = followers_count
-
-            stats.save()
-
             stats.save()
         else:
             raise Exception("failed to fetch")
@@ -3180,7 +3183,6 @@ def instagram_account_insights(urn, since, until):
 
 
 def fb_post_insights(urn_list, urn, since=None, until=None):
-
     access_token = urn.access_token
     base_url = 'https://graph.facebook.com/v17.0/'
 
@@ -3193,7 +3195,7 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
     for post_id in urn_list:
         request1 = {
             'method': 'GET',
-            'relative_url': f'{post_id}/reactions?since={int(since.timestamp())}&until={int(until.timestamp())}',
+            'relative_url': f'{post_id}/likes?since={int(since.timestamp())}&until={int(until.timestamp())}',
         }
         request2 = {
             'method': 'GET',
@@ -3210,7 +3212,9 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
 
     reaction_response = response1.json()
     comment_response = response2.json()
+
     total_reactions = 0
+
     for reaction in reaction_response:
         response = json.loads(reaction.get('body'))
 
@@ -3232,13 +3236,16 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
         response3 = response3.json()
         follower_count = response3['followers_count']
 
+    datePrevious = SocialStats.objects.filter(org=urn, created_at__gte=datetime.date.today(), created_at__lt = datetime.date.today() + datetime.timedelta(days=1))
+    previous_likes = datePrevious.aggregate(Sum('t_likes'))['t_likes__sum'] or 0
+    previous_comments = datePrevious.aggregate(Sum('t_comments'))['t_comments__sum'] or 0
+    total_reactions = total_reactions - previous_likes
+    total_comments = total_comments - previous_comments
+    previous_entry = SocialStats.objects.filter(org = urn).aggregate(Sum('t_followers'))['t_followers__sum']
 
-    stats, created = SocialStats.objects.get_or_create(org=urn, date=datetime.date.today())
+    stats = SocialStats.objects.create(org=urn,t_likes = total_reactions,t_comments=total_comments)
 
-    stats.t_likes = total_reactions
-    stats.t_comments = total_comments
-    previous_date = datetime.date.today() - datetime.timedelta(days=1)
-    previous_entry = SocialStats.objects.filter(org = urn,date__lte=previous_date).aggregate(Sum('t_followers'))['t_followers__sum']
+
     if previous_entry:
         stats.t_followers = abs(previous_entry - follower_count)
     else:
@@ -3266,7 +3273,10 @@ def facebook_count_reactions(response, response_request=None, total_reactions=0,
         response = requests.get(response_request)
         response = response.json()
 
+
     total_reactions += len(response.get('data'))
+
+
 
     if response.get('next'):
         response_request = response.get('next')
