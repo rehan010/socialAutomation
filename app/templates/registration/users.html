@@ -48,19 +48,40 @@ disabled{
     {% csrf_token %}
 
     {% if user_role == 'ADMIN' and user.is_superuser == False %}
-    <div class="flex items-center justify-between px-4 py-2 ">
-        <h1 class="text-2xl font-bold font-cool text-black">Manage access</h1>
-        <button id="addPeopleBtn" class="px-3 py-2 text-xs font-bold text-white rounded-lg ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline"><i class="fas fa-plus" aria-hidden="true"></i>
-                    &nbsp;&nbsp;Add User</button>
-    </div>
-    {% elif user.is_superuser == True %}
-    <div class="flex items-center justify-between px-4 py-2 ">
-        <h1 class="text-2xl font-bold font-cool text-black">Add new business</h1>
-        <a onclick="openModal()" class="px-3 py-2 text-xs cursor-pointer font-bold text-white rounded-lg ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline"><i class="fas fa-plus" aria-hidden="true"></i>
-                    &nbsp;&nbsp;Create User</a>
+    <div class="card bg-white text-gray-600 flex flex-col justify-between p-3 rounded-2xl mx-4">
+        <h1 class="text-md font-bold text-slate-800">
+            <span class="pb-2 border-b-4 border-yellow-300">Manage Team</span>
+        </h1>
+        <div class="absolute text-xs right-0 flex justify-end pl-auto mr-3">
+            <button id="addPeopleBtn" class="flex items-center px-3 py-1 text-xs font-bold text-white rounded-lg ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs no-underline hover:no-underline">
+                <i class="fas fa-plus" aria-hidden="true"></i>
+                <span class="ml-1">Add User</span>
+            </button>
+        </div>
     </div>
 
-    <dialog class="main-modal fixed w-full h-100 inset-0 z-50 overflow-hidden hidden justify-center items-center animated fadeIn faster blur-lg" style="background: rgba(0,0,0,0); backdrop-filter: blur(5px);" id="mainDialog">
+<!--    <div class="flex items-center justify-between px-4 py-2 ">-->
+<!--        <h1 class="text-2xl font-bold font-cool text-black">Manage access</h1>-->
+<!--        <button id="addPeopleBtn" class="px-3 py-2 text-xs font-bold text-white rounded-lg ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline"><i class="fas fa-plus" aria-hidden="true"></i>-->
+<!--                    &nbsp;&nbsp;Add User</button>-->
+<!--    </div>-->
+    {% elif user.is_superuser == True %}
+
+<!--    <div class="card bg-white text-gray-600 flex justify-between  p-3 rounded-2xl mx-4">-->
+<!--        <h1 class="text-2xl font-bold font-cool border-b-4 border-yellow-300 text-black">Add new business</h1>-->
+<!--        <a onclick="openModal()" class="px-3 py-2 text-xs cursor-pointer font-bold text-white rounded-lg  shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 no-underline hover:no-underline"><i class="fas fa-plus" aria-hidden="true"></i>-->
+<!--                    &nbsp;&nbsp;Create User</a>-->
+<!--    </div>-->
+    <div class="card bg-white text-gray-600 flex flex-col justify-between p-3 rounded-2xl mx-4">
+        <h1 class="text-md font-bold  text-slate-800">
+            <span class="pb-2 border-b-4 border-yellow-300">Manage Business</span>
+        </h1>
+        <div class="absolute text-xs right-0 flex justify-end pl-auto mr-3">
+            <a onclick="openModal()" class="px-3 py-1 text-xs cursor-pointer font-bold text-white rounded-lg  shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 no-underline hover:no-underline"><i class="fas fa-plus" aria-hidden="true"></i>
+                &nbsp;&nbsp;Create User</a>
+        </div>
+    </div>
+    <dialog class="main-modal  mx-4 fixed w-full h-100 inset-0 z-50 overflow-hidden hidden justify-center items-center animated fadeIn faster blur-lg" style="background: rgba(0,0,0,0); backdrop-filter: blur(5px);" id="mainDialog">
         <div class="border border-teal-500 shadow-lg modal-container flex flex-col items-center justify-center bg-white w-11/12 md:max-w-md mx-auto rounded-xl shadow-lg z-50 overflow-y-auto">
             <div class="modal-close cursor-pointer self-end	p-2 z-50" onclick="hideModal()">
                 <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -179,11 +200,12 @@ disabled{
     {% endif %}
 
     {% if user.is_superuser == True %}
-    <div class="flex flex-wrap -mx-3 mt-8">
+    <div class="flex flex-wrap mx-2 mt-8">
             <div class="flex-none w-full max-w-full px-3">
                 <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
-                    <div class="p-6 pb-0 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
-                        <h6 class="text-xl font-bold">Users</h6>
+                    <div class="p-6 pb-0 mb-0 bg-white border-b-2 border-yellow-300 rounded-t-2xl flex items-center">
+                          <i class="fa-solid fa-people-roof text-xl mr-2"></i>
+                          <h4 class="text-md font-bold">Users</h4>
                     </div>
                     <div class="flex-auto px-0 pt-0 pb-2">
                         <div class="p-0 overflow-x-auto">
@@ -421,12 +443,13 @@ disabled{
                                 </svg>
          </div>
     </div>
-    <div id="searchBarDiv" class="mt-8 mx-4 p-4 border border-gray-300 shadow-md rounded-lg" style="display:none">
+    <div id="searchBarDiv" class="mt-8 mx-4 p-4 bg-gray-200 border border-gray-300 shadow-md rounded-xl" style="display:none">
         <div class="relative">
             <button id="closeSearchBtn" class="absolute top-2 right-4 text-red-500">&#10006;</button>
         </div>
         <div class="flex items-center justify-center mb-4">
-            <span class="text-4xl text-gray-700 mr-3">&#128101;</span>
+            <i class="fa-solid fa-user-plus  text-gray-700 mr-3 text-4xl"></i>
+<!--            <span class="text-4xl text-gray-700 mr-3">&#128101;</span>-->
         </div>
         <div class="flex items-center justify-center mb-6">
             <h2 class="text-lg font-medium text-gray-700">Invite a User</h2>
@@ -495,12 +518,14 @@ disabled{
     </div>
     <br>
     <br>
-    <div class="flex flex-wrap -mx-3">
+    <div class="flex flex-wrap mx-2">
           <div class="flex-none w-full max-w-full px-3">
             <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
-              <div class="p-6 pb-0 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
-                <h6 class="text-xl font-bold">Users</h6>
+              <div class="p-6 pb-0 mb-0 bg-white border-b-2 border-yellow-300 rounded-t-2xl flex items-center">
+                  <i class="fa-solid fa-people-group text-xl mr-2"></i>
+                  <h4 class="text-md font-bold">Users</h4>
               </div>
+
               <div class="flex-auto px-0 pt-0 pb-2">
                 <div class="p-0 overflow-x-auto">
                   <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
@@ -690,11 +715,12 @@ disabled{
     {% endif %}
     <br>
     {% if request.user.is_superuser == True %}
-    <div class="flex flex-wrap -mx-3">
+    <div class="flex flex-wrap mx-2">
           <div class="flex-none w-full max-w-full px-3">
             <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
-              <div class="p-6 pb-0 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
-                <h6 class="text-xl font-bold">Requests</h6>
+              <div class="p-6 pb-0 mb-0 bg-white border-b-2 border-yellow-300 rounded-t-2xl flex items-center">
+                  <i class="fa-solid fa-user-clock text-xl mr-2"></i>
+                  <h4 class="text-md font-bold">Requests</h4>
               </div>
               <div class="flex-auto px-0 pt-0 pb-2">
                 <div class="p-0 overflow-x-auto">

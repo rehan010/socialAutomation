@@ -9,17 +9,24 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.7/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-200 p-4">
-    <div class="container mx-auto mt-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="card-header bg-white text-gray-600 flex justify-between items-center p-4 rounded-lg">
+        <h4 class="text-md font-bold mb-2 border-b-4 border-yellow-300">Connect Business Account</h4>
+        <span class="text-sm text-gray-500">3/50 Accounts Connected</span>
+    </div>
+    <div class="container card-columns w-100 mx-auto mt-12">
+        <div class="grid  md:grid-cols-2 lg:grid-cols-5 gap-4">
             <!-- Facebook Card -->
-            <div class="card">
+            <div class="card ">
                 <div class="relative">
                     <!-- Logo -->
-                    <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" alt="Connect Facebook" title="Connect Facebook" class="w-12 mx-auto -mt-8">
-                    <div class="bg-white p-4 rounded-lg shadow-lg">
-                        <h4 class="text-xl text-center mb-4">Facebook</h4>
-                        <div class="text-center">
-                            <a href="/accounts/create" class="btn btn-primary mb-2">Connect Page</a>
+                    <div class=" mx-auto  relative -my-6">
+                        <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" alt="Connect Facebook" title="Connect Facebook" class="h-16 w-18 bg-gray-200 mx-auto border-4 rounded-full border-gray-200">
+                    </div>
+                        <div class="bg-white p-4 rounded-lg shadow-lg">
+                        <br>
+                        <h4 class="text-md text-center mb-4 border-b-2 border-blue-300 pb-1">Facebook</h4>
+                        <div class="text-center text-blue-500 text-sm">
+                            <a href="/accounts/create" class="btn btn-primary  mb-2">Connect Page</a>
                         </div>
                     </div>
                 </div>
@@ -28,12 +35,14 @@
             <!-- Twitter Card -->
             <div class="card">
                 <div class="relative">
-                    <!-- Logo -->
-                    <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" alt="Connect Twitter" title="Connect Twitter" class="w-12 mx-auto -mt-8">
+                    <div class=" mx-auto  relative -my-6">
+                        <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" alt="Connect Instagram" title="Connect Instagram" class="h-16 w-18 bg-gray-200 mx-auto border-4 rounded-full border-gray-200">
+                    </div>
                     <div class="bg-white p-4 rounded-lg shadow-lg">
-                        <h4 class="text-xl text-center mb-4">Instagram</h4>
-                        <div class="text-center">
-                            <a href="#" class="btn btn-primary mb-2">Connect Page</a>
+                        <br>
+                        <h4 class="text-md text-center mb-4 border-b-2 border-blue-300 pb-1">Instagram</h4>
+                        <div class="text-center text-blue-500 text-sm">
+                            <a href="#" class="btn btn-primary  mb-2">Connect Page</a>
                         </div>
                     </div>
                 </div>
@@ -42,12 +51,29 @@
             <!-- LinkedIn Card -->
             <div class="card">
                 <div class="relative">
-                    <!-- Logo -->
-                    <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" alt="Connect LinkedIn" title="Connect LinkedIn" class="w-12 mx-auto -mt-8">
+                    <div class=" mx-auto  relative -my-6">
+                        <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" alt="Connect Linkedin" title="Connect Linkedin" class="h-16 w-18 bg-gray-200 mx-auto border-4 rounded-full border-gray-200">
+                    </div>
                     <div class="bg-white p-4 rounded-lg shadow-lg">
-                        <h4 class="text-xl text-center mb-4">LinkedIn</h4>
-                        <div class="text-center">
-                            <a href="/accounts/create" class="btn btn-primary mb-2">Connect Page</a>
+                        <br>
+                        <h4 class="text-md text-center mb-4 border-b-2 border-blue-300 pb-1">Linkedin</h4>
+                        <div class="text-center text-blue-500 text-sm">
+                            <a href="/accounts/create" class="btn btn-primary  mb-2">Connect Page</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="relative">
+                    <div class=" mx-auto  relative -my-6">
+                        <img src="{% static '\assets\img\Social-Logos\google-business.png'%}" alt="Connect Facebook" title="Connect Linkedin" class="h-16 w-18 bg-gray-200 mx-auto border-4 rounded-full border-gray-200">
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-lg">
+                        <br>
+                        <h4 class="text-md text-center mb-4 border-b-2 border-blue-300 pb-1">Google</h4>
+                        <div class="text-center text-blue-500 text-sm">
+                            <a href="/accounts/create" class="btn btn-primary  mb-2">Connect Page</a>
                         </div>
                     </div>
                 </div>

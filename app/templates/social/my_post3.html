@@ -75,21 +75,17 @@
     opacity: 1;
 }
     .custom-bg-gradient-insta {
-        background: linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(201,29,126,1) 23%, rgba(209,26,100,1) 30%, rgba(235,16,16,1) 53%, rgba(252,176,69,1) 100%);
-    }
+        background: linear-gradient(90deg, hsla(281, 37%, 45%, 1) 0%, hsla(1, 62%, 48%, 1) 100%);
+     }
     .custom-bg-gradient-ln {
-        background: linear-gradient(69deg, rgba(71,111,153,1) 0%, rgba(20,99,182,1) 95%);
+        background:#0077c0;
     }
 
     .custom-bg-gradient-fb {
-        background: linear-gradient(180deg, rgba(1,136,255,1) 100%, rgba(255,255,255,1) 100%);
+        background: #00428c;
     }
     .custom-bg-gradient-google {
         background: linear-gradient(90deg, rgba(209,16,16,1) 100%, rgba(24,87,235,1) 100%);
-    }
-    .custom-bg-gradient-google2 {
-        background: rgb(244,3,3);
-        background: linear-gradient(180deg, rgba(244,3,3,1) 48%, rgba(243,248,86,1) 61%, rgba(10,224,29,1) 67%, rgba(11,105,228,1) 70%);
     }
 .sorting:after {
     content: "\f062 \f063";
@@ -190,44 +186,43 @@
         <div class="flex items-center justify-center relative">
             <ul class="col-span-3 flex grid grid-flow-col justify-center space-x-4">
                 <li>
-                    <a href="" data-platform="fb"
-                       class="bg-gray-200 text-blue-500  hover:text-blue-500 hover:font-bold font-medium  hover:bg-gray-200 rounded-full px-3 py-2  shadow"
-                       id="fb">
-                        <span class="mr-6 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 text-white px-2 py-1 rounded-full ">
-                            <i class="fab fa-facebook-f"></i>
-                        </span>
-                         Facebook</a>
+                    <a href="" data-platform="fb" class="custom-bg-gradient-fb text-white font-bold font-medium px-3 py-1 rounded-full flex items-center shadow-2xl" id="fb">
+                        <div class="mr-4">
+                            <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" alt="Connect Facebook" title="Connect Facebook" class="h-8 w-8 bg-gray-100 rounded-full border-1 border-gray-800">
+                        </div>
+                        Facebook
+                    </a>
                 </li>
                 <li>
-                    <a href=""  data-platform="ln"
-                       class="bg-gray-200 text-blue-700 hover:text-blue-700 hover:font-bold font-medium px-3 py-2 rounded-full"
-                       id="ln">
-                        <span class="mr-6 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-900 text-white px-2 py-1 rounded-full">
-                            <i class="fab fa-linkedin"></i>
-                        </span> Linkedin</a>
+                    <a href=""  data-platform="ln" class="custom-bg-gradient-ln text-white font-medium px-3 py-1 rounded-full flex items-center" id="ln">
+                        <div class="mr-4">
+                            <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" alt="Connect Linkedin" title="Connect Linkedin" class="h-8 w-8 bg-gray-800 rounded-full border-2 border-gray-100">
+                        </div>
+                        Linkedin
+                    </a>
                 </li>
                 <li>
-                      <a href="" data-platform="insta"
-                       class="bg-gray-200 text-pink-700 hover:text-pink-700 font-medium px-3 py-2 rounded-full"
-                       id="insta">
-                        <span class="mr-6 custom-bg-gradient-insta text-white px-2 py-1 rounded-full">
-                            <i class="fab fa-instagram"></i>
-                        </span>
+                    <a href="" data-platform="insta" class="custom-bg-gradient-insta text-white font-medium px-3 py-1 rounded-full flex items-center" id="insta">
+                        <div class="mr-4">
+                            <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" alt="Connect Instagram" title="Connect Instagram" class="h-8 w-8 bg-gray-800 rounded-full border-2 border-gray-100">
+                        </div>
                         Instagram
                     </a>
-
                 </li>
-
                 <li>
                     <a href="" data-platform="google"
-                       class="bg-gray-200  text-blue-800 hover:text-blue-800 font-medium  hover:bg-gray-200 px-3 py-2 rounded-full"
+                       class="bg-blue-500 text-white flex font-medium px-3 py-1 flex items-center rounded-full"
                        id="google">
-                        <span class="mr-6 bg-white text-red-600 px-2 py-1 rounded-full">
-                          <i class="fab fa-google "></i>
-                        </span>Google</a>
+
+                            <div class="mr-4">
+                                <img src="{% static '\assets\img\Social-Logos\google-business.png'%}" alt="Google Business Icon" title="Google Business" class="h-8 w-8 bg-gray-800 border-2 rounded-full border-gray-100">
+                            </div>
+                           Google
+
+                    </a>
                 </li>
             </ul>
-            <div class="absolute right-0 flex justify-end pl-auto mr-3">
+            <div class="absolute text-xs right-0 flex justify-end pl-auto mr-3">
                 <a class="px-3 py-2 text-xs font-bold text-center text-white uppercase align-middle transition-all bg-transparent rounded-lg cursor-pointer leading-pro  ease-soft-in shadow-soft-md bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 hover:shadow-soft-xs active:opacity-85 hover:scale-102 tracking-tight-soft bg-x-25 no-underline hover:no-underline"
                    href="{% url 'create_post' %}">
                     <i class="fas fa-plus" aria-hidden="true"></i>
@@ -1283,32 +1278,28 @@ $(document).ready(function () {
     });
 
 
-    const tabLinks = document.querySelectorAll(".bg-gray-200.font-medium.py-2");
-  const tabs = document.querySelectorAll(".tab");
+    const tabLinks = document.querySelectorAll(".text-white.py-1");
+      const tabs = document.querySelectorAll(".tab");
 
-  tabLinks.forEach(function(tabLink) {
-    tabLink.addEventListener("click", function(e) {
-      e.preventDefault();
+      tabLinks.forEach(function(tabLink) {
+        tabLink.addEventListener("click", function(e) {
+          e.preventDefault();
 
-      const targetTab = document.querySelector("#" + this.getAttribute("data-tab"));
-      tabLinks.forEach(function(link) {
+          const targetTab = document.querySelector("#" + this.getAttribute("data-tab"));
+          tabLinks.forEach(function(link) {
 
-        link.classList.remove("bg-blue-100","shadow","font-bold");
+            link.classList.remove("shadow-2xl","font-bold");
+          });
+          table.ajax.url(`{% url 'api_posts2'%}?platform=${this.getAttribute("data-platform")}`).load();
+          this.classList.add("rounded-full","shadow-2xl","font-bold");
+
+        });
+
       });
-
-
-      table.ajax.url(`{% url 'api_posts2'%}?platform=${this.getAttribute("data-platform")}`).load();
-
-      this.classList.add("bg-gray-200","rounded-full","shadow","font-bold");
-
-
     });
 
-  });
 
 
-
-});
 
 $('#postTable')
     .on('preXhr.dt', function (e, settings, data) {

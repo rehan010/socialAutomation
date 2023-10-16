@@ -86,7 +86,7 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
                 label: "Linkedin",
                 data: linkedInCounts,
 
-                tension: 0.4,
+                tension: 0,
                 borderWidth: 3,
                 pointRadius: 4,
                 borderColor: "#1B5583",
@@ -103,7 +103,7 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
                 borderColor: "#1877F2",
                 borderWidth: 3,
                 maxBarThickness: 6,
-                lineTension: 0.3,
+                lineTension: 0,
 
                 fill: false,
                 pointRadius: 4,
@@ -121,7 +121,7 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
 
                 borderWidth: 3,
                 maxBarThickness: 6,
-                lineTension: 0.3,
+                lineTension: 0,
 
                 borderColor: "#C13584",
                 fill: false,
@@ -138,7 +138,7 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
 
                 borderWidth: 3,
                 maxBarThickness: 6,
-                lineTension: 0.3,
+                lineTension: 0,
 
                 borderColor: "#F4B400",
                 fill: false,
@@ -165,18 +165,18 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
             scales: {
               y: {
                 grid: {
-                  drawBorder: false,
+                  drawBorder: true,
                   display: true,
                   drawOnChartArea: true,
                   drawTicks: false,
-                  borderDash: [5, 5],
+
                 },
                 ticks: {
                   display: true,
                   padding: 10,
-                  color: "#b2b9bf",
+                  color: "#191970",
                   font: {
-                    size: 11,
+                    size: 9,
                     family: "Open Sans",
                     style: "normal",
                     lineHeight: 2,
@@ -185,18 +185,18 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
               },
               x: {
                 grid: {
-                  drawBorder: false,
+                  drawBorder: true,
                   display: false,
                   drawOnChartArea: false,
                   drawTicks: false,
-                  borderDash: [5, 5],
+
                 },
                 ticks: {
                   display: true,
-                  color: "#b2b9bf",
-                  padding: 20,
+                  color: "#191970",
+                  padding: 10,
                   font: {
-                    size: 11,
+                    size: 8,
                     family: "Open Sans",
                     style: "normal",
                     lineHeight: 2,

@@ -64,7 +64,7 @@
     </style>
 
 </head>
-<body class="m-0 font-sans text-base antialiased font-normal leading-default bg-gray-50 text-slate-500 h-screen">
+<body class="m-0 font-sans text-base antialiased font-normal leading-default bg-gray-100 text-slate-500 h-screen">
 
 {%block bar%}
 
@@ -93,9 +93,9 @@
                             <img src="{% static 'image/default.png' %}" class="w-full h-full object-cover" alt="user1">
                             {% endif %}
                         </div>
-                        <a class="cursor-pointer hover:no-underline hover:border-2 hover:border-black hover:text-black" id="profile_dropdown_button">
+                        <a class="cursor-pointer hover:no-underline hover:border-2 hover:border-black hover:text-gray-600" id="profile_dropdown_button">
                             <div class="flex items-center justify-between">
-                                <p class="text-sm text-black font-semibold">{{user.username}}</p>
+                                <p class="text-sm text-gray-600 font-semibold">{{user.username}}</p>
                                 <i class="fa-solid fa-chevron-down mr-3"></i>
                             </div>
                             <p class="text-xs">{{user.email}}</p>
@@ -142,77 +142,54 @@
     {% if user.is_authenticated %}
 
 
-    <aside class="w-52 relative screen ease-nav-brand inset-y-10 ml-4 flex-wrap items-center justify-between overflow-y-auto rounded-xl border-0 bg-slate-800 p-0 bg-150 bg-gradient-to-tl from-gray-900 to-slate-800 antialiased shadow-none transition-transform duration-200 flex-wrap left-0 translate-x-0 top-0 " id="sidebar" >
+
+    <aside class="w-52 relative screen ease-nav-brand inset-y-10 ml-4 flex-wrap items-center justify-between overflow-y-auto rounded-xl border-0 bg-gray-800 p-0 antialiased shadow-none transition-transform duration-200 flex-wrap left-0 translate-x-0 top-0 " id="sidebar">
+
           <div class="w-full flex items-center justify-center">
             <ul class="space-y-2 m-2 w-full">
 
                 {% if user.is_superuser == False %}
-                <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
+                <li class="p-1 block hover:bg-white  hover:text-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
                     <a href="{% url 'my_profile' %}"
-                    class="  flex items-center py-2 px-4 rounded space-x-2 hover:no-underline hover:text-black">
+                    class="  flex items-center py-2 px-4 rounded space-x-2 hover:no-underline hover:text-white">
                     <div class="w-5">
 
-                        <svg viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M1 28.4253V28.8H26.8143V28.4253C26.8143 21.3442 22.2434 17.4477 13.9259 17.4477C5.60835 17.4477 1 21.3442 1 28.4253ZM13.8884 18.197C19.3585 18.197 25.8401 19.9205 26.0275 28.0506H1.74933C1.93666 19.9205 8.41832 18.197 13.8884 18.197Z" fill="#00111C" stroke="black" stroke-width="0.5"/>
-                                <path d="M20.2571 7.51913C20.2571 3.80997 17.522 1 13.8878 1C10.2536 1 7.51855 3.80997 7.51855 7.51913C7.51855 11.3782 10.366 14.4879 13.8878 14.4879C17.4096 14.4879 20.2571 11.3782 20.2571 7.51913ZM8.26788 7.51913C8.26788 4.18463 10.6283 1.74933 13.8878 1.74933C17.1474 1.74933 19.5078 4.18463 19.5078 7.51913C19.5078 10.966 16.9975 13.7385 13.8878 13.7385C10.7781 13.7385 8.26788 10.966 8.26788 7.51913Z" fill="#00111C" stroke="black" stroke-width="0.5"/>
-                            </svg>
+                        <i class="fa-solid fa-user-large text-white"></i>
                     </div>
                         <span class="text-sm text-white">My Profile</span>
                     </a>
                     <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
                 </li>
 
-                <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
+                <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
                     <a href="{% url 'dashboard' %}"
-                    class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-black">
-                        <svg width="24" height="24" viewBox="0 0 24 24" class="menu-icon-svg" fill="#fff">
-                            <rect opacity="0.01" width="24" height="24"></rect>
-                            <mask id="mask-db-0" maskUnits="userSpaceOnUse" x="16" y="2" width="7" height="9" style="mask-type: alpha;">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M22 2V10.5282L16.7347 10.5282V2L22 2Z"></path>
-                            </mask>
-                            <g mask="url(#mask-db-0)">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M16.7345 9.80988V2.71868C16.7345 2.32151 17.048 2 17.4353 2L21.2993 2C21.6862 2 22 2.32151 22 2.71868V9.80988C22 10.2067 21.6862 10.5282 21.2993 10.5282H17.4353C17.048 10.5282 16.7345 10.2067 16.7345 9.80988Z"></path>
-                            </g>
-                            <mask id="mask-db-1" maskUnits="userSpaceOnUse" x="2" y="2" width="13" height="9" style="mask-type: alpha;">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M14.478 2L14.478 10.5282L2.91311 10.5282L2.91311 2L14.478 2Z"></path>
-                            </mask><g mask="url(#mask-db-1)">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M2.91311 9.80988L2.91311 2.71868C2.91311 2.32151 3.22657 2 3.61382 2L13.7777 2C14.1646 2 14.478 2.32151 14.478 2.71868L14.478 9.80988C14.478 10.2067 14.1646 10.5282 13.7777 10.5282L3.61382 10.5282C3.22657 10.5282 2.91311 10.2067 2.91311 9.80988Z"></path></g>
-                            <mask id="mask-db-2" maskUnits="userSpaceOnUse" x="2" y="12" width="7" height="10" style="mask-type: alpha;">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.17822 12.8428L8.17822 21.371H2.91287L2.91287 12.8428L8.17822 12.8428Z"></path>
-                            </mask><g mask="url(#mask-db-2)">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M8.17822 13.5611L8.17822 20.6523C8.17822 21.0495 7.86475 21.371 7.47751 21.371H3.61348C3.2266 21.371 2.91276 21.0495 2.91276 20.6523L2.91276 13.5611C2.91276 13.1643 3.2266 12.8428 3.61348 12.8428H7.47751C7.86475 12.8428 8.17822 13.1643 8.17822 13.5611Z"></path></g>
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M22 13.5611V20.6523C22 21.0495 21.6865 21.371 21.2993 21.371H11.1354C10.7489 21.371 10.4347 21.0495 10.4347 20.6523L10.4347 13.5611C10.4347 13.1643 10.7489 12.8428 11.1354 12.8428L21.2993 12.8428C21.6865 12.8428 22 13.1643 22 13.5611Z"></path>
-                        </svg>
-
-
-                        <span class="text-sm text-white">Dashboard</span>
+                    class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-white">
+                    <div class="w-5">
+                        <i class="fa-solid fa-display text-white"></i>
+                    </div>
+                        <span class="text-sm">Dashboard</span>
                     </a>
                     <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
                 </li>
 
-                <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
+                <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
                     <a href="{% url 'my_posts' user.pk  %}"
-                    class="flex items-center py-2 px-4 space-x-2 text-black hover:no-underline hover:text-black">
-                        <svg width="24" height="24" viewBox="0 0 24 24" class="menu-icon-svg post-svg" fill="#fff"><path fill-rule="evenodd" clip-rule="evenodd" d="M18.291 15.0988H21.6999V6.36353H18.291V15.0988Z"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M18.291 15.0988H21.6999V6.36353H18.291V15.0988Z"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M18.291 16.174V15.428H21.6999V16.174L19.9956 18.8334L18.291 16.174Z"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M18.291 6.03488H21.6999V4H18.291V6.03488Z"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M15.1166 14.2725H11.5987C11.2041 14.2725 10.8621 14.5746 10.8694 14.9429V17.4717C10.8805 18.0447 10.1566 18.3568 9.69666 17.9767L5.41109 14.4379C5.28208 14.3311 5.11568 14.2725 4.94358 14.2725H2.70555C2.31569 14.2725 2 13.9776 2 13.6141V4.98704C2 4.62349 2.31569 4.32886 2.70555 4.32886H15.1166C15.5062 4.32886 15.8222 4.62349 15.8222 4.98704V13.6141C15.8222 13.9776 15.5062 14.2725 15.1166 14.2725ZM5.09945 7.82491C5.09945 7.5565 5.31704 7.33891 5.58545 7.33891H12.2365C12.5049 7.33891 12.7225 7.5565 12.7225 7.82491C12.7225 8.09332 12.5049 8.31091 12.2365 8.31091H5.58545C5.31704 8.31091 5.09945 8.09332 5.09945 7.82491ZM5.58545 9.93026C5.31704 9.93026 5.09945 10.1478 5.09945 10.4163C5.09945 10.6847 5.31704 10.9023 5.58545 10.9023H12.2365C12.5049 10.9023 12.7225 10.6847 12.7225 10.4163C12.7225 10.1478 12.5049 9.93026 12.2365 9.93026H5.58545Z"></path></svg>
+                    class="flex items-center py-2 px-4 space-x-2 text-white hover:no-underline hover:text-white">
+                        <div class="w-5">
+                           <i class="fa-solid fa-images text-white"></i>
+                        </div>
+                        <span class="text-sm">Posts</span>
 
-
-                        <span class="text-sm text-white">Posts</span>
                     </a>
                     <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
                 </li>
-                <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
+                <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
                     <a href="{% url 'socialaccount_connections' %}"
-                    class="flex items-center text-black py-2 px-4 space-x-2 hover:no-underline hover:text-black">
+                    class="flex items-center text-white py-2 px-4 space-x-2 hover:no-underline hover:text-white">
+                        <div class="w-5">
+                           <i class="fa-solid fa-briefcase text-white"></i>
+                        </div>
 
-                        <svg width="24" height="24" viewBox="0 0 24 24" class="menu-icon-svg account-svg" fill="#fff">
-                            <circle cx="13.3049" cy="12.1303" r="3.6118" stroke-width="1.47205" fill="none"></circle>
-                            <path d="M15.9133 9.30422L18.9568 6.26074M15.4785 15.6086L16.7829 17.5651M12.0003 15.6086L11.5655 17.5651M9.39156 13.8694L5.47852 16.4781M10.4785 8.65205C9.62955 7.71818 9.15357 7.1946 8.3046 6.26074" stroke-width="1.47205" stroke-linecap="round"></path>
-                            <circle cx="11.3481" cy="19.3043" r="1.95652"></circle>
-                            <circle cx="17.8691" cy="19.3043" r="1.95652"></circle>
-                            <circle cx="20.0434" cy="4.95652" r="1.95652"></circle>
-                            <circle cx="6.99998" cy="4.95652" r="1.95652"></circle>
-                            <circle cx="3.95652" cy="17.5652" r="1.95652"></circle>
-                        </svg>
 
 
                         <span class="text-sm text-white">Accounts</span>
@@ -222,20 +199,19 @@
                 {% endif %}
 
                 {% if user_role == 'ADMIN' %}
-                <li class="p-1 block hover:bg-gray-500 hover:bg-opacity-10 text-gray-700 cursor-pointer rounded my-3">
+                <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
                     <a href="{% url 'my_user' %}"
-                    class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-black">
-
-                        <div class="w-4 mr-2">
-                           <svg  width="30" height="27" enable-background="new 0 0 50 50"  id="Layer_1" version="1.1" viewBox="0 0 50 50"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                               <circle cx="25" cy="25" fill="none" r="24" stroke="#000000" stroke-linecap="round" stroke-miterlimit="10" stroke-width="1"/>
-                               <rect fill="none" height="50" width="50"/>
-                               <path d="M29.933,35.528  c-0.146-1.612-0.09-2.737-0.09-4.21c0.73-0.383,2.038-2.825,2.259-4.888c0.574-0.047,1.479-0.607,1.744-2.818  c0.143-1.187-0.425-1.855-0.771-2.065c0.934-2.809,2.874-11.499-3.588-12.397c-0.665-1.168-2.368-1.759-4.581-1.759  c-8.854,0.163-9.922,6.686-7.981,14.156c-0.345,0.21-0.913,0.878-0.771,2.065c0.266,2.211,1.17,2.771,1.744,2.818  c0.22,2.062,1.58,4.505,2.312,4.888c0,1.473,0.055,2.598-0.091,4.21c-1.261,3.39-7.737,3.655-11.473,6.924  c3.906,3.933,10.236,6.746,16.916,6.746s14.532-5.274,15.839-6.713C37.688,39.186,31.197,38.93,29.933,35.528z" fill="none" stroke="#000000" stroke-linecap="round" stroke-miterlimit="10" stroke-width="1"/>
-                           </svg>
-
-
+                    class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-white">
+                        {% if user.is_superuser == True %}
+                        <div class="w-5">
+                          <i class="fa-solid fa-users-gear text-white"></i>
                         </div>
-                        <span class="text-sm text-white">Users</span>
+                        {% else %}
+                        <div class="w-5">
+                            <i class="fa-solid fa-users text-white"></i>
+                        </div>
+                        {% endif %}
+                        <span class="text-sm">Users</span>
                     </a>
                     <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
                 </li>

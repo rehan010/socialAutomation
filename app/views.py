@@ -229,7 +229,7 @@ class UserView(LoginRequiredMixin,TemplateView):
         user_manager = self.request.user.manager
         if user_manager != None:
             context['invites'] = InviteEmploye.objects.filter(~Q(is_deleted=True), invited_by=self.request.user)
-        else:
+        elif user_manager == None and self.request.user.is_superuser == False:
             context['invites'] = InviteEmploye.objects.filter(~Q(is_deleted=True), invited_by__company=self.request.user.company.all().first().id)
         context['users'] = User.objects.filter(Q(is_active=False), ~Q(company=None), manager=None)
 
@@ -318,11 +318,12 @@ class delete_invite(CreateView):
                 selected_user = User.objects.get(pk=invite.selected_user.id)
                 for company in selected_user.company.all():
                     selected_user.company.remove(company)
-                selected_user.manager = None
-                selected_user.is_deleted = True
-                selected_user.is_active = False
-                selected_user.is_invited = False
-                selected_user.save()
+                # selected_user.manager = None
+                # selected_user.is_deleted = True
+                # selected_user.is_active = False
+                # selected_user.is_invited = False
+                # selected_user.save()
+
                 invite.delete()
 
                 email = selected_user.email
@@ -332,6 +333,8 @@ class delete_invite(CreateView):
 
                 # Send the email using Django's email functionality
                 send_mail(email_subject, email_body, 'social_presence@gmail.com', [email])
+
+                selected_user.delete()
             else:
                 invite.delete()
 
@@ -425,7 +428,7 @@ class assign_manager(CreateView):
                 manager_corp = 'False'
                 permission = "WRITE"
 
-            if User.objects.filter(email=email).exists() or InviteEmploye.objects.filter(email=email).exists():
+            if User.objects.filter(Q(is_rejected=False), email=email).exists() or InviteEmploye.objects.filter(email=email).exists():
                 return JsonResponse({'message': 'A user with this email already exists'})
             try:
                 token = generate_random_token()
@@ -968,6 +971,7 @@ class RegisterView(FormView):
         user = form.save(commit=False)
         company_name = form.cleaned_data.get('company_name')
         email = form.cleaned_data.get('email')
+        # user_email = User.objects.filter(~Q(company=None), Q(is_deleted=True) & Q(is_rejected=True), email=email)
         user_email = User.objects.filter(email=email)
 
         user_company = Company.objects.filter(name=company_name)
@@ -1096,13 +1100,21 @@ class RegisterViewInvite(FormView):
         token = self.request.GET['token']
         email = self.request.POST.get('email')
         email_invite = InviteEmploye.objects.filter(selected_user__email=email)
-        email_user = User.objects.filter(email=email)
+        self.request.session['user_timezone'] = self.request.POST.get('user_timezone')
+        email_user = User.objects.filter(Q(is_deleted=True) & Q(is_rejected=True), email=email)
+
         if email_invite.exists():
             form.add_error('email', 'A user with this email already exists.')
             return self.form_invalid(form)
         if email_user.exists():
-            form.add_error('email', 'A user with this email already exists.')
-            return self.form_invalid(form)
+            if email_user.first().is_rejected == True:
+                email_user.first().is_active = True
+                email_user.first().is_deleted = False
+                email_user.first().save()
+            else:
+
+                form.add_error('email', 'A user with this email already exists.')
+                return self.form_invalid(form)
 
 
 
@@ -1130,6 +1142,8 @@ class RegisterViewInvite(FormView):
 
         login(self.request, user)
         return redirect(reverse("dashboard"))
+
+
 
 
     def get_form_kwargs(self):
@@ -1263,9 +1277,10 @@ class PostCreateView(CreateView):
             schedule_datetime_str = f"{schedule_date} {schedule_time}"
 
             if schedule_datetime_str:
-                schedule_datetime = datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M')
+                # schedule_datetime = datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M')
+                schedule_datetime = (pytz.timezone(self.request.session['user_timezone']).localize(datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M'))).astimezone(pytz.utc)
 
-                schedule_datetime = schedule_datetime.astimezone(pytz.utc)
+                # schedule_datetime = schedule_datetime
 
 
                 post.schedule_datetime = schedule_datetime
@@ -1884,10 +1899,10 @@ class PostDraftView(UpdateView):
 
     def form_valid(self, form):
         requestdata = dict(self.request.POST)
-
+        post_id = self.kwargs.get('pk')
         linkedin_errors = linkedin_validator(self.request)
         facebook_errors = facebook_validator(self.request)
-        instagram_errors = instagram_validator(self.request)
+        instagram_errors = instagram_validator2(self.request, post_id)
 
         if facebook_errors or instagram_errors or linkedin_errors:
             for errors in facebook_errors:
@@ -1902,7 +1917,7 @@ class PostDraftView(UpdateView):
             return self.form_invalid(form)
 
         context = self.request.session.get('context')
-        post_id = self.kwargs.get('pk')
+
         post = PostModel.objects.get(pk=post_id)
         requestdata.pop("csrfmiddlewaretoken")
         caption = requestdata.pop("post")
@@ -1925,8 +1940,10 @@ class PostDraftView(UpdateView):
             schedule_datetime_str = f"{schedule_date} {schedule_time}"
 
             if schedule_datetime_str:
-                schedule_datetime = datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M')
-                schedule_datetime = schedule_datetime.astimezone(pytz.utc)
+                # schedule_datetime = datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M')
+                schedule_datetime = (pytz.timezone(self.request.session['user_timezone']).localize(datetime.strptime(schedule_datetime_str, '%Y-%m-%d %H:%M'))).astimezone(pytz.utc)
+
+                # schedule_datetime = schedule_datetime.astimezone(pytz.utc)
                 post.schedule_datetime = schedule_datetime
 
         else:
@@ -3109,6 +3126,15 @@ class ConnectionView(ConnectionsView):
         from allauth.socialaccount.models import SocialApp
 
         social_apps = SocialApp.objects.all()
+        if self.request.user.manager:
+            role = InviteEmploye.objects.filter(selected_user=self.request.user, status='ACCEPTED', permission='WRITE')
+            if role:
+                pages = SharePage.objects.filter(Q(user=self.request.user.manager) | Q(user=self.request.user)).count()
+            else:
+                pages = SharePage.objects.filter(user=self.request.user).count()
+        else:
+            pages = SharePage.objects.filter(user=self.request.user).count()
+        context['page_count'] = pages
         referrer = self.request.META.get('HTTP_REFERER', '')
         for apps in social_apps:
             context[f'{apps.provider}_app'] = apps
@@ -3119,10 +3145,10 @@ class ConnectionView(ConnectionsView):
             except Exception as e:
                 e
 
-        if referrer == "" and context.get('instagram') and not context.get('facebook'):
+        if  context.get('instagram') and not context.get('facebook'):
             context['error'] = True
 
-        elif referrer != "" and context.get('instagram') and not context.get('facebook'):
+        elif referrer != "" and not context.get('instagram') and context.get('facebook'):
             context['error'] = True
 
         return context

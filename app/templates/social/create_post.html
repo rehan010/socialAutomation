@@ -61,6 +61,18 @@
     bottom: 0;
 
   }
+  .custom-bg-gradient-insta {
+        background: linear-gradient(90deg, hsla(281, 37%, 45%, 1) 0%, hsla(1, 62%, 48%, 1) 100%);
+  }
+
+  .custom-bg-gradient-ln {
+      background:#0077c0;
+  }
+
+  .custom-bg-gradient-fb {
+      background: #00428c;
+  }
+
 
   .error-border{
     border:1px solid red !important;
@@ -176,8 +188,8 @@
           accept="image/png,image/jpeg,image/jpg,video/mp4"
         />
         <br>
-        <p id="error-message" style="color: red; display: none">
-          File is too large. Max size of each file: 20MB
+        <p id="error-message"  style="color: red; display: none">
+
         </p>
       </label>
     </div>
@@ -185,179 +197,63 @@
 
     <!--                Platforms-->
     <br>
-    <div class="flex items-center justify-center gap-6" id="pageSelection">
-      <div class="">
-        <div class="relative inline-block drop-shadow-2xl">
-          <button
-            type="button"
-            data-te-ripple-init
-            data-te-ripple-color="light"
-            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
-            style="background-color: #1877f2"
-            id="facebook"
-          >
-            <svg
-              aria-hidden="true"
-              class="w-4 h-4 mr-2 text-gray-200 animate-spin fill-blue-600"
-              viewBox="0 0 100 101"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="currentColor"
-              />
-              <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                fill="currentFill"
-              />
-            </svg>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="mr-2 h-4 w-4 hidden"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"
-              />
-            </svg>
-            Facebook
-          </button>
-          <div
-            class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
-            style="min-height: 2.5rem"
-          >
-          </div>
-        </div>
-      </div>
-      <div class="">
-        <div class="relative inline-block drop-shadow-2xl">
-          <button
-            type="button"
-            data-te-ripple-init
-            data-te-ripple-color="light"
-            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
-            style="background-color: #c13584"
-            id="instagram"
-          >
-            <svg
-              aria-hidden="true"
-              class="w-4 h-4 mr-2 text-gray-200 animate-spin fill-blue-600"
-              viewBox="0 0 100 101"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="currentColor"
-              />
-              <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                fill="currentFill"
-              />
-            </svg>
+    <br>
+    <div class="flex items-center justify-center relative" id="pageSelection">
+            <ul class="col-span-3 flex grid grid-flow-col justify-center space-x-4">
+                <li class="relative">
+                    <a id="facebook" class="dropdownButton cursor-pointer custom-bg-gradient-fb text-white  font-small px-3 py-2 rounded-xl flex items-center shadow-xl" id="fb">
+                        <div class="mr-2 animate-spin">
+                            <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" alt="Connect Facebook" title="Connect Facebook" class="h-6 w-6 bg-gray-100 rounded-full border-1 border-gray-800">
+                        </div>
+                        <div class="mr-2 hidden">
+                            <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" alt="Connect Facebook" title="Connect Facebook" class="h-6 w-6 bg-gray-100 rounded-full border-1 border-gray-800">
+                        </div>
 
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="mr-2 h-4 w-4 hidden"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
-              />
-            </svg>
-            Instagram
-          </button>
-          <div
-            class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
-            style="min-height: 2.5rem"
-          >
-          </div>
-        </div>
-      </div>
-      <div class="">
-        <div class="relative inline-block ">
-          <button
-            type="button"
-            data-te-ripple-init
-            data-te-ripple-color="light"
-            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
-            style="background-color: #0077b5"
-            id="linkedin"
-          >
-            <svg
-              aria-hidden="true"
-              class="w-4 h-4 mr-2 text-gray-200 animate-spin fill-blue-600"
-              viewBox="0 0 100 101"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="currentColor"
-              />
-              <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                fill="currentFill"
-              />
-            </svg>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="mr-2 h-4 w-4 hidden"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"
-              />
-            </svg>
-            Linkedin
-          </button>
-          <div
-            class="absolute right-0 mt-1 w-45 bg-white rounded-md shadow-lg z-10 dropdownMenu hidden"
-            style="min-height: 2.5rem"
-          >
-          </div>
-        </div>
-      </div>
-      <div class="">
-        <div class="relative inline-block">
-          <button
-            type="button"
-            data-te-ripple-init
-            data-te-ripple-color="light"
-            class="mb-2 flex rounded px-6 py-2.5 text-xs font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg dropdownButton"
-            style="background-color: #4285f4"
-            id="google"
-          >
-            <svg
-              aria-hidden="true"
-              class="w-4 h-4 mr-2 text-gray-200 animate-spin fill-blue-600"
-              viewBox="0 0 100 101"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="currentColor"
-              />
-              <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                fill="currentFill"
-              />
-            </svg>
+                        Facebook
+                    </a>
+                </li>
+                <li class="relative">
+                    <a  id="linkedin"  class="dropdownButton cursor-pointer custom-bg-gradient-ln text-white font-small px-3 py-2 rounded-xl flex items-center" id="ln">
+                        <div class="mr-2 animate-spin">
+                            <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" alt="Connect Linkedin" title="Connect Linkedin" class="h-6 w-6 bg-gray-800 rounded-full border-2 border-gray-100">
+                        </div>
+                        <div class="mr-2 hidden">
+                            <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" alt="Connect Linkedin" title="Connect Linkedin" class="h-6 w-6 bg-gray-800 rounded-full border-2 border-gray-100">
+                        </div>
+                        Linkedin
+                    </a>
+                </li>
+                <li class="relative">
+                    <a  id="instagram" class="dropdownButton cursor-pointer custom-bg-gradient-insta text-white font-small px-3 py-2 rounded-xl flex items-center" id="insta">
+                        <div class="mr-2 animate-spin">
+                            <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" alt="Connect Instagram" title="Connect Instagram" class="h-6 w-6 bg-gray-800 rounded-full border-2 border-gray-100">
+                        </div>
+                        <div class="mr-2 hidden">
+                            <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" alt="Connect Instagram" title="Connect Instagram" class="h-6 w-6 bg-gray-800 rounded-full border-2 border-gray-100">
+                        </div>
+                        Instagram
+                    </a>
+                </li>
+                <li class="relative">
+                    <a  class="dropdownButton bg-blue-500 cursor-pointer text-white flex font-small px-3 py-2 flex items-center rounded-xl"
+                       id="google">
 
-            <img src="{% static 'assets/img/Social-Logos/google_bussiness.svg'%}" class="w-6 hidden mr-2">
-            Google
-          </button>
-        </div>
-      </div>
-      <input type="hidden" name="checkbox_selected" id="checkboxSelected" />
+                            <div class="mr-2 animate-spin">
+                                <img src="{% static '\assets\img\Social-Logos\google-business.png'%}" alt="Google Business Icon" title="Google Business" class="h-6 w-6 bg-gray-800 border-2 rounded-full border-gray-100">
+                            </div>
+                            <div class="mr-2 hidden">
+                                <img src="{% static '\assets\img\Social-Logos\google-business.png'%}" alt="Google Business Icon" title="Google Business" class="h-6 w-6 bg-gray-800 border-2 rounded-full border-gray-100">
+                            </div>
+                           Google
+                    </a>
+                </li>
+            </ul>
     </div>
-    <br />
-    <br />
+      <input type="hidden" name="checkbox_selected" id="checkboxSelected" />
+
+    <br >
+    <br >
+    <br>
     <!-- Scheduling options -->
 
     <div class="-mx-3 flex flex-col items-end flex-wrap" id="date-div">
@@ -592,9 +488,10 @@
                 var fileSizeMB = file.size / (1024 * 1024); // Convert bytes to MB
 
                 if (fileSizeMB > maxFileSizeMB) {
+                    errorMessage.textContent = "File is too large.Max size of each file : 20MB";
                     errorMessage.style.display = "block";
                     event.target.value = "";
-                    console.log(event.target.files);
+
                     setTimeout(function () {
                       errorMessage.style.display = "none";
                       }, 4000);
@@ -774,17 +671,6 @@
 
       });
 
-
-
-    //   Function to submit the form with the selected scheduled date-time
-    //   const form = document.getElementById("scheduleForm");
-    //   form.addEventListener("submit", function (event) {
-    //     event.preventDefault();
-    //     const selectedDateTime = document.getElementById("scheduleDateTimePicker").value;
-
-    //     alert(`Post Scheduled for: ${selectedDateTime}`);
-    //   });
-
       PagesData();
 
 
@@ -843,8 +729,12 @@
             platformButton.disabled = true;
             platformButton.classList.add('relative')
             const tooltip = document.createElement('div');
-            tooltip.classList.add('tooltiptext')
+            tooltip.classList.add('tooltiptext','text-xs');
             tooltip.textContent = "No Page Connected/Check Account";
+            tooltip.style.position = 'absolute';
+            tooltip.style.top = '20%';
+            tooltip.style.left = '0';
+            tooltip.style.width = '100%';
             platformButton.appendChild(tooltip);
 
 
@@ -859,7 +749,7 @@
                 const pageName = pages[i].name;
 
                 var label = document.createElement('label');
-                label.classList.add('inline-flex', 'items-center' ,'cursor-pointer', 'block', 'px-2', 'py-2','text-sm','text-gray-700' ,'hover:bg-gray-100');
+                label.classList.add('flex', 'items-center' ,'cursor-pointer', 'block', 'px-2', 'py-2','text-sm','text-gray-700' ,'hover:bg-gray-100');
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.classList.add('form-checkbox','h-4', 'w-4', 'text-blue-500' ,'transition' ,'duration-150' ,'ease-in-out');
@@ -898,6 +788,7 @@
           if (response.ok) {
               const data = await response.json();
               const dropdownButtons = document.getElementsByClassName('dropdownButton');
+              console.log(dropdownButtons);
               if(Object.keys(data).length === 0){
                      var publishButton = document.getElementById("publishButton");
                      var scheduleButton = document.getElementById("scheduleBtn");
@@ -947,7 +838,6 @@
             });
         }, 5000); // 5000 milliseconds (5 seconds)
     }
-
 
 window.addEventListener('load', removeMessages);
 

@@ -10,6 +10,7 @@
             <h1 class="text-3xl	font-bold py-4 sm:text-start text-center text-transparent bg-gradient-to-tl from-blue-600 to-cyan-400 bg-clip-text">Sign Up</h1>
 
         <form method="post">
+             <input type="text" id="user_timezone" name="user_timezone" class="hidden">
                 {% csrf_token %}
                 {% for field in form %}
                     {% if field.errors %}
@@ -82,6 +83,12 @@
     </div>
 </div>
 
+<script>
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timezoneInput = document.getElementById("user_timezone");
+    timezoneInput.value = userTimezone
+    console.log(timezoneInput);
+</script>
 
 {% endblock %}
 

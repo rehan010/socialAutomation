@@ -2936,7 +2936,25 @@ def instagram_validator(request):
         # if not request.POST.get("post"):
         #     errors["Invalid Post for insta"] = "Instagram media can not be post without text"
         if len(images) < 1:
-            errors['Invalid Post for insta'] = "Instagram media can not be post without media"
+            errors['Invalid Post for insta'] = "Instagram cannot post without media"
+
+    return errors
+
+def instagram_validator2(request, post_id):
+    errors = {}
+    provider = request.POST.get("instagram")
+    images = request.FILES.getlist('images')
+    post = PostModel.objects.get(pk=post_id)
+    image = post.images.all()
+    if provider:
+        # if not request.POST.get("post"):
+        #     errors["Invalid Post for insta"] = "Instagram media can not be post without text"
+        if len(image) > 0:
+            if len(images) and len(image) < 1:
+                errors['Invalid Post for insta'] = "Instagram cannot post without media"
+        else:
+            if len(images) < 1:
+                errors['Invalid Post for insta'] = "Instagram cannot post without media"
 
     return errors
 
