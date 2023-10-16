@@ -683,7 +683,7 @@ function convertTimestampToNaturalTime(createdTimestamp,status) {
         const weeksAgo = Math.floor(timeDifference / week);
         const daysRemaining = Math.floor((timeDifference % week) / day);
         if (weeksAgo === 1) {
-            naturalTime = '1 week ${precedingText}';
+            naturalTime = `1 week ${precedingText}`;
         }else if (weeksAgo < 4 && daysRemaining < 1){
             naturalTime = `${weeksAgo} weeks ${precedingText}`;
         }else if (weeksAgo < 4) {
