@@ -1682,22 +1682,14 @@ class FollowersGraphApi(APIView):
         return JsonResponse(data)
 
 def timzone_difference(user_timezone):
+    from dateutil.relativedelta import relativedelta
+    from pytz import timezone
 
-    tz1 = pytz.utc
+    utcnow = timezone('utc').localize(datetime.utcnow())  # generic time
+    timezone_diff = relativedelta(utcnow.astimezone(pytz.utc).replace(tzinfo=None),
+                                  utcnow.astimezone(user_timezone).replace(tzinfo=None)).hours
 
-    now_tz1 = datetime.now(tz1).strftime("%H:%M:%S")
-    now_tz2 = datetime.now(user_timezone).strftime("%H:%M:%S")
-
-    time_tz1 = datetime.strptime(now_tz1, "%H:%M:%S")
-    time_tz2 = datetime.strptime(now_tz2, "%H:%M:%S")
-
-    delta = time_tz1 - time_tz2
-
-    sec = delta.total_seconds()
-    min = sec / 60
-    hours = sec / (60 * 60)
-
-    return hours
+    return timezone_diff
 
 
 class PostGraphApiView(APIView):
