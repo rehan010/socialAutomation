@@ -549,7 +549,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         timezone_diff = timzone_difference(user_timezone)
 
         starting_date = datetime.strptime(today_str,'%Y-%m-%d') + timedelta(hours=timezone_diff)
-        ending_date = (datetime.strptime(today_str,'%Y-%m-%d') + timedelta(hours=11,minutes=59)).astimezone(user_timezone).astimezone(pytz.utc)
+        ending_date = (datetime.strptime(today_str,'%Y-%m-%d') + timedelta(hours=23,minutes=59)).astimezone(user_timezone).astimezone(pytz.utc)
         # Add your context data here
         if self.request.user.is_authenticated:
             user_manager = self.request.user.manager
@@ -612,6 +612,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             total_comments_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
             if total_comments_google is None:
                 total_comments_google = 0
+
+
             total_followers_facebook = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
             if total_followers_facebook is None:
                 total_followers_facebook = 0
@@ -744,7 +746,7 @@ class DashBoardCardView(APIView):
                 timezone_diff = timzone_difference(user_timezone)
 
                 starting_date = datetime.strptime(today_str, '%Y-%m-%d') + timedelta(hours=timezone_diff)
-                ending_date = (datetime.strptime(today_str, '%Y-%m-%d') + timedelta(hours=11, minutes=59)).astimezone(
+                ending_date = (datetime.strptime(today_str, '%Y-%m-%d') + timedelta(hours=23, minutes=59)).astimezone(
                     user_timezone).astimezone(pytz.utc)
                 # Add your context data here
                 if self.request.user.is_authenticated:
