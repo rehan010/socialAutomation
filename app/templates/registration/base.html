@@ -150,7 +150,7 @@
     </nav>
 <div class="w-full flex h-full">
     {% if user.is_authenticated %}
-    <aside class="w-48  fixed h-screen ease-nav-brand inset-y-10 top-0 left-0 flex-wrap items-center justify-between overflow-y-auto  border-0 bg-gray-800 p-0 antialiased shadow-none transition-transform duration-200 flex-wrap left-0 translate-x-0  " id="sidebar">
+    <aside class="w-48  fixed h-screen ease-nav-brand inset-y-10 top-0 left-0 flex-wrap items-center justify-between overflow-y-auto  border-0 bg-gray-800 p-0 antialiased shadow-none transition-transform duration-200 flex-wrap left-0 translate-x-0  z-100" id="sidebar">
 
       <div id="sidebar-default-content" class="w-full flex items-center justify-center" >
          <ul class="space-y-2 m-2 w-full">
@@ -329,7 +329,7 @@
 <style>
     .margin{
 
-            margin-left: 200px;
+            margin-left: 100px;
     }
     #sidebar {
         width: 6rem;
