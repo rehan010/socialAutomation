@@ -164,6 +164,9 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
             },
             scales: {
               y: {
+                beginAtZero: true,
+                suggestedMin:0,
+                suggestedMax:10,
                 grid: {
                   drawBorder: true,
                   display: true,

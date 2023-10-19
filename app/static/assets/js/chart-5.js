@@ -150,6 +150,9 @@ async function fetchFollowersGraph(start = getFormattedDate(7) , end = getFormat
             },
             scales: {
               y: {
+                beginAtZero: true,
+                suggestedMin:0,
+                suggestedMax:10,
                 grid: {
                   drawBorder: true,
                   display: true,

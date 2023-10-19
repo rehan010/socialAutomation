@@ -154,6 +154,9 @@ async function fetchLikeGraph(start = getFormattedDate(7) , end = getFormattedDa
             },
             scales: {
               y: {
+                beginAtZero: true,
+                suggestedMin:0,
+                suggestedMax:10,
                 grid: {
                   drawBorder: true,
                   display: true,
@@ -174,6 +177,7 @@ async function fetchLikeGraph(start = getFormattedDate(7) , end = getFormattedDa
                     lineHeight: 2,
                   },
                   stepSize: 1,
+
                 },
               },
               x: {
