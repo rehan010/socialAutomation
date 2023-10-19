@@ -176,7 +176,7 @@
 {% block content %}
 
 
-<div class="container mx-auto">
+<div class="container mx-auto mt-8 rounded-xl">
   {% csrf_token %}
     <div class="tabs relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border">
         <br>
@@ -633,6 +633,7 @@ function createProfileTd(userData) {
 function convertTimestampToNaturalTime(createdTimestamp,status) {
 
 
+
         const parsedTimestamp = new Date(createdTimestamp);
 
         // Get the current date
@@ -642,7 +643,6 @@ function convertTimestampToNaturalTime(createdTimestamp,status) {
         let timeDifference;
         if(status === "SCHEDULED"){
              timeDifference = parsedTimestamp - currentDate;
-             console.log(timeDifference)
 
         }else{
              timeDifference = currentDate - parsedTimestamp;
@@ -673,7 +673,7 @@ function convertTimestampToNaturalTime(createdTimestamp,status) {
         const daysAgo = Math.floor(timeDifference / day);
         const hoursRemaining = Math.floor((timeDifference % day) / hour);
         if (daysAgo === 1) {
-            naturalTime = '1 day {precedingText}';
+            naturalTime = `1 day ${precedingText}`;
         }else if (daysAgo <1 && daysAgo > 7 && hoursRemaining < 1){
             naturalTime = `${daysAgo} days ${precedingText}}`;
         }else {
@@ -715,8 +715,109 @@ function convertTimestampToNaturalTime(createdTimestamp,status) {
     return naturalTime;
 }
 
+function convertTimestampToNaturalTimeCR(createdTimestamp,status) {
+
+
+
+        const parsedTimestamp = new Date(createdTimestamp);
+
+        // Get the current date
+        const currentDate = new Date();
+
+        // Calculate the time difference in milliseconds
+
+
+        const timeDifference = currentDate - parsedTimestamp;
+
+
+        // Define the time units in milliseconds
+        const minute = 60 * 1000; // 1 minute
+        const hour = 60 * minute; // 1 hour
+        const day = 24 * hour; // 1 day
+        const week = 7 * day; // 1 week
+        const month = 30.44 * day; // Average days in a month
+        const year = 365.25 * day; // Average days in a year
+
+        // Calculate the time difference in a human-readable format
+        let naturalTime;
+    const precedingText =  "ago";
+
+    if (timeDifference < minute) {
+        naturalTime = 'just now';
+    } else if (timeDifference < hour) {
+        const minutesAgo = Math.floor(timeDifference / minute);
+        naturalTime = `${minutesAgo} minute${minutesAgo > 1 ? 's' : ''} ${precedingText}`;
+    } else if (timeDifference < day) {
+        const hoursAgo = Math.floor(timeDifference / hour);
+        naturalTime = `${hoursAgo} hour${hoursAgo > 1 ? 's' : ''} ${precedingText}`;
+    } else if (timeDifference < week) {
+        const daysAgo = Math.floor(timeDifference / day);
+        const hoursRemaining = Math.floor((timeDifference % day) / hour);
+        if (daysAgo === 1) {
+            naturalTime = `1 day ${precedingText}`;
+        }else if (daysAgo <1 && daysAgo > 7 && hoursRemaining < 1){
+            naturalTime = `${daysAgo} days ${precedingText}}`;
+        }else {
+            naturalTime = `${daysAgo} days, ${hoursRemaining} hours ${precedingText}`;
+        }
+    } else if (timeDifference < month) {
+        const weeksAgo = Math.floor(timeDifference / week);
+        const daysRemaining = Math.floor((timeDifference % week) / day);
+        if (weeksAgo === 1) {
+            naturalTime = `1 week ${precedingText}`;
+        }else if (weeksAgo < 4 && daysRemaining < 1){
+            naturalTime = `${weeksAgo} weeks ${precedingText}`;
+        }else if (weeksAgo < 4) {
+            naturalTime = `${weeksAgo} weeks, ${daysRemaining} hours ${precedingText}`;
+        } else {
+            const monthsAgo = Math.floor(weeksAgo / (365.25 / 12));
+            naturalTime = `${monthsAgo} month${monthsAgo > 1 ? 's' : ''} ${precedingText}`;
+        }
+    } else if (timeDifference < year) {
+        const monthsAgo = Math.floor(timeDifference / month);
+        if (monthsAgo === 1) {
+            naturalTime = `1 month ${precedingText}`;
+        } else if (monthsAgo < 12) {
+            naturalTime = `${monthsAgo} months ${precedingText}`;
+        } else {
+            const yearsAgo = Math.floor(monthsAgo / 12);
+            const remainingMonths = monthsAgo % 12;
+            if (remainingMonths === 0) {
+                naturalTime = `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ${precedingText}`;
+            } else {
+                naturalTime = `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} and ${remainingMonths} month${remainingMonths > 1 ? 's' : ''} ${precedingText}`;
+            }
+        }
+    } else {
+        const yearsAgo = Math.floor(timeDifference / year);
+        naturalTime = `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ${precedingText}`;
+    }
+
+    return naturalTime;
+}
+
+
 function createCreatedAtTd(createdTimestamp,status) {
         const divFlex = document.createElement('div');
+        divFlex.className = 'flex px-4 py-1';
+
+        const divInner = document.createElement('div');
+        divInner.className = 'flex flex-col justify-center items-center w-full';
+
+        const h6 = document.createElement('h6');
+        h6.className = 'mb-0 text-xs leading-normal';
+
+        // Calculate natural time using a function (e.g., naturalTimeFunction)
+
+
+        const naturalTime = convertTimestampToNaturalTimeCR(createdTimestamp,status);
+        h6.textContent = naturalTime;
+        divInner.appendChild(h6);
+        divFlex.appendChild(divInner);
+        return divFlex;
+}
+function createPublishedTdNew(createdTimestamp,status) {
+    const divFlex = document.createElement('div');
         divFlex.className = 'flex px-4 py-1';
 
         const divInner = document.createElement('div');
@@ -734,6 +835,7 @@ function createCreatedAtTd(createdTimestamp,status) {
         divFlex.appendChild(divInner);
         return divFlex;
 }
+
 function createPublishedTd() {
     const divFlex = document.createElement('div');
     divFlex.className = 'flex px-4 py-1';
@@ -752,6 +854,7 @@ function createPublishedTd() {
 
     return divFlex;
 }
+
 
 function createStatusTd(status,provider) {
     const span = document.createElement('span');
@@ -871,15 +974,24 @@ $(document).ready(function () {
                         }
                 });
                 }
-                else if (row.status === 'DRAFT') {
+                else if (row.status === 'DRAFT' || row.status === 'SCHEDULED') {
                         const a = document.createElement('a');
-                        const url2 = window.location.protocol + "//" + window.location.host + "/post_draft/" + post_pk;
-                        a.href = url2;
-                        const h6 = document.createElement('h6');
-                        h6.className = 'bg-gradient-to-tl from-red-700 to-yellow-800 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white';
-                        h6.textContent = 'PUBLISH THIS DRAFT';
-                        a.appendChild(h6);
-                        divInner.appendChild(a);
+                        row.prepost_page.forEach(pageData => {
+                            const page = pageData.page;
+                            const name = page.name;
+                            const org_id = page.org_id;
+                            const provider = page.provider
+                            const url2 = window.location.protocol + "//" + window.location.host + "/post_draft/" + post_pk;
+                             if (provider === provider) {
+                                const a = document.createElement('a');
+                                a.href = url2;
+                                const h6 = document.createElement('h6');
+                                h6.className = 'mb-0 text-xs font-bold leading-normal';
+                                h6.textContent = name;
+                                a.appendChild(h6);
+                                divInner.appendChild(a);
+                            }
+                        });
                 }
                 else if (row.status === 'FAILED' && (provider === true)) {
                     const a = document.createElement('a');
@@ -1001,16 +1113,16 @@ $(document).ready(function () {
                     const publishedTimestamp = row.published_at;
                     if(row.status == "SCHEDULED"){
 
-                        const published_Td = createCreatedAtTd(row.schedule_datetime,row.status);
+                        const published_Td = createPublishedTdNew(row.schedule_datetime,row.status);
                         return published_Td.outerHTML;
 
                     }
-                    else if ( publishedTimestamp === null){
+                    else if ( publishedTimestamp === null || row.post_urn.length === 0){
                         const published_Td = createPublishedTd();
                         return published_Td.outerHTML;
 
                     }else{
-                         const published_Td = createCreatedAtTd(publishedTimestamp,row.status);
+                         const published_Td = createPublishedTdNew(publishedTimestamp,row.status);
                          return published_Td.outerHTML;
                     }
 

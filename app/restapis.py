@@ -2897,6 +2897,20 @@ def meta_reply_pagination(pagination,access_token,provider_name):
 
 
 
+def schedule_validator(request, post_id):
+
+    post = PostModel.objects.get(pk=post_id)
+    if post.status == 'SCHEDULED':
+        scheduled_time = post.schedule_datetime
+        current_datetime = timezone.now()
+        errors = {}
+        if current_datetime > scheduled_time:
+            errors["Invalid Post "] = "Post does not exists"
+
+        return errors
+    else:
+        return {}
+
 
 
 

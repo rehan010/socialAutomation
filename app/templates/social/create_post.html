@@ -499,15 +499,14 @@
                 }
           }
 
-          var maxFileCount = 10; // Set the maximum number of files allowed
-
+          var maxFileCount = 9;
 
             var files = event.target.files;
 
             // Check if the number of selected files exceeds the maximum limit
             if (files.length > maxFileCount) {
                     const errorMessage = document.getElementById("error-message");
-                    errorMessage.textContent = "Can't Upload more than 10 files";
+                    errorMessage.textContent = "Can't Upload more than 9 files";
                     errorMessage.style.display = "block";
                     event.target.value = "";
                     console.log(event.target.files);

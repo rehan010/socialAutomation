@@ -536,7 +536,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "registration/dashboard.html"
     def dispatch(self, request, *args, **kwargs):
         user = self.request.user
-
         if user.is_superuser:
             return redirect(reverse_lazy("my_user"))
         
@@ -1880,11 +1879,13 @@ class PostDraftView(UpdateView):
         return super(PostDraftView, self).dispatch(request)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user_timezone = self.request.session.get('user_timezone', 'UTC')
         post_id = self.kwargs['pk']
         post = PostModel.objects.get(pk=post_id)
+
         comment_check = post.comment_check
-        context = {'form': self.get_form(), 'post': post, 'comment_check': comment_check}
-        # context = {'form': self.get_form(), 'comment_check': comment_check}
+        context = {'form': self.get_form(), 'post': post, 'comment_check': comment_check, 'user_timezone': user_timezone}
+
         return context
 
     def form_invalid(self, form):
@@ -1893,11 +1894,12 @@ class PostDraftView(UpdateView):
     def form_valid(self, form):
         requestdata = dict(self.request.POST)
         post_id = self.kwargs.get('pk')
+        schedule_errors = schedule_validator(self.request, post_id)
         linkedin_errors = linkedin_validator(self.request)
         facebook_errors = facebook_validator(self.request)
         instagram_errors = instagram_validator2(self.request, post_id)
 
-        if facebook_errors or instagram_errors or linkedin_errors:
+        if facebook_errors or instagram_errors or linkedin_errors or schedule_errors:
             for errors in facebook_errors:
                 messages.error(self.request, facebook_errors[errors])
 
@@ -1906,6 +1908,9 @@ class PostDraftView(UpdateView):
 
             for errors in linkedin_errors:
                 messages.error(self.request, linkedin_errors[errors])
+
+            for errors in schedule_errors:
+                messages.error(self.request, schedule_errors[errors])
 
             return self.form_invalid(form)
 

@@ -17,10 +17,10 @@
 {% block content %}
 <div class="card bg-white text-gray-600 flex justify-between  p-3 rounded-2xl mx-4">
         <h4 class="text-md font-bold mb-2 border-b-4 border-yellow-300">Connect Business Account</h4>
-        <span class="text-sm text-gray-500">{{page_count}}/50 Accounts Connected</span>
+        <span class="text-sm text-gray-500">{{page_count}} Accounts Connected</span>
 </div>
 <br>
-<div class="mx-4 flex items-start pt-12 justify-center min-h-screen bg-gray-200 rounded-2xl">
+<div class="mx-4 flex items-start pt-12 justify-center min-h-screen bg-gray-100 rounded-2xl">
 
 
     <div class="container w-100 mx-auto ">
@@ -32,23 +32,23 @@
                 <div class="error-msg">{{ form.non_field_errors }}</div>
                 {% endif %}
                 <div class="flex flex-wrap justify-center  items-center  gap-32">
-                       <div class="card bg-gray-200 border-0 w-1/3 social-container">
+                       <div class="card bg-gray-100 border-0 w-1/3 social-container">
                             <div class="relative ">
                                 <!-- Logo -->
                                 <div class=" provider-icon mx-auto relative -my-6">
-                                    <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" alt="Connect Facebook" title="Connect Facebook" class="h-16 w-18 bg-gray-200 mx-auto border-2 rounded-full border-gray-200">
+                                    <img src="{% static '\assets\img\Social-Logos\facebook_logo.png'%}" alt="Connect Facebook" title="Connect Facebook" class="h-16 w-18 bg-gray-100 mx-auto border-2 rounded-full border-gray-200">
                                 </div>
                                     <div class="bg-white p-4 rounded-3xl shadow-lg " >
                                     <br>
-                                    <h4 class="text-md text-center  mb-4 border-b-2 border-blue-300 pb-1">Facebook</h4>
+                                    <h4 class="text-md text-center flex justify-center mx-auto mb-4 border-b-2 border-blue-300 pb-1">Facebook</h4>
                                         {% if facebook %}
-                                   <div class="text-center text-blue-500 text-sm w-full flex item-center justify-between">
-                                        <a href="{% url 'social_profile' %}?provider_name={{ facebook.provider }}" class="no-underline hover:no-underline ml-32">Connected</a>
+                                   <div class="text-center text-blue-500 text-sm mx-auto flex item-center justify-between">
+                                        <a href="{% url 'social_profile' %}?provider_name={{ facebook.provider }}" class="no-underline mx-auto hover:no-underline ">Connected</a>
                                         <i class="fa-solid self-end fa-trash-can sm:text-base text-gray-600 text-sm cursor-pointer modal-button"></i>
                                    </div>
 
                                          {% else %}
-                                        <div class="text-center text-blue-500 text-sm">
+                                        <div class="text-center text-blue-500 mx-auto text-sm">
                                                 {% include "socialaccount/snippets/provider_list.html" with process="connect" provider=facebook_app.name|lower %}
                                         </div>
                                         {% endif %}
@@ -97,17 +97,17 @@
                                 </div>
                            </div>
                        </div>
-                       <div class="card bg-gray-200 border-0 w-1/3 social-container">
+                       <div class="card bg-gray-100 border-0 w-1/3 social-container">
                             <div class="relative">
                                 <div class="provider-icon  mx-auto  relative -my-6">
-                                    <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" alt="Connect Instagram" title="Connect Instagram" class="h-16 w-18 bg-gray-200 mx-auto border-4 rounded-full border-gray-200">
+                                    <img src="{% static 'assets/img/Social-Logos/instagram_logo.png' %}" alt="Connect Instagram" title="Connect Instagram" class="h-16 w-18 bg-gray-100 mx-auto border-4 rounded-full border-gray-200">
                                 </div>
                                 <div class="bg-white p-4 rounded-3xl shadow-lg">
                                     <br>
-                                    <h4 class="text-md text-center mb-4 border-b-2 border-blue-300 pb-1">Instagram</h4>
+                                    <h4 class="text-md text-center mx-auto mb-4 border-b-2 border-blue-300 pb-1">Instagram</h4>
                                     {% if instagram and facebook  %}
-                                   <div class="text-center text-blue-500 text-sm w-full flex item-center justify-between">
-                                        <a href="{% url 'social_profile' %}?provider_name={{ instagram.provider }}" class="no-underline hover:no-underline ml-32">Connected
+                                   <div class="text-center text-blue-500 mx-auto text-sm w-full flex item-center justify-between">
+                                        <a href="{% url 'social_profile' %}?provider_name={{ instagram.provider }}" class="no-underline hover:no-underline mx-auto">Connected
                                         </a>
                                        <i class="fa-solid self-end fa-trash-can sm:text-base text-gray-600 text-sm cursor-pointer modal-button"></i>
                                     </div>
@@ -169,17 +169,17 @@
                                 </div>
                            </div>
                        </div>
-                       <div class="card bg-gray-200 border-0 w-1/3 social-container">
+                       <div class="card bg-gray-100 border-0 w-1/3 social-container">
                             <div class="relative">
                                 <div class="provider-icon  mx-auto  relative -my-6">
-                                    <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" alt="Connect Linkedin" title="Connect Linkedin" class="h-16 w-18 bg-gray-200 mx-auto border-4 rounded-full border-gray-200">
+                                    <img src="{% static '\assets\img\Social-Logos\linkedin_logo.png'%}" alt="Connect Linkedin" title="Connect Linkedin" class="h-16 w-18 bg-gray-100 mx-auto border-4 rounded-full border-gray-200">
                                 </div>
                                 <div class="bg-white p-4 rounded-3xl shadow-lg">
                                     <br>
                                     <h4 class="text-md text-center mb-4 border-b-2 border-blue-300 pb-1">Linkedin</h4>
                                     {% if linkedin_oauth2 %}
                                    <div class="text-center text-blue-500 text-sm w-full flex item-center justify-between">
-                                        <a href="{% url 'social_profile' %}?provider_name={{linkedin_oauth2.provider}}" class="no-underline hover:no-underline ml-32">Connected</a>
+                                        <a href="{% url 'social_profile' %}?provider_name={{linkedin_oauth2.provider}}" class="no-underline hover:no-underline mx-auto">Connected</a>
                                          <i class="fa-solid self-end fa-trash-can sm:text-base text-gray-600 text-sm cursor-pointer modal-button"></i>
                                    </div>
                                     {% else %}
@@ -233,10 +233,10 @@
                                 </div>
                             </div>
                        </div>
-                       <div class="card bg-gray-200 border-0 w-1/3 social-container">
+                       <div class="card bg-gray-100 border-0 w-1/3 social-container">
                             <div class="relative">
                                 <div class="provider-icon  mx-auto  relative -my-6 h-16 w-16">
-                                    <img src="{% static '\assets\img\Social-Logos\google-business.png'%}" alt="Connect Facebook" title="Connect Linkedin" class=" bg-gray-200 object-cover border-2 rounded-full border-gray-200">
+                                    <img src="{% static '\assets\img\Social-Logos\google-business.png'%}" alt="Connect Facebook" title="Connect Linkedin" class=" bg-gray-100 object-cover border-2 rounded-full border-gray-200">
                                 </div>
                                 <div class="bg-white p-4 rounded-3xl shadow-lg">
                                     <br>
@@ -244,7 +244,7 @@
                                     {% if google %}
                                     <div class="text-center text-blue-500 text-sm w-full flex item-center justify-between">
 <!--                                        <a href="{% url 'social_profile' %}?provider_name={{google.provider}}" class="no-underline hover:no-underline ml-32">Connected</a>-->
-                                        <a href="#" class="no-underline hover:no-underline ml-32">Connected</a>
+                                        <a href="#" class="no-underline hover:no-underline mx-auto">Connected</a>
                                          <i class="fa-solid self-end fa-trash-can sm:text-base text-gray-600 text-sm cursor-pointer modal-button"></i>
                                     </div>
                                     {% else %}

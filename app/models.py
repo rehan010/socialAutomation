@@ -161,7 +161,7 @@ class PostModel(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     post_urn = models.ManyToManyField('Post_urn')
     prepost_page = models.ManyToManyField('SharePage')
-    schedule_datetime = models.DateTimeField(blank=True, default=timezone.now())
+    schedule_datetime = models.DateTimeField(blank=True, null=True)
     comment_check = models.BooleanField(default=True)
     publish_check = models.BooleanField(default=False)
     status = models.CharField(default='DRAFT', max_length=100, choices=POST_TYPE)

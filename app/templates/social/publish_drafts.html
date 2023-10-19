@@ -201,34 +201,37 @@
         <br/>
         <br/>
         <br>
+
         <div class="-mx-3 flex flex-col items-end flex-wrap" id="date-div">
-      <div class="w-56 px-3">
-        <div class="mb-3">
-          <label for="date" class="mb-2 pl-1 block text-base text-[#07074D]">
-            Schedule Date :
-          </label>
-          <input
-            type="date"
-            name="date"
-            id="date"
-            class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-          onchange="validateDate(event)"/>
+          <div class="w-56 px-3">
+            <div class="mb-3">
+              <label for="date" class="mb-2 pl-1 block text-base text-[#07074D]">
+                Schedule Date :
+              </label>
+              <input
+                type="date"
+                name="date"
+                id="date"
+                class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+                onchange="validateDate(event)"/>
+
+            </div>
+          </div>
+          <div class="w-56 px-3">
+            <div class="mb-3">
+              <label for="time" class="mb-2 pl-1 block text-base text-[#07074D]">
+                Schedule Time :
+              </label>
+              <input
+                type="time"
+                name="time"
+                id="time"
+                class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+              onchange="validateTime(event)"/>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="w-56 px-3">
-        <div class="mb-3">
-          <label for="time" class="mb-2 pl-1 block text-base text-[#07074D]">
-            Schedule Time :
-          </label>
-          <input
-            type="time"
-            name="time"
-            id="time"
-            class="w-full rounded-md border border-[#e0e0e0] bg-white py-2 px-4 text-base text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-          onchange="validateTime(event)"/>
-        </div>
-      </div>
-    </div>
+
         <li class="relative block px-0 py-1 bg-white border-0 rounded-t-lg text-inherit">
                 <div class="min-h-6 mb-0.5 block pl-0">
                   <input id="follow" name="comment_check" class="mt-0.54 rounded-10 duration-250 ease-soft-in-out after:rounded-circle after:shadow-soft-2xl after:duration-250 checked:after:translate-x-5.25 h-5 relative float-left ml-auto w-10 cursor-pointer appearance-none border border-solid border-gray-200 bg-slate-800/10 bg-none bg-contain bg-left bg-no-repeat align-top transition-all after:absolute after:top-px after:h-4 after:w-4 after:translate-x-px after:bg-white after:content-[''] checked:border-slate-800/95 checked:bg-slate-800/95 checked:bg-none checked:bg-right" type="checkbox" {% if comment_check %}checked{% endif %}>
@@ -313,9 +316,33 @@
         const day = today.getDate().toString().padStart(2, '0');
         const minDate = `${year}-${month}-${day}`;
         const value = event.target.value;
+        console.log(value);
+        const timePicker = document.getElementById("time");
+        const default_time = timePicker.value;
+
+          const currentTime = new Date();
+          const currentHour = currentTime.getHours();
+          const currentMinute = currentTime.getMinutes();
+          const enteredTime = default_time.split(":");
+          const enteredHour = parseInt(enteredTime[0], 10);
+          const enteredMinute = parseInt(enteredTime[1], 10);
+
+
+
         if(value === "" || value < minDate ){
             event.target.value = minDate;
-        }
+        }else if ((value === minDate) && (currentHour > enteredHour || (currentHour === enteredHour && currentMinute > enteredMinute))){
+            timePicker.classList.add('error-border');
+            scheduleBtn.parentElement.classList.add('disabled');
+            scheduleBtn.parentElement.classList.add('cursor-not-allowed');
+            scheduleBtn.disable = true;
+        }else{
+        timePicker.classList.remove('error-border');
+        scheduleBtn.parentElement.classList.remove('disabled');
+        scheduleBtn.parentElement.classList.remove('cursor-not-allowed');
+        scheduleBtn.disable = true;
+
+      }
     }
 
     function validateTime(event){
@@ -335,6 +362,8 @@
       const datePicker = document.getElementById("date");
 
       const selectedDate = datePicker.value;
+      console.log(selectedDate);
+      console.log(enteredHour);
 
       const scheduleBtn = document.getElementById('scheduleBtn');
       if ((selectedDate === minDate) && (currentHour > enteredHour || (currentHour === enteredHour && currentMinute > enteredMinute))) {
@@ -449,7 +478,7 @@
                 }
           }
 
-            var maxFileCount = 10; // Set the maximum number of files allowed
+            var maxFileCount = 9; // Set the maximum number of files allowed
 
 
             var files = event.target.files;
@@ -458,7 +487,7 @@
             // Check if the number of selected files exceeds the maximum limit
             if (length > maxFileCount) {
                     const errorMessage = document.getElementById("error-message");
-                    errorMessage.textContent = "Can't Upload more than 10 files";
+                    errorMessage.textContent = "Can't Upload more than 9 files";
                     errorMessage.style.display = "block";
                     event.target.value = "";
 
@@ -653,6 +682,7 @@ function getCookie(name) {
     const month = (today.getMonth() + 1).toString().padStart(2, '0');
     const day = today.getDate().toString().padStart(2, '0');
     const minDate = `${year}-${month}-${day}`;
+
 
     const datePicker = document.getElementById("date");
     datePicker.min = minDate;
@@ -901,6 +931,136 @@ function getCookie(name) {
         }, 5000); // 5000 milliseconds (5 seconds)
     }
 
+
+    var status = '{{ post.status }}';
+    if (status === 'SCHEDULED'){
+        const dateInput = document.getElementById('date');
+        const timeInput = document.getElementById('time');
+
+
+
+        var time = '{{ post.schedule_datetime }}';
+
+        var userTimezone = 'Asia/Karachi';
+
+
+        var userDate = new Date();
+
+        var userTimezoneOffset = userDate.getTimezoneOffset();
+
+        // Get the current date and time in UTC timezone
+        var utcDate = new Date(userDate.getTime() + userTimezoneOffset * 60000);
+        var userDatenow = new Date(utcDate.getTime() - userTimezoneOffset * 60000);
+
+        // Calculate the timezone difference in minutes
+        var timezoneDifference = userTimezoneOffset;
+
+
+        function subtractOffset(formattedTime, offsetMinutes,currentDate) {
+
+                  var timeHHMM = formattedTime;
+                  const [hours, minutes] = timeHHMM.split(':').map(Number);
+
+
+                  const totalMinutes = hours * 60 + minutes;
+
+                  // Subtract the offset (add if the offset is negative)
+                  const resultMinutes = totalMinutes - offsetMinutes;
+
+
+                  let resultHours = Math.floor(resultMinutes / 60);
+                  const resultMinutesRemainder = resultMinutes % 60;
+                    const currentDatestr = new Date(currentDate);
+
+                  // Handle cases where the result is negative or exceeds 24 hours
+                  if (resultHours < 0) {
+                    resultHours += 24;
+                    currentDatestr.setDate(currentDatestr.getDate() - 1);
+                  } else if (resultHours >= 24) {
+                    resultHours -= 24;
+                    currentDatestr.setDate(currentDatestr.getDate() + 1);
+                  }
+
+                  // Format the result as HH:MM
+                  const resultTime = `${resultHours.toString().padStart(2, '0')}:${resultMinutesRemainder.toString().padStart(2, '0')}`;
+
+                  const year = currentDatestr.getFullYear();
+                  const month = (currentDatestr.getMonth() + 1).toString().padStart(2, '0');
+                  const day = currentDatestr.getDate().toString().padStart(2, '0');
+                  const resultDate = `${year}-${month}-${day}`;
+                  return { resultTime, resultDate };
+        }
+
+        if (time) {
+
+            var scheduledDate = time;
+            var user_timezone = '{{user_timezone}}';
+
+
+            var dateTimeParts = scheduledDate.split(', ');
+            var datePart = dateTimeParts[0].split('. ')[1]; // Extract date "18"
+            var monthPart = dateTimeParts[0].split('. ')[0]; // Extract month "Oct"
+            var yearPart = dateTimeParts[1]; // Extract year "2023"
+            var timePart = dateTimeParts[2];
+            var monthMap = {
+                'Jan': '01',
+                'Feb': '02',
+                'Mar': '03',
+                'Apr': '04',
+                'May': '05',
+                'Jun': '06',
+                'Jul': '07',
+                'Aug': '08',
+                'Sep': '09',
+                'Oct': '10',
+                'Nov': '11',
+                'Dec': '12',
+            };
+            var monthNumber = monthMap[monthPart];
+
+
+            var formattedDate = yearPart + '-' + monthNumber + '-' + datePart;
+
+            var timeStr = timePart;
+
+            // Use a regular expression to extract the time components
+            var match = /(\d+):(\d+)\s?([aApP]\.?[mM]\.?$)/.exec(timeStr);
+
+            if (match) {
+                var hours = parseInt(match[1]);
+                var minutes = match[2];
+                var period = match[3].toLowerCase();
+
+                // Convert to 24-hour format
+                if (period === 'p.m.') {
+                    hours += 12;
+                }
+
+                // Ensure the hours and minutes are in two-digit format
+                hours = hours.toString().padStart(2, '0');
+                minutes = minutes.padStart(2, '0');
+
+
+
+
+                var formattedTime = hours + ":" + minutes;
+                var difference = userTimezoneOffset;
+                var currentDate = formattedDate;
+                const { resultTime, resultDate } = subtractOffset(formattedTime, difference,currentDate)
+
+                dateInput.value = resultDate;
+                timeInput.value = resultTime;
+
+
+            } else {
+                console.log("Invalid time format.");
+            }
+
+
+
+
+        }
+    }
 // Call the function when the page loads
 window.addEventListener('load', removeMessages);
 
