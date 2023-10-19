@@ -2619,7 +2619,6 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
 
             # my eddited
             access_token_string = linkedin_post.post_urn.all().filter(pk=page_id).first().org.access_token
-
             urn = post_urn
             if urn == '' or urn == None:
                     pass
@@ -2648,6 +2647,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                 'next': next,
                 'posts': PostModel.objects.filter(user_id=self.request.user.id),
                 'post': linkedin_post,
+
                 'posted_on': posted_on,
                 'post_id': post_id,
                 'page_id': page_id,
@@ -2698,6 +2698,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             post_urn = instagram_post.post_urn.all().filter(pk=page_id).first().urn
             access_token = instagram_post.post_urn.all().filter(pk=page_id).first().org.access_token
             urn = post_urn
+
 
             if urn == '' or urn == None:
                 pass

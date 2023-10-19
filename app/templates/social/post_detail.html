@@ -117,7 +117,7 @@
                     {% endif %}
                     <span class="block ml-2 font-bold text-black ">{{ posted_on }}</span>
                     <div class="flex ml-auto relative">
-                        <span class="text-xs text-gray-600" >{{ post.created_at }}</span>
+                        <span class="text-xs text-gray-600 " id="post-time">{{ post.created_at }}</span>
                     </div>
                 </a>
             </header>
@@ -628,6 +628,24 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 <script>
+
+         var time = '{{ post.schedule_datetime|date:"D M d Y" }} ,{{ post.schedule_datetime|time:"H:i" }}';
+
+        var userTimezone = 'UTC' ;
+
+        const utcDateTime = new Date(time + ' ' + userTimezone);
+
+        const date = utcDateTime.toDateString();
+        const scheduleTime = utcDateTime.toLocaleTimeString();
+
+
+        const formatedDate =  `${date} ${scheduleTime}`
+
+        document.getElementById('post-time').innerText = `${formatedDate}`;
+
+
+
+
 
     // Manually initialize the carousel
     const myCarousel = new bootstrap.Carousel(document.getElementById('carouselExampleIndicators'), {
