@@ -1050,7 +1050,6 @@ def create_l_multimedia(images, org_id, access_token_string, clean_file,
                 if not a.is_mp4_file():
                     image_file = a.image
                     response = get_img_urn(org_id, access_token_string)
-
                     if response.status_code == 200:
                         response_json = response.json()
                         upload_url = response_json['value']['uploadUrl']
@@ -2542,7 +2541,6 @@ def post_linkedin(image_list, post, org_id, access_token):
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
-    # print(response)
     return response
 
 
@@ -3222,28 +3220,43 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
         "Authorization": f"Bearer {access_token}",
         'Content-Type': 'application/json'
     }
-    batch_request1 = []
-    batch_request2 = []
-    for post_id in urn_list:
-        request1 = {
-            'method': 'GET',
-            'relative_url': f'{post_id}/likes?since={int(since.timestamp())}&until={int(until.timestamp())}',
-        }
-        request2 = {
-            'method': 'GET',
-            'relative_url': f'{post_id}/comments?fields=id,created_time,message&filter=stream&since={int(since.timestamp())}&until={int(until.timestamp())}'
-        }
 
+    reaction_response = []
+    comment_response = []
+    len_execute = int(len(urn_list) / 50)
+
+    if (len(urn_list) % 50 != 0):
+        len_execute = len_execute +1
+
+
+
+    for _ in range(len_execute):
+        stating_index = _*50
+        ending_index = (_+1)*50
+        new_urn_list = urn_list[stating_index:ending_index]
+
+        batch_request1 = []
+        batch_request2 = []
+        for post_id in new_urn_list:
+            request1 = {
+                'method': 'GET',
+                'relative_url': f'{post_id}/likes?since={int(since.timestamp())}&until={int(until.timestamp())}',
+            }
+            request2 = {
+                'method': 'GET',
+                'relative_url': f'{post_id}/comments?fields=id,created_time,message&filter=stream&since={int(since.timestamp())}&until={int(until.timestamp())}'
+            }
         batch_request1.append(request1)
         batch_request2.append(request2)
+        batch_request1 = json.dumps(batch_request1)
+        batch_request2 = json.dumps(batch_request2)
+        response1 = requests.post(base_url, headers=headers, params={'batch': batch_request1, 'include_headers': 'false'})
+        response2 = requests.post(base_url, headers=headers, params={'batch': batch_request2, 'include_headers': 'false'})
 
-    batch_request1 = json.dumps(batch_request1)
-    batch_request2 = json.dumps(batch_request2)
-    response1 = requests.post(base_url, headers=headers, params={'batch': batch_request1, 'include_headers': 'false'})
-    response2 = requests.post(base_url, headers=headers, params={'batch': batch_request2, 'include_headers': 'false'})
+        reaction_response.extend(response1.json())
+        comment_response.extend(response2.json())
 
-    reaction_response = response1.json()
-    comment_response = response2.json()
+
 
     total_reactions = 0
 

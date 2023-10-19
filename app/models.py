@@ -209,9 +209,14 @@ class SocialStats(BaseModel):
     def __str__(self):
         return self.org.name + "--" + self.created_at.__str__()
 
-# class CeleryTask(models.Model):
-#     STATUS_TYPE = [("FINISHED","FINISHED"), ('PROCESSING', 'PROCESSING'), ('FAILED', 'FAILED')]
-#
-#     task_id = models.CharField()
-#     status = models.CharField(default='PROCESSING', max_length=100,choices = STATUS_TYPE)
+class CeleryTask(models.Model):
+    STATUS_TYPE = [("FINISHED", "FINISHED"), ('PROCESSING', 'PROCESSING'), ('FAILED', 'FAILED')]
+    key = models.CharField(max_length=100)
+    status = models.CharField(default='PROCESSING', max_length=100, choices=STATUS_TYPE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    result = models.CharField(null=True, blank=True,max_length=255)
+    task_name = models.CharField(max_length=255)
 
+    def __str__(self):
+        return f"{self.task_name} ({self.status})"

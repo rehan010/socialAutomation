@@ -1,7 +1,4 @@
-
-
-
-
+from celery import signals
 from django.urls import reverse
 from .restapis import *
 from .models import PostModel,SharePage,Post_urn
@@ -203,38 +200,47 @@ def publish_post_on_social_media(instance):
 
 
 
-
 @shared_task
 def schedule_signals_task(instance):
-
+    key = f"POST {instance.id} USER {instance.user.id}"
+    task, created = CeleryTask.objects.get_or_create(key = key,task_name = f"POST {instance.id}")
     try:
-        if instance:
-            for image in instance.images.all():
+        if (not created and task.status != "PROCESSING") or created:
+            if instance:
+                for image in instance.images.all():
+                    try:
+                        save_file1(image)
+                    except Exception as e:
+                        # f"An error occurred: {str(e)}")
+                        instance.status = 'FAILED'
+                        instance.save()
 
-                try:
-                    save_file1(image)
-                except Exception as e:
-                    # f"An error occurred: {str(e)}")
-                    instance.status = 'FAILED'
-                    instance.save()
 
-
-            if instance.status == 'DRAFT':
-                pass
-            elif instance.status == 'PROCESSING':
-                    publish_post_on_social_media(instance)
-
-            elif instance.status == 'SCHEDULED':
-                current_datetime = timezone.now()
-                given_datetime_str = instance.schedule_datetime
-
-                if given_datetime_str < current_datetime:
-                    schedule_publish_task(instance)
-                else:
+                if instance.status == 'DRAFT':
                     pass
+                elif instance.status == 'PROCESSING':
+                        publish_post_on_social_media(instance)
+                elif instance.status == 'SCHEDULED':
+                    current_datetime = timezone.now()
+                    given_datetime_str = instance.schedule_datetime
+
+                    if given_datetime_str < current_datetime:
+                        schedule_publish_task(instance)
+                    else:
+                        pass
+                task.status = "FINISHED"
+                task.result = f"SUCCESS {instance.id}"
+                task.save()
+            else:
+                pass
 
     except PostModel.DoesNotExist:
         pass
+    except Exception as e:
+        task.status = "FAILED"
+        task.result = f"SUCCESS {instance.id}"
+        task.save()
+
 
 
 
@@ -246,11 +252,11 @@ def schedule_publish_task(instance):
 
 @shared_task
 def gather_post_insight(instance):
-    try:
 
+    try:
+        # key = f"{instance.id} {instance.user.id}"
         since = datetime.now(timezone.utc).replace(minute=0,hour=0,second=0,microsecond=0)
         until = datetime.now(timezone.utc)
-
         post_urns = Post_urn.objects.filter(org=instance,is_deleted = False).values_list('urn', flat=True)
 
         if instance.provider == "facebook":

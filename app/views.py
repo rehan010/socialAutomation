@@ -707,27 +707,56 @@ class DashBoardCardView(APIView):
 
         user_manager = self.request.user.manager
         users = []
-        if user_manager != None:
-            role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
-            user_role = role.role
-            user_permission = role.permission
-            if user_permission == 'READ' or user_permission == "WRITE":
 
+
+        task = CeleryTask.objects.filter(key=lock_key, task_name=lock_key).last()
+        created = False
+        if (task is None) or task.status != "PROCESSING":
+            task = CeleryTask.objects.create(key=lock_key, task_name=lock_key)
+            created = True
+        else:
+            if task.status == "PROCESSING":
+                created = False
+
+
+
+        if (not created and task.status != "PROCESSING") or created:
+
+            if user_manager != None:
+                role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
+                user_role = role.role
+                user_permission = role.permission
+                if user_permission == 'READ' or user_permission == "WRITE":
+
+                    invited_users = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list('selected_user', flat=True).distinct()
+                    for in_user in invited_users:
+                        users.append(in_user.id)
+                else:
+                    pass
+            else:
                 invited_users = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list('selected_user', flat=True).distinct()
                 for in_user in invited_users:
-                    users.append(in_user.id)
-            else:
-                pass
+                    users.append(in_user)
+            users.append(self.request.user.id)
+
+
+            task_function = task_three.apply_async(args=[users,task.id])
+            task.result = task_function.id
+            taskId = task_function.id
+
+            task.save()
         else:
-            invited_users = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list('selected_user', flat=True).distinct()
-            for in_user in invited_users:
-                users.append(in_user)
-        users.append(self.request.user.id)
+            taskId = task.result
 
 
-        task = task_three.apply_async(args=[users,lock_key])
+        return Response({'task_id': taskId})
 
-        return Response({'task_id': task.id})
+
+
+
+
+
+            
 
 
 
@@ -880,7 +909,7 @@ class DashBoardCardView(APIView):
 
 
     def lock_key_generator(self,user):
-        return f"task_lock:{user.id}"
+        return f"REQUESTED USER INSIGHTS:{user.id}"
 
 
 class PasswordResetView(auth_views.PasswordResetView):

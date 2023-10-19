@@ -167,6 +167,7 @@ async function fetchFollowersGraph(start = getFormattedDate(7) , end = getFormat
                     style: "normal",
                     lineHeight: 2,
                   },
+                  stepSize: 1,
                 },
               },
               x: {

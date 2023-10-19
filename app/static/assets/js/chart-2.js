@@ -169,7 +169,6 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
                   display: true,
                   drawOnChartArea: true,
                   drawTicks: false,
-
                 },
                 ticks: {
                   display: true,
@@ -181,7 +180,9 @@ async function fetchPostGraph(start = getFormattedDate(7) , end = getFormattedDa
                     style: "normal",
                     lineHeight: 2,
                   },
+                  stepSize: 1,
                 },
+
               },
               x: {
                 grid: {

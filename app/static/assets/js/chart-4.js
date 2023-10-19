@@ -77,7 +77,7 @@ async function fetchCommentsGraph(start = getFormattedDate(7) , end = getFormatt
             pointRadius: 4,
             borderColor: "#1B5583",
 
-            fill: true,
+            fill: false,
             maxBarThickness: 6,
             pointBackgroundColor: "#6F8FAF",
             pointBorderColor: "#4682B4	",
@@ -163,6 +163,7 @@ async function fetchCommentsGraph(start = getFormattedDate(7) , end = getFormatt
                     style: "normal",
                     lineHeight: 2,
                   },
+                  stepSize: 1,
                 },
               },
               x: {
