@@ -208,6 +208,17 @@
                 </a>
                 <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
             </li>
+
+             <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
+                <a href="{% url 'map_view' %}"
+                class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-white">
+
+                    <div class="w-8">
+                        <i class="fa-solid fa-map-location-dot text-white"></i>
+                    </div>
+                </a>
+                <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
+            </li>
             {% endif %}
 
             {% if user_role == 'ADMIN' %}
@@ -297,6 +308,19 @@
 
 
                     <span class="text-sm text-white">Accounts</span>
+                </a>
+                <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
+            </li>
+
+            <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
+                <a href="{% url 'map_view' %}"
+                class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-white">
+
+                    <div class="w-8">
+                        <i class="fa-solid fa-map-location-dot text-white"></i>
+                    </div>
+
+                    <span class="text-sm">Map</span>
                 </a>
                 <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
             </li>
@@ -440,3 +464,4 @@ function getFormattedDate(daysBefore = 0){
 <!-- must be include as static files -->
 <script type="text/javascript"  src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </html>
+

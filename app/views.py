@@ -1104,6 +1104,8 @@ class RegisterViewInvite(FormView):
 
         if invite.expiration_date < current_time:
             invite.delete()
+            if self.request.user.is_authenticated:
+                logout(request)
 
             return render(request, 'registration/invitation_failed.html')
 
@@ -1190,6 +1192,9 @@ class RegisterViewInvite(FormView):
 
 class PrivacyPolicyView(TemplateView):
     template_name = 'registration/privacy_policy.html'
+
+class MapView(TemplateView):
+    template_name = 'registration/map.html'
 
 
 class PointFileCreateView(LoginRequiredMixin, CreateView):

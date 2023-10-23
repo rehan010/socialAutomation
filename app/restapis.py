@@ -3422,3 +3422,21 @@ def linkdein_pagination(pagination,access_token, type):
             data['comment_response'] = ugcpost_socialactions_nested_comments_data_orgainzer(elements, access_token)
 
     return data
+
+
+
+def map_search(search_input):
+
+    access_token = 'pk.eyJ1IjoicmVoYW4wMTAiLCJhIjoiY2p1MWppdzh1MDJjZzQ5cHY0bG80eDFjcCJ9.CiQmY8N2iAms6F1nj1Twew'
+    search_input = search_input # Replace with your actual search query
+    bbox = "-8.667,19.057,11.999,37.125,"  # Replace with your desired bounding box coordinates
+
+    url = f"https://api.mapbox.com/geocoding/v5/mapbox.places/{search_input}.json?access_token={access_token}&bbox={bbox}"
+
+    payload = {}
+    headers = {}
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+
+    print(response.text)
+
