@@ -1,0 +1,561 @@
+{%extends 'registration/base.html'%}
+{% block content %}
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Demo: Show changes over time with Mapbox GL JS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <link
+      href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      }
+
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+
+      h1 {
+        font-size: 20px;
+        line-height: 30px;
+      }
+
+      h2 {
+        font-size: 14px;
+        line-height: 20px;
+        margin-bottom: 10px;
+      }
+
+      a1 {
+        text-decoration: none;
+        color: #2dc4b2;
+      }
+
+      #console {
+        position: absolute;
+        margin: 10px;
+        width: 340px;
+        background-color: white;
+        padding: 10px 20px;
+      }
+
+      .session {
+        margin-bottom: 20px;
+      }
+
+      .row {
+        height: 12px;
+        width: 110%;
+      }
+
+      .colors {
+        background: linear-gradient(
+          to right,
+          #fad919,
+          #fa9a33,
+          #ff7605,
+          #b45022,
+          #8fa626,
+          #267604,
+          #e80202,
+          #640707,
+          #073003,
+          #411150
+        );
+        margin-bottom: 5px;
+      }
+
+      .label {
+        width: 10%;
+        display: inline-block;
+        text-align: center;
+      }
+      #menu {
+      background: #fff;
+      position: absolute;
+      z-index: 1;
+      top: 10px;
+      right: 10px;
+      border-radius: 3px;
+      width: 120px;
+      border: 1px solid rgba(0, 0, 0, 0.4);
+      font-family: 'Open Sans', sans-serif;
+      }
+
+      #menu a {
+      font-size: 13px;
+      color: #404040;
+      display: block;
+      margin: 0;
+      padding: 0;
+      padding: 10px;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+      text-align: center;
+      }
+
+      #menu a:last-child {
+      border: none;
+      }
+
+      #menu a:hover {
+      background-color: #f8f8f8;
+      color: #404040;
+      }
+
+      #menu a.active {
+      background-color: #3887be;
+      color: #ffffff;
+      }
+
+      #menu a.active:hover {
+      background: #3074a4;
+      }
+      .mapboxgl-popup {
+        max-width: 400px;
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+    <nav id="menu"></nav>
+
+
+    <div id="console" class="rounded-xl border-2 border-gray-800">
+      <div class="flex">
+        <input
+            id="search"
+            class="w-64 py-2 px-4 pr-10 rounded-3xl bg-white text-sm focus:outline-none focus:ring focus:border-blue-300"
+            type="text"
+            placeholder="Search for a location.."
+        />
+    </div>
+    <br>
+    <div class="suggestions-wrapper">
+      <ul class="suggestions">
+
+      </ul>
+    </div>
+      <div class="session hidden" id="key">
+        <h2>Key</h2>
+        <div class="row colors text-xxs rounded-xl"></div>
+        <div class="row labels">
+          <div class="label text-xxs">0</div>
+          <div class="label text-xxs">1</div>
+          <div class="label text-xxs">2</div>
+          <div class="label text-xxs">3</div>
+          <div class="label text-xxs">4</div>
+          <div class="label text-xxs">5</div>
+          <div class="label text-xxs">6</div>
+          <div class="label text-xxs">7</div>
+          <div class="label text-xxs">8</div>
+          <div class="label text-xxs">9</div>
+        </div>
+      </div>
+      <div class="session hidden" id="scoring_slider">
+        <h2>Score: <label id="score">0</label></h2>
+        <input id="slider" class="row" type="range" min="0" max="9" step="1" value="0"/>
+      </div>
+      <div class="session ">
+        <h2>SELECT A MAP VIEW</h2>
+        <div class="row flex  text-xs" id="filters">
+          <input id="clo06rtho008b01qx5xv04oe6" type="radio" name="rtoggle" value="satellite" checked="checked">
+          <label for="clo06rtho008b01qx5xv04oe6" class="text-xs text-slate-600">Satellite View</label>
+          <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="streets">
+          <label for="clo04hvvs001001pgbi328gj6" class="text-xs text-slate-600k">Street View</label>
+          <input id="cloe37zj8001d01qrgfbvb5xa" type="radio" name="rtoggle" value="pd">
+          <label for="cloe37zj8001d01qrgfbvb5xa" class="text-xs text-slate-600">Population Density View</label>
+        </div>
+      </div>
+    </div>
+    <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoicmVoYW4wMTAiLCJhIjoiY2p1MWppdzh1MDJjZzQ5cHY0bG80eDFjcCJ9.CiQmY8N2iAms6F1nj1Twew';
+      const map = new mapboxgl.Map({
+          container: 'map', // container ID
+
+          style: 'mapbox://styles/rehan010/clo06rtho008b01qx5xv04oe6',
+          center: [2.63238813336793,28.1632395923063], // starting position [lng, lat]
+          zoom: 4, // starting zoom
+          minZoom: 4, // Set the minimum zoom level
+          maxZoom: 15,
+
+
+    });
+<!--      mapboxgl.accessToken = 'pk.eyJ1IjoicmVoYW4wMTAiLCJhIjoiY2p1MWppdzh1MDJjZzQ5cHY0bG80eDFjcCJ9.CiQmY8N2iAms6F1nj1Twew';-->
+<!--      const map = new mapboxgl.Map({-->
+<!--          container: 'map', // container ID-->
+
+<!--          style: 'mapbox://styles/rehan010/cloe37zj8001d01qrgfbvb5xa',-->
+<!--          center: [2.63238813336793,28.1632395923063], // starting position [lng, lat]-->
+<!--          zoom: 4, // starting zoom-->
+<!--          minZoom: 2, // Set the minimum zoom level-->
+<!--          maxZoom: 15,-->
+
+
+<!--      });-->
+
+      map.addControl(new mapboxgl.NavigationControl());
+
+
+
+      const layerList = document.getElementById('menu');
+      const inputs = document.querySelectorAll('input[type=radio][name=rtoggle]');
+
+
+      for (const input of inputs) {
+          input.onclick = (layer) => {
+              const layerId = layer.target.id;
+              const key = document.getElementById('key');
+              const scoring_slider = document.getElementById('scoring_slider');
+
+
+              if (layer.target.value=='pd'){
+
+                  scoring_slider.classList.remove('hidden');
+                  key.classList.remove('hidden');
+
+                  const popup = new mapboxgl.Popup({
+                    closeButton: false,
+                    closeOnClick: false
+                  });
+
+                  map.on('mouseenter', 'wilaya-layer', (e) => {
+                    // Change the cursor style as a UI indicator.
+                    map.getCanvas().style.cursor = 'pointer';
+
+                    // Access the GeoJSON properties
+                    const properties = e.features[0].properties;
+                    const name = properties.name;
+                    const total = properties.total;
+                    const ISO = properties.ISO;
+                    const name_ar = properties.name_ar;
+                    const special_vehicle = properties.special_vehicle;
+                    const density = properties.density;
+                    const semi_truck = properties.semi_truck;
+                    const motorcycle = properties.motorcycle;
+                    const score = properties.score;
+                    const trailer = properties.trailer;
+                    const agricultural_tractor = properties.agricultural_tractor;
+                    const cleaning_truck = properties.cleaning_truck;
+                    const percentage = properties.percentage;
+                    const truck = properties.truck;
+                    const touring_car = properties.touring_car;
+
+                    // Set the popup content with the GeoJSON properties
+                    const popupContent = `
+                      <strong>Name:</strong> ${name}<br>
+                      <strong>Total:</strong> ${total}<br>
+                      <strong>ISO:</strong> ${ISO}<br>
+                      <strong>Name (Arabic):</strong> ${name_ar}<br>
+                      <strong>Special Vehicle:</strong> ${special_vehicle}<br>
+                      <strong>Density:</strong> ${density}<br>
+                      <strong>Semi Truck:</strong> ${semi_truck}<br>
+                      <strong>Motorcycle:</strong> ${motorcycle}<br>
+                      <strong>Score:</strong> ${score}<br>
+                      <strong>Trailer:</strong> ${trailer}<br>
+                      <strong>Agricultural Tractor:</strong> ${agricultural_tractor}<br>
+                      <strong>Cleaning Truck:</strong> ${cleaning_truck}<br>
+                      <strong>Percentage:</strong> ${percentage}<br>
+                      <strong>Truck:</strong> ${truck}<br>
+                      <strong>Touring Car:</strong> ${touring_car}
+                    `;
+
+                    popup.setHTML(popupContent).setLngLat(e.lngLat).addTo(map);
+
+                    popup.setHTML(popupContent).setLngLat(e.lngLat).addTo(map);
+
+                    // Listen to the zoom event and adjust popup size and font size
+                    map.on('zoom', () => {
+                      const currentZoom = map.getZoom();
+
+                      // Define the CSS properties for different zoom levels
+                      if (currentZoom < 10) {
+                        // Adjust the CSS properties for lower zoom levels
+                        popup._container.style.fontSize = '12px';
+                        popup._container.style.width = '150px';
+                        // You can adjust other styles as needed
+                      } else {
+                        // Default or other styles for higher zoom levels
+                        popup._container.style.fontSize = '16px';
+                        popup._container.style.width = '200px';
+                      }
+                    });
+                  });
+
+                  map.on('mouseleave', 'wilaya-layer', () => {
+                    map.getCanvas().style.cursor = '';
+                    popup.remove();
+                  });
+
+
+
+
+              }else{
+                  scoring_slider.classList.add('hidden');
+                  key.classList.add('hidden');
+
+
+              }
+              map.setStyle('mapbox://styles/rehan010/' + layerId);
+          };
+      }
+
+
+      map.on('load', () => {
+
+        var scoreSlider = document.getElementById('slider');
+        var scoreValue = document.getElementById('score');
+
+        scoreSlider.addEventListener('input', function (e) {
+            var score = parseInt(e.target.value);
+
+            // Filter the Wilaya features based on the selected score
+            map.setFilter('wilaya-layer', ['>=', ['get', 'score'], score]);
+
+            // Update the slider value display
+            scoreValue.textContent = score;
+        });
+
+        map.addLayer({
+            id: 'wilaya-layer',
+            type: 'fill',
+            source: 'your-wilaya-source', // Replace with your source
+            paint: {
+                'fill-color': [
+                    'case',
+                    ['<', ['get', 'score'], score], 'white', // Change to white if score is less
+                    'blue' // Default color
+                ],
+                'fill-opacity': 0.7
+            }
+        });
+
+
+        let filterScore = ['==', ['number', ['get', 'score']], 0];
+        // update hour filter when the slider is dragged
+        document.getElementById('slider').addEventListener('input', (event) => {
+          const score = parseInt(event.target.value);
+          // update the map
+          filterScore = ['==', ['number', ['get', 'Score']], score];
+          // update text in the UI
+          document.getElementById('score').innerText = score;
+        });
+
+        document
+          .getElementById('filters')
+          .addEventListener('change', (event) => {
+            const day = event.target.value;
+            // update the map filter
+            if (day === 'all') {
+              filterDay = ['!=', ['string', ['get', 'Day']], 'placeholder'];
+            } else if (day === 'weekday') {
+              filterDay = [
+                'match',
+                ['get', 'Day'],
+                ['Sat', 'Sun'],
+                false,
+                true
+              ];
+            } else if (day === 'weekend') {
+              filterDay = [
+                'match',
+                ['get', 'Day'],
+                ['Sat', 'Sun'],
+                true,
+                false
+              ];
+            } else {
+              console.error('error');
+            }
+            map.setFilter('collisions', ['all', filterScore, filterDay]);
+          });
+      });
+
+      map.on('idle', () => {
+        // If these two layers were not added to the map, abort
+        if (!map.getLayer('contours') || !map.getLayer('museums')) {
+        return;
+        }
+
+        // Enumerate ids of the layers.
+        const toggleableLayerIds = ['contours', 'museums'];
+
+        // Set up the corresponding toggle button for each layer.
+        for (const id of toggleableLayerIds) {
+        // Skip layers that already have a button set up.
+        if (document.getElementById(id)) {
+        continue;
+        }
+
+        // Create a link.
+        const link = document.createElement('a');
+        link.id = id;
+        link.href = '#';
+        link.textContent = id;
+        link.className = 'active';
+
+        // Show or hide layer when the toggle is clicked.
+        link.onclick = function (e) {
+        const clickedLayer = this.textContent;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const visibility = map.getLayoutProperty(
+        clickedLayer,
+        'visibility'
+        );
+
+        // Toggle layer visibility by changing the layout object's visibility property.
+        if (visibility === 'visible') {
+        map.setLayoutProperty(clickedLayer, 'visibility', 'none');
+        this.className = '';
+        } else {
+        this.className = 'active';
+        map.setLayoutProperty(
+        clickedLayer,
+        'visibility',
+        'visible'
+        );
+        }
+        };
+
+        const layers = document.getElementById('menu');
+          layers.appendChild(link);
+        }
+      });
+
+
+
+      let marker;
+
+      function addMarker(coordinates) {
+
+        if (marker) {
+          marker.remove();
+        }
+
+
+        marker = new mapboxgl.Marker({ color: 'red' })
+          .setLngLat(coordinates)
+          .addTo(map);
+      }
+    const search = document.getElementById('search');
+
+    function makeApiRequest(searchValue) {
+      const access_token = 'pk.eyJ1IjoicmVoYW4wMTAiLCJhIjoiY2p1MWppdzh1MDJjZzQ5cHY0bG80eDFjcCJ9.CiQmY8N2iAms6F1nj1Twew';
+      const bbox = '-8.667992,18.956237,11.994246,37.1692786';
+      const proximity = '-73.990593,40.740121';
+
+      // Construct the API request URL with the searchValue and bbox
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchValue}.json?country=dz&proximity=${proximity}&access_token=${access_token}&bbox=${bbox}`;
+
+      const suggestionsWrapper = document.querySelector('.suggestions');
+      suggestionsWrapper.innerHTML = ''; // Clear the suggestions
+
+      if (!searchValue) {
+        return; // Return if the input is empty
+      }
+
+      try {
+        fetch(url)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not OK');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const m_data = {
+              features: data.features,
+            };
+
+            m_data.features.forEach((feature, index) => {
+              const { place_name, center } = feature;
+
+              // Create a suggestion item
+              const suggestionItem = document.createElement('li');
+              suggestionItem.classList.add('suggestion-item');
+              suggestionItem.dataset.index = index;
+
+              // Create an anchor element for the suggestion
+              const suggestionLink = document.createElement('a');
+              suggestionLink.classList.add('cursor-pointer');
+
+              // Set a click event for the suggestion
+              suggestionLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                const clickedIndex = suggestionItem.dataset.index;
+                const selectedLocation = m_data.features[clickedIndex];
+                const [lng, lat] = selectedLocation.center;
+
+                // Call a function to set the marker and center the map
+                setMarkerAndCenter(lng, lat);
+              });
+
+
+              // Create elements for suggestion title and address
+              const title = document.createElement('div');
+              title.textContent = place_name;
+
+
+              // Append title to the anchor element
+              suggestionLink.appendChild(title);
+
+              // Append the anchor element to the suggestion item
+              suggestionItem.appendChild(suggestionLink);
+
+              // Append the suggestion item to the suggestions wrapper
+              suggestionsWrapper.appendChild(suggestionItem);
+            });
+
+            function setMarkerAndCenter(lng, lat) {
+              // Remove the previous marker if it exists
+              if (marker) {
+                marker.remove();
+              }
+
+              // Create a new marker at the specified coordinates
+              marker = new mapboxgl.Marker({ color: 'red' }).setLngLat([lng, lat]).addTo(map);
+
+              // Center the map on the selected location
+              map.setCenter([lng, lat]);
+            }
+          });
+      } catch (error) {
+        // Handle any errors here
+        console.error(error);
+      }
+    }
+
+    search.addEventListener('input', () => {
+      const searchValue = search.value;
+      console.log(searchValue);
+
+      if (searchValue.length > 2) {
+        makeApiRequest(searchValue);
+      }
+      if (searchValue === ''){
+            const suggestionsWrapper = document.querySelector('.suggestions');
+            suggestionsWrapper.innerHTML = '';
+            marker.remove();
+      }
+    });
+
+
+    </script>
+  </body>
+</html>
+
+{%endblock%}

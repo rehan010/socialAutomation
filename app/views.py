@@ -24,7 +24,7 @@ from django.views.decorators.csrf import csrf_exempt,csrf_protect
 from django.utils.safestring import mark_safe
 # from django.contrib.auth.models import User
 from django.core.cache import cache
-
+import tempfile
 from .models import User
 from allauth.socialaccount.models import EmailAddress, SocialAccount, SocialToken
 from django.shortcuts import get_object_or_404
@@ -156,16 +156,17 @@ class CustomLoginView(FormView):
     extra_context = None
     def form_valid(self, form):
        response = super(CustomLoginView, self).form_valid(form)
+       user_timezone = self.request.POST.get('user_timezone')
+       if user_timezone is not None:
+           self.request.session['user_timezone'] = user_timezone
+           user = form.get_user()
+           auth_login(self.request, user)
 
-       self.request.session['user_timezone'] = self.request.POST.get('user_timezone')
-       user = form.get_user()
-       auth_login(self.request, user)
+           if user.is_superuser:
+               return redirect(reverse_lazy("my_user"))
 
-       if user.is_superuser:
-           return redirect(reverse_lazy("my_user"))
 
-      
-       response.set_cookie('isLoggedIn', 'true')
+           response.set_cookie('isLoggedIn', 'true')
 
        return response
     
@@ -542,109 +543,116 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return super(DashboardView, self).dispatch(request)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user_timezone = pytz.timezone(self.request.session['user_timezone'])
-        today = datetime.now(tz=pytz.timezone(self.request.session.get("user_timezone"))).replace(hour=0, minute=0, second=0)
-        today_str = today.strftime('%Y-%m-%d')
-        timezone_diff = timzone_difference(user_timezone)
+        context = {}
+        try:
+            user_timezone = pytz.timezone(self.request.session['user_timezone'])
+            today = datetime.now(tz=pytz.timezone(self.request.session.get("user_timezone"))).replace(hour=0, minute=0, second=0)
+            today_str = today.strftime('%Y-%m-%d')
+            timezone_diff = timzone_difference(user_timezone)
 
-        starting_date = datetime.strptime(today_str,'%Y-%m-%d') + timedelta(hours=timezone_diff)
-        ending_date = (datetime.strptime(today_str,'%Y-%m-%d') + timedelta(hours=23,minutes=59)).astimezone(user_timezone).astimezone(pytz.utc)
-        # Add your context data here
-        if self.request.user.is_authenticated:
-            user_manager = self.request.user.manager
+            starting_date = datetime.strptime(today_str,'%Y-%m-%d') + timedelta(hours=timezone_diff)
+            ending_date = (datetime.strptime(today_str,'%Y-%m-%d') + timedelta(hours=23, minutes=59)).astimezone(user_timezone).astimezone(pytz.utc)
+            # Add your context data here
+            if self.request.user.is_authenticated:
+                user_manager = self.request.user.manager
 
-            if user_manager != None:
-                role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
-                user_role = role.role
-                user_permission = role.permission
-                if user_permission == 'HIDE':
+                if user_manager != None:
+                    role = InviteEmploye.objects.get(selected_user=self.request.user, invited_by=self.request.user.manager)
+                    user_role = role.role
+                    user_permission = role.permission
+                    if user_permission == 'HIDE':
 
-                    total_posts = PostModel.objects.filter( Q(status='PUBLISHED') | Q(status='FAILED'),user=self.request.user,created_at__gte = starting_date,created_at__lte = ending_date  ,is_deleted=False)
-                    sharepages = SharePage.objects.filter(user=self.request.user)
+                        total_posts = PostModel.objects.filter( Q(status='PUBLISHED') | Q(status='FAILED'),user=self.request.user,created_at__gte = starting_date,created_at__lte = ending_date  ,is_deleted=False)
+                        sharepages = SharePage.objects.filter(user=self.request.user)
+
+                    else:
+                        total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager),Q(status='PUBLISHED') | Q(status='FAILED'),created_at__gte = starting_date,created_at__lte = ending_date  ,is_deleted=False)
+                        sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager))
+
 
                 else:
-                    total_posts = PostModel.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager),Q(status='PUBLISHED') | Q(status='FAILED'),created_at__gte = starting_date,created_at__lte = ending_date  ,is_deleted=False)
-                    sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user=self.request.user.manager))
+                    invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list('selected_user', flat=True).distinct()
+
+                    total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invited),Q(status='PUBLISHED') | Q(status='FAILED'),created_at__gte = starting_date,created_at__lte = ending_date, is_deleted = False)
+
+                    sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invited))
+
+                post_count_ln = total_posts.filter(post_urn__org__provider='linkedin').count()
+                post_count_fb = total_posts.filter(post_urn__org__provider='facebook').count()
+                post_count_insta = total_posts.filter(post_urn__org__provider='instagram').count()
+
+                fb_share_pages = sharepages.filter(provider="facebook").distinct()
+                insta_share_pages = sharepages.filter(provider="instagram").distinct()
+                ln_share_pages = sharepages.filter(provider="linkedin").distinct()
+                google_share_pages = sharepages.filter(provider="google").distinct()
+
+                total_likes_facebook = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
+                if total_likes_facebook is None:
+                    total_likes_facebook = 0
 
 
-            else:
-                invited = InviteEmploye.objects.filter(invited_by=self.request.user, status="ACCEPTED").values_list('selected_user', flat=True).distinct()
-
-                total_posts = PostModel.objects.filter(Q(user=self.request.user.id) | Q(user__in=invited),Q(status='PUBLISHED') | Q(status='FAILED'),created_at__gte = starting_date,created_at__lte = ending_date, is_deleted = False)
-
-                sharepages = SharePage.objects.filter(Q(user=self.request.user) | Q(user__in=invited))
-
-            post_count_ln = total_posts.filter(post_urn__org__provider='linkedin').count()
-            post_count_fb = total_posts.filter(post_urn__org__provider='facebook').count()
-            post_count_insta = total_posts.filter(post_urn__org__provider='instagram').count()
-
-            fb_share_pages = sharepages.filter(provider="facebook").distinct()
-            insta_share_pages = sharepages.filter(provider="instagram").distinct()
-            ln_share_pages = sharepages.filter(provider="linkedin").distinct()
-            google_share_pages = sharepages.filter(provider="google").distinct()
-
-            total_likes_facebook = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
-            if total_likes_facebook is None:
-                total_likes_facebook = 0
+                total_likes_instagram = SocialStats.objects.filter(org__in=insta_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
+                if total_likes_instagram is None:
+                    total_likes_instagram = 0
+                total_likes_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
+                if total_likes_linkedin is None:
+                    total_likes_linkedin = 0
+                total_likes_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
+                if total_likes_google is None:
+                    total_likes_google = 0
 
 
-            total_likes_instagram = SocialStats.objects.filter(org__in=insta_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
-            if total_likes_instagram is None:
-                total_likes_instagram = 0
-            total_likes_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
-            if total_likes_linkedin is None:
-                total_likes_linkedin = 0
-            total_likes_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values('t_likes').aggregate(Sum('t_likes'))['t_likes__sum']
-            if total_likes_google is None:
-                total_likes_google = 0
+                total_comments_facebook = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
+                if total_comments_facebook is None:
+                    total_comments_facebook = 0
+                total_comments_instagram = SocialStats.objects.filter(org__in=insta_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
+                if total_comments_instagram is None:
+                    total_comments_instagram = 0
+                total_comments_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
+                if total_comments_linkedin is None:
+                    total_comments_linkedin = 0
+                total_comments_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
+                if total_comments_google is None:
+                    total_comments_google = 0
 
 
-            total_comments_facebook = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
-            if total_comments_facebook is None:
-                total_comments_facebook = 0
-            total_comments_instagram = SocialStats.objects.filter(org__in=insta_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
-            if total_comments_instagram is None:
-                total_comments_instagram = 0
-            total_comments_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
-            if total_comments_linkedin is None:
-                total_comments_linkedin = 0
-            total_comments_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_comments").aggregate(Sum("t_comments"))['t_comments__sum']
-            if total_comments_google is None:
-                total_comments_google = 0
+                total_followers_facebook = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
+                if total_followers_facebook is None:
+                    total_followers_facebook = 0
+                total_followers_instagram = SocialStats.objects.filter(org__in=insta_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
+
+                if total_followers_instagram is None:
+                    total_followers_instagram = 0
+                total_followers_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
+                if total_followers_linkedin is None:
+                    total_followers_linkedin = 0
+                total_followers_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
+                if total_followers_google is None:
+                    total_followers_google = 0
+
+                context['linkedin_likes_today'] = total_likes_linkedin
+                context['facebook_likes_today'] = total_likes_facebook
+                context['instagram_likes_today'] = total_likes_instagram
+                context['google_likes_today'] = total_likes_google
+
+                context['facebook_comments_today'] = total_comments_facebook
+                context['instagram_comments_today'] = total_comments_instagram
+                context['linkedin_comments_today'] = total_comments_linkedin
+                context['google_comments_today'] = total_comments_linkedin
+
+                context['linkedin_post_today'] = post_count_ln
+                context['facebook_post_today'] = post_count_fb
+                context['instagram_post_today'] = post_count_insta
+                context['facebook_new_followers'] = total_followers_facebook
+                context['instagram_new_followers'] = total_followers_instagram
+                context['google_new_followers'] = total_followers_google
+                context['linkedin_new_followers'] = total_followers_linkedin
 
 
-            total_followers_facebook = SocialStats.objects.filter(org__in=fb_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
-            if total_followers_facebook is None:
-                total_followers_facebook = 0
-            total_followers_instagram = SocialStats.objects.filter(org__in=insta_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
-
-            if total_followers_instagram is None:
-                total_followers_instagram = 0
-            total_followers_linkedin = SocialStats.objects.filter(org__in=ln_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
-            if total_followers_linkedin is None:
-                total_followers_linkedin = 0
-            total_followers_google = SocialStats.objects.filter(org__in=google_share_pages,created_at__gte=starting_date, created_at__lte=ending_date).values("t_followers").aggregate(Sum("t_followers"))['t_followers__sum']
-            if total_followers_google is None:
-                total_followers_google = 0
-
-            context['linkedin_likes_today'] = total_likes_linkedin
-            context['facebook_likes_today'] = total_likes_facebook
-            context['instagram_likes_today'] = total_likes_instagram
-            context['google_likes_today'] = total_likes_google
-
-            context['facebook_comments_today'] = total_comments_facebook
-            context['instagram_comments_today'] = total_comments_instagram
-            context['linkedin_comments_today'] = total_comments_linkedin
-            context['google_comments_today'] = total_comments_linkedin
-
-            context['linkedin_post_today'] = post_count_ln
-            context['facebook_post_today'] = post_count_fb
-            context['instagram_post_today'] = post_count_insta
-            context['facebook_new_followers'] = total_followers_facebook
-            context['instagram_new_followers'] = total_followers_instagram
-            context['google_new_followers'] = total_followers_google
-            context['linkedin_new_followers'] = total_followers_linkedin
-
+        except Exception as e:
+            context['error'] = 'An error occurred.'
+            logout(self.request)
+            return context
 
         return context
 
@@ -652,7 +660,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 class DeleteCompanyApiView(APIView):
 
-    def delete(self,request):
+    def delete(self, request):
         try:
             userId = request.GET.get('userId')
             owner = User.objects.filter(id=userId).first()
@@ -1194,8 +1202,63 @@ class PrivacyPolicyView(TemplateView):
     template_name = 'registration/privacy_policy.html'
 
 class MapView(TemplateView):
-    template_name = 'registration/map.html'
+    template_name = 'registration/map2.html'
 
+    # def get_context_data(self, **kwargs):
+    #
+    #     wilayas = Wilayas.objects.all()
+    #
+    #
+    #     geojson_data = {
+    #         "type": "FeatureCollection",
+    #         "features": []
+    #     }
+    #
+    #     for wilaya in wilayas:
+    #         vehicle = WilayasVehicle.objects.filter(wilaya=wilaya).first()
+    #
+    #         import random
+    #
+    #         feature = {
+    #             "type": "Feature",
+    #             "geometry":  json.loads(wilaya.coordinates)
+    #             ,
+    #             "properties": {
+    #                 "score": random.randint(0, 9),
+    #                 "name": wilaya.name,
+    #                 "name_ar": wilaya.name_ar,
+    #                 "density": 92,
+    #                 "ISO": wilaya.city_code,
+    #                 "touring_car": vehicle.touring_car if vehicle else 0,
+    #                 "truck": vehicle.truck if vehicle else 0,
+    #                 "cleaning_truck": vehicle.cleaning_truck if vehicle else 0,
+    #                 "bus": vehicle.bus if vehicle else 0,
+    #                 "semi_truck": vehicle.semi_truck if vehicle else 0,
+    #                 "agricultural_tractor": vehicle.agricultural_tractor if vehicle else 0,
+    #                 "special_vehicle": vehicle.special_vehicle if vehicle else 0,
+    #                 "trailer": vehicle.trailer if vehicle else 0,
+    #                 "motorcycle": vehicle.motorcycle if vehicle else 0,
+    #                 "total": vehicle.total if vehicle else 0,
+    #                 "percentage": vehicle.percentage if vehicle else 0
+    #             }
+    #         }
+    #         geojson_data["features"].append(feature)
+    #
+    #     # Step 3: Serialize the data into a GeoJSON file
+    #     with open("output.geojson", "w") as output_file:
+    #         json.dump(geojson_data, output_file)
+    #
+    #     file_path = "/Users/anasrehman/Desktop/output4.geojson"
+    #
+    #
+    #     # Assuming you already have the 'output.geojson' file created in your Django view
+    #     # You can use Python's 'open' function to save it to your local system
+    #     with open(file_path, "w") as output_file:
+    #         output_file.write(json.dumps(geojson_data, indent=2))
+    #
+    #
+    #     context = {'file' : output_file}
+    #     return context
 
 class PointFileCreateView(LoginRequiredMixin, CreateView):
     model = PointFileModel
@@ -2602,6 +2665,7 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
             return redirect(reverse_lazy("my_user"))
 
         return super(PostsDetailView, self).dispatch(request)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post_id = self.kwargs['post_id']
@@ -2611,23 +2675,24 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
         posted_on = Post_urn.objects.get(id=page_id).org.name
         name = self.request.GET.get('page_name')
 
+        context = {}
+        try:
+            if self.request.GET.get('page_name') == 'linkedin':
 
-        if self.request.GET.get('page_name') == 'linkedin':
+                provider_name = "linkedin"
+                linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
+                # social = SocialAccount.objects.get(user=linkedin_post.user.id, provider='linkedin_oauth2')
 
-            provider_name = "linkedin"
-            linkedin_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
-            # social = SocialAccount.objects.get(user=linkedin_post.user.id, provider='linkedin_oauth2')
+                org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
+                post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
+                is_liked = linkedin_post.post_urn.all().filter(pk=page_id).first().is_liked
 
-            org_id = linkedin_post.post_urn.all().filter(pk=page_id).first().org.org_id
-            post_urn = linkedin_post.post_urn.all().filter(pk=page_id).first().urn
-            is_liked = linkedin_post.post_urn.all().filter(pk=page_id).first().is_liked
-
-            # my eddited
-            access_token_string = linkedin_post.post_urn.all().filter(pk=page_id).first().org.access_token
-            urn = post_urn
-            if urn == '' or urn == None:
-                    pass
-            else:
+                # my eddited
+                access_token_string = linkedin_post.post_urn.all().filter(pk=page_id).first().org.access_token
+                urn = post_urn
+                if urn == '' or urn == None:
+                        pass
+                else:
                     prefix, value = post_urn.rsplit(':', 1)
                     if prefix == 'urn:li:ugcPost':
                         result = ugcpost_socialactions(urn, access_token_string, linkedin_post)
@@ -2644,95 +2709,98 @@ class PostsDetailView(LoginRequiredMixin, TemplateView):
                         next = result[3]
 
 
-            context = {
-                'ids': urn,
-                'no_likes': no_likes,
-                'no_comments': no_comments,
-                'data': data,
-                'next': next,
-                'posts': PostModel.objects.filter(user_id=self.request.user.id),
-                'post': linkedin_post,
 
-                'posted_on': posted_on,
-                'post_id': post_id,
-                'page_id': page_id,
-                'provider_name': provider_name,
-                'is_liked': is_liked
-            }
+                context = {
+                    'ids': urn,
+                    'no_likes': no_likes,
+                    'no_comments': no_comments,
+                    'data': data,
+                    'next': next,
+                    'posts': PostModel.objects.filter(user_id=self.request.user.id),
+                    'post': linkedin_post,
 
-        elif self.request.GET.get('page_name') == 'facebook':
-            provider_name = "facebook"
+                    'posted_on': posted_on,
+                    'post_id': post_id,
+                    'page_id': page_id,
+                    'provider_name': provider_name,
+                    'is_liked': is_liked
+                }
 
-            facebook_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
-            org_id = facebook_post.post_urn.all().filter(pk=page_id).first().org.org_id
-            post_urn = facebook_post.post_urn.all().filter(pk = page_id).first().urn
-            is_liked = facebook_post.post_urn.all().filter(pk = page_id).first().is_liked
-            access_token_string = facebook_post.post_urn.all().filter(pk=page_id).first().org.access_token
-            urn = post_urn
-            if urn == '' or urn == None:
-                pass
-            else:
-                result = fb_socialactions(urn, access_token_string,org_id)
-                no_likes = result[0]
-                no_comments = result[1]
-                data = result[2]
-                picture_url = result[3]
-                next = result[4]
+            elif self.request.GET.get('page_name') == 'facebook':
+                provider_name = "facebook"
 
-            context = {
-                'ids': urn,
-                'no_likes': no_likes,
-                'is_liked': is_liked,
-                'no_comments': no_comments,
-                'data': data,
-                'next': next,
-                'picture_url':picture_url,
-                'posts': PostModel.objects.filter(user_id=self.request.user.id),
-                'post': facebook_post,
-                'posted_on': posted_on,
-                'post_id': post_id,
-                'page_id': page_id,
-                'provider_name': provider_name,
-                'reply_media_counter': 0
-            }
-        elif self.request.GET.get('page_name') == 'instagram':
-            provider_name = "instagram"
-            instagram_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
-            user = instagram_post.user
-            org_id = instagram_post.post_urn.all().filter(pk=page_id).first().org.org_id
-            post_urn = instagram_post.post_urn.all().filter(pk=page_id).first().urn
-            access_token = instagram_post.post_urn.all().filter(pk=page_id).first().org.access_token
-            urn = post_urn
+                facebook_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id,post_urn__pk=page_id)
+                org_id = facebook_post.post_urn.all().filter(pk=page_id).first().org.org_id
+                post_urn = facebook_post.post_urn.all().filter(pk = page_id).first().urn
+                is_liked = facebook_post.post_urn.all().filter(pk = page_id).first().is_liked
+                access_token_string = facebook_post.post_urn.all().filter(pk=page_id).first().org.access_token
+                urn = post_urn
+                if urn == '' or urn == None:
+                    pass
+                else:
+                    result = fb_socialactions(urn, access_token_string, org_id)
+                    no_likes = result[0]
+                    no_comments = result[1]
+                    data = result[2]
+                    picture_url = result[3]
+                    next = result[4]
 
-
-            if urn == '' or urn == None:
-                pass
-            else:
-
-                result = insta_socialactions(urn, access_token,org_id)
-                no_likes = result[0]
-                no_comments = result[1]
-                data = result[2]
-                picture_url = result[3]
-                next = result[4]
+                context = {
+                    'ids': urn,
+                    'no_likes': no_likes,
+                    'is_liked': is_liked,
+                    'no_comments': no_comments,
+                    'data': data,
+                    'next': next,
+                    'picture_url':picture_url,
+                    'posts': PostModel.objects.filter(user_id=self.request.user.id),
+                    'post': facebook_post,
+                    'posted_on': posted_on,
+                    'post_id': post_id,
+                    'page_id': page_id,
+                    'provider_name': provider_name,
+                    'reply_media_counter': 0
+                }
+            elif self.request.GET.get('page_name') == 'instagram':
+                provider_name = "instagram"
+                instagram_post = PostModel.objects.get(post_urn__org__provider=provider_name, id=post_id, post_urn__pk=page_id)
+                user = instagram_post.user
+                org_id = instagram_post.post_urn.all().filter(pk=page_id).first().org.org_id
+                post_urn = instagram_post.post_urn.all().filter(pk=page_id).first().urn
+                access_token = instagram_post.post_urn.all().filter(pk=page_id).first().org.access_token
+                urn = post_urn
 
 
-            context = {
-                'ids': urn,
-                'no_likes': no_likes,
-                'no_comments': no_comments,
-                'data': data,
-                'next':next,
-                 'picture_url':picture_url,
-                'posts': PostModel.objects.filter(user_id=self.request.user.id),
-                'post': instagram_post,
-                'posted_on': posted_on,
-                'post_id': post_id,
-                'page_id': page_id,
-                'provider_name': provider_name,
-                'reply_media_counter': 0
-            }
+                if urn == '' or urn == None:
+                    pass
+                else:
 
+                    result = insta_socialactions(urn, access_token, org_id)
+                    no_likes = result[0]
+                    no_comments = result[1]
+                    data = result[2]
+                    picture_url = result[3]
+                    next = result[4]
+
+
+                context = {
+                    'ids': urn,
+                    'no_likes': no_likes,
+                    'no_comments': no_comments,
+                    'data': data,
+                    'next':next,
+                     'picture_url':picture_url,
+                    'posts': PostModel.objects.filter(user_id=self.request.user.id),
+                    'post': instagram_post,
+                    'posted_on': posted_on,
+                    'post_id': post_id,
+                    'page_id': page_id,
+                    'provider_name': provider_name,
+                    'reply_media_counter': 0
+                }
+        except Exception as e:
+            context['error'] = 'An error occurred.'
+            return context
 
         return context
 
@@ -3102,6 +3170,9 @@ class CommentPagination(APIView):
 
 class BusinessView(TemplateView):
     template_name = 'socialaccount/business_profile.html'
+
+class PageErrorView(TemplateView):
+    template_name = 'social/page_404_error.html'
 
 
 

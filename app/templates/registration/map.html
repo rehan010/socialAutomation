@@ -32,7 +32,87 @@ body { margin: 0; padding: 0; }
         padding: 10px;
         font-family: 'Open Sans', sans-serif;
     }
+    .map-overlay {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: #fff;
+      margin-right: 20px;
+      font-family: Arial, sans-serif;
+      overflow: auto;
+      border-radius: 3px;
+    }
 
+    #features {
+      top: 0;
+      height: 100px;
+      margin-top: 20px;
+      width: 250px;
+    }
+
+    #legend {
+      padding: 10px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      line-height: 18px;
+      height: 150px;
+      margin-bottom: 40px;
+      width: 100px;
+    }
+
+    .legend-key {
+      display: inline-block;
+      border-radius: 20%;
+      width: 10px;
+      height: 10px;
+      margin-right: 5px;
+    }
+
+    h1 {
+      font-size: 20px;
+      line-height: 30px;
+    }
+
+h2 {
+  font-size: 14px;
+  line-height: 20px;
+  margin-bottom: 10px;
+}
+
+a1 {
+  text-decoration: none;
+  color: #2dc4b2;
+}
+
+#console {
+  position: absolute;
+  bottom: 6px; /* Align to the bottom */
+  left: 0; /* Align to the left */
+  padding: 10px 20px;
+  background-color: white;
+  line-height: 18px;
+  height: 150px;
+  margin: 0; /* Reset margins */
+  width: 240px;
+}
+.session {
+  margin-bottom: 20px;
+}
+
+.row {
+  height: 12px;
+  width: 100%;
+}
+
+.colors {
+  background: linear-gradient(to right, #2dc4b2, #3bb3c3, #669ec4, #8b88b6, #a2719b, #aa5e79);
+  margin-bottom: 5px;
+}
+
+.label {
+  width: 15%;
+  display: inline-block;
+  text-align: center;
+}
 </style>
 
 <div id="map"></div>
@@ -53,26 +133,35 @@ body { margin: 0; padding: 0; }
       </ul>
     </div>
     <input id="clo06rtho008b01qx5xv04oe6" type="radio" name="rtoggle" value="satellite" checked="checked">
-
-    <!-- See a list of Mapbox-hosted public styles at -->
-    <!-- https://docs.mapbox.com/api/maps/styles/#mapbox-styles -->
     <label for="clo06rtho008b01qx5xv04oe6" class="text-sm text-black">Satellite View</label>
     <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="streets">
     <label for="clo04hvvs001001pgbi328gj6" class="text-sm text-black">Street View</label>
+    <input id="cloe37zj8001d01qrgfbvb5xa" type="radio" name="rtoggle" value="pd">
+    <label for="cloe37zj8001d01qrgfbvb5xa" class="text-sm text-black">Population Density View</label>
+
 
 </div>
-<!--<div id="searchBarDiv" class="mt-8 mx-4 p-4 bg-gray-200 border border-gray-300 shadow-md rounded-xl" >-->
-<!--        <div class="relative">-->
+<div class='map-overlay hidden' id='features'><h2>Algeria population density</h2><div id='pd'><p>Hover over a Wilaya!</p></div></div>
+<div class='map-overlay hidden'  id='legend'></div>
+<div id='console' class="hidden">
+    <h2>Motor vehicles</h2>
+    <p>Data: <a1 href='#'>Motor vehicle Data</a1> in Algeria
+    <div id="session" class='session'>
+      <h2>Population Density</h2>
+      <div class='row colors'>
+      </div>
+      <div class='row labels'>
+        <div class='label'>0</div>
+        <div class='label'>1</div>
+        <div class='label'>2</div>
+        <div class='label'>3</div>
+        <div class='label'>4</div>
+        <div class='label'>5+</div>
+      </div>
+    </div>
+    </p>
 
-<!--            <input type="search" id="searchInput" name="searchInput"-->
-<!--                   class="w-full py-2 px-4 border-2 border-gray-200 rounded-lg pl-10  padding-left-search"-->
-<!--                   placeholder="   Search Location">-->
-<!--            <span class="absolute top-2 left-2 text-gray-500">-->
-<!--                    &#128269;-->
-<!--                </span>-->
-<!--        </div>-->
-<!--</div>-->
-
+</div>
 
 <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoicmVoYW4wMTAiLCJhIjoiY2p1MWppdzh1MDJjZzQ5cHY0bG80eDFjcCJ9.CiQmY8N2iAms6F1nj1Twew';
@@ -81,8 +170,8 @@ body { margin: 0; padding: 0; }
 
         style: 'mapbox://styles/rehan010/clo06rtho008b01qx5xv04oe6',
         center: [2.63238813336793,28.1632395923063], // starting position [lng, lat]
-        zoom: 6, // starting zoom
-        minZoom: 5, // Set the minimum zoom level
+        zoom: 4, // starting zoom
+        minZoom: 4, // Set the minimum zoom level
         maxZoom: 15,
 
 
@@ -114,6 +203,23 @@ body { margin: 0; padding: 0; }
     for (const input of inputs) {
         input.onclick = (layer) => {
             const layerId = layer.target.id;
+            const feature = document.getElementById('features');
+            const legend = document.getElementById('legend');
+            const console = document.getElementById('console');
+
+
+            if (layer.target.value=='pd'){
+
+                feature.classList.remove('hidden');
+                legend.classList.remove('hidden');
+                console.classList.remove('hidden');
+
+            }else{
+                feature.classList.add('hidden');
+                legend.classList.add('hidden');
+                console.classList.add('hidden');
+
+            }
             map.setStyle('mapbox://styles/rehan010/' + layerId);
         };
     }

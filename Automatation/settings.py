@@ -222,15 +222,15 @@ SOCIALACCOUNT_PROVIDERS = {
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
         'SCOPE': [
-                    'r_emailaddress',
-                    'r_liteprofile',
+
+
                     'openid',
                     'r_ads_reporting',
                     'r_organization_social',
                     'rw_organization_admin',
                     'w_member_social',
                     'r_ads',
-                    'r_emailaddress',
+                    'profile',
                     'w_organization_social',
                     'rw_ads',
                     'r_basicprofile',
@@ -240,8 +240,8 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         'APP': {
 
-            'client_id': '78brbn2ezf10mr',
-            'secret': '71JKMVxT5SQAh9i6',
+            'client_id': '78i93jzt78vt9n',
+            'secret': 'gCb4xa3i8AlTgaiM',
             'key': '',
 
         },

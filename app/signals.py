@@ -169,41 +169,10 @@ def publish_post_on_social_media(instance):
 
 
 
-# def publish_post_on_social_media(instance):
-#     # Put your code to publish the post on the social media platform here
-#     # For example, if the post platform is "linkedin," use your existing code to publish on LinkedIn
-#     # Remember to handle any exceptions that may occur during the publishing process
-#     share_page = instance.prepost_page.all()
-#     images = instance.images.all()
-#     if instance.status == 'SCHEDULED' or instance.status == 'DRAFT' or instance.status == 'PROCESSING':
-#         instance.status = 'PUBLISHED'
-#         instance.publish_check = True
-#         instance.save()
-#     for page in share_page:
-#         if page.provider == "linkedin":
-#             socialaccount = SocialAccount.objects.get(user=page.user.id, provider="linkedin_oauth2")
-#             access_token = SocialToken.objects.filter(account=socialaccount)[0]
-#             access_token_string = str(access_token)
-#             org_id = page.org_id
-#             image_m = PostModel.objects.get(id=instance.id)
-#             org = SharePage.objects.get(id=page.id)
-#             post = instance
-#             create_l_multimedia(images, org_id, access_token_string, clean_file,
-#                                 get_video_urn, image_m, upload_video, post_video_linkedin,
-#                                 org, get_img_urn, upload_img, post_single_image_linkedin,
-#                                     post, post_linkedin)
-#
-#         else:
-#             pass
-#
-#     return redirect(reverse_lazy("my_posts", kwargs={'pk': instance.user.id}))
-
-
-
 @shared_task
 def schedule_signals_task(instance):
     key = f"POST {instance.id} USER {instance.user.id}"
-    task, created = CeleryTask.objects.get_or_create(key = key,task_name = f"POST {instance.id}")
+    task, created = CeleryTask.objects.get_or_create(key=key, task_name=f"POST {instance.id}")
     try:
         if (not created and task.status != "PROCESSING") or created:
             if instance:
@@ -257,7 +226,7 @@ def gather_post_insight(instance):
         # key = f"{instance.id} {instance.user.id}"
         since = datetime.now(timezone.utc).replace(minute=0,hour=0,second=0,microsecond=0)
         until = datetime.now(timezone.utc)
-        post_urns = Post_urn.objects.filter(org=instance,is_deleted = False).values_list('urn', flat=True)
+        post_urns = Post_urn.objects.filter(org=instance, is_deleted=False).values_list('urn', flat=True)
 
         if instance.provider == "facebook":
 
@@ -267,7 +236,7 @@ def gather_post_insight(instance):
             since = datetime.now(timezone.utc) - timedelta(days=1)
             until = datetime.now(timezone.utc)
 
-            instagram_account_insights(instance , since , until)
+            instagram_account_insights(instance, since, until)
         elif instance.provider == "linkedin":
             linkedin_share_stats(instance, since, until)
         else:

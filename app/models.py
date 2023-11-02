@@ -220,3 +220,32 @@ class CeleryTask(models.Model):
 
     def __str__(self):
         return f"{self.task_name} ({self.status})"
+
+
+class Wilayas(BaseModel):
+    name = models.CharField(max_length=20)
+    name_ar = models.CharField(max_length=20)
+    name_ber = models.CharField(max_length=20)
+    city_code = models.CharField(max_length=10,null=True,blank=True)
+    coordinates = models.JSONField()
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+class WilayasVehicle(BaseModel):
+    wilaya = models.ForeignKey(Wilayas,unique=True, on_delete=models.CASCADE)
+    touring_car = models.IntegerField(null=True, blank=True)
+    truck = models.IntegerField(null=True,blank=True)
+    cleaning_truck = models.IntegerField(null=True, blank=True)
+    bus = models.IntegerField(null=True,blank=True)
+    semi_truck = models.IntegerField(null=True, blank=True)
+    agricultural_tractor = models.IntegerField(null=True,blank=True)
+    special_vehicle = models.IntegerField(null=True,blank=True)
+    trailer = models.IntegerField(null=True,blank=True)
+    motorcycle = models.IntegerField(null=True,blank=True)
+    total = models.IntegerField()
+    percentage = models.FloatField()
+
+    def __str__(self):
+        return f"{self.wilaya.name}"

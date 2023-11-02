@@ -60,9 +60,11 @@ urlpatterns = [
     # path('api_posts/', PostApiView.as_view(), name='api_posts'),
     path('api_posts2/', PostApiView2.as_view(), name='api_posts2'),
     path('social/page/', PageDataView.as_view(), name="page_data"),
-    path('home/',TemplateView.as_view(template_name = 'registration/home.html'),name = "home"),
+    path('home/',TemplateView.as_view(template_name='registration/home.html'),name="home"),
     path('check_email/',check_email_exists,name = "check_email"),
+    path('page_404_error/',PageErrorView.as_view(),name="page_404_error"),
     path('check_username/',check_username_exists,name = "check_username"),
     path('check_company/',check_company_exists,name = "check_company"),
     path('check_password/',passwor_validation,name = "check_password"),
+
 ]

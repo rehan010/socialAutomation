@@ -7,7 +7,7 @@ import requests
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from django.shortcuts import redirect, render
+
 import os
 from .models import *
 from PIL import Image
@@ -1745,6 +1745,7 @@ def ugcpost_socialactions(urn, access_token_string, linkedin_post):
 
     response = requests.request("GET", url, headers=headers, data=payload)
     response_json = response.json()
+
     t_likes = response_json['likesSummary']['aggregatedTotalLikes']
     t_comments = response_json['commentsSummary']['aggregatedTotalComments']
     form = Post_urn.objects.get(urn=urn)
@@ -1775,13 +1776,16 @@ def ugcpost_socialactions(urn, access_token_string, linkedin_post):
 
         elements = response_json3.get('elements')
         data = ugcpost_socialactions_comment_data_organizer(elements,access_token_string)
-        return t_likes, t_comments, data , next
+        return t_likes, t_comments, data, next
     else:
         data = []
         obj = {}
         data.append(obj)
+    return t_likes, t_comments, data, next
 
-    return t_likes, t_comments, data , next
+
+
+
 
 
 
@@ -1798,9 +1802,9 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
         'Authorization': 'Bearer ' + access_token_string,
         'Cookie': 'lidc="b=VB86:s=V:r=V:a=V:p=V:g=4514:u=51:x=1:i=1687620040:t=1687696419:v=2:sig=AQFLXWHSfe752c-owR1S3P8Q_frEVh6e"; lidc="b=VB86:s=V:r=V:a=V:p=V:g=4514:u=51:x=1:i=1687595585:t=1687608928:v=2:sig=AQH0H7FjSwSsdlmZsw6uhsFDCp1ROKX8"; bcookie="v=2&3da7cbe9-1e10-4108-8734-c492859ca8d8"'
     }
-
     response = requests.request("GET", url, headers=headers, data=payload)
     response_json = response.json()
+
     t_comments = response_json['commentsSummary']['aggregatedTotalComments']
     t_likes = response_json['likesSummary']['aggregatedTotalLikes']
     form = Post_urn.objects.get(urn=urn)
@@ -1920,6 +1924,9 @@ def linkedin_post_socialactions(urn, access_token_string, linkedin_post):
         data.append(obj)
 
     return t_likes, t_comments, data, next
+
+
+
 
 
 def linkedin_org_stats(access_token_string, id, data_list):
@@ -2333,7 +2340,10 @@ def linkedin_page_detail(accesstoken, id):
             # Join the non-empty values with commas
          full_address = ', '.join(filter(None, [line1, line2, city, geographicArea, country]))
 
-         data['Contact Information'] = [{'Address': full_address},{"Postal Code": response.get('locations')[0]['address']['postalCode']}]
+         if 'postalCode' in response.get('locations')[0]['address']:
+            data['Contact Information'] = [{'Address': full_address},{"Postal Code": response.get('locations')[0]['address']['postalCode']}]
+         else:
+            data['Contact Information'] = [{'Address': full_address}]
 
     if 'logoV2' in response:
         detail['profile_picture'] = response['logoV2']['original~']['elements'][0]['identifiers'][0][
@@ -3226,7 +3236,7 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
     len_execute = int(len(urn_list) / 50)
 
     if (len(urn_list) % 50 != 0):
-        len_execute = len_execute +1
+        len_execute = len_execute + 1
 
 
 
@@ -3271,6 +3281,7 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
 
         total_comments += facebook_count_comments(response)
 
+
     # Request to get followerCounts
     id = urn.org_id
     url = f"https://graph.facebook.com/v17.0/{id}?fields=followers_count"
@@ -3281,14 +3292,16 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
         response3 = response3.json()
         follower_count = response3['followers_count']
 
-    datePrevious = SocialStats.objects.filter(org=urn, created_at__gte=datetime.date.today(), created_at__lt = datetime.date.today() + datetime.timedelta(days=1))
+    datePrevious = SocialStats.objects.filter(org=urn, created_at__gte=datetime.date.today(), created_at__lt=datetime.date.today() + datetime.timedelta(days=1))
+
     previous_likes = datePrevious.aggregate(Sum('t_likes'))['t_likes__sum'] or 0
     previous_comments = datePrevious.aggregate(Sum('t_comments'))['t_comments__sum'] or 0
+
     total_reactions = total_reactions - previous_likes
     total_comments = total_comments - previous_comments
-    previous_entry = SocialStats.objects.filter(org = urn).aggregate(Sum('t_followers'))['t_followers__sum']
+    previous_entry = SocialStats.objects.filter(org=urn).aggregate(Sum('t_followers'))['t_followers__sum']
 
-    stats = SocialStats.objects.create(org=urn,t_likes = total_reactions,t_comments=total_comments)
+    stats = SocialStats.objects.create(org=urn, t_likes=total_reactions, t_comments=total_comments)
 
 
     if previous_entry:

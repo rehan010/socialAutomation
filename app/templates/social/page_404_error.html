@@ -1,0 +1,18 @@
+{%extends 'registration/base.html'%}
+{% block content %}
+<html>
+<div class="w-1/2 mx-auto bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border p-8">
+    <div class="relative">
+        <a class="absolute top-0 right-2  text-lg text-black cursor-pointer hover:no-underline no-underline hover:text-black" href="{% url 'my_posts' user.pk %}"><i class="fa-solid fa-xmark"></i></a>
+
+    </div>
+    <header class="flex justify-center  text-lg font-bold mb-4 gap-4">
+            <i class="fa fa-exclamation-triangle text-red-500" aria-hidden="true"></i> <h2>POST NOT FOUND</h2> <i class="fa fa-exclamation-triangle text-red-500" aria-hidden="true"></i>
+    </header>
+
+    <div class="relative">
+        <span class="flex justify-center">The following post is deleted from the social media platform</span>
+    </div>
+</div>
+</html>
+{%endblock%}
