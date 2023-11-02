@@ -66,5 +66,4 @@ urlpatterns = [
     path('check_username/',check_username_exists,name = "check_username"),
     path('check_company/',check_company_exists,name = "check_company"),
     path('check_password/',passwor_validation,name = "check_password"),
-
 ]

@@ -12,5 +12,6 @@ admin.site.register(InviteEmploye)
 admin.site.register(SocialStats)
 admin.site.register(Company)
 admin.site.register(CeleryTask)
-admin.site.register(WilayasVehicle)
 admin.site.register(Wilayas)
+admin.site.register(WilayasVehicle)
+

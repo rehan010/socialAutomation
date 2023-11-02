@@ -199,15 +199,33 @@ class Post_urn(models.Model):
         return self.org.name + "--" + self.urn
 
 
-class SocialStats(BaseModel):
-    org = models.ForeignKey(SharePage, on_delete=models.CASCADE)
+class SocialStats(models.Model):
+    # urn = models.ForeignKey(Post_urn, on_delete=models.CASCADE)
+    org = models.ForeignKey(SharePage,on_delete=models.CASCADE)
     t_likes = models.IntegerField(default=0)
+    # new_likes = models.IntegerField(default=0)
     t_comments = models.IntegerField(default=0)
+    # new_comments = models.IntegerField(default=0)
     t_followers = models.IntegerField(default=0)
+    new_followers = models.IntegerField(default=0)
+    is_deleted = models.BooleanField(null=False, default=False)
+    created_at = models.DateTimeField(default=None)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def save(self,*args,**kwargs):
+        if self.created_at is None:
+            self.created_at = timezone.now()
+        super(SocialStats, self).save(*args, **kwargs)
 
 
     def __str__(self):
-        return self.org.name + "--" + self.created_at.__str__()
+        # return self.org.name
+        return self.org.__str__() + "-- " + self.created_at.__str__()
+
+
+
+
 
 class CeleryTask(models.Model):
     STATUS_TYPE = [("FINISHED", "FINISHED"), ('PROCESSING', 'PROCESSING'), ('FAILED', 'FAILED')]
@@ -234,6 +252,7 @@ class Wilayas(BaseModel):
 
 
 class WilayasVehicle(BaseModel):
+
     wilaya = models.ForeignKey(Wilayas,unique=True, on_delete=models.CASCADE)
     touring_car = models.IntegerField(null=True, blank=True)
     truck = models.IntegerField(null=True,blank=True)
@@ -248,4 +267,5 @@ class WilayasVehicle(BaseModel):
     percentage = models.FloatField()
 
     def __str__(self):
+
         return f"{self.wilaya.name}"

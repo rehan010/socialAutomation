@@ -78,7 +78,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = "login"
-
+CSRF_COOKIE_AGE = 60 * 60 * 24 * 365
 
 ROOT_URLCONF = 'Automatation.urls'
 
@@ -176,8 +176,8 @@ SOCIALACCOUNT_PROVIDERS = {
             'pages_manage_engagement',
             ],
         'APP': {
-            'client_id': '3154199121547431',
-            'secret': 'c567975277f2b79c0e59adb09e2ee1b8',
+            'client_id': '962225814859585',
+            'secret': '644424b44356982774cdc006bf360e5c',
             'key': ''
         }
     },
@@ -186,8 +186,8 @@ SOCIALACCOUNT_PROVIDERS = {
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
         'APP': {
-            'client_id': '183679611336967',
-            'secret': 'bdebb21b9ffb7712de43b6612ffa5920',
+            'client_id': '6738878939466154',
+            'secret': '617a4c35cd16961ab433355ccf23fd0b',
 
             'key': ''
         },

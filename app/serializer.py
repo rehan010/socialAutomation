@@ -39,3 +39,11 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostModel
         fields = ['id','post','post_urn','prepost_page','created_at','published_at','images','status','user','schedule_datetime']
+
+
+
+
+class PosturnURNonlySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post_urn
+        fields = ['urn']

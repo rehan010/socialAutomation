@@ -623,7 +623,15 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 <script>
 
-         var time = '{{ post.schedule_datetime|date:"D M d Y" }} ,{{ post.schedule_datetime|time:"H:i" }}';
+        var time = '{{ post.schedule_datetime|date:"D M d Y" }} ,{{ post.schedule_datetime|time:"H:i" }}';
+        if('{{ post.schedule_datetime|date:"D M d Y" }}'){
+            var time = '{{ post.schedule_datetime|date:"D M d Y" }} ,{{ post.schedule_datetime|time:"H:i" }}';
+
+        }else{
+            var time = '{{ post.published_at|date:"D M d Y" }} ,{{ post.published_at|time:"H:i" }}';
+        }
+        console.log(time);
+        console.log(1);
 
         var userTimezone = 'UTC' ;
 

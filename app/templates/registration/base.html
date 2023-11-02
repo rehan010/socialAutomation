@@ -63,6 +63,30 @@
     .text-xxxs{
         font-size:0.6rem;
     }
+
+    .margin{
+
+            margin-left: 100px;
+    }
+
+    #sidebar span{
+
+        display:none;
+    }
+
+    #sidebar{
+        transition:all 0.3s ease;
+    }
+
+    #sidebar:hover{
+        width:10rem;
+    }
+
+    #sidebar:hover span{
+        display:inline;
+    }
+
+
     </style>
 
 </head>
@@ -150,14 +174,16 @@
     </nav>
 <div class="w-full flex h-full">
     {% if user.is_authenticated %}
-    <aside class="w-48  fixed h-screen ease-nav-brand inset-y-10 top-0 left-0 flex-wrap items-center justify-between overflow-y-auto  border-0 bg-gray-800 p-0 antialiased shadow-none transition-transform duration-200 flex-wrap left-0 translate-x-0  z-100" id="sidebar">
+    <aside class="w-24 fixed h-screen ease-nav-brand inset-y-10 top-0 left-0 flex-wrap items-center justify-between overflow-y-auto  border-0 bg-gray-800 p-0 antialiased shadow-none transition-transform duration-200 flex-wrap left-0 translate-x-0 z-100 hover:w-42" id="sidebar">
 
       <div id="sidebar-default-content" class="w-full flex items-center justify-center" >
          <ul class="space-y-2 m-2 w-full">
             <li class="h-12 text-center relative">
                 {% if user.is_authenticated %}
                 <a href="{% url 'dashboard' %}" class="block px-2 py-2 m-0 text-md whitespace-nowrap text-center text-white hover:no-underline hover:text-white">
+                    <span class="ml-1 font-semibold transition-all duration-200 ease-nav-brand">SMART PRESENCE</span>
                     <div class="absolute right-2 text-xxs text-white flex justify-end">
+                        <span class="text-xxxs">Powered By</span>
                         <div class="w-20 h-4">
                             <img src="{% static 'assets/img/cloudwind.jpg'%}" id="logo" class="w-full h-full object-contain">
                         </div>
@@ -173,105 +199,7 @@
                 <div class="w-8">
                     <i class="fa-solid fa-user-large text-white"></i>
                 </div>
-                </a>
-                <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
-            </li>
-
-            <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
-                <a href="{% url 'dashboard' %}"
-                class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-white">
-                <div class="w-8">
-                    <i class="fa-solid fa-display text-white"></i>
-                </div>
-                </a>
-                <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
-            </li>
-
-            <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
-                <a href="{% url 'my_posts' user.pk  %}"
-                class="flex items-center py-2 px-4 space-x-2 text-white hover:no-underline hover:text-white">
-                    <div class="w-8">
-                       <i class="fa-solid fa-images text-white"></i>
-                    </div>
-
-
-                </a>
-                <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
-            </li>
-            <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
-                <a href="{% url 'socialaccount_connections' %}"
-                class="flex items-center text-white py-2 px-4 space-x-2 hover:no-underline hover:text-white">
-                    <div class="w-8">
-                       <i class="fa-solid fa-briefcase text-white"></i>
-                    </div>
-
-                </a>
-                <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
-            </li>
-
-             <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
-                <a href="{% url 'map_view' %}"
-                class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-white">
-
-                    <div class="w-8">
-                        <i class="fa-solid fa-map-location-dot text-white"></i>
-                    </div>
-                </a>
-                <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
-            </li>
-            {% endif %}
-
-            {% if user_role == 'ADMIN' %}
-            <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
-                <a href="{% url 'my_user' %}"
-                class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-white">
-                    {% if user.is_superuser == True %}
-                    <div class="w-8">
-                      <i class="fa-solid fa-users-gear text-white"></i>
-                    </div>
-                    {% else %}
-                    <div class="w-8">
-                        <i class="fa-solid fa-users text-white"></i>
-                    </div>
-                    {% endif %}
-
-                </a>
-                <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
-            </li>
-            {% endif %}
-
-        </ul>
-      </div>
-
-      <div id="sidebar-hover-content" class="w-full flex items-center justify-center hidden">
-        <ul class="space-y-2 m-2 w-full">
-            <li class="h-12 text-center relative">
-                {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="block px-2 py-2 m-0 text-md whitespace-nowrap text-center text-white hover:no-underline hover:text-white">
-                    <span class="ml-1 font-semibold transition-all duration-200 ease-nav-brand">SMART PRESENCE</span>
-                    <div class="absolute right-2 text-xxs text-white flex justify-end">
-                        <span class="text-xxxs">Powered By</span>
-                        <div class="w-20 h-4">
-                            <img src="{% static 'assets/img/cloudwind.jpg'%}" id="logos" class="w-full h-full object-contain">
-                        </div>
-                    </div>
-                </a>
-                {% else %}-->
-                <a href="{% url 'home' %}" class="block px-2 py-2 m-0 text-md whitespace-nowrap text-center text-white hover:no-underline hover:text-white">
-                    <span class="ml-1 font-semibold transition-all duration-200 ease-nav-brand">SMART PRESENCE</span>
-                </a>
-                {% endif %}
-            </li>
-
-            {% if user.is_superuser == False %}
-            <li class="p-1 block hover:bg-white  hover:text-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
-                <a href="{% url 'my_profile' %}"
-                class="  flex items-center py-2 px-4 rounded space-x-2 hover:no-underline hover:text-white">
-                <div class="w-8">
-
-                    <i class="fa-solid fa-user-large text-white"></i>
-                </div>
-                    <span class="text-sm text-white">My Profile</span>
+                    <span class="text-sm text-white">Profile</span>
                 </a>
                 <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
             </li>
@@ -294,7 +222,6 @@
                        <i class="fa-solid fa-images text-white"></i>
                     </div>
                     <span class="text-sm">Posts</span>
-
                 </a>
                 <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
             </li>
@@ -304,22 +231,19 @@
                     <div class="w-8">
                        <i class="fa-solid fa-briefcase text-white"></i>
                     </div>
+                     <span class="text-sm text-white">Accounts</span>
 
-
-
-                    <span class="text-sm text-white">Accounts</span>
                 </a>
                 <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
             </li>
 
-            <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
+             <li class="p-1 block hover:bg-white hover:bg-opacity-10 text-gray-100 cursor-pointer rounded my-3">
                 <a href="{% url 'map_view' %}"
                 class="flex items-center py-2 px-4 space-x-2 hover:no-underline hover:text-white">
 
                     <div class="w-8">
                         <i class="fa-solid fa-map-location-dot text-white"></i>
                     </div>
-
                     <span class="text-sm">Map</span>
                 </a>
                 <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
@@ -340,6 +264,7 @@
                     </div>
                     {% endif %}
                     <span class="text-sm">Users</span>
+
                 </a>
                 <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent"/>
             </li>
@@ -347,26 +272,10 @@
 
         </ul>
       </div>
-
     </aside>
     {%endif%}
 <style>
-    .margin{
 
-            margin-left: 100px;
-    }
-    #sidebar {
-        width: 6rem;
-        transform: scale(1);
-        transform-origin: top left;
-        transition: width 1s ease;
-    }
-
-
-     #sidebar:hover {
-            transition: transform 1s ease;
-
-     }
 
 
 
@@ -429,24 +338,7 @@ function getFormattedDate(daysBefore = 0){
     return formattedDate;
 }
 
-    const sidebar = document.getElementById('sidebar');
-    const hover_content = document.getElementById('sidebar-hover-content');
-    const default_content = document.getElementById('sidebar-default-content');
-    sidebar.addEventListener('mouseenter', () => {
-        console.log('hi');
 
-        sidebar.style.width = '12rem';
-        default_content.classList.add("hidden");
-        hover_content.classList.remove("hidden");
-
-        });
-
-        sidebar.addEventListener('mouseleave', () => {
-            console.log('bye');
-            sidebar.style.width = '6rem';
-            hover_content.classList.add("hidden");
-            default_content.classList.remove("hidden");
-        });
 </script>
 <!-- plugin for scrollbar  -->
 <script type="text/javascript"  src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
