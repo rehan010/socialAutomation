@@ -4,7 +4,6 @@ import logging
 from fuzzywuzzy import fuzz
 from unidecode import unidecode  # Import unidecode
 
-
 import pandas as pd
 class Command(BaseCommand):
     help = 'Create dummy entries for YourModel'
