@@ -68,4 +68,5 @@ urlpatterns = [
     path('check_company/',check_company_exists,name = "check_company"),
     path('check_password/',passwor_validation,name = "check_password"),
     path('get/ccdata/filter',MapCCFilter.as_view(),name = "map_ccfilter"),
+
 ]

@@ -60,6 +60,8 @@ from django.http import HttpResponseRedirect ,HttpResponse
 from django.utils import timezone
 from django.db.models.functions import TruncDate
 from django.db.models import Count
+import asyncio
+from asgiref.sync import sync_to_async
 
 import random
 

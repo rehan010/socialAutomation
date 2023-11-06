@@ -3422,9 +3422,7 @@ def fb_post_insights(urn_list, urn, since=None, until=None):
         follower_count = response3['followers_count']
 
 
-
     return total_reactions, total_comments , follower_count
-
 
 
 def facebook_count_comments(response, response_request=None, total_comments=0, send_request=False):

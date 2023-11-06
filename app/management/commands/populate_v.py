@@ -4,6 +4,7 @@ import logging
 from fuzzywuzzy import fuzz
 from unidecode import unidecode  # Import unidecode
 
+
 import pandas as pd
 class Command(BaseCommand):
     help = 'Create dummy entries for YourModel'
@@ -55,11 +56,11 @@ class Command(BaseCommand):
                 percentage = row['%']
                 vehicle_list.append(WilayasVehicle(wilaya=wailya,touring_car=touring_car,truck=truck,cleaning_truck= cleaning_truck ,bus=bus,semi_truck=semi_truck,
                                agricultural_tractor = agricultural_tractor,
-                               special_vehicle = special_vehicle,
-                               trailer = trailer,
-                               motorcycle = motorcycle,
-                               total = total,
-                               percentage = percentage))
+        special_vehicle = special_vehicle,
+        trailer = trailer,
+           motorcycle = motorcycle,
+           total = total,
+           percentage = percentage))
 
             WilayasVehicle.objects.bulk_create(vehicle_list)
             self.stdout.write(self.style.SUCCESS('Dummy entries created successfully.'))

@@ -14,4 +14,3 @@ admin.site.register(Company)
 admin.site.register(CeleryTask)
 admin.site.register(Wilayas)
 admin.site.register(WilayasVehicle)
-

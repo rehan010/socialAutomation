@@ -253,12 +253,14 @@ class Wilayas(BaseModel):
 
 class WilayasVehicle(BaseModel):
 
+
     wilaya = models.ForeignKey(Wilayas,unique=True, on_delete=models.CASCADE)
     touring_car = models.IntegerField(null=True, blank=True)
     truck = models.IntegerField(null=True,blank=True)
     cleaning_truck = models.IntegerField(null=True, blank=True)
     bus = models.IntegerField(null=True,blank=True)
     semi_truck = models.IntegerField(null=True, blank=True)
+
     agricultural_tractor = models.IntegerField(null=True,blank=True)
     special_vehicle = models.IntegerField(null=True,blank=True)
     trailer = models.IntegerField(null=True,blank=True)
