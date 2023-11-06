@@ -60,8 +60,8 @@ from django.http import HttpResponseRedirect ,HttpResponse
 from django.utils import timezone
 from django.db.models.functions import TruncDate
 from django.db.models import Count
-import asyncio
-from asgiref.sync import sync_to_async
+
+import random
 
 
 # Import your custom filter
@@ -1330,6 +1330,13 @@ class PrivacyPolicyView(TemplateView):
     template_name = 'registration/privacy_policy.html'
 
 class MapView(TemplateView):
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return redirect(reverse_lazy("my_user"))
+
+        return super(MapView, self).dispatch(request)
+
     template_name = 'registration/map2.html'
 
     # def get_context_data(self, **kwargs):
@@ -1387,6 +1394,90 @@ class MapView(TemplateView):
     #
     #     context = {'file' : output_file}
     #     return context
+class MapCCFilter(APIView):
+    def get(self,request):
+        filters = list(self.request.GET.keys())
+        wilayas = Wilayas.objects.all()
+        geojson_data = {
+            "type": "FeatureCollection",
+            "features": []
+        }
+        all = False
+        if "all" in filters:
+            all = True
+
+        for wilaya in wilayas:
+            vehicle = 0
+            is_vehcile = False
+
+            pd = 0
+            if ("vehicle" in filters) or all:
+                is_vehcile = True
+                vehicle = WilayasVehicle.objects.filter(wilaya=wilaya).first()
+
+            if ("pd" in filters) or all:
+                pd = 0
+
+
+
+
+
+            feature = {
+                "type": "Feature",
+                "geometry":  json.loads(wilaya.coordinates)
+                ,
+                "properties": {
+                    "score": 0 if len(filters) == 0 else random.randint(1, 9),
+                    "name": wilaya.name,
+                    "name_ar": wilaya.name_ar,
+                    "density": 92,
+                    "ISO": wilaya.city_code
+                    # "touring_car": vehicle.touring_car if vehicle else 0,
+                    # "truck": vehicle.truck if vehicle else 0,
+                    # "cleaning_truck": vehicle.cleaning_truck if vehicle else 0,
+                    # "bus": vehicle.bus if vehicle else 0,
+                    # "semi_truck": vehicle.semi_truck if vehicle else 0,
+                    # "agricultural_tractor": vehicle.agricultural_tractor if vehicle else 0,
+                    # "special_vehicle": vehicle.special_vehicle if vehicle else 0,
+                    # "trailer": vehicle.trailer if vehicle else 0,
+                    # "motorcycle": vehicle.motorcycle if vehicle else 0,
+                    # "total": vehicle.total if vehicle else 0,
+                    # "percentage": vehicle.percentage if vehicle else 0
+                }
+            }
+            if is_vehcile or all:
+                feature["properties"]["touring_car"] = vehicle.touring_car if vehicle else 0
+                feature["properties"]["truck"] = vehicle.truck if vehicle else 0
+                feature["properties"]["cleaning_truck"] = vehicle.cleaning_truck if vehicle else 0
+                feature["properties"]["bus"] = vehicle.bus if vehicle else 0
+                feature["properties"]["semi_truck"] = vehicle.semi_truck if vehicle else 0
+                feature["properties"]["agricultural_tractor"] = vehicle.agricultural_tractor if vehicle else 0
+                feature["properties"]["special_vehicle"] = vehicle.special_vehicle if vehicle else 0
+                feature["properties"]["trailer"] = vehicle.trailer if vehicle else 0
+                feature["properties"]["motorcycle"] = vehicle.motorcycle if vehicle else 0
+                feature["properties"]["total"] = vehicle.total if vehicle else 0
+                feature["properties"]["percentage"] = vehicle.percentage if vehicle else 0
+            geojson_data["features"].append(feature)
+
+
+        return JsonResponse(geojson_data)
+        #
+        #     # Step 3: Serialize the data into a GeoJSON file
+        #     with open("output.geojson", "w") as output_file:
+        #         json.dump(geojson_data, output_file)
+        #
+        #     file_path = "/Users/anasrehman/Desktop/output4.geojson"
+        #
+        #
+        #     # Assuming you already have the 'output.geojson' file created in your Django view
+        #     # You can use Python's 'open' function to save it to your local system
+        #     with open(file_path, "w") as output_file:
+        #         output_file.write(json.dumps(geojson_data, indent=2))
+        #
+        #
+        #     context = {'file' : output_file}
+        #     return context
+
 
 class PointFileCreateView(LoginRequiredMixin, CreateView):
     model = PointFileModel

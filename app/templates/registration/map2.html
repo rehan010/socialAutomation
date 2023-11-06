@@ -1,4 +1,5 @@
 {%extends 'registration/base.html'%}
+{% load static %}
 {% block content %}
 
 <html lang="en">
@@ -148,37 +149,49 @@
 
       </ul>
     </div>
-      <div class="session hidden" id="key">
-        <h2>Key</h2>
-        <div class="row colors text-xxs rounded-xl"></div>
-        <div class="row labels">
-          <div class="label text-xxs">0</div>
-          <div class="label text-xxs">1</div>
-          <div class="label text-xxs">2</div>
-          <div class="label text-xxs">3</div>
-          <div class="label text-xxs">4</div>
-          <div class="label text-xxs">5</div>
-          <div class="label text-xxs">6</div>
-          <div class="label text-xxs">7</div>
-          <div class="label text-xxs">8</div>
-          <div class="label text-xxs">9</div>
-        </div>
+    <div class="session hidden" id="key">
+      <h2>Key</h2>
+      <div class="row colors text-xxs rounded-xl"></div>
+      <div class="row labels">
+        <div class="label text-xxs">0</div>
+        <div class="label text-xxs">1</div>
+        <div class="label text-xxs">2</div>
+        <div class="label text-xxs">3</div>
+        <div class="label text-xxs">4</div>
+        <div class="label text-xxs">5</div>
+        <div class="label text-xxs">6</div>
+        <div class="label text-xxs">7</div>
+        <div class="label text-xxs">8</div>
+        <div class="label text-xxs">9</div>
       </div>
-      <div class="session hidden" id="scoring_slider">
-        <h2>Score: <label id="score">0</label></h2>
-        <input id="slider" class="row" type="range" min="0" max="9" step="1" value="0"/>
+    </div>
+    <div class="session hidden" id="scoring_slider">
+      <h2>Score: <label id="score">0</label></h2>
+      <input id="slider" class="row" type="range" min="0" max="9" step="1" value="0"/>
+    </div>
+    <div class="session ">
+      <h2>SELECT A MAP VIEW</h2>
+      <div class="row flex  text-xs" id="filters">
+        <input id="clo06rtho008b01qx5xv04oe6" type="radio" name="rtoggle" value="satellite" checked="checked">
+        <label for="clo06rtho008b01qx5xv04oe6" class="text-xs text-slate-600">Satellite View</label>
+        <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="streets">
+        <label for="clo04hvvs001001pgbi328gj6" class="text-xs text-slate-600k">Street View</label>
+        <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="pd">
+        <label for="clo04hvvs001001pgbi328gj6" class="text-xs text-slate-600">Color Coded View</label>
       </div>
-      <div class="session ">
-        <h2>SELECT A MAP VIEW</h2>
-        <div class="row flex  text-xs" id="filters">
-          <input id="clo06rtho008b01qx5xv04oe6" type="radio" name="rtoggle" value="satellite" checked="checked">
-          <label for="clo06rtho008b01qx5xv04oe6" class="text-xs text-slate-600">Satellite View</label>
-          <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="streets">
-          <label for="clo04hvvs001001pgbi328gj6" class="text-xs text-slate-600k">Street View</label>
-          <input id="cloe37zj8001d01qrgfbvb5xa" type="radio" name="rtoggle" value="pd">
-          <label for="cloe37zj8001d01qrgfbvb5xa" class="text-xs text-slate-600">Population Density View</label>
-        </div>
+    </div>
+
+    </div>
+    <div class="absolute top-28 rounded-md right-0 flex flex-col gap-2 bg-white px-4 py-2 hidden" id="ccfilter">
+      <div class="flex items-center gap-2 text-center">
+        <input type="checkbox" value="pd" class="ccfilter" id="pd" onchange="loadMap()">
+        <label for="pd">Population Density</label>
       </div>
+      <div class="flex items-center gap-2 text-center">
+        <input type="checkbox" value="vehicle" class="ccfilter" id="vd" onchange="loadMap()">
+        <label for="vd">Vehicle</label>
+      </div>
+
     </div>
     <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoicmVoYW4wMTAiLCJhIjoiY2p1MWppdzh1MDJjZzQ5cHY0bG80eDFjcCJ9.CiQmY8N2iAms6F1nj1Twew';
@@ -193,6 +206,170 @@
 
 
     });
+
+    const loadMap = async (initial= null) => {
+      document.getElementById('slider').value = 0;
+        document.getElementById('score').textContent = "0";
+        var params = "all";
+        if(initial === null){
+          params = "";
+          const ccfilters =  document.querySelectorAll('.ccfilter');
+          ccfilters.forEach((ccfilter)=>{
+            if(ccfilter.checked){
+              params += `${ccfilter.value}="true"&`
+            }
+
+          })
+          if (params.endsWith("&")) {
+            params = params.slice(0, -1);
+          }
+        }else{
+          const ccfilters =  document.querySelectorAll('.ccfilter');
+          ccfilters.forEach((ccfilter)=>{
+            ccfilter.checked = true;
+
+
+          })
+        }
+
+
+        try {
+          const response = await fetch(`{% url 'map_ccfilter' %}?${params}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch GeoJSON data');
+          }
+          const layerIdToRemove = 'wilaya-layer'; // Replace with your layer ID
+
+          if (map.getLayer(layerIdToRemove)) {
+            map.removeLayer(layerIdToRemove);
+          }
+
+          var sourceIdToRemove = 'choropleth-source';
+          if (map.getSource(sourceIdToRemove)) {
+            map.removeSource(sourceIdToRemove);
+          }
+          const geojson = await response.json();
+
+
+            map.addSource('choropleth-source', {
+              type: 'geojson',
+              data: geojson,
+            });
+
+            map.addLayer({
+              id: 'wilaya-layer',
+              type: 'fill',
+              source: 'choropleth-source',
+              paint: {
+                'fill-color': [
+                  'step',
+                  ['get', 'score'],
+                  'rgba(0, 255, 0, 0)',
+                  1,
+                  '#fbd565',
+                  2,
+                  '#f9ad5d',
+                  3,
+                  '#fc9003',
+                  4,
+                  '#f94124',
+                  5,
+                  '#d01111',
+                  6,
+                  '#800505',
+                  7,
+                  '#0f0354',
+                  8,
+                  '#0f0354',
+                  9,
+                  '#0f0354',
+                ],
+
+                'fill-opacity': 0.6,
+              },
+            });
+
+            scoring_slider.classList.remove('hidden');
+            key.classList.remove('hidden');
+
+            const popup = new mapboxgl.Popup({
+              closeButton: false,
+              closeOnClick: false
+            });
+
+            map.on('mouseenter', 'wilaya-layer', (e) => {
+              // Change the cursor style as a UI indicator.
+              map.getCanvas().style.cursor = 'pointer';
+
+              var popupContent = "";
+
+              // Access the GeoJSON properties
+              const properties = e.features[0].properties;
+              const name = properties.name;
+              popupContent += `<strong>Name:</strong> ${name}<br>`
+              const vehicle = properties.vehicle;
+              popupContent += vehicle ? `<strong>Vehicle:</strong> ${vehicle}<br>` : '';
+              const ISO = properties.ISO;
+              popupContent += `<strong>ISO:</strong> ${ISO}<br>`
+              const name_ar = properties.name_ar;
+              popupContent += `<strong>Name (Arabic):</strong> ${name_ar}<br>`
+              const special_vehicle = properties.special_vehicle;
+              popupContent += special_vehicle ? `<strong>Special Vehicle:</strong> ${special_vehicle}<br>` : '';
+              const density = properties.density;
+              popupContent += density ? `<strong>Density:</strong> ${density}<br>` : '';
+              const semi_truck = properties.semi_truck;
+              popupContent += semi_truck ? `<strong>Semi Truck:</strong> ${semi_truck}<br>` : '';
+              const motorcycle = properties.motorcycle;
+              popupContent += motorcycle ? `<strong>Motorcycle:</strong> ${motorcycle}<br>` : '';
+              const score = properties.score;
+              popupContent += score ? `<strong>Score:</strong> ${score}<br>` : '';
+              const trailer = properties.trailer;
+              popupContent += trailer ? `<strong>Trailer:</strong> ${trailer}<br>` : '';
+              const agricultural_tractor = properties.agricultural_tractor;
+              popupContent += agricultural_tractor ? `<strong>Agricultural Tractor:</strong> ${agricultural_tractor}<br>` : '';
+              const cleaning_truck = properties.cleaning_truck;
+              popupContent += cleaning_truck ? `<strong>Cleaning Truck:</strong> ${cleaning_truck}<br>` : '';
+              const percentage = properties.percentage;
+              popupContent += percentage ? `<strong>Percentage:</strong> ${percentage}<br>` : '';
+              const truck = properties.truck;
+              popupContent += truck ? `<strong>Truck:</strong> ${truck}<br>` : '';
+              const touring_car = properties.touring_car;
+              popupContent += touring_car ? `<strong>Touring Car:</strong> ${touring_car}` : '';
+
+              // Set the popup content with the GeoJSON properties
+
+
+              popup.setHTML(popupContent).setLngLat(e.lngLat).addTo(map);
+
+              popup.setHTML(popupContent).setLngLat(e.lngLat).addTo(map);
+
+              // Listen to the zoom event and adjust popup size and font size
+              map.on('zoom', () => {
+                const currentZoom = map.getZoom();
+
+                // Define the CSS properties for different zoom levels
+                if (currentZoom < 10) {
+                  // Adjust the CSS properties for lower zoom levels
+                  popup._container.style.fontSize = '12px';
+                  popup._container.style.width = '150px';
+                  // You can adjust other styles as needed
+                } else {
+                  // Default or other styles for higher zoom levels
+                  popup._container.style.fontSize = '16px';
+                  popup._container.style.width = '200px';
+                }
+              });
+            });
+
+            map.on('mouseleave', 'wilaya-layer', () => {
+              map.getCanvas().style.cursor = '';
+              popup.remove();
+            });
+
+        } catch (error) {
+          console.error(error);
+        }
+      };
 <!--      mapboxgl.accessToken = 'pk.eyJ1IjoicmVoYW4wMTAiLCJhIjoiY2p1MWppdzh1MDJjZzQ5cHY0bG80eDFjcCJ9.CiQmY8N2iAms6F1nj1Twew';-->
 <!--      const map = new mapboxgl.Map({-->
 <!--          container: 'map', // container ID-->
@@ -222,87 +399,15 @@
 
 
               if (layer.target.value=='pd'){
+                  loadMap("true");
+                  document.getElementById('ccfilter').classList.remove('hidden')
 
-                  scoring_slider.classList.remove('hidden');
-                  key.classList.remove('hidden');
-
-                  const popup = new mapboxgl.Popup({
-                    closeButton: false,
-                    closeOnClick: false
-                  });
-
-                  map.on('mouseenter', 'wilaya-layer', (e) => {
-                    // Change the cursor style as a UI indicator.
-                    map.getCanvas().style.cursor = 'pointer';
-
-                    // Access the GeoJSON properties
-                    const properties = e.features[0].properties;
-                    const name = properties.name;
-                    const total = properties.total;
-                    const ISO = properties.ISO;
-                    const name_ar = properties.name_ar;
-                    const special_vehicle = properties.special_vehicle;
-                    const density = properties.density;
-                    const semi_truck = properties.semi_truck;
-                    const motorcycle = properties.motorcycle;
-                    const score = properties.score;
-                    const trailer = properties.trailer;
-                    const agricultural_tractor = properties.agricultural_tractor;
-                    const cleaning_truck = properties.cleaning_truck;
-                    const percentage = properties.percentage;
-                    const truck = properties.truck;
-                    const touring_car = properties.touring_car;
-
-                    // Set the popup content with the GeoJSON properties
-                    const popupContent = `
-                      <strong>Name:</strong> ${name}<br>
-                      <strong>Total:</strong> ${total}<br>
-                      <strong>ISO:</strong> ${ISO}<br>
-                      <strong>Name (Arabic):</strong> ${name_ar}<br>
-                      <strong>Special Vehicle:</strong> ${special_vehicle}<br>
-                      <strong>Density:</strong> ${density}<br>
-                      <strong>Semi Truck:</strong> ${semi_truck}<br>
-                      <strong>Motorcycle:</strong> ${motorcycle}<br>
-                      <strong>Score:</strong> ${score}<br>
-                      <strong>Trailer:</strong> ${trailer}<br>
-                      <strong>Agricultural Tractor:</strong> ${agricultural_tractor}<br>
-                      <strong>Cleaning Truck:</strong> ${cleaning_truck}<br>
-                      <strong>Percentage:</strong> ${percentage}<br>
-                      <strong>Truck:</strong> ${truck}<br>
-                      <strong>Touring Car:</strong> ${touring_car}
-                    `;
-
-                    popup.setHTML(popupContent).setLngLat(e.lngLat).addTo(map);
-
-                    popup.setHTML(popupContent).setLngLat(e.lngLat).addTo(map);
-
-                    // Listen to the zoom event and adjust popup size and font size
-                    map.on('zoom', () => {
-                      const currentZoom = map.getZoom();
-
-                      // Define the CSS properties for different zoom levels
-                      if (currentZoom < 10) {
-                        // Adjust the CSS properties for lower zoom levels
-                        popup._container.style.fontSize = '12px';
-                        popup._container.style.width = '150px';
-                        // You can adjust other styles as needed
-                      } else {
-                        // Default or other styles for higher zoom levels
-                        popup._container.style.fontSize = '16px';
-                        popup._container.style.width = '200px';
-                      }
-                    });
-                  });
-
-                  map.on('mouseleave', 'wilaya-layer', () => {
-                    map.getCanvas().style.cursor = '';
-                    popup.remove();
-                  });
 
 
 
 
               }else{
+                  document.getElementById('ccfilter').classList.add('hidden')
                   scoring_slider.classList.add('hidden');
                   key.classList.add('hidden');
 

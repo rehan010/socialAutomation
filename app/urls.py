@@ -6,6 +6,7 @@ from . import views
 
 
 
+
 urlpatterns = [
     path('accounts/login/', CustomLoginView.as_view(), name='login'),
     path('accounts/register/', RegisterView.as_view(), name='register'),
@@ -66,4 +67,5 @@ urlpatterns = [
     path('check_username/',check_username_exists,name = "check_username"),
     path('check_company/',check_company_exists,name = "check_company"),
     path('check_password/',passwor_validation,name = "check_password"),
+    path('get/ccdata/filter',MapCCFilter.as_view(),name = "map_ccfilter"),
 ]
