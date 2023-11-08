@@ -13,6 +13,7 @@ private.key
 key.pem
 cert.pem
 ngrok.yml
+celerybeat-schedule.*
 celerybeat-schedule.dat
 celerybeat-schedule.bak
 celerybeat-schedule.dir

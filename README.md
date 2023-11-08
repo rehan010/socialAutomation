@@ -53,11 +53,11 @@ Automate routine social media tasks, such as posting, reposting, and engaging wi
 ## Getting Started
 
 ### Prerequisite
-* Python 3.8 and above
+* Python 3.8
 * Redis
 * Django 4.2
 * Celery
-* Postgres Sql
+* Postgres Sql 14.9
 
 ### Installation
 1. Make Virtual Enviorment
@@ -80,7 +80,7 @@ Automate routine social media tasks, such as posting, reposting, and engaging wi
    ```
 
 
-1. Clone the repo
+2. Clone the repo
    ```sh
    git clone https://github.com/SmartPresence0313/SmartPresence.git
    ```
@@ -89,13 +89,32 @@ Automate routine social media tasks, such as posting, reposting, and engaging wi
    pip install -r requirement.txt
    ```
 4. Configure your Postgres with credentials
-   ```js
-    'NAME': 'smart_pre',
-    'USER': 'smart_pre',
-    'PASSWORD': 'smart123!',
-    'HOST': 'localhost',
-    'PORT': '5432',
-   ```
+
+    1. Login In into postgres sql shell.
+    2. Create a Database
+       ```commandline
+            createdb -U username -h hostname -p port <dbname>;
+       ```
+       or 
+       ```commandline
+         create database <dbname>;
+       ```
+      
+   3. Create a user and grant permission to that user
+      ```commandline
+         create user <user_name> with encrypted password 'mypass';
+       ```
+      ```commandline
+         grant all privileges on database <dbname> to <user_name>;
+      ```
+   4. Open the `settings.py` file in your Automatation project and replace the following database settings with your database settings to connect to your PostgreSQL database:
+      ```commandline
+      'NAME': 'smart_pre', // Database name 
+      'USER': 'smart_pre', // UserName
+      'PASSWORD': 'smart123!', //Password
+      'HOST': 'localhost', //Host
+      'PORT': '5432' // Port
+      ```
 5. Change directory to `socialAutomation` and Migrate the database
     ```sh
     python manage.py makemigrations
@@ -108,25 +127,24 @@ Automate routine social media tasks, such as posting, reposting, and engaging wi
     python manage.py runserver
     ```
 7. Run `Celery` for background task
-  For `Mac`:
-  ```sh
-    celery -A Automatation worker -l info
-  ```
-  ```sh
-    celery -A Automatation beat -l info
-  ```
-  For `Windows`: 
 
-  install `eventlet`:
-  ```sh
-    pip install eventlet
-  ```
-  ```sh
-    celery -A Automatation worker -l info -P eventlet
-  ```
-   ```sh
-    celery -A Automatation beat -l info -P eventlet
-  ```
+     For `Mac`:
+     ```sh
+        celery -A Automatation worker --beat
+     ```
+     
+     For `Windows`: 
+
+     install `eventlet`:
+     ```sh
+       pip install eventlet
+     ```
+     ```sh
+       celery -A Automatation worker -l info -P eventlet
+     ```
+      ```sh
+       celery -A Automatation beat -l info 
+     ```
 
 ## Intial setup
 
@@ -135,9 +153,24 @@ Automate routine social media tasks, such as posting, reposting, and engaging wi
 ```python
   python manage.py createsuperuser
 ```
-2. Add Social Application Credientials in the database using Django Admin Panel on `http:localhost:8000/admin` and login through the created credientials of superuser.
+2. To Add Social Application Credientials in the database go to `http:localhost:8000/admin` and login through the created credientials of superuser.
 
 3. Go to `Social Application` section from admin panel.
+
+4. Click add Application from right corner
+
+5. Select a correct provider 
+
+6. Enter the name of applications as follow:
+   ```commandline
+      Facebook ---> Facebook
+      Instagram ---> Instagram
+      Linkedin ---> linkedin_oauth2
+      Google ---> Google
+   ```
+7. Enter correct App id in client id and App secret in secret key.
+
+8. Click Save to save changes.
 
 
 
