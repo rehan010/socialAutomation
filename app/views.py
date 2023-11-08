@@ -1434,6 +1434,7 @@ class MapCCFilter(APIView):
                     "name_ar": wilaya.name_ar,
                     "density": 92,
                     "ISO": wilaya.city_code
+
                     # "touring_car": vehicle.touring_car if vehicle else 0,
                     # "truck": vehicle.truck if vehicle else 0,
                     # "cleaning_truck": vehicle.cleaning_truck if vehicle else 0,
