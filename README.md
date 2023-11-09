@@ -124,7 +124,7 @@ Automate routine social media tasks, such as posting, reposting, and engaging wi
     ```
 6. Run the development server on localhost:8000
     ```sh
-    python manage.py runserver
+    python manage.py runsslserver
     ```
 7. Run `Celery` for background task
 

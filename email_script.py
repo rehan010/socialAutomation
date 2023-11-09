@@ -3,7 +3,7 @@ import aioreloader
 from aiosmtpd.controller import Controller
 
 async def handle_message(server, session, envelope, **kwargs):
-    f"New message received: {envelope.message}")
+    return (f"New message received: {envelope.message}")
 
 async def start_debugging_server():
     controller = Controller(handle_message, hostname="localhost", port=1025)
