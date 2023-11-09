@@ -604,13 +604,13 @@ function getFormattedDate(daysBefore = 0){
     let currentDate = new Date();
     const oneDay = daysBefore * 24 * 60 * 60 * 1000; // One day in milliseconds
     currentDate = new Date(currentDate - oneDay);
-    const year = currentDate.getFullYear();
-    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Adding 1 to month because months are zero-indexed
-    const day = currentDate.getDate().toString().padStart(2, '0');
+    const year = currentDate.getUTCFullYear();
+    const month = (currentDate.getUTCMonth() + 1).toString().padStart(2, '0'); // Adding 1 to month because months are zero-indexed
+    const day = currentDate.getUTCDate().toString().padStart(2, '0');
 
     const formattedDate = `${year}-${month}-${day}`;
+    console.log(formattedDate);
     return formattedDate;
-
 }
 
 

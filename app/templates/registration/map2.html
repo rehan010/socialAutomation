@@ -17,6 +17,8 @@
         margin: 0;
         padding: 0;
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        height: 100vh;
+        overflow: hidden;
       }
 
       #map {
@@ -24,6 +26,7 @@
         top: 0;
         bottom: 0;
         width: 100%;
+        height: 100vh;
       }
 
       h1 {
@@ -126,6 +129,28 @@
         max-width: 400px;
         font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
       }
+      .map-layer-toggle{
+        width:44px;
+        height:44px;
+        line-height: 44px;
+        background-image:url('{% static 'image/layers.png'%}');
+         background-repeat: no-repeat;
+        background-size:26px 26px;
+        background-position:center;
+
+      }
+      #mapStyleList{
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        opacity: 0;
+        transform: translateX(-200px);
+        transition: opacity 0.3s, transform 0.3s;
+      }
+      .show-list-item {
+        transform: translateX(0) !important;
+        opacity: 1 !important;
+      }
     </style>
   </head>
 
@@ -170,19 +195,22 @@
       <input id="slider" class="row" type="range" min="0" max="9" step="1" value="0"/>
     </div>
     <div class="session ">
-      <h2>SELECT A MAP VIEW</h2>
-      <div class="row flex  text-xs" id="filters">
-        <input id="clo06rtho008b01qx5xv04oe6" type="radio" name="rtoggle" value="satellite" checked="checked">
-        <label for="clo06rtho008b01qx5xv04oe6" class="text-xs text-slate-600">Satellite View</label>
-        <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="streets">
-        <label for="clo04hvvs001001pgbi328gj6" class="text-xs text-slate-600k">Street View</label>
-        <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="pd">
-        <label for="clo04hvvs001001pgbi328gj6" class="text-xs text-slate-600">Color Coded View</label>
-      </div>
+<!--      <h2>SELECT A MAP VIEW</h2>-->
+<!--      <div class="row flex  text-xs" id="filters">-->
+<!--        <input id="clo06rtho008b01qx5xv04oe6" type="radio" name="rtoggle" value="satellite" checked="checked">-->
+<!--        <label for="clo06rtho008b01qx5xv04oe6" class="text-xs text-slate-600">Satellite View</label>-->
+<!--        <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="streets">-->
+<!--        <label for="clo04hvvs001001pgbi328gj6" class="text-xs text-slate-600k">Street View</label>-->
+<!--        <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="pd">-->
+<!--        <label for="clo04hvvs001001pgbi328gj6" class="text-xs text-slate-600">Color Coded View</label>-->
+<!--      </div>-->
+
+
+
     </div>
 
     </div>
-    <div class="absolute top-28 rounded-md right-0 flex flex-col gap-2 bg-white px-4 py-2 hidden" id="ccfilter">
+    <div class="absolute top-28 rounded-md right-0 flex flex-col gap-2 bg-white px-4 py-2 text-sm hidden" id="ccfilter">
       <div class="flex items-center gap-2 text-center">
         <input type="checkbox" value="pd" class="ccfilter" id="pd" onchange="loadMap()">
         <label for="pd">Population Density</label>
@@ -193,7 +221,54 @@
       </div>
 
     </div>
+    <div class="absolute left-0 flex items-start gap-3 justify-center" style="top: 50%;transform: translateY( 50% )">
+
+          <a class="map-layer-toggle bg-white border-2 border-[#00000033] rounded-md" href="#" id="toggleList"></a>
+
+
+          <ul id="mapStyleList" class="flex flex-col overflow-hidden p-2 bg-white border-2 border-[#00000033] rounded-md w-max">
+            <div id="filters">
+              <label for="clo06rtho008b01qx5xv04oe6" class="flex items-center text-xs">
+                <input id="clo06rtho008b01qx5xv04oe6" type="radio" value="satellite" class="text-xs" name="rtoggle">
+                <span class="ml-2 text-xs">Satellite Map</span>
+              </label>
+              <label for="clo04hvvs001001pgbi328gj6" class="flex items-center text-xs">
+                <input id="clo04hvvs001001pgbi328gj6" type="radio" value="streets" class="text-xs" name="rtoggle">
+                <span class="ml-2 text-xs">Street Map</span>
+              </label>
+              <label for="clo04hvvs001001pgbi328gj6" class="flex items-center text-xs">
+                <input id="clo04hvvs001001pgbi328gj6" type="radio" value="pd" class="text-xs" name="rtoggle">
+                <span class="ml-2 text-xs">Color Coded Map</span>
+              </label>
+            </div>
+
+          </ul>
+
+    </div>
+
+
     <script>
+    document.addEventListener("DOMContentLoaded", function() {
+            const toggleListButton = document.getElementById("toggleList");
+            const myList = document.getElementById("mapStyleList");
+
+
+            toggleListButton.addEventListener("click", (e) => {
+            e.preventDefault();
+              console.log(1);
+                myList.classList.toggle("show-list-item");
+            });
+            document.addEventListener("click", (event) => {
+                if (!myList.contains(event.target) && event.target !== toggleListButton && myList.classList.contains("show-list-item") ) {
+                    myList.classList.toggle("show-list-item");
+                }
+            });
+
+        });
+    const bounds = [
+  [ -8.667055, 18.776344], // Southwest coordinates (longitude, latitude)
+  [11.999506, 37.115788] // Northeast coordinates (longitude, latitude)
+];
     mapboxgl.accessToken = 'pk.eyJ1IjoicmVoYW4wMTAiLCJhIjoiY2p1MWppdzh1MDJjZzQ5cHY0bG80eDFjcCJ9.CiQmY8N2iAms6F1nj1Twew';
       const map = new mapboxgl.Map({
           container: 'map', // container ID
@@ -203,6 +278,7 @@
           zoom: 4, // starting zoom
           minZoom: 4, // Set the minimum zoom level
           maxZoom: 15,
+          maxBounds: bounds
 
 
     });
@@ -266,23 +342,23 @@
                   ['get', 'score'],
                   'rgba(0, 255, 0, 0)',
                   1,
-                  '#fbd565',
+                  '#fa9a33',
                   2,
-                  '#f9ad5d',
+                  '#ff7605',
                   3,
-                  '#fc9003',
+                  '#b45022',
                   4,
-                  '#f94124',
+                  '#8fa626',
                   5,
-                  '#d01111',
+                  '#267604',
                   6,
-                  '#800505',
+                  '#e80202',
                   7,
-                  '#0f0354',
+                  '#640707',
                   8,
-                  '#0f0354',
+                  '#073003',
                   9,
-                  '#0f0354',
+                  '#411150',
                 ],
 
                 'fill-opacity': 0.6,
