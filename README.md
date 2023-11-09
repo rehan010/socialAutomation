@@ -76,7 +76,6 @@ Automate routine social media tasks, such as posting, reposting, and engaging wi
    ```sh
     env/Scripts/activate.bat //In CMD
     env/Scripts/Activate.ps1 //In Powershel
-
    ```
 
 
