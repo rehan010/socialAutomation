@@ -49,8 +49,7 @@
         position: absolute;
         margin: 10px;
         width: 340px;
-        background-color: white;
-        padding: 10px 20px;
+        z-index:4;
       }
 
       .session {
@@ -159,64 +158,58 @@
     <nav id="menu"></nav>
 
 
-    <div id="console" class="rounded-xl border-2 border-gray-800">
-      <div class="flex">
-        <input
-            id="search"
-            class="w-64 py-2 px-4 pr-10 rounded-3xl bg-white text-sm focus:outline-none focus:ring focus:border-blue-300"
-            type="text"
-            placeholder="Search for a location.."
-        />
-    </div>
-    <br>
-    <div class="suggestions-wrapper">
-      <ul class="suggestions">
+    <div id="console" >
+      <div class=" border-2 h-max w-full relative">
+        <div class="flex items-center justify-center relative w-full">
+          <i class="absolute left-3 fa-solid fa-magnifying-glass"></i>
+          <input
+              id="search"
+              class="w-full py-2 px-9 pr-10bg-white text-sm focus:outline-none focus:border-none"
+              type="text"
+              placeholder="Search for a location.."
+          />
+        </div>
+        <div class="suggestions-wrapper absolute border-2 w-full z-50 hidden">
+          <ul class="suggestions bg-white text-sm px-6 py-2">
 
-      </ul>
-    </div>
-    <div class="session hidden" id="key">
-      <h2>Key</h2>
-      <div class="row colors text-xxs rounded-xl"></div>
-      <div class="row labels">
-        <div class="label text-xxs">0</div>
-        <div class="label text-xxs">1</div>
-        <div class="label text-xxs">2</div>
-        <div class="label text-xxs">3</div>
-        <div class="label text-xxs">4</div>
-        <div class="label text-xxs">5</div>
-        <div class="label text-xxs">6</div>
-        <div class="label text-xxs">7</div>
-        <div class="label text-xxs">8</div>
-        <div class="label text-xxs">9</div>
+          </ul>
+        </div>
       </div>
-    </div>
-    <div class="session hidden" id="scoring_slider">
-      <h2>Score: <label id="score">0</label></h2>
-      <input id="slider" class="row" type="range" min="0" max="9" step="1" value="0"/>
-    </div>
-    <div class="session ">
-<!--      <h2>SELECT A MAP VIEW</h2>-->
-<!--      <div class="row flex  text-xs" id="filters">-->
-<!--        <input id="clo06rtho008b01qx5xv04oe6" type="radio" name="rtoggle" value="satellite" checked="checked">-->
-<!--        <label for="clo06rtho008b01qx5xv04oe6" class="text-xs text-slate-600">Satellite View</label>-->
-<!--        <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="streets">-->
-<!--        <label for="clo04hvvs001001pgbi328gj6" class="text-xs text-slate-600k">Street View</label>-->
-<!--        <input id="clo04hvvs001001pgbi328gj6" type="radio" name="rtoggle" value="pd">-->
-<!--        <label for="clo04hvvs001001pgbi328gj6" class="text-xs text-slate-600">Color Coded View</label>-->
-<!--      </div>-->
+      <div class="bg-white mt-10 py-2 hidden" id="key">
+        <div class="session px-4" >
+          <h2>Key</h2>
+          <div class="row colors text-xxs rounded-xl"></div>
+          <div class="row labels">
+            <div class="label text-xxs">0</div>
+            <div class="label text-xxs">1</div>
+            <div class="label text-xxs">2</div>
+            <div class="label text-xxs">3</div>
+            <div class="label text-xxs">4</div>
+            <div class="label text-xxs">5</div>
+            <div class="label text-xxs">6</div>
+            <div class="label text-xxs">7</div>
+            <div class="label text-xxs">8</div>
+            <div class="label text-xxs">9</div>
+          </div>
+        </div>
+        <div class="session px-4 hidden" id="scoring_slider">
+          <h2>Score: <label id="score">0</label></h2>
+          <input id="slider" class="row" type="range" min="0" max="9" step="1" value="0"/>
+        </div>
+      </div>
 
-
-
     </div>
-
-    </div>
-    <div class="absolute top-28 rounded-md right-0 flex flex-col gap-2 bg-white px-4 py-2 text-sm hidden" id="ccfilter">
+    <div class="absolute top-28 rounded-md right-0 flex flex-col gap-2 bg-white px-4 py-2 text-xs hidden" id="ccfilter">
+      <div class="flex items-center gap-2 text-center ">
+        <input type="radio" value="all" class="ccfilter" name="stoggle" id="all" onchange="loadMap(event)" checked>
+        <label for="all">All</label>
+      </div>
       <div class="flex items-center gap-2 text-center">
-        <input type="checkbox" value="pd" class="ccfilter" id="pd" onchange="loadMap()">
+        <input type="radio" value="pd" class="ccfilter" id="pd" name="stoggle" onchange="loadMap(event)">
         <label for="pd">Population Density</label>
       </div>
       <div class="flex items-center gap-2 text-center">
-        <input type="checkbox" value="vehicle" class="ccfilter" id="vd" onchange="loadMap()">
+        <input type="radio" value="vehicle" class="ccfilter" id="vd" name="stoggle" onchange="loadMap(event)">
         <label for="vd">Vehicle</label>
       </div>
 
@@ -255,7 +248,6 @@
 
             toggleListButton.addEventListener("click", (e) => {
             e.preventDefault();
-              console.log(1);
                 myList.classList.toggle("show-list-item");
             });
             document.addEventListener("click", (event) => {
@@ -283,31 +275,17 @@
 
     });
 
-    const loadMap = async (initial= null) => {
+    const loadMap = async (event) => {
+
       document.getElementById('slider').value = 0;
         document.getElementById('score').textContent = "0";
-        var params = "all";
-        if(initial === null){
-          params = "";
-          const ccfilters =  document.querySelectorAll('.ccfilter');
-          ccfilters.forEach((ccfilter)=>{
-            if(ccfilter.checked){
-              params += `${ccfilter.value}="true"&`
-            }
 
-          })
-          if (params.endsWith("&")) {
-            params = params.slice(0, -1);
-          }
-        }else{
-          const ccfilters =  document.querySelectorAll('.ccfilter');
-          ccfilters.forEach((ccfilter)=>{
-            ccfilter.checked = true;
-
-
-          })
+        var params = "all=true";
+        if(event){
+              const target = event.target
+              params = "";
+              params += `${target.value}="true"`;
         }
-
 
         try {
           const response = await fetch(`{% url 'map_ccfilter' %}?${params}`);
@@ -420,21 +398,7 @@
               popup.setHTML(popupContent).setLngLat(e.lngLat).addTo(map);
 
               // Listen to the zoom event and adjust popup size and font size
-              map.on('zoom', () => {
-                const currentZoom = map.getZoom();
 
-                // Define the CSS properties for different zoom levels
-                if (currentZoom < 10) {
-                  // Adjust the CSS properties for lower zoom levels
-                  popup._container.style.fontSize = '12px';
-                  popup._container.style.width = '150px';
-                  // You can adjust other styles as needed
-                } else {
-                  // Default or other styles for higher zoom levels
-                  popup._container.style.fontSize = '16px';
-                  popup._container.style.width = '200px';
-                }
-              });
             });
 
             map.on('mouseleave', 'wilaya-layer', () => {
@@ -475,7 +439,7 @@
 
 
               if (layer.target.value=='pd'){
-                  loadMap("true");
+                  loadMap();
                   document.getElementById('ccfilter').classList.remove('hidden')
 
 
@@ -641,11 +605,12 @@
 
       // Construct the API request URL with the searchValue and bbox
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchValue}.json?country=dz&proximity=${proximity}&access_token=${access_token}&bbox=${bbox}`;
-
+      const suggestionWrapper = document.getElementsByClassName('suggestions-wrapper')[0];
       const suggestionsWrapper = document.querySelector('.suggestions');
       suggestionsWrapper.innerHTML = ''; // Clear the suggestions
 
       if (!searchValue) {
+        suggestionWrapper.classList.add('hidden');
         return; // Return if the input is empty
       }
 
@@ -658,6 +623,12 @@
             return response.json();
           })
           .then(data => {
+
+            if(data.features.length > 0){
+              suggestionWrapper.classList.remove('hidden');
+            }else{
+             suggestionWrapper.classList.add('hidden');
+            }
             const m_data = {
               features: data.features,
             };
@@ -667,12 +638,12 @@
 
               // Create a suggestion item
               const suggestionItem = document.createElement('li');
-              suggestionItem.classList.add('suggestion-item');
+              suggestionItem.classList = 'suggestion-item py-1';
               suggestionItem.dataset.index = index;
 
               // Create an anchor element for the suggestion
               const suggestionLink = document.createElement('a');
-              suggestionLink.classList.add('cursor-pointer');
+              suggestionLink.classList = 'cursor-pointer hover:no-underline hover:bg-gray-400 hover:text-gray-600';
 
               // Set a click event for the suggestion
               suggestionLink.addEventListener('click', (e) => {
@@ -722,12 +693,12 @@
 
     search.addEventListener('input', () => {
       const searchValue = search.value;
-      console.log(searchValue);
 
       if (searchValue.length > 2) {
         makeApiRequest(searchValue);
       }
       if (searchValue === ''){
+            document.getElementsByClassName('suggestions-wrapper')[0].classList.add('hidden');
             const suggestionsWrapper = document.querySelector('.suggestions');
             suggestionsWrapper.innerHTML = '';
             marker.remove();
