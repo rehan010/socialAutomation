@@ -1,6 +1,9 @@
 from django.core.management.base import BaseCommand
 from app.models import Wilayas  # Import your model
 import json
+
+
+
 class Command(BaseCommand):
     help = 'Create dummy entries for YourModel'
 

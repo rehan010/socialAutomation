@@ -1397,7 +1397,7 @@ class MapView(TemplateView):
     #     context = {'file' : output_file}
     #     return context
 class MapCCFilter(APIView):
-    def get(self,request):
+    def get(self, request):
         filters = list(self.request.GET.keys())
         wilayas = Wilayas.objects.all()
         geojson_data = {
@@ -1409,59 +1409,35 @@ class MapCCFilter(APIView):
             all = True
 
         for wilaya in wilayas:
-            vehicle = 0
-            is_vehcile = False
-
-            pd = 0
-            if ("vehicle" in filters) or all:
-                is_vehcile = True
-                vehicle = WilayasVehicle.objects.filter(wilaya=wilaya).first()
-
-            if ("pd" in filters) or all:
-                pd = 0
-
-
-
-
-
+            score = 0
+            if "all" in filters:
+                score = WilayaScore.objects.filter(wilaya=wilaya).first().score
+            elif "pd":
+                score = (WilayaPopulation.objects.filter(wilaya=wilaya).first().normalized)*10
+            elif "vehicle":
+                score = (WilayasVehicle.objects.filter(wilaya=wilaya).first().normalized)*10
+            elif "school":
+                score = (WilayaSchool.objects.filter(wilaya=wilaya, type='SCHOOL').first().normalized)*10
+            elif "college":
+                score = (WilayaSchool.objects.filter(wilaya=wilaya, type='COLLEGE').first().normalized)*10
+            elif "shops":
+                score = (WilayaBusiness.objects.filter(wilaya=wilaya, type='SHOPS').first().normalized)*10
+            elif "companies":
+                score = (WilayaBusiness.objects.filter(wilaya=wilaya, type='COMPANY').first().normalized)*10
             feature = {
                 "type": "Feature",
                 "geometry":  json.loads(wilaya.coordinates)
                 ,
                 "properties": {
-                    "score": 0 if len(filters) == 0 else random.randint(1, 9),
+                    "score": score,
                     "name": wilaya.name,
                     "name_ar": wilaya.name_ar,
-                    "density": 92,
                     "ISO": wilaya.city_code
 
-                    # "touring_car": vehicle.touring_car if vehicle else 0,
-                    # "truck": vehicle.truck if vehicle else 0,
-                    # "cleaning_truck": vehicle.cleaning_truck if vehicle else 0,
-                    # "bus": vehicle.bus if vehicle else 0,
-                    # "semi_truck": vehicle.semi_truck if vehicle else 0,
-                    # "agricultural_tractor": vehicle.agricultural_tractor if vehicle else 0,
-                    # "special_vehicle": vehicle.special_vehicle if vehicle else 0,
-                    # "trailer": vehicle.trailer if vehicle else 0,
-                    # "motorcycle": vehicle.motorcycle if vehicle else 0,
-                    # "total": vehicle.total if vehicle else 0,
-                    # "percentage": vehicle.percentage if vehicle else 0
                 }
-            }
-            if is_vehcile or all:
-                feature["properties"]["touring_car"] = vehicle.touring_car if vehicle else 0
-                feature["properties"]["truck"] = vehicle.truck if vehicle else 0
-                feature["properties"]["cleaning_truck"] = vehicle.cleaning_truck if vehicle else 0
-                feature["properties"]["bus"] = vehicle.bus if vehicle else 0
-                feature["properties"]["semi_truck"] = vehicle.semi_truck if vehicle else 0
-                feature["properties"]["agricultural_tractor"] = vehicle.agricultural_tractor if vehicle else 0
-                feature["properties"]["special_vehicle"] = vehicle.special_vehicle if vehicle else 0
-                feature["properties"]["trailer"] = vehicle.trailer if vehicle else 0
-                feature["properties"]["motorcycle"] = vehicle.motorcycle if vehicle else 0
-                feature["properties"]["total"] = vehicle.total if vehicle else 0
-                feature["properties"]["percentage"] = vehicle.percentage if vehicle else 0
-            geojson_data["features"].append(feature)
 
+            }
+            geojson_data["features"].append(feature)
 
         return JsonResponse(geojson_data)
         #

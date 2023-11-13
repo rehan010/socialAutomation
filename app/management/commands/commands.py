@@ -27,3 +27,5 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS('Dummy entries created successfully.'))
         except FileNotFoundError:
             self.stdout.write(self.style.ERROR(f'File not found at path: {file_path}'))
+
+

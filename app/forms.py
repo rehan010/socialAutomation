@@ -161,9 +161,9 @@ class SharePageForm(forms.ModelForm):
 
 
 class PostModelForm(forms.ModelForm):
-    facebook = forms.BooleanField(widget=forms.CheckboxInput(),required=False)
-    instagram = forms.BooleanField(widget=forms.CheckboxInput(),required=False)
-    linkedin = forms.BooleanField(widget=forms.CheckboxInput(),required=False)
+    facebook = forms.BooleanField(widget=forms.CheckboxInput(), required=False)
+    instagram = forms.BooleanField(widget=forms.CheckboxInput(), required=False)
+    linkedin = forms.BooleanField(widget=forms.CheckboxInput(), required=False)
 
     class Meta:
         model = PostModel

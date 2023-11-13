@@ -155,8 +155,6 @@
 
   <body>
     <div id="map"></div>
-    <nav id="menu"></nav>
-
 
     <div id="console" >
       <div class=" border-2 h-max w-full relative">
@@ -178,23 +176,24 @@
       <div class="bg-white mt-10 py-2 hidden" id="key">
         <div class="session px-4" >
           <h2>Key</h2>
-          <div class="row colors text-xxs rounded-xl"></div>
+          <div class="row colors text-xxxs rounded-xl"></div>
           <div class="row labels">
-            <div class="label text-xxs">0</div>
-            <div class="label text-xxs">1</div>
-            <div class="label text-xxs">2</div>
-            <div class="label text-xxs">3</div>
-            <div class="label text-xxs">4</div>
-            <div class="label text-xxs">5</div>
-            <div class="label text-xxs">6</div>
-            <div class="label text-xxs">7</div>
-            <div class="label text-xxs">8</div>
-            <div class="label text-xxs">9</div>
+
+            <div class="label text-xxs">10</div>
+            <div class="label text-xxs">20</div>
+            <div class="label text-xxs">30</div>
+            <div class="label text-xxs">40</div>
+            <div class="label text-xxs">50</div>
+            <div class="label text-xxs">60</div>
+            <div class="label text-xxs">70</div>
+            <div class="label text-xxs">80</div>
+            <div class="label text-xxs">90</div>
+            <div class="label text-xxs">100</div>
           </div>
         </div>
         <div class="session px-4 hidden" id="scoring_slider">
           <h2>Score: <label id="score">0</label></h2>
-          <input id="slider" class="row" type="range" min="0" max="9" step="1" value="0"/>
+          <input id="slider" class="row" type="range" min="0" max="100" step="10" value="0"/>
         </div>
       </div>
 
@@ -204,6 +203,7 @@
         <input type="radio" value="all" class="ccfilter" name="stoggle" id="all" onchange="loadMap(event)" checked>
         <label for="all">All</label>
       </div>
+
       <div class="flex items-center gap-2 text-center">
         <input type="radio" value="pd" class="ccfilter" id="pd" name="stoggle" onchange="loadMap(event)">
         <label for="pd">Population Density</label>
@@ -211,6 +211,22 @@
       <div class="flex items-center gap-2 text-center">
         <input type="radio" value="vehicle" class="ccfilter" id="vd" name="stoggle" onchange="loadMap(event)">
         <label for="vd">Vehicle</label>
+      </div>
+      <div class="flex items-center gap-2 text-center">
+        <input type="radio" value="school" class="ccfilter" id="sd" name="stoggle" onchange="loadMap(event)">
+        <label for="vd">School</label>
+      </div>
+      <div class="flex items-center gap-2 text-center">
+        <input type="radio" value="college" class="ccfilter" id="cd" name="stoggle" onchange="loadMap(event)">
+        <label for="vd">College</label>
+      </div>
+      <div class="flex items-center gap-2 text-center">
+        <input type="radio" value="shops" class="ccfilter" id="shops" name="stoggle" onchange="loadMap(event)">
+        <label for="vd">Shops</label>
+      </div>
+      <div class="flex items-center gap-2 text-center">
+        <input type="radio" value="companies" class="ccfilter" id="companies" name="stoggle" onchange="loadMap(event)">
+        <label for="vd">Companies</label>
       </div>
 
     </div>
@@ -309,39 +325,30 @@
               type: 'geojson',
               data: geojson,
             });
-
             map.addLayer({
-              id: 'wilaya-layer',
-              type: 'fill',
-              source: 'choropleth-source',
-              paint: {
-                'fill-color': [
-                  'step',
-                  ['get', 'score'],
-                  'rgba(0, 255, 0, 0)',
-                  1,
-                  '#fa9a33',
-                  2,
-                  '#ff7605',
-                  3,
-                  '#b45022',
-                  4,
-                  '#8fa626',
-                  5,
-                  '#267604',
-                  6,
-                  '#e80202',
-                  7,
-                  '#640707',
-                  8,
-                  '#073003',
-                  9,
-                  '#411150',
-                ],
+                id: 'wilaya-layer',
+                type: 'fill',
+                source: 'choropleth-source',
+                paint: {
+                  'fill-color': [
+                    'interpolate', ['linear'], ['get', 'score'],
+                    0, '#FFFF00',
+                    10, '#fa9a33',
+                    20, '#ff7605',
+                    30, '#b45022',
+                    40, '#8fa626',
+                    50, '#267604',
+                    60, '#ff0000',
+                    70, '#640707',
+                    80, '#8B0000',
+                    90, '#301934',
+                    100, '#251627',
+                  ],
+                  'fill-opacity': 0.5,
+                },
+              });
 
-                'fill-opacity': 0.6,
-              },
-            });
+
 
             scoring_slider.classList.remove('hidden');
             key.classList.remove('hidden');

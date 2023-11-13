@@ -266,7 +266,105 @@ class WilayasVehicle(BaseModel):
     trailer = models.IntegerField(null=True,blank=True)
     motorcycle = models.IntegerField(null=True,blank=True)
     total = models.IntegerField()
-    percentage = models.FloatField()
+    normalized = models.FloatField()
+
+    def __str__(self):
+
+        return f"{self.wilaya.name}"
+
+
+
+class WilayaBusiness(BaseModel):
+    BUSINESS_TYPE = [('COMPANY', 'COMPANY'), ('SHOPS', 'SHOPS')]
+    type = models.CharField(choices=BUSINESS_TYPE, default='SHOPS')
+    wilaya = models.ForeignKey(Wilayas, on_delete=models.CASCADE)
+    prod_goods = models.IntegerField(null=True, blank=True)
+    prod_art = models.IntegerField(null=True, blank=True)
+    dist_gross = models.IntegerField(null=True, blank=True)
+    dist_detail = models.IntegerField(null=True, blank=True)
+    imports = models.IntegerField(null=True, blank=True)
+    services = models.IntegerField(null=True, blank=True)
+    exports = models.IntegerField(null=True, blank=True)
+    total = models.IntegerField()
+    normalized = models.FloatField()
+    norm_coeff = models.FloatField()
+
+
+
+    def __str__(self):
+
+        return f"{self.wilaya.name}"
+
+class WilayaPopulation(BaseModel):
+
+
+    wilaya = models.ForeignKey(Wilayas,unique=True, on_delete=models.CASCADE)
+    count = models.FloatField(null=True, blank=True)
+    normalized = models.FloatField()
+    norm_coeff = models.FloatField()
+
+
+    def __str__(self):
+
+        return f"{self.wilaya.name}"
+
+class WilayaCompanies(BaseModel):
+
+
+    wilaya = models.ForeignKey(Wilayas,unique=True, on_delete=models.CASCADE)
+    count = models.FloatField(null=True, blank=True)
+    normalized = models.FloatField()
+    norm_coeff = models.FloatField()
+
+
+    def __str__(self):
+
+        return f"{self.wilaya.name}"
+
+
+class WilayaSchool(BaseModel):
+
+    TYPE = [('COLLEGE', 'COLLEGE'), ('SCHOOL', 'SCHOOL')]
+    type = models.CharField(choices=TYPE, default='SCHOOL')
+    wilaya = models.ForeignKey(Wilayas, on_delete=models.CASCADE)
+    count = models.FloatField(null=True, blank=True)
+    normalized = models.FloatField()
+    norm_coeff = models.FloatField()
+
+
+    def __str__(self):
+
+        return f"{self.wilaya.name}"
+
+
+class ScoreCoeff(BaseModel):
+
+    vehicles = models.IntegerField(null=True, blank=True)
+    business = models.IntegerField(null=True, blank=True)
+    population = models.IntegerField(null=True, blank=True)
+    company = models.IntegerField(null=True, blank=True)
+
+
+class WilayaMetrics(BaseModel):
+
+    wilaya = models.ForeignKey(Wilayas,unique=True, on_delete=models.CASCADE)
+    vehicles = models.IntegerField(null=True, blank=True)
+    business = models.IntegerField(null=True, blank=True)
+    population = models.IntegerField(null=True, blank=True)
+    schools = models.IntegerField(null=True, blank=True)
+    colleges = models.IntegerField(null=True, blank=True)
+    ins_companies = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+
+        return f"{self.wilaya.name}"
+
+
+class WilayaScore(BaseModel):
+
+
+    wilaya = models.OneToOneField(Wilayas,unique=True, on_delete=models.CASCADE)
+    score = models.FloatField(null=True, blank=True)
 
     def __str__(self):
 
