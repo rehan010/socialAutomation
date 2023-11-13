@@ -5,7 +5,6 @@ import pandas as pd
 
 from fuzzywuzzy import fuzz
 from unidecode import unidecode
-import openpyxl
 from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):

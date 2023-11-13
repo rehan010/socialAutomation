@@ -59,6 +59,8 @@ Automate routine social media tasks, such as posting, reposting, and engaging wi
 * Celery
 * Postgres Sql 14.9
 
+#### for Redis on Windows [click here](https://redis.io/docs/install/install-redis/install-redis-on-windows/).
+
 ### Installation
 1. Make Virtual Enviorment
     ```sh
@@ -85,7 +87,7 @@ Automate routine social media tasks, such as posting, reposting, and engaging wi
    ```
 3. Install dependencies
    ```sh
-   pip install -r requirement.txt
+   pip install -r requirements.txt
    ```
 4. Configure your Postgres with credentials
 
@@ -162,10 +164,10 @@ Automate routine social media tasks, such as posting, reposting, and engaging wi
 
 6. Enter the name of applications as follow:
    ```commandline
-      Facebook ---> Facebook
-      Instagram ---> Instagram
+      Instagram --> Instagram
       Linkedin ---> linkedin_oauth2
-      Google ---> Google
+      Facebook ---> Facebook
+      Google -----> Google
    ```
 7. Enter correct App id in client id and App secret in secret key.
 
